@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-recovery-source-provenance-39-1d992c307",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-DEMO-RECOVERY-SOURCE-PROVENANCE-39",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-recovery-source-provenance-39",
+  "base_commit": "509a1bf959e7f2895da130b4cb205af0f286c074",
+  "deliverable_commit": "1d992c307c466138786e47dcd1dccb08b8b83890",
+  "created_at": "2026-08-12T14:13:08Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "type": "code",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "sha256": "f3b7de33887db9d6fa1c8b279da619e4ab70e03de17ae8596b181b28c8e5aee2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "600f02a087ab3e617ede4e0b4be16dd01c388c368ddc436f5d637ed61811a38b",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k owner_marker_audit_source_provenance --basetemp %TEMP%/btc-ticket39-failure-first",
+      "result": "failed",
+      "evidence_path": "failure-first baseline: canonical binding raised fault_drill_recovery_binding_runtime_source_mismatch before any client or endpoint construction"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k owner_marker_audit_source_provenance or nonprovenance_nested_mismatch or ignores_owned_id_restore_applied_archive_source_provenance or rejects_archive_source_in_ordinary_runtime_event or rejects_present_invalid_runtime_state_source_head or rejects_regressive_or_nonterminal_runtime_source_chain --basetemp %TEMP%/btc-ticket39-focused",
+      "result": "passed",
+      "evidence_path": "11 passed, 156 deselected; preserves ordinary nested-head and state terminal mismatch rejection"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed",
+      "evidence_path": "exit=0"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed",
+      "evidence_path": "exit=0"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-candidate-package-runtime-20260925-adf29164a",
+  "ticket_id": "BTC-CANDIDATE-PACKAGE-RUNTIME-20260925",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-candidate-package-runtime-20260925",
+  "base_commit": "9c1dac906f4b4527aa247d14f18497f56e9d8464",
+  "deliverable_commit": "adf29164af02aaa2f94b2a9fd54cd45a89aa0a18",
+  "created_at": "2026-09-25T03:02:25Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_delivery_sources.py",
+      "sha256": "3679feb3061967426675d1193722003ac120b27034c12f920e5b8605d00c2bb1",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/btc-candidate-package-runtime-20260925.md",
+      "sha256": "b5de56a71c600afff0a0cc0be47b57cb4c899b5a576b4c16f5c54d0f294f0b2f",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/btc-candidate-package-runtime-20260925.md",
+      "sha256": "bf4f52e58eea91b68c0d553d67130f510d752b0d11c54fe56410ea627ee40b98",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "sha256": "8ab2b236077853dc4358fe7a4d423351f7caa3b549f814560ff05782eaf7113d",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/candidate-delivery-api.ts",
+      "sha256": "07e8b46dd9f614b627b69ef12db397b616490b4bdf9d8404f29c208c4221493e",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "integrations/qlib_adapter/factory_package.py",
+      "sha256": "ac8710360859f459308788af8e13b019a3c8de6ce6da07301065e7f32858bdbb",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "integrations/qlib_adapter/package_inference.py",
+      "sha256": "46fad0cf6d193ee42e31c462b419c7c8f550611c762a00fefe2c70c7f735f010",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_registered_candidate.py",
+      "sha256": "546ad2de7598bc872c82eae04a582b54824fbc82441588e25afbd4f504194b04",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/models.py",
+      "sha256": "e005c077fd9cd68ab25f6dafa2c2393e7c505fa1376f52342c3d06ca8511bcdf",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/runtime_contract.py",
+      "sha256": "aa6606b8a2d87a045a852c13601daf8fdad6a2619bd7a333c8a3175529b9f0f5",
+      "schema_version": "strategy_delivery_package_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/service.py",
+      "sha256": "4ab9f14176d159044985bcc4d440099272a7230be5f0ef91246fcd58ef1f45d0",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_candidate_package_runtime.py",
+      "sha256": "5b9e0d1a74acc6816ff887b00163567a0e1ad89e13e3e8ed22651c855f90ba13",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/integrations/test_candidate_package_inference.py",
+      "sha256": "9a175ae45638fd14c5cc530fdfd6165549198a320fb26a66ffae0109eb9bc66f",
+      "schema_version": "candidate_package_runtime_source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "$Py -B -X utf8 -m pytest -q -p no:cacheprovider tests/contracts/test_candidate_package_runtime.py tests/integrations/test_candidate_package_inference.py tests/contracts/test_strategy_delivery.py tests/contracts/test_candidate_delivery_api.py -> 77 passed, 1 deprecation warning in 68.90s; Py is canonical .venv Python, PYTHONUTF8=1",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-package-runtime-20260925.md"
+    },
+    {
+      "command": "$Py -B -X utf8 -m pytest -q -p no:cacheprovider tests/integrations/test_qlib_candidate_policy.py tests/contracts/test_strategy_v0_freeze.py tests/contracts/test_strategy_v1_donchian_offline.py tests/contracts/test_strategy_v3_qlib_offline.py::test_explicit_nonzero_fixture_uses_existing_oms_ledger_and_survives_restart tests/contracts/test_strategy_v3_qlib_offline.py::test_ledger_commit_before_evidence_is_recovered_without_resubmit tests/integrations/test_qlib_frozen_inference.py::test_full_sealed_feature_raw_and_calibrated_prediction_parity -> 47 passed, 1 existing opt-in archive skip in 533.25s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-package-runtime-20260925.md"
+    },
+    {
+      "command": "frontend/node_modules/.bin/tsc.cmd --noEmit -p frontend/tsconfig.json -> exit 0",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-package-runtime-20260925.md"
+    },
+    {
+      "command": "py -3 -B -m compileall -q quant_shared/strategy_delivery integrations/qlib_adapter/factory_package.py integrations/qlib_adapter/package_inference.py backend/app/services/candidate_delivery_sources.py quant_crypto/application/btc_registered_candidate.py; git diff --cached --check -> exit 0",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-package-runtime-20260925.md"
+    },
+    {
+      "command": "Registered generic execution-source ingestion, new candidate economic E2E, production package publication and canonical browser/deployment",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/btc-candidate-package-runtime-20260925.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator INTEGRATE-BTC-CANDIDATE-PACKAGE-RUNTIME-20260925 independent shared schema and capability review required",
+    "owner:integrator registered_execution_source_boundary_missing; proposed public functions and pre-economic validation sequence in architecture specification",
+    "owner:integrator generic candidate policy and economic E2E not implemented or accepted; existing runtime fixture results do not prove new package execution",
+    "owner:factory_evidence existing candidates do not emit complete candidate.delivery_contract; missing candidate-owned calibration policies currency and dependency evidence remain blocked",
+    "owner:operator no main merge deployment backend restart management enablement or trading authorization"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

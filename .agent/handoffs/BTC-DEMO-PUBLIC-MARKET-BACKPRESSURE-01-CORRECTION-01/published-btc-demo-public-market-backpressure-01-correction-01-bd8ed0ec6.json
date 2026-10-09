@@ -1,0 +1,90 @@
+{
+  "base_commit": "3acafd0638931eaabf9c35a3737efd17a003ac7c",
+  "blockers": [
+    "owner:integrator backend_restart_required_after_integration",
+    "promotion_artifact_not_required_for_demo_transport_hotfix",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T14:28:14Z",
+  "deliverable_commit": "bd8ed0ec65232620054b369bbef160c95e1330e7",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_forming_bar_e2e_v1",
+      "sha256": "7d74b6bdf056ec3ea14f0db9b51411993de6503ef8e93460dc5863df0d9f7979",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "cc28c76b05321ed298b0456f028e9610ec42990c7f9941e1fafd72f73792f53b",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-public-market-backpressure-01-correction-01-bd8ed0ec6",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-public-mkt-backpressure-01-corr-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-demo-public-market-backpressure-01-c0419bd2d"
+  ],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "failure-first: 32 passed, 1 failed; stale expectation 62,030.5 versus forming-bar 62,031.0",
+      "result": "failed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --grep \"market view keeps one in-flight refresh\" --reporter=line",
+      "evidence_path": "1 passed",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "33 passed in 1.9m; canonical service reused, no service started",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "tsc --noEmit passed",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "fingerprint=54ac64bf557eac361a8d37b9fa94358bc776a420b67ff13cd0fde36ce8fec2b3",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "passed; manifest_match=true; canonical=false until integration",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "exit 0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PUBLIC-MARKET-BACKPRESSURE-01-CORRECTION-01",
+  "transition_for": ""
+}

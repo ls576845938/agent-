@@ -1,0 +1,53 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-strategy-catalog-grouping-i18n-07-a521b79d1",
+  "ticket_id": "BTC-STRATEGY-CATALOG-GROUPING-I18N-07",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/btc-strategy-ux-history-int-10",
+  "base_commit": "cdc46a3bf7b6805d77feb8cb23473ae4d97b62d2",
+  "deliverable_commit": "a521b79d1f9c5084b35a64f7f06e4e526e54521e",
+  "created_at": "2026-08-18T14:45:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-strategy-catalog-grouping-i18n-07-b7be38dd4",
+    "published-btc-strategy-history-current-head-publication-09-33e02f2ff"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-strategy-catalog-grouping-i18n-07-b7be38dd4",
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/lib/strategy-presentation.ts", "sha256": "94b54aa9c2b85a3613dc540a294bfad762da633b834c18fef3d3dc51d6c452d4", "schema_version": "strategy_presentation_i18n_grouping_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx", "sha256": "7e3da95cb1ead1a56134fa032746957344bd0e2ec4e59985ffcbb652b26d2479", "schema_version": "strategy_discovery_family_grouping_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/StrategyExplorer.tsx", "sha256": "58312c04a4c2d9aaae19764589b3d747944637a7708cf7b764a85343c647ab43", "schema_version": "strategy_explorer_variant_presentation_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "sha256": "76c8d7c3c1c6bb87fa26e3b0aee9a6fb52ce83efc93fa4b49ff2f0b089af071c", "schema_version": "crypto_strategy_editor_variant_presentation_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "60a381ee21d4bbe6dd97da45c2977fe14b225d76e60b391411154ede6ef03803", "schema_version": "demo_strategy_status_i18n_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-strategy-history-report.spec.ts", "sha256": "f9591e98e2192be2b4536f9be5453e0d14f2a5273070933f2d3e82a0fe00aa20", "schema_version": "strategy_catalog_grouping_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-strategy-registry.spec.ts", "sha256": "3522058cc315f86d21df3aadbef154f00365d00d1f591d18679b61725a8aa36e", "schema_version": "strategy_catalog_status_i18n_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": "frontend/public/frontend-identity.json", "sha256": "2daf513155f46c32f0d8586b1d61a784ce77a3d5e64ed57129c20da2993985ce", "schema_version": "frontend_identity_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "npm --prefix frontend run lint", "result": "passed", "evidence_path": "tsc --noEmit passed using a temporary read-only registered-main node_modules junction"},
+    {"command": "npm --prefix frontend run build", "result": "passed", "evidence_path": "Vite 5215 modules transformed; existing >500 kB chunk warning preserved; generated dist removed"},
+    {"command": "npm --prefix frontend exec -- playwright test --config=frontend/playwright.config.ts frontend/e2e/btc-strategy-history-report.spec.ts frontend/e2e/btc-strategy-registry.spec.ts frontend/e2e/btc-demo-console.spec.ts --list", "result": "passed", "evidence_path": "45 tests listed; full browser execution deferred to registered current-main"},
+    {"command": "npm --prefix frontend run identity:refresh && npm --prefix frontend run identity:check && npm --prefix frontend run identity:test", "result": "passed", "evidence_path": "one final-combination refresh; fingerprint=6d6a248ada5d0e78b6bc5ae5153748a12aadfbea601d7cd219d26952fa215272; baseline_ancestor=true; canonical=false on integrator branch"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "clean scoped integration diff"}
+  ],
+  "blockers": [
+    "owner:integrator canonical_mocked_playwright_deferred_to_registered_current_main",
+    "owner:root backend/browser restart and GET-only acceptance deferred by user scope",
+    "presentation-only change has no external artifact publication; promotion remains blocked",
+    "promotion/paper/live/private/order/real-order/transfer/withdraw/secret remain false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

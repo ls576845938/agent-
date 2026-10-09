@@ -1,0 +1,48 @@
+{
+  "base_commit": "80bd63b01d77cc0ff47d266d665df0ea42ac5d3a",
+  "blockers": [],
+  "consumer_roles": [
+    "data_steward",
+    "super_developer",
+    "architect"
+  ],
+  "created_at": "2026-07-12T03:53:24Z",
+  "deliverable_commit": "80bd63b01d77cc0ff47d266d665df0ea42ac5d3a",
+  "deliverables": [],
+  "depends_on": [
+    "data-ready-hf-etf26-1min-6d6b07e77962",
+    "ack-hf-etf26-super-developer-6d6b07e77962"
+  ],
+  "domain": "data",
+  "event_id": "integrated-hf-etf26-6d6b07e77962",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/us-hf-etf26-handoff",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . scan",
+      "evidence_path": ".agent/handoffs/us-hf-etf26-shared-data-v1/",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest-git-spec <branch>:<manifest> --fast",
+      "evidence_path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "us-hf-etf26-shared-data-v1",
+  "transition_for": "data-ready-hf-etf26-1min-6d6b07e77962"
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-protection-facts-independent-review-20260915-48049d47a",
+  "ticket_id": "BTC-PROTECTION-FACTS-INTEGRATION-20260915",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-protection-facts-integration-20260915",
+  "base_commit": "4b2afd02daac11622d1e68a7927458ad6599c415",
+  "deliverable_commit": "48049d47a37fb620e3c3ed9e47e8fb74103f240e",
+  "created_at": "2026-09-15T10:27:51Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-protection-facts-20260915-f019609ac"],
+  "supersedes": [],
+  "transition_for": "published-btc-protection-facts-20260915-f019609ac",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/btc-protection-facts-independent-review-20260915.md",
+      "sha256": "02b253d5ddfd9d091fad86201a2707c9f6294de7fbcd837edc2a008adeffd867",
+      "schema_version": "btc_protection_facts_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "validate_handoff_against_git for published-btc-protection-facts-20260915-f019609ac and exact eight-path source diff",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-protection-facts-independent-review-20260915.md"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_btc_hosted_protection_facts.py tests/contracts/test_btc_demo_production_composition.py::test_guardian_preclassification_and_evaluation_share_normalized_protection tests/contracts/test_btc_okx_demo_paper_runtime.py::test_algo_sanitizer_preserves_close_side_and_reduce_only_tristate tests/contracts/test_btc_okx_demo_paper_runtime.py::test_hosted_protection_projection_is_redacted_and_does_not_mutate_snapshot",
+      "result": "passed",
+      "evidence_path": "15 passed in 3.80s; docs/operations/btc-protection-facts-independent-review-20260915.md"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed",
+      "evidence_path": "10 passed in 71.53s; docs/operations/btc-protection-facts-independent-review-20260915.md"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_btc_demo_production_composition.py",
+      "result": "passed",
+      "evidence_path": "19 passed in 2.08s; docs/operations/btc-protection-facts-independent-review-20260915.md"
+    },
+    {
+      "command": "independent pure-function counterexample removes raw parent_client_order_id while exact local algo owner parent receipt and binding remain",
+      "result": "failed",
+      "evidence_path": "five parent/owner/receipt blockers; owned and close remain null; docs/operations/btc-protection-facts-independent-review-20260915.md"
+    },
+    {
+      "command": "git object identity check for quant_crypto/application/runtime_risk_guardian.py at base and candidate",
+      "result": "passed",
+      "evidence_path": "both c8e2f74751803a3a466bf6881681011a1adf6d4a"
+    },
+    {
+      "command": "independent OS-level hard-crash subprocess, actual OKX Demo/private/order/live endpoints, UI/API/service startup, M1, Qlib, M3-M4, promotion and main publication",
+      "result": "not_run",
+      "evidence_path": "outside ticket or blocked by incomplete real OKX receipt compatibility"
+    }
+  ],
+  "blockers": [
+    "owner:architecture actual OKX hosted-protection receipt compatibility is incomplete because the normalizer requires a raw parent_client_order_id even when exact locally persisted algoId/algoClOrdId owner parent intent active receipt and current binding are available",
+    "owner:architecture the frozen simulator supplies parentClOrdId and therefore proves only the sealed offline receipt contract; OKX documents that the main clOrdId is not automatically forwarded to attached TP/SL orders",
+    "owner:runtime_acceptance OS-level abrupt-process hard-crash recovery was not independently exercised; existing V1 fault hooks are in-process and explicitly close before reconstruction",
+    "owner:release technical status is partial; UI, API, service startup, main publication, Demo, paper, private, order, live and promotion remain untouched and disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

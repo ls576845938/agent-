@@ -1,0 +1,340 @@
+{
+  "schema_version": "btc_unified_offline_readonly_delivery_contract_v1",
+  "receipt_schema_version": "btc_unified_offline_readonly_delivery_receipt_v1",
+  "ticket_id": "BTC-UNIFIED-OFFLINE-READONLY-DELIVERY-20261004",
+  "release_ticket_id": "INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-20261004",
+  "governance_review_ticket_id": "INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-GOVERNANCE-20261004",
+  "baseline_commit": "eaa88400f01e47e5c8da377606b6df52a9543382",
+  "source_assembly_commit": "815a18fe8541ed0b4a61416bba23df480d8418eb",
+  "source_commit": "58b37ac726cfd0d5276356782e7868c873f1aab1",
+  "source_handoff_commit": "ba9f28bd6272bbcae62c6bb5c0e5f9ce55633a29",
+  "source_change_risk": "demo_execution_semantics",
+  "governance_change_risk": "governance_control",
+  "deployment_profile": "research_readonly",
+  "readiness_ceiling": "quality_checked",
+  "phases": [
+    "source_review",
+    "deployment_acceptance"
+  ],
+  "independent_governance_review_required": true,
+  "independent_integrator_required": true,
+  "promotion_artifact_rebuild_required": false,
+  "backend_restart_required_for_deployment": true,
+  "producer_actor": "btc_unified_readonly_governance_producer_20261004",
+  "rollback_ref": "refs/tags/codex/btc-unified-offline-before-readonly-20261004",
+  "required_false_flags": [
+    "candidate_management",
+    "management_write",
+    "offline_worker",
+    "demo",
+    "demo_control_enabled",
+    "promotion",
+    "paper",
+    "live",
+    "private",
+    "order",
+    "real_order",
+    "transfer",
+    "withdraw",
+    "execution_permission",
+    "runtime_observed",
+    "runtime_worker_enabled"
+  ],
+  "required_source_checks": [
+    "explicit_user_authorization",
+    "scoped_clean",
+    "failure_first_governance_regression",
+    "original_independent_review_reused",
+    "frozen_source_inventory_verified",
+    "reviewed_dependency_closure_verified",
+    "governance_independently_reviewed",
+    "fresh_independent_integration_context",
+    "no_new_business_delta"
+  ],
+  "required_deployment_checks": [
+    "current_main_listeners_verified",
+    "canonical_current_head_identities",
+    "research_readonly_profile_verified",
+    "canonical_browser_acceptance",
+    "truthful_missing_blocked_display",
+    "no_controls_write_or_new_run",
+    "rollback_point_verified"
+  ],
+  "required_browser_checks": [
+    "research_stage_navigation",
+    "exact_and_unknown_run_status",
+    "write_controls_disabled",
+    "capabilities_false",
+    "version_identity",
+    "layout_compatibility"
+  ],
+  "limitations": [
+    "coordination_application_interface_only_no_common_account_page_or_http_flow",
+    "qlib_member_identity_and_fixture_not_real_valid_model",
+    "R2_R3_model_and_calibration_limits_retained",
+    "no_real_comparable_candidate_pairs_or_new_research",
+    "original_promotion_demo_paper_live_and_execution_gates_remain_blocked"
+  ],
+  "sidecar_paths": [
+    "docs/agent_playbooks/btc_unified_offline_readonly_delivery_20261004.json",
+    "docs/agent_playbooks/btc_unified_offline_readonly_delivery_20261004.md",
+    "tools/agent_governance/btc_unified_offline_readonly_delivery_20261004.py",
+    "tests/agent_governance/test_btc_unified_offline_readonly_delivery_20261004.py"
+  ],
+  "reports": {
+    "governance": "docs/acceptance/btc-unified-offline-readonly-governance-20261004.md",
+    "integration": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md",
+    "deployment": "docs/acceptance/btc-unified-offline-readonly-deployment-20261004.md",
+    "governance_review": "docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md"
+  },
+  "allowed_handoff_directories": [
+    ".agent/handoffs/INTEGRATE-BTC-UNIFIED-ENTRY-COORDINATION-20261004/",
+    ".agent/handoffs/BTC-UNIFIED-OFFLINE-READONLY-DELIVERY-20261004/",
+    ".agent/handoffs/INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-20261004/",
+    ".agent/handoffs/INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-GOVERNANCE-20261004/"
+  ],
+  "derived_identity_path": "frontend/public/frontend-identity.json",
+  "source_inventory": {
+    "backend/app/services/candidate_delivery_accounts.py": {
+      "mode": "100644",
+      "blob": "089a7dbf92f9cd3c8c42a9000acbf603e4e32a5e",
+      "sha256": "7848297d6cdb061771dee151e2d62ecaefd28b59ccce26f458eed783345e6392"
+    },
+    "backend/app/services/candidate_offline_inputs.py": {
+      "mode": "100644",
+      "blob": "a4efe61e933369e0b35686b38ca20b9954c3b1f6",
+      "sha256": "37f787cf4920ae28746b6895b402fcb883dfbebd9649083053b3469900ec9ff1"
+    },
+    "backend/app/services/candidate_offline_service.py": {
+      "mode": "100644",
+      "blob": "60baebf2ebb8385d9e306947cf5873510b1aded8",
+      "sha256": "64c7a459adf07e873d62e7337bfe1ca583103852658e9d2cfe6484b945d6a643"
+    },
+    "backend/app/services/candidate_offline_views.py": {
+      "mode": "100644",
+      "blob": "2e6573ee2bbbf3ce53b4d8f50a4c68412bb9b7a6",
+      "sha256": "2cbe27e6fb893100f5ee6b49be98f3c0ad02827245f6bb69668ac2c3d9b767b2"
+    },
+    "docs/acceptance/btc-unified-entry-coordination-20261004.md": {
+      "mode": "100644",
+      "blob": "d14658773503e4b44c30d882cd19f7d6af2e0272",
+      "sha256": "f97e924bdef5e1c1b2643e43b1cbeb25d5d112f6fb3af663481bba655aa05e92"
+    },
+    "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md": {
+      "mode": "100644",
+      "blob": "982271c099767977175554e2778acb990a06b297",
+      "sha256": "b9a053dc62e851e732a646b7005a79563d4850fcb5a880b0d9d4a89f9fcc9a7e"
+    },
+    "docs/architecture/btc-unified-entry-coordination-20261004.md": {
+      "mode": "100644",
+      "blob": "8dc83ea0748d77c5a1092db4ed02c8b0d152b171",
+      "sha256": "11e8b95c1039d221b7386a2ed85adb40094ff16f4de58143f38b43ce11875ed5"
+    },
+    "docs/knowledge/00_codex_rules/source_map.md": {
+      "mode": "100644",
+      "blob": "8577530f9cdea5b390a8d045822150a922275ff6",
+      "sha256": "6328dc4fdc3217dda994e54bc4cab4e36f1d369fb1b1956a59fec58a4bcb01f5"
+    },
+    "docs/knowledge/03_portfolio_risk/forecast_to_portfolio_rules.md": {
+      "mode": "100644",
+      "blob": "ad2e4f0c1a7969e48b3bbf49dd702c8b24f8b699",
+      "sha256": "34d852ff04136e183997deb07f71a11500d2db1d20a4c50090f3282caba2b6c4"
+    },
+    "docs/knowledge/README.md": {
+      "mode": "100644",
+      "blob": "24023882f603872c806ad3d356612ad690423069",
+      "sha256": "7adf041b2b69a4542b9a843ec53997bfc90daf975d733e55fb440b634eae6e1a"
+    },
+    "frontend/e2e/candidate-offline.spec.ts": {
+      "mode": "100644",
+      "blob": "c0e99ce0fe4027e75db167a2df552ada3c774184",
+      "sha256": "4c9017c269a215e3007603389c76329d9af8dfa40e38c45f05a0a28ce8f53024"
+    },
+    "frontend/scripts/test-unified-candidate-offline.mjs": {
+      "mode": "100644",
+      "blob": "df679dbf33dcfcd6d0799e2a680afff7a9b9fd55",
+      "sha256": "194a71277adff7bd67aac2f8330bd1020940960f83f0a795fbcc721918c0e908"
+    },
+    "frontend/src/workspaces/research/RegisteredCandidateOfflineEvidence.tsx": {
+      "mode": "100644",
+      "blob": "dc988f9918e615707d55964231db4026e3aa1d5b",
+      "sha256": "033828126c946df36a6fd3f7d39f31e07f7f436406c4a8c956f49b5c086a3ea6"
+    },
+    "frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx": {
+      "mode": "100644",
+      "blob": "3130a07b08b09ca7a6ce5df80d12260c3d03afb8",
+      "sha256": "53e37694dab038af686110fc9bbaef16ea704cd5b8e6145dd74f0512c6b0017b"
+    },
+    "frontend/src/workspaces/research/candidate-delivery-api.ts": {
+      "mode": "100644",
+      "blob": "691e029f4cd80aee8ff2260fc0bac4a7f14f0990",
+      "sha256": "7aa2cb8f7307affdf9e1eeaa918142ada76830f5156477c5b9649c19fc7e48e7"
+    },
+    "frontend/src/workspaces/research/candidate-offline-api.ts": {
+      "mode": "100644",
+      "blob": "db826eee4f55fc9752e3dd172352f4372cd73118",
+      "sha256": "934f861062a3a0feebe58e73cea46c168fb681f68f5fab42158dca60b8700c5e"
+    },
+    "quant_crypto/application/btc_multi_strategy_offline.py": {
+      "mode": "100644",
+      "blob": "0895e43c3c1bf7eb59490b40af6ada473709f341",
+      "sha256": "db15ec414ae6b8f3e83cf32abb7e5e2a587e931db455bbe70a4dccb3eff781d2"
+    },
+    "quant_crypto/application/btc_registered_donchian.py": {
+      "mode": "100644",
+      "blob": "1ab03464bf6bcb787b372942a237e6c0dea3742d",
+      "sha256": "dce3189c34f0af1f042586c567c4006f40416483b0a358f471eb4ab6d699189d"
+    },
+    "quant_crypto/application/donchian_historical_replay.py": {
+      "mode": "100644",
+      "blob": "b9efcfe31e181916d2fd67889b72addb35014088",
+      "sha256": "526b15639553a2efad042525e646d3b609fb9c109142ddcfa11bd6c9abb8bcd7"
+    },
+    "quant_crypto/application/donchian_offline_replay.py": {
+      "mode": "100644",
+      "blob": "4d5a67f3f7a692c2333a716ec46db63170acd68e",
+      "sha256": "b012e323d6f78f1eb03251b3985941996b11fd9392176ea54ebf5a74c6b6a9aa"
+    },
+    "quant_crypto/application/hosted_protection_facts.py": {
+      "mode": "100644",
+      "blob": "c839cb4752a603b16fdc93a02dade46f36ce69ec",
+      "sha256": "53bfda897d26f70956fd170052f53c4b60924da526e205a3441f27ef6fc19fcd"
+    },
+    "quant_crypto/oms/okx_demo_paper_runtime.py": {
+      "mode": "100644",
+      "blob": "13874f64b751c35c409e21fc28d9e5b03f06f7c2",
+      "sha256": "1c2fe2becf651cb2292291f5ce5787669add36253947acf2c7574785d4c1a5dc"
+    },
+    "quant_crypto/oms/runtime_store.py": {
+      "mode": "100644",
+      "blob": "e5b8987cf095697710a76e456dc8e684f34e646c",
+      "sha256": "f4e8fca3db50770f7a9c4af3c9fdecdb37c63d4398b784ecfce5bb61f68a70e8"
+    },
+    "quant_crypto/oms/strategy_allocations.py": {
+      "mode": "100644",
+      "blob": "f21006f98fad35678d09bc83ec1109c7d8af1c6a",
+      "sha256": "e0ba03b0f58b1286a8bab5764403b6481ac4d52ca0696c76bae9ee5de26ed277"
+    },
+    "quant_crypto/portfolio/multi_strategy.py": {
+      "mode": "100644",
+      "blob": "f15171e2821a2742a3a34647175b9eb301d5caee",
+      "sha256": "7e9ca5fc2d72519c59c54269ffa996af032202218a4a7c4f9481f49ff7f984ba"
+    },
+    "tests/contracts/test_btc_account_facts_closeout.py": {
+      "mode": "100644",
+      "blob": "19569c8c6b51c49f4ce7650db89fac416bcf92e5",
+      "sha256": "d37e8a482ded98808af5181be85874786ac849a1fd7bdccca46bce318d066106"
+    },
+    "tests/contracts/test_btc_donchian_history.py": {
+      "mode": "100644",
+      "blob": "89be3cbdde4ea34462d973b3eec74fbd55ee00ed",
+      "sha256": "6b9f373012b6a68644d604cdd105db8f96d74b9090bb6aa776c1e5ebacc02eec"
+    },
+    "tests/contracts/test_btc_multi_strategy_coordination.py": {
+      "mode": "100644",
+      "blob": "a45c185a54daf64abbfbdfe855e45a3386d967ff",
+      "sha256": "7bed4c5d1413ab9d228c9bcf2ed5a2ce8e79d406345f29ac8c8edfacac895087"
+    },
+    "tests/contracts/test_btc_okx_demo_paper_runtime.py": {
+      "mode": "100644",
+      "blob": "22405d81ed968222f269e3ed2d073e9a8ba35e71",
+      "sha256": "65318c1c44f2c166757feb4a71a3b2c9dbf26c9f145873e77accb9ecdea8b7f5"
+    },
+    "tests/contracts/test_btc_strategy_allocations.py": {
+      "mode": "100644",
+      "blob": "97eeea02c722bbdee88a65038d4f47cc149968e2",
+      "sha256": "85fc96b2276753d62ed7c03a52f3d4b3d77b39def6db670bcb9b280485a48ecb"
+    },
+    "tests/contracts/test_candidate_offline_entry.py": {
+      "mode": "100644",
+      "blob": "b4b756a1a4acb08955b7a5f3fe408aa4ebb8123c",
+      "sha256": "3ed2421a73595b401a8854273b76e6ccb85c320d5f5545cbcf26ae223bcf9ea5"
+    },
+    "tests/integrations/test_btc_multi_strategy_offline.py": {
+      "mode": "100644",
+      "blob": "e516a583f165073e1d347e9ade3c1599766d8a03",
+      "sha256": "13a0f484923bf6dde3889a640bd912d0eb8a4dd3fa89cd980c93a63a7a993818"
+    },
+    "tests/integrations/test_registered_donchian_lifecycle.py": {
+      "mode": "100644",
+      "blob": "a5419dc855377a731000556641ffbeb96022c117",
+      "sha256": "c56bb9abcd298112790245bba2c2bcaaa8cfe5ae9f1b96ca66f391def84c86de"
+    }
+  },
+  "reviewed_handoffs": [
+    {
+      "commit": "23cf364c0192f39607c93cf5724b79147c3724ff",
+      "path": ".agent/handoffs/RULE-FORECAST-DOC-CORRECTION-20261004/published-rule-forecast-doc-correction-20261004-057f44d53.json",
+      "sha256": "a86b8654e33991aa741f84f594fad7a2aa61dbb1b2f69a994b13d38792f93bfd",
+      "event_id": "published-rule-forecast-doc-correction-20261004-057f44d53",
+      "ticket_id": "RULE-FORECAST-DOC-CORRECTION-20261004",
+      "deliverable_commit": "057f44d53dca0ac050192836356f74a8154b63eb",
+      "depends_on": [],
+      "integration_commit": "057f44d53dca0ac050192836356f74a8154b63eb"
+    },
+    {
+      "commit": "88e00ffffd18bea76d1cc75d3e831af5406e268a",
+      "path": ".agent/handoffs/BTC-UNIFIED-ENTRY-COORDINATION-20261004/published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e.json",
+      "sha256": "646a1bc30f241b57f16bbd09da3fdc9be45a5f596877c9ccc276fa745a57646c",
+      "event_id": "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e",
+      "ticket_id": "BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+      "deliverable_commit": "18823663e90a37cced4eccb2512fac418a263413",
+      "depends_on": [],
+      "integration_commit": "b892c6b84c19bdd3d1fc21ceac849f6a06327a21"
+    },
+    {
+      "commit": "92584a720484f09d0d0106f4e80834573800a8eb",
+      "path": ".agent/handoffs/BTC-UNIFIED-ENTRY-COORDINATION-20261004/published-btc-unified-entry-coordination-20261004-stage2-47b93c9a1.json",
+      "sha256": "d4501a53d44633c7f3d9342dc342415b79593738b7306340414cd4c2f379b9b6",
+      "event_id": "published-btc-unified-entry-coordination-20261004-stage2-47b93c9a1",
+      "ticket_id": "BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+      "deliverable_commit": "47b93c9a1ec4b7608b0fa55157bd60f78d3fa173",
+      "depends_on": [
+        "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e"
+      ],
+      "integration_commit": "5fb03d5312d8cc1a5aecc4c99e5886856bf269b5"
+    },
+    {
+      "commit": "8b5dda90d797df7e074ff0d5a68d74d229f587d6",
+      "path": ".agent/handoffs/BTC-UNIFIED-ENTRY-COORDINATION-20261004/published-btc-unified-entry-coordination-20261004-stage2-correction-d733e0b00.json",
+      "sha256": "a975f88c785b1b109b3d677219d6e836c96f4d199a2c0493088f45b3a71124c0",
+      "event_id": "published-btc-unified-entry-coordination-20261004-stage2-correction-d733e0b00",
+      "ticket_id": "BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+      "deliverable_commit": "d733e0b00e6e790ea70d5cf60d40b82b351d5370",
+      "depends_on": [
+        "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e"
+      ],
+      "integration_commit": "689f406cd25af5dcff768aa3f3d853ae4b62b842"
+    },
+    {
+      "commit": "515d37f8b1abc9206ecf480675f334f70d141681",
+      "path": ".agent/handoffs/BTC-UNIFIED-ENTRY-COORDINATION-20261004/published-btc-unified-entry-coordination-20261004-stage2-allocation-seal-dependency-corrected-f54d242da.json",
+      "sha256": "8f8833d760c98a727bc51d848aa00e3568ad4a5b8f03889b9e5be276751e80b1",
+      "event_id": "published-btc-unified-entry-coordination-20261004-stage2-allocation-seal-dependency-corrected-f54d242da",
+      "ticket_id": "BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+      "deliverable_commit": "f54d242da326f1accb68a8c362379abb72634e7e",
+      "depends_on": [
+        "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e",
+        "published-btc-unified-entry-coordination-20261004-stage2-correction-d733e0b00"
+      ],
+      "integration_commit": "815a18fe8541ed0b4a61416bba23df480d8418eb"
+    },
+    {
+      "commit": "ba9f28bd6272bbcae62c6bb5c0e5f9ce55633a29",
+      "path": ".agent/handoffs/INTEGRATE-BTC-UNIFIED-ENTRY-COORDINATION-20261004/integrated-btc-unified-entry-coordination-20261004-58b37ac72.json",
+      "sha256": "6e95c798e6381496560b92ffa731d8d66feb3ac7278e55aefbb281860b2bec91",
+      "event_id": "integrated-btc-unified-entry-coordination-20261004-58b37ac72",
+      "ticket_id": "INTEGRATE-BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+      "deliverable_commit": "58b37ac726cfd0d5276356782e7868c873f1aab1",
+      "depends_on": [
+        "published-rule-forecast-doc-correction-20261004-057f44d53",
+        "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e",
+        "published-btc-unified-entry-coordination-20261004-stage2-47b93c9a1",
+        "published-btc-unified-entry-coordination-20261004-stage2-correction-d733e0b00",
+        "published-btc-unified-entry-coordination-20261004-stage2-allocation-seal-dependency-corrected-f54d242da"
+      ]
+    }
+  ],
+  "evidence_marker": "btc-unified-offline-readonly-evidence",
+  "maximum_deployment_evidence_age_seconds": 900
+}

@@ -1,0 +1,110 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-observation-window-01-5b8d193a",
+  "ticket_id": "BTC-V3-OBSERVATION-WINDOW-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-observation-window-01",
+  "base_commit": "04e5647dbddd62a0e2b1676096b20ee8396a647e",
+  "deliverable_commit": "5b8d193a96a65fe0490ef087b2b8b8a5f5ed6d96",
+  "created_at": "2026-07-24T14:42:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-v3-current-head-gate-rebuild-01-goal9-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/research/btc_demo_observation_accumulator.py",
+      "sha256": "18b51e0913f3b2919fab128ba56a512fe7a77af6471c3389926606cbbbef1d76",
+      "schema_version": "btc_demo_observation_accumulator_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/research/btc_demo_manual_approval_observer.py",
+      "sha256": "32e3a01c275fc0c9e787326c97a83f0a4d4437f693c43163a6384a2e89525122",
+      "schema_version": "btc_demo_manual_approval_observer_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/research/build_btc_demo_observation_accumulator.py",
+      "sha256": "b2f5b3cc8eb6ab3a1672b11db40a6439e52e8c0b7745ba090d191cf6bb180532",
+      "schema_version": "btc_demo_observation_accumulator_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/research/run_btc_demo_manual_approval_observer.py",
+      "sha256": "5ffb7327b542e9ce9dda99b1c308d1f66004c4c7ecd344f9db6724fd6e55fd44",
+      "schema_version": "btc_demo_manual_approval_observer_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_demo_observation_accumulator.py",
+      "sha256": "404a5267a53c19f9991c04e478ea5d80f81427f4874a4c5e5acacde7242b026e",
+      "schema_version": "btc_demo_observation_accumulator_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_demo_manual_approval_observer.py",
+      "sha256": "702d79d8f3088c8e9ebe705b6ff7cab880c309d269cf35a41cc1ca768d833835",
+      "schema_version": "btc_demo_manual_approval_observer_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/tickets/BTC-V3-OBSERVATION-WINDOW-01.md",
+      "sha256": "70116afc98a7113375d562ecb06a8375902b0299ecc88efe083988d5de1ca36e",
+      "schema_version": "btc_v3_observation_window_delivery_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py --basetemp <unique> -p no:cacheprovider",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_demo_observation_accumulator.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_gate_snapshot.py tests/contracts/test_btc_domain_read_model.py tests/contracts/test_btc_nonflat_evidence_autocapture.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_btc_manual_paper_review_approval.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py --basetemp <unique> -p no:cacheprovider",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/research/btc_demo_observation_accumulator.py quant_crypto/research/btc_demo_manual_approval_observer.py scripts/research/build_btc_demo_observation_accumulator.py scripts/research/run_btc_demo_manual_approval_observer.py",
+      "result": "passed",
+      "evidence_path": "scripts/research/build_btc_demo_observation_accumulator.py"
+    }
+  ],
+  "blockers": [
+    "owner:btc_operations awaiting_authorized_observation_runtime",
+    "owner:data_steward btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "owner:btc_observation btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_operations btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_operations btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_observation btc_okx_native:30_60_day_observation_window_incomplete",
+    "owner:architect/manual_reviewer btc_okx_native:manual_promotion_approval_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

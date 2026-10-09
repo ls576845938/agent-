@@ -1,0 +1,157 @@
+{
+  "base_commit": "4432c18251e827487070f598161ef9cacbfc068c",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "continuous_observer_must_start_only_from_independently_integrated_current_main",
+    "btc_10s_all_applicable_family_horizon_rows_blocked_insufficient_information",
+    "eligible_windows_10s_30s_60s_are_5_1_0_below_1000_each",
+    "effective_sample_size_10s_30s_60s_are_4_676295_1_0_below_500_each",
+    "utc_weekday_regime_coverage_and_cost_stratified_stability_incomplete",
+    "liquidation_family_missing_time_aligned_open_interest_and_liquidation_events",
+    "maker_queue_family_not_applicable_taker_only_baseline",
+    "venue_hosted_protective_stop_unproven",
+    "mark_index_funding_runtime_parity_unproven",
+    "queue_partial_fill_execution_unproven",
+    "fill_position_cash_ledger_unproven",
+    "adverse_selection_unproven",
+    "current_head_promotion_artifact_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-27T11:27:00Z",
+  "deliverable_commit": "79811303dc50eea6b1077884511431374a1bcbb7",
+  "deliverables": [
+    {
+      "path": "quant_crypto/data/immutable_okx_10s_microstructure_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_export_v1",
+      "sha256": "3ee4b672ffab69fed91e857634e1388a4f0c737bd337d8320a87b471944a556b",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1",
+      "sha256": "7c23d3d0ee907aa3edf8074f91279eeed49c41c26bd80ecacc75b7817b33ffde",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_okx_10s_microstructure_immutable_feed.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_v1",
+      "sha256": "c521b78e67da5d462a4046f3713954ffbab9768a0e9a5e04b6efd23be0e43b3c",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_tests_v1",
+      "sha256": "4401656c67f90112e1d49622d5029c78fb4328a615d692198c750b5ebcf143b3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_api_v1",
+      "sha256": "409e91674026c396d55bc1e58405a80a7b51170a69786ae12838426407bc1fe0",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_10s_microstructure_data_contract_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_report_builder_v1",
+      "sha256": "b8278f27874bf02f5d324077d8c354eabfae4ee0364599decbc912f45dc97a59",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_10s_microstructure_data_contract_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_tests_v1",
+      "sha256": "8fd621fcf81784769989e8cfaeb56fa0e0956ac7737cf1b50d15a0159158a0bb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_IMMUTABLE_FEED_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_immutable_feed_doc_v1",
+      "sha256": "a1a0d54895c204d45e55caa0b0eec73bfbdb730d8dcb15a33feb99d21447190c",
+      "type": "document"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-10s-microstructure-immutable-feed/btc-okx-10s-feed-00000001-20260827t111218925177z-src4e615032a6.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "0ab49746024b5fad532a68b776beae7d56241f1661d01a99ab6ec28d9e501f49",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-10s-microstructure-immutable-feed-01-79811303d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-10s-microstructure-immutable-feed-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "git cat-file -e 4432c18251e827487070f598161ef9cacbfc068c:<new exporter and runner>; base evaluator unknown dataset",
+      "evidence_path": "docs/research/BTC_10S_MICROSTRUCTURE_IMMUTABLE_FEED_01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <feed, evaluator, L2 exporter, shared-data, collector, observer contract suites> -q",
+      "evidence_path": "118 passed in 10.25s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile <exporter, runner, evaluator, report builder>; JSON schemas validate",
+      "evidence_path": "compile_and_schema_valid",
+      "result": "passed"
+    },
+    {
+      "command": "first 60s official public WS smoke at a836eac9829b",
+      "evidence_path": "blocked_export_text_pong_heartbeat_regression_fixed_by_4e615032a6ca",
+      "result": "failed"
+    },
+    {
+      "command": "second 60s official public WS smoke at 4e615032a6ca",
+      "evidence_path": "published_quality_checked:btc-okx-10s-feed-00000001-20260827t111218925177z-src4e615032a6",
+      "result": "passed"
+    },
+    {
+      "command": "shared_data.py resolve --manifest-git-spec 85d72e7b20148702c5941744df5cfeb7fe9053fa:<exact manifest>",
+      "evidence_path": ".agent/data_manifests/btc-okx-10s-microstructure-immutable-feed/btc-okx-10s-feed-00000001-20260827t111218925177z-src4e615032a6.json",
+      "result": "passed"
+    },
+    {
+      "command": "build_btc_10s_microstructure_data_contract_report.py at 79811303dc50eea6b1077884511431374a1bcbb7",
+      "evidence_path": "research_artifacts/BTC-10S-MICROSTRUCTURE-IMMUTABLE-FEED-01/79811303dc50eea6b1077884511431374a1bcbb7/artifact_manifest.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 4432c18251e827487070f598161ef9cacbfc068c..79811303dc50eea6b1077884511431374a1bcbb7",
+      "evidence_path": "range_diff_check_valid",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-IMMUTABLE-FEED-01",
+  "transition_for": ""
+}

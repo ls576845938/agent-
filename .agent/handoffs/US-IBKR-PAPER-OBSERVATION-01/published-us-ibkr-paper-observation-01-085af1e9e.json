@@ -1,0 +1,102 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-paper-observation-01-085af1e9e",
+  "ticket_id": "US-IBKR-PAPER-OBSERVATION-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-paper-observation-01",
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "deliverable_commit": "085af1e9ecf384eaf0ee4f9893f3884c877bf7c2",
+  "created_at": "2026-08-06T14:12:46Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-ibkr-foundation-current-main-01-e7a491df8f"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/live/ibkr_paper_observation.py",
+      "sha256": "83103307f70da6c121726de28ab39d5fe5be83e69077af762375710f700e4606",
+      "schema_version": "us_ibkr_paper_daily_observation_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/build_us_ibkr_paper_observation.py",
+      "sha256": "c4cc37329f16fb7fe3f8cbf96a3948d63ca0142603bf6f731a5e980fbdaa7bec",
+      "schema_version": "offline_observation_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_ibkr_paper_observation_report.schema.json",
+      "sha256": "44691f3722850a61c3e4a3cf2fa3db06a5a21bda4bcc15bee13f794cce33e786",
+      "schema_version": "us_ibkr_paper_observation_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_ibkr_paper_observation.py",
+      "sha256": "437ef01644654be4ffcad5b28c3c120100e0a09d2981fabcd5a6b261c8930ac2",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_ibkr_paper_observation.py -p no:cacheprovider -q",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_ibkr_paper_observation.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_ibkr_paper_observation.py tests/live/test_ibkr_paper_adapter_foundation.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_paper_live_locked.py tests/contracts/test_us_equity_final_paper_readiness.py -p no:cacheprovider -q",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_ibkr_paper_observation.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_us/live/ibkr_paper_observation.py scripts/build_us_ibkr_paper_observation.py",
+      "result": "passed",
+      "evidence_path": "quant_us/live/ibkr_paper_observation.py"
+    },
+    {
+      "command": "git diff --cached --check -- <four deliverable paths>",
+      "result": "passed",
+      "evidence_path": "085af1e9ecf384eaf0ee4f9893f3884c877bf7c2"
+    },
+    {
+      "command": "handoff.py validate integrated-us-ibkr-foundation-current-main-01-e7a491df8f; verify e7a491df8 is a main ancestor and four Git blob SHA-256 values match",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/INTEGRATE-US-IBKR-FOUNDATION-CURRENT-MAIN-01/integrated-us-ibkr-foundation-current-main-01-e7a491df8f.json"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_deliverable_085af1e9ecf384eaf0ee4f9893f3884c877bf7c2",
+    "owner:integrator task_3_and_task_4_independent_integrations_and_two_content_addressed_integration_receipts_required_before_real_observation",
+    "owner:operator explicit_real_ibkr_paper_submit_authorization_missing",
+    "owner:runtime no_real_ibkr_paper_runtime_broker_or_reconciliation_receipts_consumed_and_30_natural_day_observation_not_started",
+    "owner:data_steward stale_data_must_be_refreshed_by_data_steward_not_this_pipeline",
+    "owner:gate current_head_artifact_read_model_and_promotion_gate_rebuild_not_performed",
+    "owner:runtime backend_restart_required_after_unclassified_integration_not_run",
+    "independent_252_trading_day_confirmation_remains_required_and_is_not_replaced_by_30_natural_days",
+    "operational_paper_stability_never_implies_strategy_alpha_promotion_or_live_readiness",
+    "no_network_gateway_private_order_paper_live_submit_cancel_or_global_cancel_action_was_performed"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

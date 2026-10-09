@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-donchian-history-readonly-governance-20260922-57fd64362",
+  "ticket_id": "DONCHIAN-HISTORY-READONLY-GOVERNANCE-20260922",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/donchian-history-readonly-governance-20260922",
+  "base_commit": "7fef4db378aef350a45c9ee716338103ecc5031e",
+  "deliverable_commit": "57fd643625798da7318b8d36b06f4f4e0ed515cb",
+  "created_at": "2026-09-22T05:44:51Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-donchian-history-main-9527ded08"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "sha256": "b1d5fa8e09a05c9a42138a4d44e556635ab4aa0c7580d6a0611ee3d8f989f8f0",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/agent_playbooks/donchian_history_readonly_delivery.md",
+      "sha256": "c837987fcff936523b74f4c14eaa68b588ef6c2283f45d62b2a1d722a519e371",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/architecture/donchian-history-readonly-touch-set-20260922.json",
+      "sha256": "96a91fcd06bb75f9ba86521dd1cd2b529f4b8b33017bbb0eda520a8063318eb3",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/donchian-history-readonly-governance-20260922.md",
+      "sha256": "2886bb6d11af31ace63f26371d314f9eafeb99ca05d5364f8029489205f36550",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tests/agent_governance/test_donchian_history_readonly_delivery.py",
+      "sha256": "f8ef5a4962a92f6539e24cfb753c060a0ab17ccb7cb0f4b28e394f0cc2e5282d",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/donchian_history_readonly_delivery.py",
+      "sha256": "469664dd9f366fbb0428ff47d5ad6eb8f925b38fdb0e87b2f92325d07c900bae",
+      "schema_version": "donchian_history_readonly_governance_candidate_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first new governance tests before validator existed: 20 expected failures",
+      "result": "failed",
+      "evidence_path": "docs/operations/donchian-history-readonly-governance-20260922.md"
+    },
+    {
+      "command": "eight-file new/V1/V3/research/delivery/context/team/governance pytest matrix: 183 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-readonly-governance-20260922.md"
+    }
+  ],
+  "blockers": [
+    "independent governance and frozen-source review pending before any main merge",
+    "registered-main research_readonly restart and formal page acceptance not performed",
+    "old annual 2960/8760 run remains paused; production BTC and real-account gates remain blocked"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

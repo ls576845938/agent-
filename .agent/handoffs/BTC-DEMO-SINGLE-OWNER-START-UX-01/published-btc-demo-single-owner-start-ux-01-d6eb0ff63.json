@@ -1,0 +1,124 @@
+{
+  "base_commit": "7dd5eadb01b08611fe57d56ffc38789ed9fc7ddc",
+  "blockers": [
+    "independent_integration_required_for_demo_execution_semantics",
+    "failure_first_backend_reproduced_secondary_spawn_while_writer_lock_held_before_fix",
+    "failure_first_frontend_reproduced_false_enabled_start_affordance_before_fix",
+    "full_mocked_playwright_deferred_to_integrated_current_main",
+    "canonical_backend_and_frontend_restart_required_after_integration",
+    "no_demo_start_or_private_order_live_endpoint_executed",
+    "promotion_paper_live_private_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-21T11:06:51.7160348Z",
+  "deliverable_commit": "d6eb0ff639f90e25e48a4f320d418c4ba1cf1a9f",
+  "deliverables": [
+    {
+      "path": "scripts/start_backend_current_main.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "650200208de1fa05fa06a6b1559cb3a96f6fc065dc561056d3689f1c7b3e1ca0",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "8467235810799a4c1f30b58ba77795bad80dbf0c8d81ab0c58616dee8f25361a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_react_source_v1",
+      "sha256": "97f2946cb2fc184821065376d07180cacc0d149d73bf18631f131bfa7b9eab15",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/lib/api.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_source_v1",
+      "sha256": "fec0d8f3a4ec9c3e8932e6e0298d30c028cf6fc7cd92e1e44919ec1ffd7bac43",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "0e61d32b679f901fcfd64649e070ccadde7a1f06ce36e748e60dc5b272be3e02",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "0691676ed56084e4109fecae251768f2e156ce6b1a306fb816fc5caaa41acc09",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-single-owner-start-ux-01-d6eb0ff63",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-single-owner-start-ux-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_backend_current_main_launcher.py -q -k \"held_demo_writer_lock or unlocked_stale_demo_writer_lock\"",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_backend_current_main_launcher.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend exec playwright test -- --list frontend/e2e/btc-demo-console.spec.ts",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 7dd5eadb01b08611fe57d56ffc38789ed9fc7ddc..d6eb0ff639f90e25e48a4f320d418c4ba1cf1a9f -- scripts/start_backend_current_main.py backend/tests/test_backend_current_main_launcher.py frontend/src/workspaces/crypto/DemoTradingConsole.tsx frontend/src/lib/api.ts frontend/e2e/btc-demo-console.spec.ts frontend/public/frontend-identity.json",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-SINGLE-OWNER-START-UX-01",
+  "transition_for": ""
+}

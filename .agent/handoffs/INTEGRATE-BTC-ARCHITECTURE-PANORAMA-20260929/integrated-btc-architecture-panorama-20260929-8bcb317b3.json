@@ -1,0 +1,172 @@
+{
+  "base_commit": "5542a542459f2b56eaf11035fca409422142471d",
+  "blockers": [
+    "owner:architect integrated_candidate_not_merged_to_refs_heads_main",
+    "owner:architect canonical_main_research_readonly_backend_frontend_restart_and_identity_not_verified",
+    "owner:architect canonical_main_3000_no_mock_playwright_and_real_browser_acceptance_not_run",
+    "owner:shared_frontend pre_existing_react_router_7_15_0_npm_audit_high_not_changed_by_ticket",
+    "personal_draft_is_unverified_documentation_and_not_runtime_or_promotion_evidence",
+    "not_promotion_evidence_no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-29T09:06:16Z",
+  "deliverable_commit": "8bcb317b3fb71bd6a08e651a38411f091de6236a",
+  "deliverables": [
+    {
+      "path": "frontend/package.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_panorama_frontend_dependencies_v1",
+      "sha256": "89fd84288dab6d379da32d9d5a4985bb6d978eb18c4100442a5f48495a1c7211",
+      "type": "code"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_panorama_frontend_lock_v1",
+      "sha256": "93d1ceef88346b9a901f8ab260e6acb7ef01650542b119de05c86e1387d44ddd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_map_btc_panorama_entry_v2",
+      "sha256": "ef3e2026080b3b045e659973fb0e7155e3ef132db29e431ad4c42edce90d0b1f",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/BtcSystemPanorama.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_editor_v2",
+      "sha256": "7e4d78d1e19f2ce24bad62c8f42a7d1d1037151c9f7592c68d6b89825b4d6c11",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/btcPanoramaDraft.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_panorama_personal_draft_validator_v1",
+      "sha256": "4541902f890f554494532006fa76467acef0a174db136eac2a0e68fbe2bea877",
+      "type": "schema"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/btc-system-panorama.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_styles_v1",
+      "sha256": "08e2652e348594e3200a74f0dcd026cd26215fcf2215aaa644a577a20d9734bd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/btcPanoramaData.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_v1",
+      "sha256": "3fd583801617f36d1c774b4adcdc33f2c113413620c9690859f7906a28e13a5b",
+      "type": "schema"
+    },
+    {
+      "path": "frontend/scripts/test-btc-system-panorama.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_static_and_unit_contract_v2",
+      "sha256": "5470847188411277512ed343a092c35abcf6e658220d058e31cfa39723e480ed",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-system-panorama.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_browser_acceptance_v2",
+      "sha256": "b18b7735dafe89d18c7d09e2b639ac089df929922031e415a8eb70329e974843",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/system-code-map/BTC-PANORAMA-20260929.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_delivery_note_v1",
+      "sha256": "9211780016dd6f7792f9572d63a9743c3a5f4edf837b1510dd9a23a9dc8357d0",
+      "type": "document"
+    },
+    {
+      "path": "docs/acceptance/btc-architecture-panorama-independent-review-20260929.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_system_panorama_independent_review_v1",
+      "sha256": "3515f81fad0ea3d4f0b513a8258b06bb3e93a62c0d0a0e7bde40f4066446d770",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "627552238c2342c106911707a0874ae0ea98d83fc24b71ab19c8e213086ec886",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-btc-architecture-panorama-20260929-8bffc2de1"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-btc-architecture-panorama-20260929-8bcb317b3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-architecture-panorama-20260929",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "final published handoff validate; base/deliverable/handoff linear ancestry; 9 producer deliverable SHA-256 values; initial scoped dirty state",
+      "evidence_path": ".agent/handoffs/BTC-ARCHITECTURE-PANORAMA-20260929/published-btc-architecture-panorama-20260929-8bffc2de1.json",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-map.mjs frontend/scripts/test-architecture-mindmap.mjs frontend/scripts/test-architecture-knowledge.mjs frontend/scripts/test-btc-system-panorama.mjs; 26 passed",
+      "evidence_path": "docs/acceptance/btc-architecture-panorama-independent-review-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint; tsc --noEmit exit 0",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build; Vite 6.4.2, 5398 modules, existing large-chunk warning only",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend ls @xyflow/react @xyflow/system zustand d3-drag d3-selection d3-zoom; dependency tree complete",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend audit --registry=https://registry.npmjs.org/ --omit=dev --audit-level=high; nonzero only for pre-existing react-router and react-router-dom 7.15.0, unchanged from base, not introduced by @xyflow",
+      "evidence_path": "docs/acceptance/btc-architecture-panorama-independent-review-20260929.md",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py tests/agent_governance/test_context_packet.py -q; 32 passed",
+      "evidence_path": "docs/acceptance/btc-architecture-panorama-independent-review-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check; manifest match, baseline ancestor, zero identity dirty paths",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/btc-system-panorama.spec.ts --list; 10 tests discovered; canonical main 3000 execution and real-browser acceptance",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-ARCHITECTURE-PANORAMA-20260929",
+  "transition_for": "published-btc-architecture-panorama-20260929-8bffc2de1"
+}

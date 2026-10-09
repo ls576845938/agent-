@@ -1,0 +1,96 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-original-workspace-29eba31e3",
+  "ticket_id": "BTC-ORIGINAL-WORKSPACE-RESTORE-20260923",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-original-workspace-restore-20260923",
+  "base_commit": "b68ee020f440519589928d005abe89c687da4662",
+  "deliverable_commit": "29eba31e308e3e4508b8b148e32ca93846dafdda",
+  "created_at": "2026-09-23T05:13:50Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/operations/btc-original-workspace-restore-20260923.md",
+      "sha256": "f70e02051a3855b9b3a0c2ed5c189e77cb263682aa4f11e8abbb6ac570c52a54",
+      "type": "report",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "e806d7f231e217b35401f6b935c0908b32071c19a90d8207771e849ddabb0e00",
+      "type": "code",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "sha256": "d5ec9fde831512c2d709d4d96c0d889988f808e784626e85fe070d5fa1c2b3df",
+      "type": "code",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "607427666329b47122b62be787af8c5879291397080fb28effec4fdb63d5aa0e",
+      "type": "code",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "637347823e589f45969d8dfbf512e030ed3fe036153c06907d0b56262df7b5f6",
+      "type": "code",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "sha256": "05dd8e5fccb985a9aed43b40218aa64ab86d407317ed26fbb2fb5deafe16f3e5",
+      "type": "code",
+      "schema_version": "btc_original_workspace_restore_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "eight Node crypto suites; tsc --noEmit; vite build; git diff --check",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-original-workspace-restore-20260923.md"
+    },
+    {
+      "command": "pytest public market readonly / public display stream / research release policy: 57 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-original-workspace-restore-20260923.md"
+    },
+    {
+      "command": "npm run identity:check: passed; fingerprint 162861bc01e6fc60a90386cc53be72b930bb3ce941ac40d9a19d84d4089f4e2e",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-original-workspace-restore-20260923.md"
+    }
+  ],
+  "blockers": [
+    "team_context_unavailable:HandoffError:handoff_discovery_timeout; cross-agent consumption and integration withheld until discovery restored",
+    "independent review and research_readonly main publication / actual browser acceptance pending",
+    "existing BTC runtime evidence 503 and account facts unavailable remain out of scope"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

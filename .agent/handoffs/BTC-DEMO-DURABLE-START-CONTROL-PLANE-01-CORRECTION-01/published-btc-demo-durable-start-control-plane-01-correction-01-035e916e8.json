@@ -1,0 +1,86 @@
+{
+  "base_commit": "0a4e90d9d7dad3b92126f6c4c676c3833a1c592f",
+  "blockers": [
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_by_contract",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T17:36:44Z",
+  "deliverable_commit": "035e916e85f351933adfee4346d36117b71d3c58",
+  "deliverables": [
+    {
+      "path": "scripts/start_backend_current_main.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "0d5d3d7894e2d253993d7f4abe1e82129271a3b28575deb5f048d131e1a0379c",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "c2d06bdb261222d65a79b67b2f2b39d52ca3f6413886798f0f4c3979a82587c2",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-durable-start-control-plane-01-d19797c67"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-demo-durable-start-control-plane-01-correction-01-035e916e8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-durable-start-cp-01-corr-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "PowerShell failure-first reproduction of the pre-fix single-candidate Where-Object pipeline; observed System.String, [0]=D, exit code 1",
+      "evidence_path": "C:/tmp/qsx-durable-start-correction-baseline-inline",
+      "result": "failed"
+    },
+    {
+      "command": "PYTHONPATH=<registered-main> py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-start-correction-final backend/tests/test_backend_current_main_launcher.py",
+      "evidence_path": "C:/tmp/qsx-durable-start-correction-final (27 passed)",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile backend/tests/test_backend_current_main_launcher.py",
+      "evidence_path": "backend/tests/test_backend_current_main_launcher.py",
+      "result": "passed"
+    },
+    {
+      "command": "PowerShell Parser.ParseFile on scripts/start_backend_current_main.ps1",
+      "evidence_path": "scripts/start_backend_current_main.ps1",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "backend full suite, frontend lint/build/Playwright, service/Demo runtime execution",
+      "evidence_path": "deferred_by_ticket_scope_and_no-service-policy",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-01",
+  "transition_for": ""
+}

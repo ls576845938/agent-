@@ -1,0 +1,78 @@
+{
+  "base_commit": "1640ea51fd8398a2cac10fac3b929935119b074f",
+  "blockers": [
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_paper_live_private_and_order_unlocks_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-11T08:30:12Z",
+  "deliverable_commit": "ac138c42f597c2963d6e5fffe1e1532ede239381",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_flat_hosted_exit_fresh_root_lock_bootstrap_v1",
+      "sha256": "401009b909d48977ef8c7356720d0d4cf9a2e37a89e3451b7b491fc235e2b49f",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_flat_hosted_exit_fresh_root_lock_bootstrap_contract_v1",
+      "sha256": "dd8ef30d377594e4c51fb9dfd9eb50f604cd8970ce98a6c91dfac2f94f0e6d02",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-fresh-root-windows-lock-bootstrap-12-ac138c42f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-fresh-root-windows-lock-bootstrap-12",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "focused flat-hosted-exit fresh lock/bootstrap, retained-NUL and TOCTOU: 3 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <external> --junitxml <external>: 308 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q --basetemp <external> --junitxml <external>: 103 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py -q --basetemp <external>: 23 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py; git diff --check -- scoped paths: passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FRESH-ROOT-WINDOWS-LOCK-BOOTSTRAP-12",
+  "transition_for": ""
+}

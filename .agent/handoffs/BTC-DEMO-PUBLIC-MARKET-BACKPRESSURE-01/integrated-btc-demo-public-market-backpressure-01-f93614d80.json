@@ -1,0 +1,132 @@
+{
+  "base_commit": "b40672051a8e4debf0e8de4ec595745ed5d421a3",
+  "blockers": [
+    "owner:integrator canonical mocked Playwright execution deferred_to_registered_current_main; integration worktree cannot start a non-canonical frontend",
+    "owner:operator backend_restart_required_after_integration",
+    "promotion_artifact_not_required_for_demo_transport_hotfix",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T13:37:56Z",
+  "deliverable_commit": "f93614d80a8305010ecccd6d7aea1f2a1f10da42",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_service_v1",
+      "sha256": "eed15e8fc63b5b799a6fda92ce9fe51fcb7594d3fa05afd12b44437893cfb6b5",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_contract_v1",
+      "sha256": "ca44b832db90588e03d1d421cc0b9bf69ba2242c7883ad36eaf9191b4902c45f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_polling_v1",
+      "sha256": "de2d1c7559db08fd4e39326fd99fa0795bb2e0cf785a0215066d9cfa3f0d7649",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_e2e_v1",
+      "sha256": "049a52bc91cbfa53a21d0fd957a8ddd27f0ed4113780afa994e0a1270c63e745",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "5964f77a2c8aea7af4e3642c840fb521f13c020babaf78e264f91447d0ef7255",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-public-market-backpressure-01-c0419bd2d"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-public-market-backpressure-01-f93614d80",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-public-market-backpressure-01-integrate",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp C:\\tmp\\qsx_market_bp_integrator",
+      "evidence_path": "38 passed in 4.87s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py",
+      "evidence_path": "exit 0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "exit 0",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "tsc --noEmit passed using a temporary read-only junction to registered-main frontend/node_modules; no dependency files committed",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "Vite build completed; chunk-size warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "33 tests listed in the integrator worktree",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --workers=1 --reporter=line",
+      "evidence_path": "not_run: canonical frontend webServer is restricted to registered refs/heads/main; no non-canonical service was started",
+      "result": "not_run"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "baseline_commit=93d761b41347229245e60ab65e3f7b19610cdf00 fingerprint=6436adaf15d0535961cf67356ee960271c8d797be892da4c2a9c5699333e0c02",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "passed; manifest_match=true; canonical=false in the integrator worktree",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "passed; canonical=false in the integrator worktree",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-PUBLIC-MARKET-BACKPRESSURE-01/integrated-btc-demo-public-market-backpressure-01-f93614d80.json",
+      "evidence_path": "status=valid",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PUBLIC-MARKET-BACKPRESSURE-01",
+  "transition_for": "published-btc-demo-public-market-backpressure-01-c0419bd2d"
+}

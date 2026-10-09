@@ -1,0 +1,59 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-shared-workbench-chinese-compact-evidence-01-a39f77e79",
+  "ticket_id": "SHARED-WORKBENCH-CHINESE-COMPACT-EVIDENCE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/swb-cn-compact-evidence-01-linear",
+  "base_commit": "95328d3f318c871a3f3e7242e51262ce8e83031b",
+  "deliverable_commit": "a39f77e79579a9f504ab71f6d0e9a59e2034a3cf",
+  "created_at": "2026-08-17T16:28:14Z",
+  "expires_at": "",
+  "depends_on": ["published-shared-workbench-chinese-compact-evidence-01-9113b8a9b"],
+  "supersedes": [],
+  "transition_for": "published-shared-workbench-chinese-compact-evidence-01-9113b8a9b",
+  "deliverables": [
+    {"path": "frontend/e2e/btc-strategy-history-report.spec.ts", "type": "test_evidence", "sha256": "2b03e64f3d4e27a983ccde2dfa94fbaf2f3eace865317bdd3f37fcb40718d18d", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/e2e/system-workbench.spec.ts", "type": "test_evidence", "sha256": "7418835badbd7bc004a8ab8e2f54bd4f27d725559e4dfe9c9e09d7769eb33bcd", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/public/frontend-identity.json", "type": "document", "sha256": "f62376b5efb5b682b622e88ce9aab2cc64ff26e24df84112da113b2ece5ab8b4", "schema_version": "frontend_identity_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/components/ibkr-runtime/RuntimeBanner.tsx", "type": "code", "sha256": "865c2ae814abd519d3b7a8f31a59a634e9c7cdcba76786154115afee8c7fa8ef", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/components/workbench/Workbench.tsx", "type": "code", "sha256": "7d7b4cdb6916ea0d7334204c7f2136219ebc6572535921c5431d1364497c5e8a", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/index.css", "type": "code", "sha256": "9c6c6e0c985d10078a419bc6ed33a0a577c94a5480fc771deed58794c817c6f7", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/lib/ibkr-runtime-api.ts", "type": "code", "sha256": "8b35692160f58814df8feebbdf1b1146007bbcd1ce47fe610a466a147d40ae02", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/LiveTradingDashboard.tsx", "type": "code", "sha256": "71dbba7426fa23baa1a3caef1eb1ed7311d1797a729922652f8058ad9f075b97", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/StrategyExplorer.tsx", "type": "code", "sha256": "e4c6f61d997d2de90853de64b33a2a79cbdc5b6783b1b1613f4b72383201b8bd", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/strategy-workbench.css", "type": "code", "sha256": "6530dcfc145278f0df1e1b41d733e591a2c88f95ec7d59b27ca6b9b480b2f586", "schema_version": "frontend_governance_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input published-shared-workbench-chinese-compact-evidence-01-9113b8a9b.json", "result": "passed", "evidence_path": "producer handoff validator=valid; raw SHA verified"},
+    {"command": "git ancestry/touch/blob verification for producer chain 95328d3f..a39f77e7", "result": "passed", "evidence_path": "base parent chain and all 10 committed source/test/identity blobs matched"},
+    {"command": "npm.cmd run lint", "result": "passed", "evidence_path": "integrator sparse worktree with controlled read-only dependency junction"},
+    {"command": "npm.cmd run build", "result": "passed", "evidence_path": "Vite 6.4.2 production build; warning-only large chunk"},
+    {"command": "npm.cmd exec -- playwright test e2e/system-workbench.spec.ts e2e/btc-strategy-history-report.spec.ts --config=playwright.config.ts --list", "result": "passed", "evidence_path": "30 tests listed"},
+    {"command": "npm.cmd run identity:check; npm.cmd run identity:test; node scripts/start-current-main.mjs --check", "result": "passed", "evidence_path": "registered main canonical=true; source_head/main_head=a39f77e79579a9f504ab71f6d0e9a59e2034a3cf; fingerprint=9f0e4c3a49f3817d3ec73737a26ba5fa690b050177993169118cc4ec3de01274"},
+    {"command": "canonical current-main browser read-only smoke", "result": "passed", "evidence_path": "/live Chinese copy, system rail count=0, dock labels-only; /strategies tree/code/report visible and bottom info collapsed; catalog remained HTTP 409"},
+    {"command": "complete mocked Playwright suite (system-workbench.spec.ts + btc-strategy-history-report.spec.ts)", "result": "failed", "evidence_path": "architect current-main canonical evidence: 13 passed / 17 failed; quality gate not passed"},
+    {"command": "npm.cmd exec -- playwright test e2e/system-workbench.spec.ts e2e/btc-strategy-history-report.spec.ts --config=playwright.config.ts --reporter=line", "result": "failed", "evidence_path": "local run interrupted after 3 deterministic failures; error-context.md under frontend/test-results; not a complete-suite result"},
+    {"command": "git diff --check; scoped safe_status", "result": "passed", "evidence_path": "declared source/test/identity paths clean before handoff commit"}
+  ],
+  "blockers": [
+    "complete_blocked:canonical_mocked_playwright_13_passed_17_failed",
+    "quality_gate_not_passed:17_cross_page_e2e_failures",
+    "no_correction_handoff",
+    "backend_not_bound:catalog_http_409_unavailable",
+    "artifact_not_bound",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_demo_start_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

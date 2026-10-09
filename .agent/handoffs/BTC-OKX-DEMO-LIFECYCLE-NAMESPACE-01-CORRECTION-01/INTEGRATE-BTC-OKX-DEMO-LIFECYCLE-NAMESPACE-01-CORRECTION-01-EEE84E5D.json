@@ -1,0 +1,55 @@
+{
+  "base_commit": "07367599220d303b45f83b35076ef996c8664963",
+  "blockers": [],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-14T17:08:46Z",
+  "deliverable_commit": "eee84e5d9b0f62741dd3b576fe3a06dffecad542",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "88e43e143200c8d70d236017ed4aa3c6aaddd48749b045f5be8b6818b7cd1f67",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "0b6c6eb4fa02c3d559d1294128969f3fc561e1bce579ccec91a0f533ed3b0606",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "PUBLISH-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01-6EF7FDC5"
+  ],
+  "domain": "btc",
+  "event_id": "INTEGRATE-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01-EEE84E5D",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-lifecycle-corr-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q --basetemp=C:\\tmp\\pytest-btc-lifecycle-correction-integrator-20260815",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01",
+  "transition_for": "PUBLISH-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01-6EF7FDC5"
+}

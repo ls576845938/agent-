@@ -1,0 +1,61 @@
+{
+  "base_commit": "2e89acc98ac0ab96679375f3f9cfa95478ac1655",
+  "blockers": [
+    "cold_direct_overview_17971ms_remains_close_to_the_unchanged_20000ms_budget",
+    "the_two_event_synthetic_fixture_did_not_cover_the_protection_trigger_branch_or_full_production_protection_semantics",
+    "real_v3_candidate_research_and_48_hour_business_acceptance_remain_separate_and_incomplete",
+    "research_readonly_intentionally_does_not_expose_candidate_management_or_dynamic_offline_job_result_reads_after_the_management_window_closes",
+    "quality_checked_system_intake_evidence_is_not_promotion_demo_paper_live_private_order_transfer_or_withdraw_authorization"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-10-01T19:34:09Z",
+  "deliverable_commit": "bb8b38e9366baa09ed1b414fc8e210d976b25ce6",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "74f295b5e4651db00c9bbc739a4ddbba56f19d5fbee92db24a1158c8a06d6bce",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-system-intake-formal-acceptance-20261002-82cbee89b"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-system-intake-formal-acceptance-corrected-20261002-bb8b38e93",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-system-intake-formal-acceptance-20261002",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "integrated-btc-system-intake-formal-acceptance-20261002-82cbee89b"
+  ],
+  "tests": [
+    {
+      "command": "correct the formal Alpha read evidence identity and verify the sealed screenshot hash without rerunning business execution",
+      "evidence_path": "D:/quantstation-runtime/alpha-read-chain-formal-20261002-576096f6/alpha-real-selected-g2-trace.png SHA-256 A178EC7C4A62AEA3A7617A604D27A7BF0AE23EFD07AB1B89D37EF306A66C6EFA; m1-okx-factory showed candidate 0, no_model_passed_selection_gate, audit_not_opened_no_eligible_model; synthetic-candidate-1 belongs only to the later candidate-management fixture window",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status for the corrected report and superseding handoff",
+      "evidence_path": "docs/acceptance/BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002.md and .agent/handoffs/INTEGRATE-BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002; no runtime, source, configuration, or business test rerun",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002",
+  "transition_for": "integrated-btc-system-intake-formal-acceptance-20261002-82cbee89b"
+}

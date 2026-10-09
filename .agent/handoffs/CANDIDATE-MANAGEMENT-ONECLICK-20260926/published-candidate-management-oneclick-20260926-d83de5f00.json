@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-candidate-management-oneclick-20260926-d83de5f00",
+  "ticket_id": "CANDIDATE-MANAGEMENT-ONECLICK-20260926",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-management-oneclick-20260926",
+  "base_commit": "3631aa09dbbc0f3208d439c8539cbba718a08f51",
+  "deliverable_commit": "d83de5f003c1123c01ba0188de359578e193b9c6",
+  "created_at": "2026-09-25T17:09:40.621Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-candidate-management-deploy-20260926-9dc28c7f5"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "start-candidate-management.cmd",
+      "sha256": "10dd3b32f99828a0dd31af981253d45f3458ac14bbf52b33bfaf5af949534600",
+      "schema_version": "candidate_management_oneclick_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/start_candidate_management_interactive.ps1",
+      "sha256": "59b48cbb8b9be8657b979ba72400dc2ba18c5cac990ae6986584a75db5a11240",
+      "schema_version": "candidate_management_oneclick_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_candidate_management_interactive_launcher.py",
+      "sha256": "da1d82d19163139d70a62f8323cb783d0c276ca3a79010bf1b2bac546251f062",
+      "schema_version": "candidate_management_oneclick_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/operations/candidate-management-oneclick-20260926.md",
+      "sha256": "ad36a4c16e2f9fd5e9698193144d81873f8aa97ff574521258774446aaf58c4a",
+      "schema_version": "candidate_management_oneclick_source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "Failure-first: canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider backend/tests/test_candidate_management_interactive_launcher.py BEFORE implementation -> 24 failed/4.20s, missing new CMD/PS1; expected red baseline",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "Canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider backend/tests/test_candidate_management_interactive_launcher.py -> final31 passed/58.24s; PowerShell5 real parser/function tests, mock GUI/preference/service",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "Same pytest backend/tests/test_backend_current_main_launcher.py -> 49 passed/55.13s; one existing Starlette/httpx deprecation warning",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "git diff BASE HEAD --check initially flagged CMD extra EOF blank; removed in d83de5f00; final exit0; committed CMD check rerun 1 passed/0.73s,30 deselected",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "Real GUI, credential read/write/input, real User environment changes, service start/stop, canonical integration/browser acceptance,214 business tests,annual replay,promotion artifact rebuild and backend restart not run",
+      "result": "not_run",
+      "evidence_path": "docs/operations/candidate-management-oneclick-20260926.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent review and approved main integration pending; producer has not modified/merged main; unclassified strict delivery requirements remain",
+    "owner:root existing 8765 listener must remain unchanged; post-integration real blocked-path/no-password/no-stop verification and current-main identity acceptance pending",
+    "owner:operator GUI/hidden-auth happy path not exercised; no credentials accessed; one-click does not remove local Web authentication or page unlock",
+    "owner:scope CMD is zero-argument only and ignores supplied arguments without expansion/forwarding; explicit config parameter is PS1-only; shell-metacharacter paths and UNC rejected"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-strategy-v3-qlib-offline-independent-review-20260916-cdd9526c9",
+  "ticket_id": "STRATEGY-V3-QLIB-OFFLINE-INTEGRATION-20260916",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "researcher", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/strategy-v3-qlib-offline-integration-20260916",
+  "base_commit": "b6b4b14c37bd6ae3d201b56f64eba439ec428399",
+  "deliverable_commit": "cdd9526c931d620ce26f69516c31ec769c266ca3",
+  "created_at": "2026-09-16T00:30:40Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-v3-qlib-offline-20260916-f4cb42312"],
+  "supersedes": [],
+  "transition_for": "published-strategy-v3-qlib-offline-20260916-f4cb42312",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-qlib-offline-independent-review-20260916.md",
+      "sha256": "54a734dcdd85bae10a633258bc64862e7eb4a3458b97474db0f359cccc9258f7",
+      "schema_version": "strategy_v3_qlib_offline_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "committed-object envelope/schema/ancestry/eight deliverable SHA-256 verification",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-qlib-offline-independent-review-20260916.md"
+    },
+    {
+      "command": "archive-relative provenance probe over committed V3/V2 contracts and qlib_input/dataset_manifest.json",
+      "result": "failed",
+      "evidence_path": "all six consumed manifest paths resolved outside the verified archive"
+    },
+    {
+      "command": "isolated persisted unsafe-state reconstruction probe for QlibFixtureOfflineReplay",
+      "result": "failed",
+      "evidence_path": "persisted FROZEN/untrusted/disconnected/inactive facts reconstructed as RUNNING/trusted/connected/active/opening"
+    },
+    {
+      "command": "producer 54-test matrix, synthetic Qlib training compatibility, old M1 allowlist, OS hard-crash, service/UI/network/account/private/order/live/release",
+      "result": "not_run",
+      "evidence_path": "stopped at the first bounded independent-review rejection"
+    }
+  ],
+  "blockers": [
+    "owner:btc_developer verified archive does not bind the absolute dataset paths actually read",
+    "owner:btc_developer real 1392-row policy path and the persistent execution/evidence path are disconnected",
+    "owner:btc_developer fixture bypasses candidate policy and does not prove delayed OPEN friction or nonzero/missing funding semantics",
+    "owner:btc_developer replay reconstruction overwrites persisted fail-closed runtime facts with healthy values",
+    "owner:btc_developer V3-specific ledger-before-evidence and unknown-intent recovery with exact fill/UOW references is absent",
+    "owner:btc_developer policy extraction changes blocker data-anomaly semantics and does not include original exit-rule computation",
+    "owner:release integration is rejected; main merge release service UI Demo account private order live and promotion remain not started or disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

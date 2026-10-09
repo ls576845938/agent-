@@ -1,0 +1,108 @@
+{
+  "base_commit": "1a936c41f6175d8151b13f65336c677888c6491c",
+  "blockers": [
+    "owner:architect_and_integrator independent demo_execution_semantics committed-source review and integration have not been performed; this producer branch is not released",
+    "owner:future_v1 same-bar reverse opening remains fail-closed after the successful close because the offline facts produce drawdown_fact_unknown, drawdown_unknown, protective_order_owner_missing, and protective_order_reduce_only_unknown; Guardian, OMS, composition, and the runner were not changed or bypassed",
+    "owner:future_v1 offline runner package identity, canonical visible-frame digest, post-ledger evidence repair, and close-restart-open phase recovery remain pending",
+    "owner:architect M1 exact historical runtime blob test remains pending independent source-identity review; the frozen expectation was not modified",
+    "owner:release readonly frontend association, service publication and page acceptance were not run; Demo, paper, private, order and live remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-15T05:36:02Z",
+  "deliverable_commit": "7ec632f9341dcc4b2fdfef7f3e4792eb2aac383f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/runtime/control_plane.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_dispatch_verified_reduce_only_projection_v1",
+      "sha256": "e9c0ba7eb87b8de6b170767b8ce3e7c3bb1099b8bb5458ae751008dfa97e2be8",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_btc_demo_dispatch_reduce_only_projection_v1",
+      "sha256": "8e5f1f5f98f7bc629215fdf4867dc4380e858c701700ee91388c9d82ff3fdde3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_strategy_v1_reversal_close_v2",
+      "sha256": "8748f68e8b0dc5bad85ae582d7f9d26195fdf7f92bdb65a9c916fd32475ad4da",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/strategy-admission-v1.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_admission_v1_report_v3",
+      "sha256": "c42a7c6dc93a59a579182a1c2b5c021fd2aea917d6f62b3ac654b6aad03fd3bd",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-strategy-v0-freeze-20260915-e0b7a08f8"
+  ],
+  "domain": "btc",
+  "event_id": "published-strategy-v1-reduce-mode-final-20260915-7ec632f93",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/strategy-v1-donchian-offline",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-strategy-v1-reduction-source-final-20260915-99a2d5c72"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_projects_verified_reduce_only_without_unlocking_new_risk tests/contracts/test_strategy_v1_donchian_offline.py::test_reversal_closes_then_opens_short_once_through_dispatcher_and_ledger -q (failure-first before source fix)",
+      "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_reduce_only_preserves_authority_blockers[startup-projection_blocked] -q (failure-first contradictory STARTUP fact before fallback fix)",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_composed_dispatcher_executes_only_after_current_facts_and_permit tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_projects_verified_reduce_only_without_unlocking_new_risk tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_reduce_only_preserves_authority_blockers tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_composed_dispatcher_isolates_lifecycle_by_demo_namespace tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_keeps_stale_snapshot_fail_closed_for_new_risk_but_allows_dead_man tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_composed_dispatcher_refuses_unverified_raw_facts_before_callback tests/contracts/test_btc_okx_demo_paper_runtime.py::test_real_demo_client_cannot_bypass_missing_composed_dispatcher tests/contracts/test_strategy_v1_donchian_offline.py -q",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/runtime/control_plane.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_strategy_v1_donchian_offline.py",
+      "evidence_path": "quant_crypto/runtime/control_plane.py",
+      "result": "passed"
+    },
+    {
+      "command": "same-bar reversal open after the successful persisted close",
+      "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "failed"
+    },
+    {
+      "command": "independent demo_execution_semantics source review and integration",
+      "evidence_path": ".agent/handoffs/STRATEGY-V1-DONCHIAN-OFFLINE/published-strategy-v1-reduce-mode-final-20260915-7ec632f93.json",
+      "result": "not_run"
+    },
+    {
+      "command": "frontend readonly association and page acceptance",
+      "evidence_path": "docs/architecture/strategy-admission-v1.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "STRATEGY-V1-DONCHIAN-OFFLINE",
+  "transition_for": ""
+}

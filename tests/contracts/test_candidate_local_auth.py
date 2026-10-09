@@ -28,7 +28,7 @@ def test_local_intent_not_a_password(peer):
     {"headers":[*H.items(),("Host","localhost:8765")]},
     {"headers":[*H.items(),("Origin","null")]},
     {"headers":[*H.items(),("Origin","http://evil.test")]},
-    {"headers":[*H.items(),("Origin","http://127.0.0.1:3000@evil.test")]},
+    {"headers":[*H.items(),("Origin","REDACTED_SENSITIVE_PATTERNevil.test")]},
     {"headers":[*H.items(),("Origin","http://127.0.0.1:3000"),("Origin","http://evil.test")]},
     {"headers":[*H.items(),("Sec-Fetch-Site","cross-site")]},
     {"headers":[*H.items(),("Sec-Fetch-Site","same-origin")]},

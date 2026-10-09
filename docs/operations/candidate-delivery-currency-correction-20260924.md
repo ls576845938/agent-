@@ -97,7 +97,7 @@ node --test frontend/scripts/test-candidate-delivery.mjs
 
 上述是原测试子集的独立复核，不与生产者 72/20 相加为不同测试总数。独审没有重跑生产者全套、类型检查、构建、长离线测试或浏览器。
 
-额外的历史已登记 v1 临时 SQLite 探针输出 `legacy_v1_resolve=blocked, error=package_admission_blocked`，但因 Windows 临时文件清理阶段 `WinError 32` 非零退出，**不计为通过的测试**。残留目录：`C:/Users/李烁18353780778/AppData/Local/Temp/candidate-v1-rereview-31h75ubf`；删除尝试被平台拦截，未再清理，不在仓库、生产管理根或经济账本内。不能把业务拒绝输出当作整个探针成功。
+额外的历史已登记 v1 临时 SQLite 探针输出 `legacy_v1_resolve=blocked, error=package_admission_blocked`，但因 Windows 临时文件清理阶段 `WinError 32` 非零退出，**不计为通过的测试**。残留目录：`C:/Users/LOCAL_USER/AppData/Local/Temp/candidate-v1-rereview-31h75ubf`；删除尝试被平台拦截，未再清理，不在仓库、生产管理根或经济账本内。不能把业务拒绝输出当作整个探针成功。
 
 独审 role=architect，读取 shared/architect playbooks、preflight/handoff、AGENTS、knowledge README/non-negotiables/source map/domain architecture/delivery policy，同一 catalog；未修改源码/报告/Git/服务，未接触交易所、账户或密钥。
 

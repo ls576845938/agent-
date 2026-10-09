@@ -1,0 +1,74 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-donchian-history-readonly-source-review-269e94eb2",
+  "ticket_id": "DONCHIAN-HISTORY-READONLY-INTEGRATION-20260922",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/donchian-history-readonly-integration-20260922",
+  "base_commit": "3ce7467aaac100181e0f3385c6143935f71ffb0f",
+  "deliverable_commit": "269e94eb2f1682c7e1cedeb38722a0a73bcfe1de",
+  "created_at": "2026-09-22T06:32:54Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-donchian-history-readonly-governance-20260922-57fd64362",
+    "integrated-donchian-history-main-9527ded08"
+  ],
+  "supersedes": [],
+  "transition_for": "published-donchian-history-readonly-governance-20260922-57fd64362",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/donchian-history-readonly-independent-review-20260922.md",
+      "sha256": "94b20666d0bba04fee322829c90ca21c2f6e650fc03694aa3bee6d8fb506be87",
+      "schema_version": "donchian_history_readonly_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "scoped dependency-intersection analysis of Team Context discovery 2026-09-22T06:27:58Z (discovery itself exit 2 / 17 globally invalid): zero invalid in approved five-event closure; no global green claim",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-readonly-independent-review-20260922.md"
+    },
+    {
+      "command": "validate_handoff and validate_handoff_against_git over five committed approved closure events and two superseding v2 events: every errors=[]",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-readonly-independent-review-20260922.md"
+    },
+    {
+      "command": "eight-file governance compatibility matrix: 183 passed in 158.23s; frozen 35 Git blobs and 33 business blob parity; five closed runtime artifact SHA-256 matched",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-readonly-independent-review-20260922.md"
+    },
+    {
+      "command": "donchian_history_readonly_delivery.blockers(source_review receipt): [] with governance 3ce7467a and committed review 269e94eb2, raw report SHA-256 94b20666d0bba04fee322829c90ca21c2f6e650fc03694aa3bee6d8fb506be87",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-readonly-independent-review-20260922.md"
+    },
+    {
+      "command": "registered-main research_readonly deployment, page acceptance, current-main runtime evidence, old annual 8760-hour run",
+      "result": "not_run",
+      "evidence_path": "docs/operations/donchian-history-readonly-independent-review-20260922.md"
+    }
+  ],
+  "blockers": [
+    "Team Context full discovery exits 2 due to 17 invalid historical handoffs outside this approved dependency closure; this event is not a global handoff green result",
+    "registered-main rollback point, merge, research_readonly restart and canonical browser/identity acceptance have not occurred",
+    "old 2960/8760 annual run is paused; production BTC runtime artifact, real-account reconciliation and promotion remain blocked"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

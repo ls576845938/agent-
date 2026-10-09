@@ -1,0 +1,136 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-shared-platform-v3-t1-0be95b352",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T1",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/btc-shared-platform-v3-t1",
+  "base_commit": "40df44484453b9375a492812d9bcbfb54adef4ac",
+  "deliverable_commit": "0be95b352aa5dc925add5dc7f95fd0318c95f66b",
+  "created_at": "2026-08-22T14:46:40Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-shared-platform-v3-t1-c023e00bf",
+    "published-btc-shared-platform-v3-t1-correction-01-42f840f9a"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-shared-platform-v3-t1-correction-01-42f840f9a",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/__init__.py",
+      "sha256": "de41a9e63328f2de20414c733c05ce9d824ad63ad37e3dde05bd6e04e8cb7b09",
+      "schema_version": "shared_runtime_permission_exports_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/permissions.py",
+      "sha256": "a302f2be3e1aa322a71bd06e89ddc34f3d8f17d01dd8e027f7859bdd7e25ceea",
+      "schema_version": "shared_runtime_permission_semantics_v3_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_runtime_permission_semantics_v3.py",
+      "sha256": "78de2906d8441c15b3edc1b3056dda0eb6d1f1e67ceae480125c57097a048053",
+      "schema_version": "shared_runtime_permission_semantics_v3_correction_01_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_runtime_control_plane.py",
+      "sha256": "ff0f4afb0c42876f86d1df92c96aff52a50cd59412c28f9e48b3a9b9cb0e4a5a",
+      "schema_version": "ibkr_runtime_risk_state_valid_fixture_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_btc_okx_shared_runtime_live_canary.py",
+      "sha256": "b3bfd94e8a1377e6bcf4f8fc969eb4980e85dcef2a01d8fe2fa8c1b1a6d1697d",
+      "schema_version": "btc_shared_runtime_sealed_proof_contract_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/integrations/test_ibkr_runtime_integration_wiring.py",
+      "sha256": "00f334f42e0712e75c6957b33c2d573733e46e337950e007db16a05f1ceac3ee",
+      "schema_version": "ibkr_legacy_kill_reduction_gate_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T1/published-btc-shared-platform-v3-t1-c023e00bf.json",
+      "sha256": "36bb84fec7eb199f03b7de2f588be4a6bc65c34a3c290378c8fa009894a00902",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T1/published-btc-shared-platform-v3-t1-correction-01-42f840f9a.json",
+      "sha256": "728b6ba9bcfd9b8e5cf30ba27b896112e692a5498a6a60f7cea43e36b7739a68",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "combined collection attempt for all frozen groups",
+      "result": "failed",
+      "evidence_path": "pytest collection-only import-file-mismatch for duplicate basename test_btc_okx_shared_runtime_live_canary.py; no assertion executed; rerun split by directory"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-shared-t1-a tests/shared_platform/test_runtime_permission_semantics_v3.py tests/live/test_btc_okx_shared_runtime_live_canary.py tests/integrations/test_ibkr_runtime_integration_wiring.py",
+      "result": "passed",
+      "evidence_path": "75 passed in 3.16s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-shared-t1-b tests/live/test_ibkr_runtime_control_plane.py tests/live/test_ibkr_runtime_failure_matrix.py",
+      "result": "passed",
+      "evidence_path": "55 passed in 0.52s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-shared-t1-c tests/contracts/test_btc_okx_shared_runtime_live_canary.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "460 passed in 56.71s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-shared-t1-d tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py",
+      "result": "passed",
+      "evidence_path": "33 passed in 6.07s; T1/T0 total 623 passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=C:\\tmp\\qsx-shared-t1-pyc py -3 -m py_compile <six changed Python files>; git diff --check",
+      "result": "passed",
+      "evidence_path": "candidate integrator worktree"
+    },
+    {
+      "command": "handoff.py validate; committed ancestry/blob/touch-set verification; scoped safe_status",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T1/ and six authorized paths"
+    },
+    {
+      "command": "current-HEAD promotion artifact/read-model build and service restart",
+      "result": "not_run",
+      "evidence_path": "unclassified policy follow-up; explicitly outside this T1 source integration"
+    }
+  ],
+  "blockers": [
+    "promotion_artifact_rebuild_required_by_unclassified_policy_deferred",
+    "backend_restart_required_after_integration_by_unclassified_policy_deferred",
+    "promotion_paper_private_order_live_transfer_withdraw_remain_disabled",
+    "initial_combined_pytest_collection_harness_error_resolved_by_directory_split"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

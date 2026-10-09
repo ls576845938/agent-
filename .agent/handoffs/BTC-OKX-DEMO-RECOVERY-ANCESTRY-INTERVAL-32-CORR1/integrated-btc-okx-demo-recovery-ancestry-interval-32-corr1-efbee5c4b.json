@@ -1,0 +1,103 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-recovery-ancestry-interval-32-corr1-efbee5c4b",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-RECOVERY-ANCESTRY-INTERVAL-32-CORR1",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-recovery-ancestry-interval-32-corr1-int",
+  "base_commit": "e8bf6f49846b3f14ba1dcd8d0956466af652bcac",
+  "deliverable_commit": "a473319c14f0754fc282e4e832a86dffb0ed0022",
+  "created_at": "2026-08-12T06:54:59Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-recovery-ancestry-interval-32-corr1-efbee5c4b"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-recovery-ancestry-interval-32-corr1-efbee5c4b",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "591c712b5d480be4069a4bd2c2e00e0a14cd3b643683d2fe08630e6528d85efd",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "196172c4ca2388f1595b94b287d86d5e9967400cf792dbc771259642aa956591",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "74c110c52e0f2dd94897d2a5e1d57d8b54d5bd6330ef51f82f166e7220d44a55",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "7f2faaec8abd9f28232bc03eb23e34c07b1a984563bd328ba9e7970cd27553b9",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-ANCESTRY-INTERVAL-32-CORR1/published-btc-okx-demo-recovery-ancestry-interval-32-corr1-efbee5c4b.json",
+      "sha256": "3ddc2fe8ab31e68cb05fd8e54433799063c7add8913800b346cf2041988cd3cd",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_fault_drill.py::<four approved ancestry-interval nodeids>",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 4 passed in 15.36s"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py::<four approved ancestry-interval nodeids>",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 1 passed in 4.15s plus 3 passed in 4.56s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; PYCOMPILE_EXIT=0"
+    },
+    {
+      "command": "git diff e8bf6f49846b3f14ba1dcd8d0956466af652bcac..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; DIFF_CHECK_EXIT=0"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-ANCESTRY-INTERVAL-32-CORR1/published-btc-okx-demo-recovery-ancestry-interval-32-corr1-efbee5c4b.json"
+    },
+    {
+      "command": "full application/OMS suites, wide selectors, artifact/read-model rebuild, backend/recovery restart, endpoint/secret access",
+      "result": "not_run",
+      "evidence_path": "strict Ticket32-CORR1 timebox and safety boundary"
+    }
+  ],
+  "blockers": [
+    "orders0_receipt_remains_rejected",
+    "backend_restart_and_recovery_deferred_after_five_exercises",
+    "promotion_artifact_and_read_model_rebuild_deferred",
+    "full_suite_and_wide_selectors_not_run_by_integrator",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

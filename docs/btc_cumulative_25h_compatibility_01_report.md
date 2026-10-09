@@ -20,7 +20,7 @@
 - owner marker：根目录 `.quant_btc_evidence_owner.json`，SHA-256=`843151021c5cdc1e5d6576eba5d7db599034b379951f088fbc92ff12c17db076`，`immutable_archives_only=true`。
 - `manifest.json` SHA-256=`288894e6f97a5bd0b9be83be85f40a421c352b31f3411c3e62873dd758be5a04`。
 - `verification.json` SHA-256=`262b405a64de7e53766b167232f7479b41bc4e98420536dfc1c2b3f849a495d4`；独立重读校验结果 `pass`。
-- source path：`C:\Users\李烁18353780778\AppData\Local\Temp\quant-system\btc_demo_paper_runtime\observation\hourly_observation_receipts.jsonl`、同一 runtime root 下的 `events.jsonl`、`state.json`；三份 source snapshot 与归档字节一致。
+- source path：`C:\Users\LOCAL_USER\AppData\Local\Temp\quant-system\btc_demo_paper_runtime\observation\hourly_observation_receipts.jsonl`、同一 runtime root 下的 `events.jsonl`、`state.json`；三份 source snapshot 与归档字节一致。
 - strategy/data/runtime identity：`btc_long_short_donchian_top5_okx_native@1.0.0` / `okx_public_candles_1h_v1` / `okx_demo_paper_runtime_v1`。
 
 ### Receipt/event/ledger identity

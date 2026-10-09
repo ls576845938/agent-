@@ -1,0 +1,77 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-private-ws-probe-deadline-calibration-18-61122c53e",
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-PROBE-DEADLINE-CALIBRATION-18",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-ws-probe-deadline-cal-18-int",
+  "base_commit": "e6985f75a8e12d63c0c60a784d6cba671ab66778",
+  "deliverable_commit": "61122c53e686f0d9db4b22514a0d16b57f454cb6",
+  "created_at": "2026-08-12T01:00:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-private-ws-probe-deadline-calibration-18-0c069bab5"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-private-ws-probe-deadline-calibration-18-0c069bab5",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "type": "code",
+      "schema_version": "okx_demo_private_ws_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "53fbdc444273e3b9728510d06ead792bccfeccd7313e43022d9cc7f69e4fd643"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "2856a5cf6567bcedc693accacdbc9b25941a736966e2e099f5582ca6a8fe3978"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-PROBE-DEADLINE-CALIBRATION-18/published-btc-okx-demo-private-ws-probe-deadline-calibration-18-0c069bab5.json",
+      "type": "document",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "df272875fcc45c06376d878770a79b5e0ae16a6c18f912704bf40ff2656e76a2"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py -k 'default_wallclock_budget_is_calibrated or reconnect_wallclock_timeout_is_terminal_and_late_worker_isolated or disconnects_reconnects_and_rest_reconciles' -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'incident_recovery_failed_private_ws_probe_never_starts_monitoring' -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_private_ws.py; git diff e6985f75a8e12d63c0c60a784d6cba671ab66778..HEAD --check; handoff.py validate",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-PROBE-DEADLINE-CALIBRATION-18"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

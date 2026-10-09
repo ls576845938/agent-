@@ -1,0 +1,102 @@
+{
+  "base_commit": "e2cdf51bd353f5a281b19e0e059177bc2d3995c6",
+  "blockers": [
+    "owner:integrator independent_demo_execution_semantics_integration_required",
+    "canonical_registered_main_playwright_deferred_to_integrated_current_main",
+    "frontend_lint_blocked_sparse_node_modules_missing",
+    "frontend_build_blocked_sparse_node_modules_missing",
+    "promotion_paper_live_private_order_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-16T17:48:26Z",
+  "deliverable_commit": "1913330026e0fb14fbace753eb9fe6dd977ff968",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_demo_recovery_admission_v1",
+      "sha256": "e57f0f385cd31523e0bc3a5010b9ae1a7bbbc763ba74e30c9b9b9932b80f2613",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_btc_demo_recovery_e2e_contract_v1",
+      "sha256": "78cddde686b9953bf924f7dba0e7e0671dd8d475a15f017e3d0a7474af5e327c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "efe06baf183bda63c0b6fd8e716774c3c9582cbc89a70d73bc50779312fcd743",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-recovery-button-admission-correction-05-1913330026",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-demo-recovery-button-admission-corr-05",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "scoped static assertions: three fail-closed statuses, no cached snapshot admission, six manual confirmations, existing /start callback [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "esbuild frontend/src/workspaces/crypto/DemoTradingConsole.tsx --bundle --loader:.tsx=tsx --format=esm --external:react --external:react/jsx-runtime [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "esbuild frontend/e2e/btc-demo-console.spec.ts --bundle --platform=node --loader:.ts=ts --format=esm --external:@playwright/test [observed: passed]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check [observed: passed]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint [observed: failed: sparse worktree has no node_modules, tsc not recognized]",
+      "evidence_path": "frontend/package.json",
+      "result": "failed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build [observed: failed: sparse worktree has no node_modules, vite not recognized]",
+      "evidence_path": "frontend/package.json",
+      "result": "failed"
+    },
+    {
+      "command": "mocked Playwright recovery matrix on canonical port 3000 [deferred_to_integrated_current_main; producer worktree did not start/restart service]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh && identity:check && identity:test [observed: passed]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-RECOVERY-BUTTON-ADMISSION-CORRECTION-05",
+  "transition_for": ""
+}

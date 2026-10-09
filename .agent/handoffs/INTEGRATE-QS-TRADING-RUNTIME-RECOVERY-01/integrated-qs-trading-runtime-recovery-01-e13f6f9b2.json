@@ -1,0 +1,172 @@
+{
+  "base_commit": "1097efa82c86164310c31c709764052091ade196",
+  "blockers": [
+    "owner:agent8_and_integrator failure_matrix_submitted_orders_empty_assertions_are_inconsistent_with_partial_fill E2E pre-fault order history; requires upstream contract clarification without weakening safety or changing tests",
+    "owner:main_sync browser_current_main_acceptance_pending_registered_main_landing_and_backend_restart",
+    "owner:architect_and_gate current_head_gate_rebuild_required; this handoff is quality_checked only and not promotion evidence",
+    "paper_live_promotion_and_all_real_private_order_live_paths_remain_fail_closed_pending_authorized real evidence"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-07T16:04:52Z",
+  "deliverable_commit": "e13f6f9b293704448bb4c625ff7d5466e3dfc4a2",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "831f1d0c5e2a86a1dfd1f9e83b3229b5fdbe3c558e906c8a5c991e91d0ad47ed",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/runtime/models.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "fdeeae855ad074f44c81028654ee5ddc9cdbafb414a7f9ab376d198fa02951fc",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/ibkr_recovery.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "c7472325cc1fe27bc38d49983b652a3ce3daa810ff2536455d4b64ae631d19b0",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/ibkr_runtime_provider.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "87ed5e509dd248345a8fecfbd6e6dedd0c6e5734c5817fae9d5cdd8be223d81a",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/ibkr_runtime_supervisor.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "5fc9ef915234e26d3b5fb7f7c1de364a08c15b1b65c4579397cf91bfa78ff158",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_v1",
+      "sha256": "d8efc9ec697dbc33d5ee62e40c9b08ead38229069fd64f94e956da544d432c00",
+      "type": "code"
+    },
+    {
+      "path": "tests/integrations/test_ibkr_runtime_integration_wiring.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qs_trading_runtime_recovery_integration_tests_v1",
+      "sha256": "bc0743ac37949940524309c9613df78aba660bc7fcf434b66dffc490d6fea3ed",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "QS-TRADING-RUNTIME-CONTROL-PLANE-01",
+    "QS-IBKR-BROKER-TRUTH-01",
+    "QS-IBKR-RECOVERY-ORCHESTRATOR-01",
+    "QS-IBKR-INCIDENT-LIFECYCLE-01",
+    "QS-IBKR-INDEPENDENT-GUARDIAN-01",
+    "QS-IBKR-READONLY-RUNTIME-API-01",
+    "QS-IBKR-TRADING-OPERATIONS-CENTER-01",
+    "QS-IBKR-CHAOS-P0-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "integrated-qs-trading-runtime-recovery-01-e13f6f9b2",
+  "event_type": "integrated",
+  "expires_at": "2026-09-06T16:04:52Z",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-qs-trading-runtime-recovery-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/integrations/test_ibkr_runtime_integration_wiring.py -q --basetemp=<external-system-temp> [12 passed in 1.86s]",
+      "evidence_path": "tests/integrations/test_ibkr_runtime_integration_wiring.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_ibkr_runtime_failure_matrix.py ... [36 passed, 4 failed; four submitted_orders==[] assertions conflict with partial-fill E2E history contract]",
+      "evidence_path": "tests/live/test_ibkr_runtime_failure_matrix.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_ibkr_partial_fill_recovery_e2e.py -q [2 passed]",
+      "evidence_path": "tests/live/test_ibkr_partial_fill_recovery_e2e.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest producer runtime, incident, guardian, reconciliation, adapter, and closed-loop suites -q [52 passed]",
+      "evidence_path": "tests/live/test_ibkr_paper_closed_loop.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest producer suites plus backend/tests/test_us_ibkr_runtime_api.py backend/tests/test_api_contract.py -q [167 passed, 4 failed; same four failure-matrix contract assertions]",
+      "evidence_path": "tests/live/test_ibkr_runtime_failure_matrix.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_us_ibkr_runtime_api.py -q --basetemp=<external-system-temp> [6 passed]",
+      "evidence_path": "backend/tests/test_us_ibkr_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_api_contract.py -q --basetemp=<external-system-temp> [30 passed]",
+      "evidence_path": "backend/tests/test_api_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_live_runtime_safety.py tests/live/test_runtime_paper_worker_safety.py tests/contracts/test_us_ibkr_paper_observation.py tests/live/test_ibkr_paper_adapter_foundation.py tests/contracts/test_us_ibkr_yahoo_runtime_semantic_contract.py -q [110 passed]",
+      "evidence_path": "tests/live/test_live_runtime_safety.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile relevant integration implementation and test files [passed]",
+      "evidence_path": "quant_us/live/ibkr_runtime_supervisor.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm ci in frontend [117 packages installed]",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint in frontend [tsc --noEmit, exit 0]",
+      "evidence_path": "frontend/src/components/ibkr-runtime/RuntimeStatusSection.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build in frontend [Vite 5, 210 modules, exit 0; existing chunk-size warnings only]",
+      "evidence_path": "frontend/src/components/ibkr-runtime/RuntimeStatusSection.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check HEAD; bounded safe_status; changed-path inventory; base ancestry [clean, protected data paths absent]",
+      "evidence_path": ".agent/handoffs/INTEGRATE-QS-TRADING-RUNTIME-RECOVERY-01",
+      "result": "passed"
+    },
+    {
+      "command": "git hash-object protected manifests and paper_runtime_audit.jsonl == git rev-parse 1097efa82c86164310c31c709764052091ade196:<path>; .pytest_integrator_runtime1 absent",
+      "evidence_path": "data/paper_ledger/paper_runtime_audit.jsonl",
+      "result": "passed"
+    },
+    {
+      "command": "registered-main browser/current-main acceptance, backend restart, live/paper/private/order endpoint, real broker, real order, and promotion gate rebuild",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-QS-TRADING-RUNTIME-RECOVERY-01",
+  "transition_for": "INTEGRATE-QS-TRADING-RUNTIME-RECOVERY-01"
+}

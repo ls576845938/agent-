@@ -1,0 +1,150 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-cn-v3-current-head-gate-01-eb87b66c",
+  "ticket_id": "CN-V3-CURRENT-HEAD-GATE-01",
+  "event_type": "acknowledged",
+  "producer_role": "a_share_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "cn_equity",
+  "producer_branch": "agent/a_share_developer/cn-v3-current-head-gate-01",
+  "base_commit": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+  "deliverable_commit": "eb87b66cc20e5d131bca6ce3d66e0ca54553efc2",
+  "created_at": "2026-07-24T15:59:59Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-cn-v3-dataready-consumer-01-goal4-batch-01",
+    "integrated-cn-v3-market-rule-consumer-01-goal5-batch-01",
+    "integrated-cn-v3-oms-ledger-replay-01-goal6-batch-01",
+    "integrated-cn-v3-research-backtest-evidence-01-goal7-batch-01",
+    "integrated-cn-v3-qmt-offline-contract-01-goal8-batch-01",
+    "integrated-cn-v3-domain-read-model-api-01-goal9-batch-01",
+    "integrated-cn-v3-operations-workspace-01-goal10-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-cn-v3-operations-workspace-01-goal10-batch-01",
+  "deliverables": [
+    {
+      "type": "schema",
+      "path": "schemas/cn_equity_current_head_gate_report.schema.json",
+      "sha256": "3106da5f2bdf352ec7c210c721efb0e45fae5bbedb6c87f5d20de8002cfc3181",
+      "schema_version": "cn_equity_current_head_gate_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/cn_equity_gate_stage_report.schema.json",
+      "sha256": "a8fd3b5c5d7d370f707c956c3eaf61976d0d0c489ade4cc70b81774885a82c6f",
+      "schema_version": "cn_equity_gate_stage_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/build_cn_equity_current_head_gate_report.py",
+      "sha256": "b042e93b5ec589c158bcdd1a89603236196b5fef5ee4677b02b69df7fa7c0d4f",
+      "schema_version": "cn_equity_current_head_gate_builder_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cn_equity/gates/test_current_head_gate.py",
+      "sha256": "692958915b04b1e066103b4d9ea96511622b61a89765d3cb35dd21389e8e1ffd",
+      "schema_version": "cn_equity_current_head_gate_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/CN-V3-OPERATIONS-WORKSPACE-01/integrated-cn-v3-operations-workspace-01-goal10-batch-01.json [observed: valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/CN-V3-OPERATIONS-WORKSPACE-01/integrated-cn-v3-operations-workspace-01-goal10-batch-01.json"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity/gates/test_current_head_gate.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 9 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity/gates/test_current_head_gate.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity tests/agent_governance/test_team_context.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed on deliverable HEAD: 135 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity/gates/test_current_head_gate.py"
+    },
+    {
+      "command": "py -3 scripts/build_cn_equity_current_head_gate_report.py --repo-root . [observed: wrapper_status=success; status=blocked; decision=blocked_fail_closed; source_head=eb87b66cc20e5d131bca6ce3d66e0ca54553efc2; root_blocker_count=24]",
+      "result": "passed",
+      "evidence_path": "artifacts/cn_equity_current_head_gate/latest/cn_equity_current_head_gate_report.json"
+    },
+    {
+      "command": "validate_gate_bundle against the eight generated latest reports [observed: valid; freshness=current_head; all declared input/report hashes verified; safety_all_false=true]",
+      "result": "passed",
+      "evidence_path": "artifacts/cn_equity_current_head_gate/latest/cn_equity_current_head_gate_report.json"
+    },
+    {
+      "command": "SHA256 current-business-HEAD runtime artifacts [dataready=55492843e0b387adb3cab2590e17bd8753d097e860e3b232d0b62cc91cf30865; market_rules=5455aa181c6b5f2b255271536af5127e92234a1782933f521b98984f297d2340; research_backtest=f70f19d2261652ddb393999641a0a7bd7b7e92fd869d4a88e01a58dd6a6e7ffd; risk_oms_ledger=6fddf6e37bf95144e50397ed69f259d7e60573dba0deabbfc4f90821ecb707a0; replay=70d000f794e1c0db07f3d01f298591cc33605f2efc06ca2aba98c166a9a4dee7; qmt_broker=f1472cb2ab58d2306e4ed31297f6ed3e65f5df600a8e90d8551402e0af3e439f; paper_readiness=61769873ac0b761b9525d0a5fd3340465d12352025af49597a0fc24ea6c12f93; current_head_gate=eb0f1c1241b5feea24b0e67d9f5fd2e036e62b459b3c36f0c2495407b9069111]",
+      "result": "passed",
+      "evidence_path": "artifacts/cn_equity_current_head_gate/latest/cn_equity_current_head_gate_report.json"
+    },
+    {
+      "command": "git diff --check 3b7e096258f7df26aaf374c3ca2ca803a57d5053..eb87b66cc20e5d131bca6ce3d66e0ca54553efc2 -- <exact G11 source touch set> [observed: clean]",
+      "result": "passed",
+      "evidence_path": "scripts/build_cn_equity_current_head_gate_report.py"
+    }
+  ],
+  "blockers": [
+    "cn_dataready_current_main_handoff_missing",
+    "cn_dataready_current_main_manifest_missing",
+    "cn_dataready_old_two_security_pilot_not_accepted",
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "cn_market_rule_old_two_security_pilot_not_accepted",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "real_data_backtest_evidence_not_produced",
+    "fixture_research_only_not_promotion_evidence",
+    "cn_backtest_fixture_only",
+    "cn_oms_offline_fixture_only",
+    "cn_replay_injected_history_only",
+    "cn_broker_capability_unproven",
+    "cn_qmt_order_write_not_authorized",
+    "cn_qmt_private_read_not_authorized",
+    "cn_qmt_reconciliation_unproven",
+    "cn_qmt_sdk_integration_not_authorized",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "owner:integrator:rebuild_cn_current_head_gate_on_integrated_head",
+    "classification:cn_current_head_gate=quality_checked_blocked",
+    "classification:wrapper_success_does_not_unlock_gate",
+    "classification:runtime_latest_reports=gitignored_current_business_head_evidence",
+    "classification:goal11_code_integration_blocker=false",
+    "safety:promotion=false",
+    "safety:paper=false",
+    "safety:live=false",
+    "safety:private=false",
+    "safety:order=false",
+    "safety:broker=false",
+    "safety:withdraw=false",
+    "safety:demo=false",
+    "safety:paper_queue=false",
+    "safety:real_order=false",
+    "safety:external_network=false",
+    "safety:secret_access=false",
+    "safety:qmt_sdk=false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

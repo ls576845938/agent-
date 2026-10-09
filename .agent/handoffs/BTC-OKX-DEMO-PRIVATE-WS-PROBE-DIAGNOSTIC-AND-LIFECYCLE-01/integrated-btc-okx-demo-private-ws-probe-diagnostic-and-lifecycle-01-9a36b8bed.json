@@ -1,0 +1,92 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-private-ws-probe-diagnostic-and-lifecycle-01-9a36b8bed",
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-PROBE-DIAGNOSTIC-AND-LIFECYCLE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-ws-lifecycle-01-integrate",
+  "base_commit": "19729a1b4dccec0bedd034816352cc605469dceb",
+  "deliverable_commit": "9a36b8bedcfce76fa022874c7ca45de9010bd5f5",
+  "created_at": "2026-08-10T23:55:01Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-private-ws-probe-diagnostic-and-lifecycle-01-23b921807"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-private-ws-probe-diagnostic-and-lifecycle-01-23b921807",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "ed89ac61ad0c915c791fbcc5448198e2b9a5c130e45d6cf4761d7f958c3e9be6",
+      "schema_version": "btc_okx_demo_paper_runtime_private_ws_probe_diagnostic_lifecycle_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "93475bc67197b6aed90ed9b13317fb6c798df72957f5360a5ae8ed81702177db",
+      "schema_version": "btc_okx_demo_private_ws_probe_diagnostic_lifecycle_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"bootstrap_probe_exception or bootstrap_non_opening or bootstrap_generation_change\" [3 passed, 278 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py [23 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"fresh_state_emergency_exit or private_ws_probe or private_ws_startup_failure or factory_failure or probe_projection\" [41 passed, 240 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py [281 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check (scoped integration diff)",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "production import of quant_crypto.oms.okx_demo_paper_runtime",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "handoff.py validate plus producer-tree equality",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-PROBE-DIAGNOSTIC-AND-LIFECYCLE-01"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_and_read_model_rebuild_not_required_by_ticket",
+    "not_promotion_evidence",
+    "demo_private_ws_network_and_secret_actions_not_run_by_scope",
+    "paper_live_private_order_transfer_withdraw_actions_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

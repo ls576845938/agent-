@@ -1,0 +1,87 @@
+{
+  "base_commit": "3e6f2efcd7ba562c9e724430e0213a1a0cb296f1",
+  "blockers": [
+    "owner:integrator fast_forward_to_current_main_then_run_canonical_mocked_playwright_19_of_19",
+    "owner:integrator backend_restart_required_for_demo_transport_hotfix",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-17T05:03:31Z",
+  "deliverable_commit": "f4a6d48087217cb338bb7016195cdd303f538022",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_visual_tick_frame_batch_v1",
+      "sha256": "f51536c449b8a8fe781ee1a48c1c555feba5967d590ceb6267371834f63466fa",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_console_playwright_contract_v1",
+      "sha256": "5678d6ea771a52016b590de6ad49b7e95593449e87352deb8fab0c5441af1b71",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "b650dec6a1366073202477d2f1c0a30c3e150dc18a4cbdd7e3c5a359cbdcb177",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-public-tick-depth-visual-01-f4a6d4808-corr7",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-public-tick-depth-corr6",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-public-tick-depth-visual-01-43437df05-corr6"
+  ],
+  "tests": [
+    {
+      "command": "canonical main 3e6f2efcd frontend/e2e/btc-demo-console.spec.ts: 18 passed, 1 failed because requestAnimationFrame coalesced multiple distinct trades into one pending event",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build; existing chunk-size warning only",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh; npm --prefix frontend run identity:check; fingerprint=8b5ae2bcfb5639c561a8c2cb6a2e2a1dd4f8c3a3dc7eb8d6f655cbac08fc3b16",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "full frontend/e2e/btc-demo-console.spec.ts canonical mocked run after fast-path main integration",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-PUBLIC-TICK-DEPTH-VISUAL-01",
+  "transition_for": ""
+}

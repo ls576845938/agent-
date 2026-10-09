@@ -1,0 +1,84 @@
+{
+  "base_commit": "f5b6c526ef393bd0cae6b9c0633ca5393d4ebcff",
+  "blockers": [
+    "backend_restart_deferred_to_later_publication",
+    "promotion_artifact_deferred",
+    "no_recovery_execution_or_endpoint_access_in_this_integration"
+  ],
+  "consumer_roles": ["architect", "btc_developer"],
+  "created_at": "2026-08-12T12:38:57Z",
+  "deliverable_commit": "2b9f33666e5992e36bac3bde7ae1144e82e9cc1a",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "sha256": "0c43ce423261f0b8b32d7011072148884d035f07a5c04176ebe55572cbdcf15a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "5ef23278f5355d94619730c1a07241acaa99eb1911bc0b7c6f8c8326bd779425",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37-CORRECTION-02/published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-e07311e69-v2.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "42d371385d8d5f7b83be0d6bb6214e5d050946b5665401ca241bb9de8026098f",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-e07311e69-v2"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-2b9f336e",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-worker-parent-37-corr2-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "preflight: base=f5b6c526ef393bd0cae6b9c0633ca5393d4ebcff; scoped initial dirty=clean; change_risk=demo_execution_semantics; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/shared_pitfalls.md;docs/agent_playbooks/btc_developer_pitfalls.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k worker_parent_emergency -q --basetemp <external-temp>",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "quant_crypto/application/btc_okx_demo_fault_drill.py;tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check f5b6c526ef393bd0cae6b9c0633ca5393d4ebcff..2b9f33666e5992e36bac3bde7ae1144e82e9cc1a",
+      "evidence_path": "quant_crypto/application/btc_okx_demo_fault_drill.py;tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate correction-02 v2 published event",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37-CORRECTION-02/published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-e07311e69-v2.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37-CORRECTION-02",
+  "transition_for": "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-e07311e69-v2"
+}

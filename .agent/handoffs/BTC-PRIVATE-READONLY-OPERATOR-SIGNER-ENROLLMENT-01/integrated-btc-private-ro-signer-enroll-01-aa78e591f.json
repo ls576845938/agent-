@@ -1,0 +1,83 @@
+{
+  "base_commit": "de483d52f11c229adc4c09cdecf84413fbe83060",
+  "blockers": [
+    "canonical_main_integration_and_hook_retrust_required",
+    "external_human_operator_must_prepare_sign_and_install_short_ttl_receipt_outside_codex",
+    "new_observer_task_required_because_existing_tasks_do_not_hot_update_governance",
+    "private_endpoint_remains_disallowed_until_new_task_exact_receipt_activation",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-31T15:40:46Z",
+  "deliverable_commit": "aa78e591fbccd1d5f6588b27a9b2838ba00028c7",
+  "deliverables": [
+    {
+      "path": ".codex/hooks/private_readonly_operator_allowed_signers",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "e937930e86383a1c7c0aa2e3ec6184d4cd91eda3627e17c9960b4cb7cd3bcd2c",
+      "type": "schema"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "e46fe10e7acdac36344da8c655734680f224f9a1eeb98b2ce02f24fd7d77521e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-private-ro-signer-enroll-01-4288f6d22"
+  ],
+  "domain": "governance",
+  "event_id": "integrated-btc-private-ro-signer-enroll-01-aa78e591f",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-private-ro-signer-enroll-01-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <published handoff>: valid; producer parent/base exact; 2/2 Git-blob SHA256 match",
+      "evidence_path": ".agent/handoffs/BTC-PRIVATE-READONLY-OPERATOR-SIGNER-ENROLLMENT-01/published-btc-private-ro-signer-enroll-01-4288f6d22.json",
+      "result": "passed"
+    },
+    {
+      "command": "OpenSSH ED25519 syntax/fingerprint verification: 256 SHA256:/e+ttemGBsdu0uXeQYqOMxtRnuqvDqnccV3Pz5czJ/0",
+      "evidence_path": ".codex/hooks/private_readonly_operator_allowed_signers",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q: 30 passed in 36.16s",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "pre-main verifier diagnostic: refs/heads/main@de483d52 returned verified=false reason=private_readonly_operator_signer_not_enrolled",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "private credentials, receipt preparation/signing/installation, private/account/order/live endpoints, observer runner, backend, Gate artifact",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PRIVATE-READONLY-OPERATOR-SIGNER-ENROLLMENT-01",
+  "transition_for": "published-btc-private-ro-signer-enroll-01-4288f6d22"
+}

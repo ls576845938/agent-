@@ -72,11 +72,11 @@ class TestAuditRecordMasking:
         """to_dict does not contain raw API key patterns anywhere."""
         record = LiveOrderAuditRecord(
             audit_id="rec_2",
-            broker_order_id="AKIAIOSFODNN7EXAMPLE",
+            broker_order_id="REDACTED_SENSITIVE_PATTERN",
         )
         d = record.to_dict()
         raw = str(d)
-        assert "AKIAIOSFODNN7EXAMPLE" not in raw
+        assert "REDACTED_SENSITIVE_PATTERN" not in raw
         # The masked version should hide most of it
         assert "EXAMPLE" not in raw  # last 4 would be AMPL, not EXAM
 

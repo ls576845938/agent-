@@ -1,0 +1,107 @@
+{
+  "base_commit": "7ce80e06692f0f8655eb7cbdd1c3d943a470114d",
+  "blockers": [
+    "registered_main_merge_backend_restart_current_main_identity_and_canonical_playwright_pending",
+    "historical_catalog_baseline_7403c533_has_expected_current_source_drift",
+    "current_head_promotion_artifacts_not_rebuilt_and_missing_trading_artifacts_remain_blocked",
+    "M1_M4_unstarted_and_research_does_not_unlock_promotion_paper_private_order_broker_or_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T03:45:49Z",
+  "deliverable_commit": "e8fa998fca281c696db3e29b51081ef41472fa94",
+  "deliverables": [
+    {
+      "path": "backend/app/core/backend_access_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "96dd3c0eff47bc8abbeb12062158d5c9a688d8f4e9956c6324365ea386501c5d",
+      "type": "code"
+    },
+    {
+      "path": "docs/architecture/system-code-map/LAYERED-ARCHITECTURE.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "c0b5e8fffed8681b4534286915dfa08c9b3844c09390859e14098693c16824b2",
+      "type": "document"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/knowledge.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "8e78dc577aafb24baff91f73ce280d17c61f983009b8720916875a3d110bb4d3",
+      "type": "artifact"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "f67d6c9f0701dbf9d35b16b89c192b9474595cea9a795f6a7a4ba8220eaf710f",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-architecture-knowledge-backend-stage-93abd6e7a",
+    "published-architecture-knowledge-workbench-recovery-final-97a84e8e9",
+    "published-architecture-knowledge-correction-c8eebc436",
+    "published-architecture-knowledge-reference-correction-a53ed9377"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-knowledge-workbench-recovery-integration-01-e8fa998fc",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/arch-knowledge-workbench-recovery-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_backend_research_readonly.py backend/tests/test_backend_current_main_launcher.py -q; 52 passed",
+      "evidence_path": "backend/tests/test_backend_research_readonly.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_research_registry_readonly_api.py tests/api/test_alpha_factory.py -q; 31 passed",
+      "evidence_path": "backend/tests/test_research_registry_readonly_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs frontend/scripts/test-architecture-map.mjs frontend/scripts/test-architecture-mindmap.mjs; 19 passed",
+      "evidence_path": "frontend/scripts/test-architecture-knowledge.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/architecture-review.mjs --ref=HEAD; expected exit 1 for catalog drift, catalog_errors=[] and knowledge_errors=[]",
+      "evidence_path": "frontend/src/workspaces/architecture/knowledge.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint; npm --prefix frontend run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs; node --test frontend/scripts/test-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main backend restart and Playwright",
+      "evidence_path": "frontend/e2e/architecture-knowledge.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-INTEGRATION-01",
+  "transition_for": "published-architecture-knowledge-reference-correction-a53ed9377"
+}

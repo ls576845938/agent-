@@ -1,0 +1,89 @@
+{
+  "base_commit": "72b9e0c6cce572bb31b09c19b8a9ef419a6eb068",
+  "blockers": [
+    "owner:main integration_branch_not_fast_forwarded_to_refs_heads_main",
+    "owner:btc_operations current_head_strict_repository_and_backend_launcher_artifact_not_published",
+    "baseline_test_fixture_failure:backend/tests/test_btc_runtime_artifact_wiring.py::test_valid_external_root_returns_only_logical_paths_and_remains_read_only",
+    "not_promotion_evidence_demo_runtime_not_started_no_private_no_orders_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-07-30T04:06:16Z",
+  "deliverable_commit": "88f23da9c507f3928fe1c9b6b53701c732516c51",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_rebuild_published_read_model_contract_v1",
+      "sha256": "9af0caa6ba0dc5c472f24a408a24924fc3db9bbbb7728a6bdcec42661e0421f6",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_rebuild_strict_repository_contract_v1",
+      "sha256": "1907acdaeb3d625fc0c835bd5205b6117b907db8f3cd2b49ab515055611ca67b",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-CURRENT-HEAD-READMODEL-PUBLISHED-CONTRACT-02/published-btc-current-head-readmodel-published-contract-02-61e1b8925.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "f5090351e4674779077ee02d89975fb976777956d950de84c643dab00fd048be",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-current-head-readmodel-published-contract-02-61e1b8925"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-readmodel-contract-02-88f23da9c",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-readmodel-contract-02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate committed producer envelope against Git [observed: valid, no errors]",
+      "evidence_path": ".agent/handoffs/BTC-CURRENT-HEAD-READMODEL-PUBLISHED-CONTRACT-02/published-btc-current-head-readmodel-published-contract-02-61e1b8925.json",
+      "result": "passed"
+    },
+    {
+      "command": "base-to-deliverable diff closure [observed: exactly quant_crypto/application/btc_current_head_gate_rebuild.py and tests/contracts/test_btc_current_head_gate_rebuild.py]",
+      "evidence_path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_domain_read_model.py tests/contracts/test_btc_next_stage_current_head_orchestrator.py tests/contracts/test_btc_gate_snapshot.py tests/contracts/test_btc_runtime_artifact_store.py backend/tests/test_backend_current_main_launcher.py backend/tests/test_btc_runtime_artifact_wiring.py -q --basetemp <unique-system-temp> [observed: 120 passed, 1 failed in 86.10s]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "exact-base reproduction of backend/tests/test_btc_runtime_artifact_wiring.py::test_valid_external_root_returns_only_logical_paths_and_remains_read_only [observed: identical btc_published_domain_read_model_required_blockers_not_preserved fixture failure]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_current_head_gate_rebuild.py tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "evidence_path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-READMODEL-CONTRACT-02",
+  "transition_for": "published-btc-current-head-readmodel-published-contract-02-61e1b8925"
+}

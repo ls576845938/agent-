@@ -1,0 +1,127 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-successor-into-current-main-01-0cddfb5b05",
+  "ticket_id": "INTEGRATE-US-SUCCESSOR-INTO-CURRENT-MAIN-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "researcher",
+    "super_developer"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-us-successor-into-current-main-01",
+  "base_commit": "cd7ee4d90919901f6ded66043b5273c688bbcd99",
+  "deliverable_commit": "0cddfb5b05e33272f611d3dea85a4cfd4125498f",
+  "created_at": "2026-08-06T07:39:09Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-current-main-ua-real06-01-92249e4f16"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-us-current-main-ua-real06-01-92249e4f16",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "scripts/fetch_us_equity_fred_macro.py",
+      "sha256": "70ce39bfe99eccd8a7d63524f733c78f9bce00f1509af5fa10e5578de0bd2d48",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_equity_fred_macro_import.py",
+      "sha256": "72fa6c0fe8f4fc859d363e79969dadcd1896ee4e6d0da88772bef6e7b9dc3dab",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/US-FRED-CURRENT-MAIN-UA-COMPAT-01/published-us-fred-current-main-ua-compat-01-f6e4cc096.json",
+      "sha256": "e181f92b43fb93284e3f9dc9ed1943e18ab701e193ac393bc7289db3168b7070",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "data_manifest",
+      "path": ".agent/data_manifests/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1.json",
+      "sha256": "d2f65acf61ce7d6d1633be23c7a395143b780132e337a472e021b7d0dd18e972",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": ".agent/handoffs/DATA-US-PUBLIC-FORWARD-SNAPSHOT-REAL-06/delivery-evidence.json",
+      "sha256": "730d79941d4628ea593cdeaaa8ccdd83ad0f3f221a07d2b8415768837aaa1292",
+      "schema_version": "data_us_public_forward_snapshot_real_06_delivery_evidence_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/DATA-US-PUBLIC-FORWARD-SNAPSHOT-REAL-06/published-data-us-public-forward-snapshot-real-06-b918b9d40.json",
+      "sha256": "640537f9c568eeb608db7ae07adfa1bce682871c3ca60a044c189833c2b7c89a",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/INTEGRATE-US-CURRENT-MAIN-UA-REAL06-01/integrated-us-current-main-ua-real06-01-92249e4f16.json",
+      "sha256": "51c424fccb89b4e0d4d0929162e94227df503bb4ad809719ce65771c6a682348",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "full-git validation of UA producer, REAL06 producer, and prior integrated handoff; exact event blob SHA audit",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/INTEGRATE-US-CURRENT-MAIN-UA-REAL06-01/integrated-us-current-main-ua-real06-01-92249e4f16.json"
+    },
+    {
+      "command": "registered-main virtualenv pytest tests/contracts/test_us_equity_fred_macro_import.py -q -p no:cacheprovider --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_fred_macro_import.py"
+    },
+    {
+      "command": "shared_data.py resolve --manifest-git-spec 0cddfb5b05e33272f611d3dea85a4cfd4125498f:<manifest> --shared-root <external-shared-root>",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1.json"
+    },
+    {
+      "command": "AST parse, forbidden trading Call-node scan, FRED authenticated/public-Graph User-Agent split, git diff --check, exact seven-path/source-blob audit, and current-main-base ancestry audit",
+      "result": "passed",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py"
+    },
+    {
+      "command": "tests/data/test_public_snapshot_collection.py",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "tests/contracts/test_us_equity_public_forward_snapshot.py",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "registered_main_ref_not_advanced_by_short_lived_integrator",
+    "yahoo_survivorship_bias_and_current_adjustment_vintage",
+    "fred_latest_vintage_non_pit_without_realtime_bounds",
+    "historical_counterfactual_replay_not_supported",
+    "dataset_quality_checked_not_backtest_or_promotion_evidence_ready",
+    "current_head_artifact_read_model_and_gate_rebuild_not_authorized",
+    "backend_restart_not_run_after_unclassified_change",
+    "all_trading_safety_permissions_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

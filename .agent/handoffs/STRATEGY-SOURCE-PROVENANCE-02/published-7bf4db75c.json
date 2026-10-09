@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-source-provenance-02-7bf4db75c",
+  "ticket_id": "STRATEGY-SOURCE-PROVENANCE-02",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-source-provenance-02",
+  "base_commit": "bbc39bec1449c5ea6947c200be1541988d34db2c",
+  "deliverable_commit": "7bf4db75cec60d48bb290d889b4975fdfe7e3067",
+  "created_at": "2026-09-08T15:14:39.181Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-source-provenance-02-5f1b6a076"
+  ],
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md",
+      "sha256": "d6d42c53040921e57392b76ac40bff2777e97ec34d7ce346d3f478af7c4f6643",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/e2e/strategy-source-provenance.spec.ts",
+      "sha256": "e6e777e26e002a147a2dad6ec9a66b4d6fad41ee1a07bc272bdeac810aa767dc",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-strategy-history-provenance.mjs",
+      "sha256": "23486f940f78fad1b612cb8cf611a170269e84e2308204fcbdda7ae7b9389829",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "01510f91c75a9c259b7d2f7dc2f75878c47f73941199630636c677d1606399e7",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/strategy-history-provenance.ts",
+      "sha256": "fc5718fe8d145a7ba8b276e01acbbce537e7cf4a893c7b464268d6bb90fc23f4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "18f831bafbbafab566a18d03995b83f463502fe0c65e9964e9adc0ea9e161882",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "canonical main 79a70d459b 12 browser tests: 10 passed / 2 whitespace assertion failures, 48.8s",
+      "result": "failed",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/strategy-source-provenance-02/playwright"
+    },
+    {
+      "command": "test-only rendered-text correction against canonical 3000: 2 passed, 6.6s",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    },
+    {
+      "command": "git diff --check -- declared test/report paths",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md"
+    }
+  ],
+  "blockers": [
+    "owner:architect and integrator consume 2-line test-only correction; no business source changes",
+    "owner:root rerun all 12 canonical browser tests after final integration; finish actual narrow/wide QA",
+    "historical series/ledger absent; promotion artifact unavailable; all trading permissions false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "transition_for": ""
+}

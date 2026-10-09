@@ -1,0 +1,56 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-dataready-manifest-discovery-01-batch-03",
+  "ticket_id": "BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-dataready-fix-batch-03",
+  "base_commit": "57055c7a1161c3a96b9ab69525ff7709b4b2458c",
+  "deliverable_commit": "c4bfb1fde384d329a082662383daf0248a6bea65",
+  "created_at": "2026-07-26T17:16:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-dataready-manifest-discovery-01-e5f32ba3"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-dataready-manifest-discovery-01-e5f32ba3",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "producer envelope validation plus three committed deliverable SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01/published-btc-v3-dataready-manifest-discovery-01-e5f32ba3.json"
+    },
+    {
+      "command": "full DataReady consumer contract collection",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py"
+    },
+    {
+      "command": "exact four-selector DataReady build produced exit 2 with no duplicate or generic discovery blocker",
+      "result": "passed",
+      "evidence_path": "scripts/build_btc_dataready_consumption_report.py"
+    }
+  ],
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "dataready_report_remains_fail_closed",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_demo_paper_queue_real_order_false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

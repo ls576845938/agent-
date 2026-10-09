@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-m1-trend-environment-review-20260912-4ca4abeb1",
+  "ticket_id": "M1-TREND-ENVIRONMENT-REVIEW-20260911",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/integrator/m1-trend-environment-review-20260911",
+  "base_commit": "c1d11987d28f06bb0fe89b2c289e88d07522790d",
+  "deliverable_commit": "4ca4abeb139d7365f6cb748d4eb8d13c330975ea",
+  "created_at": "2026-09-11T16:31:06Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-m1-observation-evidence-20260911-ce9fa4685",
+    "published-m1-trend-environment-20260911-009540a02"
+  ],
+  "supersedes": [],
+  "transition_for": "published-m1-trend-environment-20260911-009540a02",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/m1-trend-environment-review-20260911.md",
+      "sha256": "59d34b6230d539134e25cc7820dd76d1796471e414901502dda5fae3ec86b95c",
+      "schema_version": "m1_trend_environment_independent_acceptance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md; 25 passed in 21.99s"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_strategy_decision_context_v1.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md; 169 passed in 6.57s"
+    },
+    {
+      "command": "node frontend/scripts/test-trend-environment.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md"
+    },
+    {
+      "command": "npm.cmd run lint from frontend directory",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md; tsc --noEmit"
+    },
+    {
+      "command": "shared_data.py resolve full hashes plus six read_sealed_evidence runs and AlphaFactoryService sealed read",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md"
+    },
+    {
+      "command": "canonical main publication, backend restart, external-root discovery and formal browser acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-trend-environment-review-20260911.md"
+    }
+  ],
+  "blockers": [
+    "canonical_publication_and_browser_acceptance_pending",
+    "canonical_qlib_and_factory_roots_do_not_discover_external_manifest",
+    "computation_source_head_59f5eb861_differs_from_integration_head",
+    "historical_reconstructed_availability",
+    "factory_candidate_rejected_no_alpha_effectiveness_claim",
+    "not_runtime_or_promotion_evidence",
+    "strict_unclassified_publication_requires_current_head_artifact_gate_backend_restart_and_valid_btc_runtime_root",
+    "M2_M3_M4_not_authorized"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "base_commit": "ac682f03b70e32adb384f789128470b8a4499f3f",
+  "blockers": [
+    "registered_main_candidate_not_integrated",
+    "backend_restart_required_after_current_main_integration",
+    "owner:operator exactly_one_new_authorized_private_readonly_attempt_only_after_integration_and_canonical_identity_verification",
+    "private_ws_and_25_hour_observation_not_started_by_offline_integration_ticket",
+    "t8_promotion_and_paper_live_gates_remain_blocked_fail_closed",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-01T05:12:22Z",
+  "deliverable_commit": "422312918e2858d6bbc7f2d71c3a2ef821cb0bdd",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_state_v1",
+      "sha256": "f65c6570a122614d000bdac02338fb468cbf900254d262f6b7677aa99660b772",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_cli_v1",
+      "sha256": "8ad019ec97cbd6d42d3fba93aa5d20da54be89e9b6a950cf71fcb18564e524c2",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "fecbb50fe2936ef216e264ae3ac0da0c627a27bf07d1ee6d438cfd821a3e11a8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-private-readonly-safe-error-observability-01-2f6413efe"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-private-readonly-safe-error-observability-01-integration-01-422312918",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-private-ro-safe-error-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "official handoff validate plus ancestry/touch-set/3-of-3 Git-blob SHA256 verification",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-PRIVATE-READONLY-SAFE-ERROR-OBSERVABILITY-01/published-btc-demo-private-readonly-safe-error-observability-01-2f6413efe.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_demo_private_readonly_observation.py scripts/run_btc_demo_private_readonly_observation.py tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py -q --basetemp <unique-system-temp>: 25 passed in 8.39s",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py -q --basetemp <unique-system-temp>: 64 passed in 4.15s",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "passed"
+    },
+    {
+      "command": "focused offline 50101/50102/50113/50110, seven-field redaction allowlist, REST-failure-before-WS matrix: 9 passed, 16 deselected in 4.55s",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --exit-code ac682f03..HEAD -- quant_crypto/oms/okx_demo.py and scoped git diff --check",
+      "evidence_path": "quant_crypto/oms/okx_demo.py",
+      "result": "passed"
+    },
+    {
+      "command": "credentials, receipt/key operations, private/account/order/live endpoints, REST/WS startup, 25h observation, backend restart and Gate artifact rebuild",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PRIVATE-READONLY-SAFE-ERROR-OBSERVABILITY-01-INTEGRATION-01",
+  "transition_for": "published-btc-demo-private-readonly-safe-error-observability-01-2f6413efe"
+}

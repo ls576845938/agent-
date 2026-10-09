@@ -1,0 +1,144 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-domain-read-model-01-goal8-batch-01",
+  "ticket_id": "BTC-V3-DOMAIN-READ-MODEL-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal8-batch-01",
+  "base_commit": "92cc60334a5ae21bae904a5c23c9e45ca39045f9",
+  "deliverable_commit": "f8b20b97e066c511fefa226b18203149eb2ac6a6",
+  "created_at": "2026-07-24T12:56:22Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-domain-read-model-01-8908c809"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-domain-read-model-01-8908c809",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_domain_read_model.py",
+      "sha256": "6b7e6bb0c9c1f8aef7f8d0f5596268d33d681c16bc986ba5580903ae8f07f325",
+      "schema_version": "btc_domain_read_model_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "sha256": "7bf7cf9f044d5d5b86939618387ffbfa1c463f3ffb93d4f98e24b6826e42e5c5",
+      "schema_version": "btc_domain_read_model_repository_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/btc_domain_read_model.py",
+      "sha256": "cb8684896ae2669f8b41ed0594abc315d420378875c729c94c88967f6ae1080c",
+      "schema_version": "btc_domain_read_model_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/btc_domain_read_model.schema.json",
+      "sha256": "ac5a1fce9d47782ca9f69acd78b89b4788da3e5121ca87577011de312f4af1a2",
+      "schema_version": "btc_domain_read_model_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "sha256": "a1852a2d2f4b13d6470b6785bb27b51ea852a99dc6a3fa32238e69eeb450f10b",
+      "schema_version": "btc_domain_read_model_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/handoffs/BTC-V3-DOMAIN-READ-MODEL-01.md",
+      "sha256": "70d9aa96463475242b44ea58ab06d0b803b36341f5cf737f856cb16b9fa35c09",
+      "schema_version": "btc_domain_read_model_delivery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "f69dbe308a8aa58f81513563a87a0dc732aab2db0f57f0f5b44fc64768ce8bb5",
+      "schema_version": "btc_domain_read_model_app_factory_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/team_context.py",
+      "sha256": "18c24ce32ea25d6afb0b21222e937bb557b84f8da892a18c27a8f3ddf759a9b5",
+      "schema_version": "btc_domain_read_model_team_context_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_api_contract.py",
+      "sha256": "fc6daeabea20c3b60b7d1111f8028414143dea3251358e0ecc6308f9754ef39e",
+      "schema_version": "btc_domain_read_model_app_factory_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_team_context.py",
+      "sha256": "386f78849bd591680c5651f032129f603116cd8c6536857ed2ec01404ebfc9be",
+      "schema_version": "btc_domain_read_model_team_context_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_domain_read_model.py -q -p no:cacheprovider --basetemp <unique-system-temp> [integration HEAD: 10 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_api_contract.py::ApiContractTests::test_btc_domain_read_model_endpoint_is_get_only_no_store_and_fail_closed tests/agent_governance/test_team_context.py::test_team_context_prefers_btc_domain_read_model_and_fails_closed_when_missing -q -p no:cacheprovider --basetemp <unique-system-temp> [integration HEAD: 2 passed]",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_api_contract.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_operator_root_cause_view.py tests/contracts/test_btc_gate_dashboard.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_btc_perpetual_paper_runtime_replay_report.py tests/agent_governance/test_team_context.py -q -p no:cacheprovider --basetemp <unique-system-temp> [integration HEAD: 36 passed; producer baseline 35 plus one approved Team Context wiring contract]",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_team_context.py"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/api/app_factory.py backend/app/api/btc_domain_read_model.py quant_crypto/application/btc_domain_read_model.py quant_crypto/adapters/btc_domain_read_model_repository.py tools/agent_governance/team_context.py backend/tests/test_api_contract.py tests/agent_governance/test_team_context.py [PYTHONPYCACHEPREFIX=<system-temp>]",
+      "result": "passed",
+      "evidence_path": "backend/app/api/app_factory.py"
+    },
+    {
+      "command": "producer handoff validate; source business 8908c809d67561b7e9abadf40cd959de3ca6bc2c; source final 668e63e2455cc55665d60b95d7a56882727bed9d; actual integration commit f8b20b97e066c511fefa226b18203149eb2ac6a6; committed-byte SHA-256 and exact touch-set precheck",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-DOMAIN-READ-MODEL-01/published-btc-v3-domain-read-model-01-8908c809.json"
+    }
+  ],
+  "blockers": [
+    "owner:integrator approved_current_head_read_model_snapshot_materializer_requires_separate_authorized_ticket",
+    "owner:btc_observation current_natural_non_flat_sample_not_observed",
+    "owner:btc_operations private_ws_real_observation_not_authorized_or_missing",
+    "owner:data_steward immutable_l2_and_data_attestation_required",
+    "owner:architect manual_promotion_approval_missing",
+    "classification:goal8_code_integration_blocker=false",
+    "classification:app_factory_read_only_router_wiring=completed",
+    "classification:team_context_btc_first_candidate_wiring=completed",
+    "classification:btc_domain_read_model_artifact_state=missing_and_fail_closed",
+    "classification:readiness=quality_checked"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

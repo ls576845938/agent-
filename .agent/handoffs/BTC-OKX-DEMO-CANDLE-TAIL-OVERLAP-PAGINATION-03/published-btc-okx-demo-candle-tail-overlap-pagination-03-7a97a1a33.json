@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-candle-tail-overlap-pagination-03-7a97a1a33",
+  "ticket_id": "BTC-OKX-DEMO-CANDLE-TAIL-OVERLAP-PAGINATION-03",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "btc_developer", "super_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-candle-tail-overlap-pagination-03",
+  "base_commit": "af47983b18105facb9847a7446d4e951a2d430c1",
+  "deliverable_commit": "7a97a1a33ff083ecae394edec57380c5fedc0f63",
+  "created_at": "2026-08-04T04:36:17Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo.py",
+      "sha256": "a1a22d04cc8ba2481f37ff1978440a9d6d9f15b2634a7165a9084faf896fe8ad",
+      "schema_version": "okx_demo_adapter_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "101b02529a4807a4cfe92cc2ea2e28443aa7866d73121eeb53216d3451124707",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "sha256": "25e782bed6f01663da5ad399b95606b56653ff672ed78f5543226c29131316dc",
+      "schema_version": "btc_okx_demo_candle_after_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "41db481202b283483a3840417cc3360acfdc768a2c383a3db3b5396c2282d856",
+      "schema_version": "btc_okx_demo_candle_tail_overlap_pagination_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest test_public_candle_tail_paginates_backward_until_baseline_overlap --basetemp C:\\tmp\\btc-okx-tail-overlap-red-confirm-20260804 -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest test_public_candles_accepts_strict_backward_pagination_cursor --basetemp C:\\tmp\\btc-okx-after-red-20260804 -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest ticket-scoped adapter and candle-tail regressions --basetemp C:\\tmp\\btc-okx-tail-targeted-green2-20260804 -q",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\btc-okx-tail-full-contracts-20260804 -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\btc-okx-tail-full-contracts-escalated-20260804a -q",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "python -m black --check <ticket touch set>; python -m ruff format --check <ticket touch set>",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_agent deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:main_agent backend_restart_required_after_fast_forward"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

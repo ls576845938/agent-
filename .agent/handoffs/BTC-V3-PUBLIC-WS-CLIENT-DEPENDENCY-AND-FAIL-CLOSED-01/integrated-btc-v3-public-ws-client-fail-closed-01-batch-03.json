@@ -1,0 +1,56 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-public-ws-client-fail-closed-01-batch-03",
+  "ticket_id": "BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-dataready-fix-batch-03",
+  "base_commit": "57055c7a1161c3a96b9ab69525ff7709b4b2458c",
+  "deliverable_commit": "dcec41da358d54c9d3d61addc3135f48b9bde35a",
+  "created_at": "2026-07-26T17:16:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-public-ws-client-fail-closed-01-8cbee84d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-public-ws-client-fail-closed-01-8cbee84d",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "producer envelope validation plus four committed deliverable SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01/published-btc-v3-public-ws-client-fail-closed-01-8cbee84d.json"
+    },
+    {
+      "command": "extended BTC DataReady contract collection including public collector boundaries",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py"
+    },
+    {
+      "command": "compileall, collector CLI help, TOML dependency parse, and scoped diff check",
+      "result": "passed",
+      "evidence_path": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py"
+    }
+  ],
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "current_head_gate_artifacts_not_rebuilt",
+    "promotion_paper_live_private_order_broker_withdraw_secret_demo_paper_queue_real_order_false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "base_commit": "4db2edeb9a75a26c466a0be6f2e14c274af45ffa",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_integration",
+    "not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-01T01:22:01Z",
+  "deliverable_commit": "886607aa22fb555058e311413774f83253b321b1",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_adapter_v1",
+      "sha256": "2cf1a6a19cc42d529cabb137881b3d47495272dd83e3b849d97798d03880ba2c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "800ed7eb09ceb72ca0ba76e2c5f28d39ae69c3a1900bb31e63d950d6d4df8f5b",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_private_ws_v1",
+      "sha256": "bc57c31fed39d7e494ea996861da2d4bbfb4d0c148865f22c9e3fec772c6251b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "21756f7a20a4d8e703d5ccda2acb39b463219fc2227153f33c58710b157bb3c7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "f52aab6cc9e5ccc267f8ccc5696abdd8411fe56ba372ee6d6546c763430aff9b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "8ddb6395b0b447ea395795d70581b459e22d2bf5fd17ca24a40c115844b0a763",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-transient-recovery-01-886607aa2",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-transient-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests\\contracts\\test_btc_okx_demo_adapter.py tests\\contracts\\test_btc_okx_demo_paper_runtime.py tests\\contracts\\test_btc_okx_demo_private_ws.py -q --basetemp C:\\tmp\\btc-okx-demo-transient-full-20260801g -p no:cacheprovider",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- <approved-touch-set>",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-TRANSIENT-RECOVERY-01",
+  "transition_for": ""
+}

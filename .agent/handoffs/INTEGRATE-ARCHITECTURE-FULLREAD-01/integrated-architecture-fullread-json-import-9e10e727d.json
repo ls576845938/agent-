@@ -1,0 +1,96 @@
+{
+  "base_commit": "149753a6bc3208176efc0fee58b20992e3ac73d0",
+  "blockers": [
+    "owner:root integrate commits bb84d267c and 9e10e727d with the separately approved architecture overview delivery, then publish once and rerun canonical Playwright",
+    "existing backend process remains on f3a78afe/demo_quasi_live and public identity returns 409 backend_runtime_main_drift; this ticket did not stop, restart, enable control, read secrets or access private/action endpoints",
+    "this test compatibility fix is not runtime, promotion, paper or live evidence",
+    "M1 remains paused in this ticket; M2-M4 are not started"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-10T23:32:24Z",
+  "deliverable_commit": "9e10e727dd4c37b6e077714d4ae328e2bde59a0a",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/architecture-map.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_e2e_v1",
+      "sha256": "163cd9eb0340b75db5241a3a73f59cfafce323b547f824a64f3d116d235dbf2a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "fb2af0941b480e3b8d9a8c154a607f84fcfa4e870980aa2edae84a396be09be0",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-architecture-codemap-fullread-bfbbe9d87",
+    "integrated-architecture-fullread-01-80e7122ec"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-fullread-json-import-9e10e727d",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-architecture-fullread-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "root canonical Playwright attempt before fix: architecture-map.spec.ts and system-workbench.spec.ts; collection failed before test execution because catalog.json lacked JSON import attribute",
+      "evidence_path": "output/playwright/architecture-publish-30205e44/e2e",
+      "result": "failed"
+    },
+    {
+      "command": "D:/New Folder/node.exe --test frontend/scripts/test-architecture-map.mjs",
+      "evidence_path": "frontend/scripts/test-architecture-map.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "typescript --noEmit -p frontend/tsconfig.json using temporary read-only dependency Junction; Junction removed",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs after refresh; manifest_match=true and baseline_ancestor=true",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs under platform-approved execution; passed without ExecutionPolicy change or Bypass",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "first handoff emit used current main merge 30205e44 as base and failed handoff_base_not_ancestor_of_deliverable; corrected to prior integrated branch head 149753a6, which is an ancestor of this fix and of current main",
+      "evidence_path": ".agent/handoffs/INTEGRATE-ARCHITECTURE-FULLREAD-01/integrated-architecture-fullread-01-80e7122ec.json",
+      "result": "failed"
+    },
+    {
+      "command": "canonical current-main Playwright rerun after publishing this fix",
+      "evidence_path": "owner:root; worktree preview is prohibited",
+      "result": "not_run"
+    },
+    {
+      "command": "production build after test-only import fix",
+      "evidence_path": "not rerun by explicit bounded scope; prior integrated source build passed and application source is unchanged",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-ARCHITECTURE-FULLREAD-01",
+  "transition_for": "published-architecture-codemap-fullread-bfbbe9d87"
+}

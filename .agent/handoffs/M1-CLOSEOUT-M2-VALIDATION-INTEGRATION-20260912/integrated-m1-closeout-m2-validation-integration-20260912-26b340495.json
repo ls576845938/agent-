@@ -1,0 +1,116 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-m1-closeout-m2-validation-integration-20260912-26b340495",
+  "ticket_id": "M1-CLOSEOUT-M2-VALIDATION-INTEGRATION-20260912",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "researcher"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/m1-closeout-m2-validation-integration-20260912",
+  "base_commit": "2eafaf5220a5527962874e02fc04c1674e379ce8",
+  "deliverable_commit": "26b340495013f7a4b8aa6701f5fc4aee39c3a3dc",
+  "created_at": "2026-09-12T13:14:21Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-m1-archive-compat-integration-20260912-474c0f686",
+    "published-m1-closeout-m2-validation-20260912-c3a1f0b77"
+  ],
+  "supersedes": [],
+  "transition_for": "published-m1-closeout-m2-validation-20260912-c3a1f0b77",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md",
+      "sha256": "a41294eaace241b170ae2f9582ddeff05cbe154094b536d7ec70ae15e7556ad3",
+      "schema_version": "m1_closeout_m2_validation_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/research-layout.spec.ts",
+      "sha256": "f36e4848ea9e0aa2f11264fffccbbfbcca7c526b4a1b0f75113853e83371608c",
+      "schema_version": "m1_closeout_browser_regression_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-research-portfolio-contract.mjs",
+      "sha256": "e7e335a7edeec182f7a2cc95c04a5f6c07a898fcd221d6b02395b6b5575d8c77",
+      "schema_version": "m1_closeout_frozen_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/m2-trend-environment-protocol-20260912.md",
+      "sha256": "51422ae0b3600d07e0436ef1030b42d422e890d199ccab24cc78d53fcea30b40",
+      "schema_version": "m2_environment_ab_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/m2-trend-environment-input-audit-20260912.json",
+      "sha256": "781683d6347361fb9b4d691af90e4b61ede5b72f6f4b85ef6d84468d80839d97",
+      "schema_version": "m2_input_admission_note_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npx.cmd --no-install playwright test e2e/research-layout.spec.ts e2e/alpha-factory.spec.ts e2e/m1-archive-compat.spec.ts --workers=1 --reporter=line --output=output/playwright/m1-closeout-integration",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; 27 passed"
+    },
+    {
+      "command": "node frontend/scripts/test-research-portfolio-contract.mjs; node frontend/scripts/test-trend-environment.mjs; node frontend/scripts/test-m1-archive-compat.mjs; node frontend/scripts/test-research-rollback.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; four contracts passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; tsc --noEmit"
+    },
+    {
+      "command": "pytest -q tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; 25 passed"
+    },
+    {
+      "command": "pytest -q tests/contracts/test_strategy_decision_context_v1.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; 169 passed"
+    },
+    {
+      "command": "pytest -q tests/api/test_m1_research_readonly_archive.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-closeout-m2-validation-integration-20260912.md; 11 passed"
+    },
+    {
+      "command": "M2 independent-sample A/B fitting",
+      "result": "not_run",
+      "evidence_path": "docs/research/m2-trend-environment-input-audit-20260912.json; admission blocked, fit_count=0"
+    }
+  ],
+  "blockers": [
+    "registered_main_publication_pending",
+    "research_readonly_restart_and_identity_recheck_pending",
+    "independent_okx_1h_confirmation_window_not_verified",
+    "exact_immutable_confirmation_binding_and_segments_missing",
+    "no_shared_environment_ab_evaluator_yet",
+    "historical_reconstructed_availability",
+    "btc_runtime_artifact_root_unavailable_preserved",
+    "execution_safety_findings_not_repaired_in_this_scope",
+    "not_runtime_or_promotion_evidence",
+    "M3_M4_not_authorized"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

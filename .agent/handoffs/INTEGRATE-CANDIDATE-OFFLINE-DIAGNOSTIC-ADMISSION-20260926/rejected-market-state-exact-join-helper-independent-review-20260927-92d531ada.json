@@ -1,0 +1,68 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "exact-state helper c44550ff2 and superseding b385e1924 are not consumed by this integration candidate",
+    "actual A/B phase exact-state reconstruction was not proven across both dependency environment and source-binding differences",
+    "blocked-stage page remains consumer_phase partial with null missing fields and no effect or promotion claim"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher",
+    "super_developer",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-27T15:11:48Z",
+  "deliverable_commit": "92d531ada2992626679ffb4fefc70eb237638379",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/integrate-candidate-market-policy-closeout-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_market_policy_closeout_acceptance_v1",
+      "sha256": "36091ae73a0f4652f9e973d14298256324b4dbacb75f78ea4d5f5031b77f85af",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-market-state-exact-join-helper-20260927-c44550ff2",
+    "published-market-state-exact-join-helper-fix-20260927-b385e1924",
+    "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc"
+  ],
+  "domain": "shared",
+  "event_id": "rejected-market-state-exact-join-helper-independent-review-20260927-92d531ada",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical Python 3.11.15/pandas 3.0.4 independent state-index reconstruction against the 28 historical sealed entry hashes",
+      "evidence_path": "0/28 exact hash matches; docs/acceptance/integrate-candidate-market-policy-closeout-20260927.md",
+      "result": "failed"
+    },
+    {
+      "command": "compare old diagnostic and current consumer state source bindings",
+      "evidence_path": "old diagnostic 79de6c8c... differs from current consumer 1141ae6b...; exact current-phase reconstruction not proven",
+      "result": "failed"
+    },
+    {
+      "command": "backend blocked projection plus frontend fail-closed display regressions",
+      "evidence_path": "42 backend passed; 9 frontend passed; consumer_phase/partial remains authoritative",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "transition_for": "published-market-state-exact-join-helper-fix-20260927-b385e1924"
+}

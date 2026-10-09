@@ -1,0 +1,109 @@
+{
+  "base_commit": "c90af609178cc11393f852eeb445afba306f5f6c",
+  "blockers": [
+    "owner:integrator correction_deliverable_not_integrated_to_registered_main",
+    "canonical_mocked_playwright_deferred_to_integrated_current_main_port_3000_is_c90af609_not_this_producer_head",
+    "requested_frontend_research_workbench_risk_is_not_in_machine_delivery_policy_and_preflight_used_unclassified_strict_path"
+  ],
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "created_at": "2026-08-18T01:50:27.5940158Z",
+  "deliverable_commit": "03f0643e74d17a24eb454f5636d79f71ce95ac4a",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_workspace_research_backtest_gate_v2",
+      "sha256": "53c161b208e6343c90ce6241116d0b3bf4d2c252fa282e9adf13f38c3b982ed5",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_strategy_editor_research_backtest_gate_v2",
+      "sha256": "6d7228ce9381f58e61ccbfa9b2fff37f748ed867c1c9b6b34504bd37d74d94f6",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_strategy_editor_freshness_independence_e2e_v1",
+      "sha256": "54824bbbb5d478b91b0ccab541e0951330dde4c31b29c81f1d6991b5de326a9d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "9a7d321d900c2990e485836d69a0d467cc1b67c44612db76ccd6fe9fe56370d2",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-btc-crypto-strategy-editor-backtest-flow-01-correction-02-03f0643e7",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-strategy-editor-corr02",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777"],
+  "ticket_id": "BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01-CORRECTION-02",
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --grep \"research-only backtest is independent\" --reporter=line (failure-first on canonical main)",
+      "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (Vite 5214 modules transformed)",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main mocked Playwright after correction",
+      "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "transition_for": ""
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_type": "integrated",
+  "event_id": "integrated-qs-strategy-modules-real-catalog-binding-04-correction-01-f930371d9",
+  "ticket_id": "QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04",
+  "base_commit": "b9039a2f2cc5b0270bc7f75cf436887e6d6c79c3",
+  "deliverable_commit": "f930371d9da15d9bda407fc985f4483fd9c1defd",
+  "producer_branch": "agent/integrator/qs-real-catalog-corr-01",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "shared",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "created_at": "2026-08-19T17:04:54.8755239Z",
+  "expires_at": "",
+  "depends_on": ["published-qs-strategy-modules-real-catalog-binding-04-correction-01-8daa7173b"],
+  "transition_for": "published-qs-strategy-modules-real-catalog-binding-04-correction-01-8daa7173b",
+  "supersedes": ["integrated-qs-strategy-modules-real-catalog-binding-04-86173efb9"],
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "type": "code",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_catalog_filter_v1",
+      "sha256": "f572e768511f14ab688cf0b5a29f98de0ea1aee849f9a603d55742f6d80ef3e5"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "type": "test_evidence",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_catalog_filter_playwright_v1",
+      "sha256": "198bd6d3c7c80a4dfd93d1f337a623addf5a61ce813d987999106169bd30d024"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "data_manifest",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "e54f707bbbca8cc89a501e54bebb5738a7bc355467cad91a19adc63bbb647324"
+    }
+  ],
+  "tests": [
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input published correction envelope", "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04/published-qs-strategy-modules-real-catalog-binding-04-correction-01-8daa7173b.json", "result": "passed"},
+    {"command": "npm --prefix frontend run lint", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run build (existing Vite chunk-size warning only)", "evidence_path": "", "result": "passed"},
+    {"command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list (12 tests collected)", "evidence_path": "frontend/e2e/strategy-modules.spec.ts", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:refresh", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:test", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "git diff --check", "evidence_path": "", "result": "passed"},
+    {"command": "canonical full mocked strategy-modules Playwright (12/12)", "evidence_path": "", "result": "not_run"}
+  ],
+  "blockers": [
+    "owner:root canonical current-main mocked strategy-modules browser suite (12/12) deferred because no service restart was authorized and the existing 3000 bundle was not proven to serve this integrated HEAD",
+    "frontend-only GET binding: no backend restart, artifact/read-model rebuild, service or Demo execution performed",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; explicit committed correction envelope was validated directly",
+    "not_promotion_evidence_ready; promotion=false; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

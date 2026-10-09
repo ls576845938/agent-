@@ -1,0 +1,114 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-data-btc-public-immutable-scheduler-migration-01-bfa91f77",
+  "event_type": "published",
+  "ticket_id": "DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01",
+  "domain": "btc",
+  "producer_role": "data_steward",
+  "producer_branch": "agent/data_steward/data-btc-public-immutable-scheduler-migration-01",
+  "base_commit": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "deliverable_commit": "bfa91f77da8b145487124a087a909258a910683b",
+  "created_at": "2026-07-26T20:36:00Z",
+  "expires_at": "",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e.json",
+      "type": "data_manifest",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "4e997c9d6dcad27a54d0b00a887b1a99970717a543cc6e8d37629d8703bd80a6"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/evidence/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e/btc_okx_public_swap_research_bundle_attestation.json",
+      "type": "report",
+      "schema_version": "btc_okx_public_swap_research_bundle_attestation_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "46e8bda04f629fdf8c6382007a886ead59b383fa82b9ef6a6615bf151ac46424"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116.json",
+      "type": "data_manifest",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "628b672502617f64dd47d1824a596e2b929fb4c1178df7b2843c59421d1e70ef"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116/btc_okx_l2_blocked_attestation.json",
+      "type": "report",
+      "schema_version": "btc_okx_l2_blocked_attestation_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "d2f8f3668020cbeb7a5f83bddb0c9c3b38e6915ec0409dc8b59156835a5f5367"
+    }
+  ],
+  "tests": [
+    {
+      "command": "22-file SHA-256/byte/mtime revalidation plus three ScheduledTask state and definition-hash revalidation",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/evidence/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e/btc_okx_public_swap_research_bundle_attestation.json"
+    },
+    {
+      "command": "independent verification of all 13 file hashes declared by btc_perpetual_bundle_manifest.json",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/evidence/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e/btc_okx_public_swap_research_bundle_attestation.json"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <public-swap-manifest> --shared-root <shared-data-root>",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e.json"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <l2-blocked-manifest> --shared-root <shared-data-root>",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116.json"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py -q (130 passed, 1 failed: public WS fixture missing QS_BTC_RUNTIME_ARTIFACT_ROOT in non-Git tmp repo)",
+      "result": "failed",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116/btc_okx_l2_blocked_attestation.json"
+    },
+    {
+      "command": "30-natural-day real timestamp-aligned OKX L2 collection and immutable replay export",
+      "result": "not_run",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116/btc_okx_l2_blocked_attestation.json"
+    },
+    {
+      "command": "current-HEAD promotion/paper/live gate artifact rebuild",
+      "result": "not_run",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/evidence/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e/btc_okx_public_swap_research_bundle_attestation.json"
+    }
+  ],
+  "blockers": [
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "legacy_scheduler_writer_incident_quarantined",
+    "btc_okx_tail_merge_target_bundle_missing",
+    "not_promotion_evidence",
+    "btc_okx_selected_bundle_dir_missing",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "owner:btc_developer public_ws_fixture_runtime_artifact_root_env_missing"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

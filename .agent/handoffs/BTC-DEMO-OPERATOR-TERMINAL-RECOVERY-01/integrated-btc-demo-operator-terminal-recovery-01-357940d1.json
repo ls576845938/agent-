@@ -1,0 +1,156 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-terminal-recovery-01-357940d1",
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-RECOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-operator-terminal-recovery-int-01",
+  "base_commit": "0b07c62d0c6ee2d61e629baeeeffaca88169b2c7",
+  "deliverable_commit": "357940d16e0201fb66309100a13249f2d3a2e37b",
+  "created_at": "2026-08-25T00:50:55Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-operator-terminal-recovery-01-498fe232c"],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-operator-terminal-recovery-01-498fe232c",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "a86577f04bdcbe1bf6ae05b438696002eeb6e9a79558a3cede3af776eea6b15b",
+      "schema_version": "btc_demo_operator_terminal_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "sha256": "fd553f129a4a36803a3402ac542108108fa93db250880d61ba5f0e1fea3a8b3e",
+      "schema_version": "btc_demo_operator_terminal_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_operator_contract_v2.py",
+      "sha256": "283cd2c14befdc17de6eb3267317590442eaf29fe0b50cced356d5404aa64d36",
+      "schema_version": "btc_demo_operator_terminal_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "2ed3cb5a243f448985ca53945aae410aeebfc2d3d31d827fcfd8f0e399423156",
+      "schema_version": "btc_demo_operator_terminal_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "16476c5b57e572d9a99b0978d9a8084cb683e9cfb4c9beef47ad387548cd3546",
+      "schema_version": "btc_demo_operator_terminal_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "sha256": "06b46351b777fa2543fb307eac64381823691532bcfbe08af2eedef2a4c8a720",
+      "schema_version": "btc_demo_operator_terminal_recovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "sha256": "fa3a5619c49469282b1335a3dcee2ed41d28ab62c33e6398f1ae3c04127dc0c1",
+      "schema_version": "btc_demo_operator_terminal_recovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "9389f83689c80919ccded2ccdb0a6b7394c70153d3a132d83297cc05377b339f",
+      "schema_version": "btc_demo_operator_terminal_recovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-OPERATOR-TERMINAL-RECOVERY-01/published-btc-demo-operator-terminal-recovery-01-498fe232c.json",
+      "sha256": "e2c47cd4247bf4c9a262a73cd257b94a72ebd5beaef9224aa90d9d68e0052338",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published-btc-demo-operator-terminal-recovery-01-498fe232c; verify ancestry/touch/blob hashes",
+      "result": "passed",
+      "evidence_path": "status=valid; base->deliverable->handoff linear ancestry; all eight declared SHA-256 values matched; producer scoped clean"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_terminal_recovery_int01 tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed",
+      "evidence_path": "49 passed in 6.16s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_terminal_recovery_int02 backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "43 passed in 4.53s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_terminal_recovery_int03 backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed",
+      "evidence_path": "15 passed; acknowledgement route and stable operator error mapping covered"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs; node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "operator_v2 actions=8/read_model=btc_demo_operation_read_model_v2; attempt_state contract passed; both exit=0"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run check:btc-tradingview",
+      "result": "passed",
+      "evidence_path": "cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy all true"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "passed",
+      "evidence_path": "tsc --noEmit passed using temporary read-only registered-main node_modules junction; junction removed"
+    },
+    {
+      "command": "py -3.11 -m pytest -q ... operator contract/service/API",
+      "result": "not_run",
+      "evidence_path": "py launcher reported no suitable 3.11 runtime; absolute Python 3.11.15 exists but has no pytest module; no package installation or network workaround used"
+    },
+    {
+      "command": "Python 3.11 py_compile approved Python files",
+      "result": "passed",
+      "evidence_path": "Python 3.11.15; PYTHONPYCACHEPREFIX=C:\\tmp\\qs_terminal_recovery_py311_pyc"
+    },
+    {
+      "command": "py_compile approved Python files and git diff --check base..integration",
+      "result": "passed",
+      "evidence_path": "zero compile errors and zero diff-check output"
+    },
+    {
+      "command": "canonical service restart/browser/private-order endpoint validation",
+      "result": "not_run",
+      "evidence_path": "deferred to main session; integrator did not start services, send POST, read credentials, or access private/order/live endpoints"
+    }
+  ],
+  "blockers": [
+    "python311_pytest_module_unavailable_without_install_authorization",
+    "backend_restart_required_after_integration",
+    "canonical_current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

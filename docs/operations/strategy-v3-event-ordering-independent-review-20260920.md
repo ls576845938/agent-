@@ -25,7 +25,7 @@
 
 ```text
 <canonical .venv python> -B -m pytest -q -p no:cacheprovider --tb=short \
-  --basetemp C:/Users/李烁18353780778/AppData/Local/Temp/qs-v3-order-integrator-20260920-revised \
+  --basetemp C:/Users/LOCAL_USER/AppData/Local/Temp/qs-v3-order-integrator-20260920-revised \
   tests/contracts/test_strategy_v3_event_ordering.py::test_interrupted_slot_restores_bound_market_before_account_reconciliation \
   tests/contracts/test_strategy_v3_qlib_offline.py::test_explicit_nonzero_fixture_uses_existing_oms_ledger_and_survives_restart \
   tests/contracts/test_strategy_v3_unified_closeout.py::test_clean_stop_with_expired_ack_cannot_resume_as_healthy \

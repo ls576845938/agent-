@@ -1,0 +1,72 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-okx-p0-drill-supervisor-frontend-01-2cdd4f671",
+  "ticket_id": "BTC-OKX-P0-DRILL-SUPERVISOR-FRONTEND-01",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-p0-drill-supervisor-frontend-01",
+  "base_commit": "9718abdb53528fe1962fabb6b59120ba5ef787df",
+  "deliverable_commit": "9718abdb53528fe1962fabb6b59120ba5ef787df",
+  "created_at": "2026-08-05T14:46:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-p0-drill-supervisor-frontend-01-2cdd4f671"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-p0-drill-supervisor-frontend-01-2cdd4f671",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <third producer event>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-SUPERVISOR-FRONTEND-01/published-btc-okx-p0-drill-supervisor-frontend-01-2cdd4f671.json"
+    },
+    {
+      "command": "git ancestry, superseding transition, exact 14 declared business paths and raw Git-blob SHA-256 verification [observed: base ancestor=true; core parent of handoff=true; depends_on prior rejection=true; supersedes old published=true; 14/14 SHA-256 match; two additional append-only historical published governance events audited]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-SUPERVISOR-FRONTEND-01/published-btc-okx-p0-drill-supervisor-frontend-01-2cdd4f671.json"
+    },
+    {
+      "command": "independent P0 static semantic review of superseding core 2cdd4f6719bc01100333b03413b61ee78d4d8c15 [observed: stop dead-man disarm excludes only four known unresolved intent statuses instead of positively proving every intent is terminal]",
+      "result": "failed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "producer focused 33/164, P0 core 169, backend boundary 28, py_compile, frontend tsc/build, Playwright collect-only",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "frontend identity refresh, canonical identity check, and current-main browser e2e",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "p0_stop_dead_man_disarm_does_not_positively_require_all_intents_terminal",
+    "p0_unknown_or_malformed_intent_status_can_bypass_known_unresolved_status_filter",
+    "p0_clean_stop_and_dead_man_disarm_possible_without_terminal_intent_proof",
+    "producer_deliverable_not_merged",
+    "frontend_identity_not_refreshed",
+    "backend_restart_not_performed",
+    "six_actual_okx_demo_fault_drills_not_executed",
+    "worker_kill_real_process_path_not_executed_against_okx_demo",
+    "remote_supervisor_second_host_deployment_not_performed",
+    "no_private_no_order_no_live_no_transfer_no_withdraw_access_during_integration_review"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

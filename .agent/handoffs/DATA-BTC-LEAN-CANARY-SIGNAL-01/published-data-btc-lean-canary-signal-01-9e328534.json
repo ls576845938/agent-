@@ -1,0 +1,70 @@
+{
+  "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+  "blockers": [
+    "funding_history_available_only_from_2026-04-29T16:00:00Z",
+    "open_interest_history_not_verified_diagnostic_partial",
+    "liquidation_snapshots_missing_diagnostic_only",
+    "consumer_reader_integration_and_independent_research_validation_are_separate_gates",
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "researcher"
+  ],
+  "created_at": "2026-07-29T14:00:00Z",
+  "deliverable_commit": "9e328534f3e2d53d7b8e7bb1596be7ad0243691e",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "0d513cbbd690604ac8f0c707f08bdf5c1905151bc68d7767bdfbf917cc770581",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/DATA-BTC-LEAN-CANARY-SIGNAL-01/quality-checked-receipt-20260729T135354Z.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "data_ticket_delivery_receipt_v1",
+      "sha256": "c1284b028a639f37e35da761d17b109a49fb4f0c181194124aa4d50171a0c77f",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "data",
+  "event_id": "published-data-btc-lean-canary-signal-01-9e328534",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-btc-lean-canary-signal-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_tail_bundle_merge.py -q",
+      "evidence_path": ".agent/data_manifests/DATA-BTC-LEAN-CANARY-SIGNAL-01/quality-checked-receipt-20260729T135354Z.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_shared_data.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": ".agent/data_manifests/DATA-BTC-LEAN-CANARY-SIGNAL-01/quality-checked-receipt-20260729T135354Z.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest-git-spec 9e328534f3e2d53d7b8e7bb1596be7ad0243691e:<manifest>",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "DATA-BTC-LEAN-CANARY-SIGNAL-01",
+  "transition_for": ""
+}

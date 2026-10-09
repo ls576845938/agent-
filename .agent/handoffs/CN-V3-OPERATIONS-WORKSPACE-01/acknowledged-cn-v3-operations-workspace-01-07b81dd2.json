@@ -1,0 +1,177 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-cn-v3-operations-workspace-01-07b81dd2",
+  "ticket_id": "CN-V3-OPERATIONS-WORKSPACE-01",
+  "event_type": "acknowledged",
+  "producer_role": "a_share_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "cn_equity",
+  "producer_branch": "agent/a_share_developer/cn-v3-operations-workspace-01",
+  "base_commit": "04e5647dbddd62a0e2b1676096b20ee8396a647e",
+  "deliverable_commit": "07b81dd2633268f506d89b11aac11022ef1440c4",
+  "created_at": "2026-07-24T14:47:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-cn-v3-domain-read-model-api-01-goal9-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-cn-v3-domain-read-model-api-01-goal9-batch-01",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CNEquityWorkspace.tsx",
+      "sha256": "4a4c318fb88f1b9c5d4ef1ddc4117e9bd706b214d930f334772a5ad693ed9ebe",
+      "schema_version": "cn_equity_operations_workspace_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/cn/cn-equity.css",
+      "sha256": "008c0fcf31a6bbf9adcd80179f701b4bef6d3937b7539ff7cb0ab78c86fd4c1e",
+      "schema_version": "cn_equity_operations_workspace_style_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/cn/domainReadModel.ts",
+      "sha256": "f9ec59795b660ea0fd63b1ed8eade468249f71143c2759e101a586ffacab5332",
+      "schema_version": "cn_equity_operator_frontend_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/src/workspaces/cn/e2e-harness.html",
+      "sha256": "9a294e7322349891f96e071708e2cf9840db3fe346f0903851c640a6dea6c893",
+      "schema_version": "cn_equity_workspace_e2e_harness_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/src/workspaces/cn/e2e-harness.tsx",
+      "sha256": "b09d8fb7a47f6b65ad9f882e761576810ba1630eddcc9a4c7e25930f11bb22e3",
+      "schema_version": "cn_equity_workspace_e2e_harness_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/cn-equity.spec.ts",
+      "sha256": "69f2dcb31d7059a46d44ef4cc099243d5e81bda58b9cb77199c8a59f0c96a13a",
+      "schema_version": "cn_equity_operations_workspace_e2e_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/cn-operations-smoke.mjs",
+      "sha256": "461c8fcc4710e94cc9ec47dc3c3ffe66a4d79aa89b0cfdbb6cabe76f3bb73dd7",
+      "schema_version": "cn_equity_operations_workspace_smoke_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/CN-V3-DOMAIN-READ-MODEL-API-01/integrated-cn-v3-domain-read-model-api-01-goal9-batch-01.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/CN-V3-DOMAIN-READ-MODEL-API-01/integrated-cn-v3-domain-read-model-api-01-goal9-batch-01.json"
+    },
+    {
+      "command": "safe_status.py against the four exact CN frontend paths in 16 super_developer worktrees [observed: 16 clean, 0 conflicts]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CNEquityWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run lint [tsc --noEmit]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CNEquityWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run build [observed: 77 modules transformed; production build passed; route remains integrator-owned]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CNEquityWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke [observed: frontend smoke checks passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node frontend/scripts/cn-operations-smoke.mjs [observed: CN operations workspace smoke passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/cn-equity.spec.ts --workers=1 [observed: 5 passed; desktop and mobile visual QA passed]",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/cn-equity.spec.ts"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_team_context.py::test_team_context_registers_us_and_cn_current_head_read_model_candidates [observed: 1 passed]",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_team_context.py"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_api_contract.py::ApiContractTests::test_cn_domain_read_model_endpoint_is_get_only_no_store_and_fail_closed",
+      "result": "not_run",
+      "evidence_path": "backend/tests/test_api_contract.py"
+    }
+  ],
+  "blockers": [
+    "cn_dataready_current_main_handoff_missing",
+    "cn_dataready_current_main_manifest_missing",
+    "cn_dataready_old_two_security_pilot_not_accepted",
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "cn_market_rule_old_two_security_pilot_not_accepted",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "real_data_backtest_evidence_not_produced",
+    "fixture_research_only_not_promotion_evidence",
+    "cn_backtest_fixture_only",
+    "cn_oms_offline_fixture_only",
+    "cn_replay_injected_history_only",
+    "cn_broker_capability_unproven",
+    "cn_qmt_order_write_not_authorized",
+    "cn_qmt_private_read_not_authorized",
+    "cn_qmt_reconciliation_unproven",
+    "cn_qmt_sdk_integration_not_authorized",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "owner:integrator:register_cn_equity_workspace_route_navigation_and_shared_style",
+    "owner:integrator:rematerialize_current_head_cn_read_model_after_integration",
+    "owner:integrator:rerun_frontend_build_smoke_and_cn_e2e_after_route_wiring",
+    "optional_cross_domain_api_contract_not_collected_in_cn_sparse_worktree:ModuleNotFoundError_quant_us",
+    "classification:goal10_code_integration_blocker=false",
+    "classification:cn_operations_workspace=quality_checked",
+    "classification:cn_operations_workspace_route=integrator_owned",
+    "classification:cn_operations_workspace_trading_capability=locked",
+    "safety:promotion=false",
+    "safety:paper=false",
+    "safety:live=false",
+    "safety:private=false",
+    "safety:order=false",
+    "safety:broker=false",
+    "safety:withdraw=false",
+    "safety:demo=false",
+    "safety:paper_queue=false",
+    "safety:real_order=false",
+    "safety:external_network=false",
+    "safety:secret_access=false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

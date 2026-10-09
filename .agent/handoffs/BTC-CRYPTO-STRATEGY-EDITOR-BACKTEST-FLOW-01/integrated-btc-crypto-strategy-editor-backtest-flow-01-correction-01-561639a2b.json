@@ -1,0 +1,57 @@
+{
+  "base_commit": "fa406d3626cec0754efccfe6dfb39ad54b524b6c",
+  "blockers": [
+    "owner:main_sync canonical_playwright_and_design_screenshot_deferred_until_current_main_server",
+    "owner:main_sync backend_restart_pending_after_ff",
+    "owner:btc_operations promotion_artifact_rebuild_required_by_unclassified_change_risk"
+  ],
+  "consumer_roles": ["architect", "integrator"],
+  "created_at": "2026-08-18T01:22:19Z",
+  "deliverable_commit": "561639a2b7e8a701bbdf460dc4da70c81ce97c24",
+  "deliverables": [
+    {"path": "design-qa.md", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_design_qa_v1", "sha256": "951d034b2a55399bbbf94484af5a6087e2c29f7c4e5dcc64b30670255c61f8d1", "type": "document"},
+    {"path": "frontend/e2e/btc-backtest-workbench.spec.ts", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_controlled_backtest_e2e_v1", "sha256": "565d8e1a7b1bf0bfcc72d27a2264169875711b1b5b40abdbf69ae63ede878bc8", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "quant_frontend_identity_v1", "sha256": "6720c7611ada59ca6387beb92e84f95a8298104a49fdea0b39aababdff50baa3", "type": "document"},
+    {"path": "frontend/src/workspaces/CryptoWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_parent_controlled_backtest_v1", "sha256": "6b5dec2a980f294879a9b9d7f4a7485ea84804796312978c07ba06d0bc33b692", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_event_handler_typing_correction_v1", "sha256": "729c2d485d40e0fd4968bc73de6c5933dda2f270b44f7d6cd569f17283b6f673", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_report_projection_v1", "sha256": "5e106d155e84c6ae85249ec24268b0c12f73325ff4c1f707b1367f7c88e4a818", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/crypto-strategy-editor.css", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_visual_tokens_v1", "sha256": "34e78c658082a4d5a57dd73df92abe6327e9325f3477a2d53e80093786944ccf", "type": "code"}
+  ],
+  "depends_on": [
+    "published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777",
+    "integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-01-1ff9d3685"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-01-561639a2b",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-strategy-editor-backtest-int01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-01-1ff9d3685"],
+  "ticket_id": "BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01-INTEGRATION",
+  "tests": [
+    {"command": "correction handoff.py validate; ancestry/touch/blob validation", "evidence_path": ".agent/handoffs/BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01/published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777.json", "result": "passed"},
+    {"command": "git cherry-pick correction deliverable, identity, superseding handoff; zero conflicts", "evidence_path": ".agent/handoffs/BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01/published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777.json", "result": "passed"},
+    {"command": "npm.cmd run lint (tsc --noEmit)", "evidence_path": "frontend/package.json", "result": "passed"},
+    {"command": "npm.cmd run build (Vite 5214 modules transformed; chunk-size warning only)", "evidence_path": "frontend/package.json", "result": "passed"},
+    {"command": "npm.cmd exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --list (4 tests)", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "passed"},
+    {"command": "npm.cmd exec -- playwright test e2e/btc-strategy-report.spec.ts --config=playwright.config.ts --list (1 test)", "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts", "result": "passed"},
+    {"command": "npm.cmd run identity:refresh (approved identity-only canonical binding)", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm.cmd run identity:check (post-refresh; final registered-main check after ff)", "evidence_path": "frontend/public/frontend-identity.json", "result": "not_run"},
+    {"command": "npm.cmd run identity:test (final registered-main test after ff)", "evidence_path": "frontend/public/frontend-identity.json", "result": "not_run"},
+    {"command": "canonical browser E2E execution (current-main server/restart not authorized)", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "not_run"},
+    {"command": "git diff --check fa406d3626cec0754efccfe6dfb39ad54b524b6c..561639a2b7e8a701bbdf460dc4da70c81ce97c24", "evidence_path": "", "result": "passed"}
+  ],
+  "transition_for": "published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777"
+}

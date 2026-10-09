@@ -1,0 +1,91 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-strategy-history-immutable-latest-pointer-02-0df67017c",
+  "ticket_id": "BTC-STRATEGY-HISTORY-IMMUTABLE-LATEST-POINTER-02",
+  "event_type": "published",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-strategy-history-immutable-latest-pointer-02",
+  "base_commit": "0df67017c525eb79ee8670c4279af161af7de277",
+  "deliverable_commit": "0df67017c525eb79ee8670c4279af161af7de277",
+  "created_at": "2026-08-18T00:00:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_strategy_history.py",
+      "sha256": "95c2c5d68820bfd6db730f8bc5456faea58e5a7c82d53309cbcc38d809a78ee2",
+      "schema_version": "btc_strategy_history_snapshot_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/publish_btc_strategy_history_snapshot.py",
+      "sha256": "0b071f527514433493e07fd6c587d961cb4d416d09f8bcb588b80edfed3e86f8",
+      "schema_version": "btc_strategy_history_snapshot_publisher_cli_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/context_packet.py --role integrator --scope gate --change-risk promotion_evidence --format markdown",
+      "result": "passed",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.agent\\handoffs\\BTC-STRATEGY-HISTORY-IMMUTABLE-LATEST-POINTER-02"
+    },
+    {
+      "command": "BTCRuntimeArtifactReader.from_environment and BTCRuntimeArtifactWriter.from_environment against the already-bound external root (owner marker/repository identity/lock contract)",
+      "result": "passed",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z"
+    },
+    {
+      "command": "publish_btc_strategy_history_snapshot(writer, external historical report, source_commit=0df67017c525eb79ee8670c4279af161af7de277, producer_commit=0df67017c525eb79ee8670c4279af161af7de277)",
+      "result": "passed",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z\\btc_strategy_history"
+    },
+    {
+      "command": "post-publish pointer/index/report SHA, schema, source/producer commit and same-root protected gate/read-model hash validation",
+      "result": "passed",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z\\btc_strategy_history\\latest_pointer.json"
+    },
+    {
+      "command": "GET http://127.0.0.1:8765/__backend_identity; GET /api/health; GET /api/research/btc/strategy-history/catalog; GET /api/research/btc/strategy-history/long_short_donchian_top5/btc_ls_tf_formal_donchian_w180_d50_200_atr20_cd6_fail0_risknone_753cbc9ed1",
+      "result": "passed",
+      "evidence_path": "http://127.0.0.1:8765/api/research/btc/strategy-history/catalog"
+    },
+    {
+      "command": "canonical backend restart with QS_BTC_RUNTIME_ARTIFACT_ROOT bound to the existing gate/read-model root (not run; same-root lazy reader already returned HTTP200)",
+      "result": "not_run",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z"
+    },
+    {
+      "command": "private/order/live/transfer/withdraw/secret/Demo control calls",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "history_report_source_code_commit_768550e3_is_historical_research_only_not_current_head_promotion_evidence",
+    "history_detail_status_complete_research_only_with_current_head_match_false_and_historical_report_not_current_head_promotion_evidence",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_and_demo_start_remain_false",
+    "backend_restart_not_run_in_this_window_same_bound_root_reader_already_served_http200",
+    "pre-supplement_unbound_transient_root_exists_but_is_not_backend_bound_or_consumable:D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-strategy-history-current-head-0df67017-20260817T225023Z"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

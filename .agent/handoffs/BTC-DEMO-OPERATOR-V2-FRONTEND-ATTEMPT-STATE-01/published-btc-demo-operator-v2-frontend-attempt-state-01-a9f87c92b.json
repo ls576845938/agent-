@@ -1,0 +1,50 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-v2-frontend-attempt-state-01-a9f87c92b",
+  "ticket_id": "BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-v2-frontend-attempt-state-01",
+  "base_commit": "c232f66057450e3acdbebc12008a719909acdb67",
+  "deliverable_commit": "a9f87c92b112e95ba76abb05804d85f1c975a3dd",
+  "created_at": "2026-08-24T13:49:38Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/lib/api.ts", "sha256": "97e5a779015e0aa8ca434b0cddf8ed5acb2e8a6772cf3c78adb60c0b229e9fea", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts", "sha256": "8c0447240557439cb6024e357ce0c9f5ebc1357ae8a5692750d5795af82b49ca", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "f0ed27da10257994af4b61282a4c37df698860642731c0639838b8ae00ea58dc", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/operator-attempt-state.ts", "sha256": "785cf50d441d065184572a04ef882828d700131ae7bbd1ad3c8a2df69f5e6a80", "schema_version": "btc_demo_operator_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-v2-contract.mjs", "sha256": "7e3a3de3472a6fbf073292aa849d446d4bcec76780cbcbaff98be8530bfd41df", "schema_version": "btc_demo_operator_attempt_contract_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-attempt-state.mjs", "sha256": "5cf8c7d8c4ad035240f4e90d86030a8ecf9763f3a23239f50ccd1b6eadd75a09", "schema_version": "btc_demo_operator_attempt_contract_tests_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "node frontend/scripts/test-btc-operator-attempt-state.mjs (failure-first before implementation: ENOENT for operator-attempt-state.ts)", "result": "failed", "evidence_path": "frontend/scripts/test-btc-operator-attempt-state.mjs"},
+    {"command": "node frontend/scripts/test-btc-operator-attempt-state.mjs", "result": "passed", "evidence_path": "frontend/scripts/test-btc-operator-attempt-state.mjs"},
+    {"command": "node frontend/scripts/test-btc-operator-v2-contract.mjs", "result": "passed", "evidence_path": "frontend/scripts/test-btc-operator-v2-contract.mjs"},
+    {"command": "npm --prefix frontend run lint", "result": "passed", "evidence_path": "frontend/tsconfig.json"},
+    {"command": "npm --prefix frontend run build", "result": "passed", "evidence_path": "frontend/vite.config.ts"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "frontend/src/lib/api.ts"},
+    {"command": "frontend/e2e/btc-demo-console.spec.ts mocked Playwright", "result": "not_run", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "frontend_playwright_deferred_to_integrated_current_main",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

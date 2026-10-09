@@ -1,0 +1,118 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-ws-l2-funding-reconciliation-closure-01-f0a863f72",
+  "ticket_id": "BTC-V3-WS-L2-FUNDING-RECONCILIATION-CLOSURE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-ws-l2-funding-reconciliation-closure-01",
+  "base_commit": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "deliverable_commit": "f0a863f72758a6c64e6cbb5b1bc9d748aba84799",
+  "created_at": "2026-07-28T08:31:53Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "pyproject.toml",
+      "sha256": "70ad0cd890506ac2a2d66534bd6ff4740a3fac4362369acb8185bca119fdb41b",
+      "schema_version": "python_project_dependency_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/adapters/okx_public_ws.py",
+      "sha256": "6502b23c66a41b6d171a92c057767822e7d078b7e62d339b17a009fa49f16ff6",
+      "schema_version": "okx_public_ws_l2_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_ws_l2_funding_reconciliation_closure.py",
+      "sha256": "c0fcbb3eb2201c2f7a7b3f2b782d78b9fd374fdb1df1826faddaaeddaec2f8eb",
+      "schema_version": "btc_ws_l2_funding_reconciliation_closure_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/backtest/funding_ledger.py",
+      "sha256": "8f2458496ac0dba1aaef3a746863787e6ab61ee9de5d76eb09c24febe92e8877",
+      "schema_version": "btc_perpetual_fill_position_cash_ledger_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/backtest/funding_cashflow_evidence.py",
+      "sha256": "f1e2418389f102ef794e672a7124be92906a26afe9021c4d9b9b1ca4ae45c1ae",
+      "schema_version": "btc_funding_cashflow_evidence_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/private_ws_reconciliation.py",
+      "sha256": "ded5b307f983d3d1d6efa9f0ef854f587b35e9e57eca5cc439235b128f28115c",
+      "schema_version": "btc_private_ws_offline_reconciliation_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py",
+      "sha256": "7080e757da0c96e43ee073d4f7387a6e2cf306c12abd54ac438668e38986755e",
+      "schema_version": "btc_ws_l2_funding_reconciliation_closure_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py tests/contracts/test_btc_next_stage_engineering_closure.py tests/contracts/test_btc_paper_oms_lifecycle.py tests/contracts/test_btc_audit_dag.py tests/contracts/test_btc_paper_oms_session_reconciliation.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py -q --basetemp <unique-system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py"
+    },
+    {
+      "command": "py -3 -m compileall -q -f -d <unique-system-temp> <five touched Python modules>",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_ws_l2_funding_reconciliation_closure.py"
+    },
+    {
+      "command": "py -3 -m pytest <targeted contracts plus tests/contracts/test_btc_funding_payment_ledger_replay.py> -q --basetemp <unique-system-temp> [observed: 37 passed, 2 failed because sparse worktree excludes artifacts/btc_cost_model/latest and default runtime funding data]",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_btc_funding_payment_ledger_replay.py"
+    },
+    {
+      "command": "standard project dependency environment sync followed by non-injected websocket import probe",
+      "result": "not_run",
+      "evidence_path": "pyproject.toml"
+    },
+    {
+      "command": "real private WS, real non-flat fill, real funding cashflow, 30-day natural observation, and manual promotion approval",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:runtime_provisioning current_writer_python_missing_standard_websocket_client_dependency_sync",
+    "validation_not_run:artifact_backed_funding_ledger_default_report_requires_runtime_artifacts",
+    "owner:btc_operations real_private_ws_observation_missing",
+    "owner:btc_observation real_non_flat_fill_observation_missing",
+    "owner:btc_operations real_funding_cashflow_observation_missing",
+    "owner:btc_observation natural_observation_window_30_day_incomplete",
+    "owner:architect/manual_reviewer manual_promotion_approval_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

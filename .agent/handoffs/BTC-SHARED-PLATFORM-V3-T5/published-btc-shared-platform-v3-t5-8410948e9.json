@@ -1,0 +1,117 @@
+{
+  "base_commit": "a8f1aa7e1a5e43e68bfb1dab3f7b16b9fa48a1ad",
+  "blockers": [
+    "independent_integrator_required_by_unclassified_policy",
+    "promotion_artifact_rebuild_required_by_unclassified_policy_deferred",
+    "backend_restart_required_by_unclassified_policy_deferred",
+    "sparse_worktree_missing_quant_us_quant_cn_blocks_us_cn_t0_collection",
+    "btc_runtime_artifact_root_unavailable_baseline_blocker",
+    "promotion_paper_private_live_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": ["architect", "btc_developer", "integrator"],
+  "created_at": "2026-08-22T17:23:17Z",
+  "deliverable_commit": "8410948e99f923b27fa66aa17b570ed74722219c",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/shared_platform_v3.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t5_oms_v1",
+      "sha256": "051449a35863365f395b356bf9ba3d6f43546d28db9ad08e83fe9759955fd3dc",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_t5_delegate",
+      "sha256": "eb9b8162d2c0d90c27893df81ce2937bfe8fd5e8aefa21421520909fe00790a1",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t5_exports",
+      "sha256": "4ad556baa4cc29cadd6210d737783d1a693b35e48a3bfd518bec835dc86ccccb",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_oms_delegation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t5_oms_contract_tests_v1",
+      "sha256": "9b267d88c5f724fe1f189396b478e5b1428ec7662564f0d100da38c2ef1d8d94",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t1",
+    "integrated-btc-shared-platform-v3-t2",
+    "integrated-btc-shared-platform-v3-t3",
+    "integrated-btc-shared-platform-v3-t4"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-shared-platform-v3-t5-8410948e9",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-shared-platform-v3-t5",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5i2 tests/contracts/test_btc_shared_platform_v3_oms_delegation.py",
+      "evidence_path": "9 passed in 1.12s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5layers tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py tests/contracts/test_btc_shared_boundary_adoption.py",
+      "evidence_path": "139 passed in 4.42s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5runtimefinal tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "425 passed in 63.05s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5t0btc2 tests/contracts/test_btc_shared_observation_inputs.py tests/contracts/test_btc_dirty_worktree_boundary.py",
+      "evidence_path": "21 passed in 22.14s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5focusedfinal tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"submit_order_plan or attached_protection or fault_drill or risk_reduction or run_cycle\"",
+      "evidence_path": "67 passed, 367 deselected in 2.48s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/shared_platform_v3.py quant_crypto/oms/okx_demo_paper_runtime.py quant_crypto/oms/__init__.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py",
+      "evidence_path": "producer sparse worktree",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "evidence_path": "deliverable commit 8410948e99f923b27fa66aa17b570ed74722219c",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5t0 tests/contracts/test_btc_shared_observation_inputs.py tests/contracts/test_btc_dirty_worktree_boundary.py tests/contracts/test_btc_current_status_report.py",
+      "evidence_path": "23 passed, 2 unrelated baseline failures: research_only status expectation and missing artifacts/btc_candidate_gate/latest/...; no T5 files involved",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxt5t0 tests/contracts/test_us_shared_platform_adoption.py tests/contracts/test_us_v3_paper_oms_reconciliation.py",
+      "evidence_path": "collection blocked: quant_us package is absent from planner sparse worktree; no T5 files involved",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T5",
+  "transition_for": ""
+}

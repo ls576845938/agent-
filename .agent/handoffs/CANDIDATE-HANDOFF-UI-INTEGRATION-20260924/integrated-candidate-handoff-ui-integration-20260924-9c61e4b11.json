@@ -1,0 +1,105 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-candidate-handoff-ui-integration-20260924-9c61e4b11",
+  "ticket_id": "CANDIDATE-HANDOFF-UI-INTEGRATION-20260924",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/integrator/candidate-handoff-ui-integration-20260924",
+  "base_commit": "209507ea74121e07337f838705d60533e93b5848",
+  "deliverable_commit": "9c61e4b1155b62afa2e1ed62f3529db1cd67a5ba",
+  "created_at": "2026-09-24T08:23:20Z",
+  "expires_at": "",
+  "depends_on": [
+    "candidate-handoff-ui-20260924-published"
+  ],
+  "supersedes": [],
+  "transition_for": "candidate-handoff-ui-20260924-published",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/candidate-handoff-ui-integration-20260924.md",
+      "sha256": "c0e21f5adbf5dff39ef92f95efbe5292a0dde0f687707840989e6839edd03ac1",
+      "schema_version": "candidate_handoff_ui_independent_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/candidate-handoff.ts",
+      "sha256": "ef4c08425723cb90e04690c39bc4a63d0bca9b336efea65522ae6f6a881c52f2",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-candidate-handoff.mjs",
+      "sha256": "782ff54fa513e115dc1bed80651190b9483774f89a8e6515fef4df48e247908a",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "9823648e44e8a8028562b977fabc6a7f5361c378964ce2eabb787100c13b2594",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input producer envelope; ancestry and 11 raw Git blob SHA-256 values independently verified",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md"
+    },
+    {
+      "command": "node frontend/scripts/test-candidate-handoff.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md; 14 passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-readonly-workspace.mjs; node frontend/scripts/test-btc-demo-start-feedback.mjs; node frontend/scripts/test-trend-environment.mjs; node frontend/scripts/test-donchian-offline-evidence.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md"
+    },
+    {
+      "command": "npm exec vite build (cwd=frontend); 5268 modules; 40.52s",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md"
+    },
+    {
+      "command": "npm run identity:check (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json; manifest_match=true; baseline_ancestor=true"
+    },
+    {
+      "command": "canonical registered-main publication, backend/frontend restart and formal browser interaction acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/candidate-handoff-ui-integration-20260924.md; pending for main-session release acceptance"
+    }
+  ],
+  "blockers": [
+    "canonical_registered_main_publication_and_browser_acceptance_pending",
+    "server_side_candidate_approval_account_binding_and_runtime_registration_not_implemented",
+    "m1_qlib_source_head_59f5eb861_is_historical_not_current_head_runtime_evidence",
+    "promotion_paper_live_private_order_execution_permission_runtime_observed_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

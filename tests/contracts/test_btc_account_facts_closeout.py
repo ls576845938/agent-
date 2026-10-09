@@ -325,6 +325,62 @@ def test_ledger_uow_requires_bidirectional_payload_state_fact_parity(
     assert "account_risk_facts" not in legacy_event["state_after"]
 
 
+def test_ledger_uow_requires_bidirectional_strategy_allocation_parity(
+    tmp_path,
+) -> None:
+    allocation = {
+        "schema_version": "btc_strategy_allocations_v1",
+        "member_contracts": {"don": "0.01", "qlib": "0.01"},
+    }
+    base = {
+        "idempotency_key": "ledger-allocation",
+        "timestamp_utc": "2026-10-04T00:00:00Z",
+        "run_id": "fixture-allocation",
+        "order": {"orders": []},
+        "fills": [],
+        "position": {"positions": [], "signed_contracts": "0.02"},
+        "cash": {"equity_usdt": "5000"},
+        "funding": {"bills": [], "cashflow": "0", "cashflow_reconciled": True},
+        "risk_context": {
+            "mark_price": "60000",
+            "index_price": "60000",
+            "liquidation_buffer_bps": "10000",
+            "venue_rules": {"instrument_id": "BTC-USDT-SWAP"},
+        },
+        "safety": SAFETY,
+    }
+    with pytest.raises(
+        BTCRuntimeStoreError,
+        match="btc_runtime_strategy_allocation_state_mismatch",
+    ):
+        BTCRuntimeStore(tmp_path / "payload-only").commit_ledger_uow(
+            **base,
+            allocation_payload=allocation,
+            state_after={"runtime": {"opening_allowed": False}},
+        )
+    with pytest.raises(
+        BTCRuntimeStoreError,
+        match="btc_runtime_strategy_allocation_state_mismatch",
+    ):
+        BTCRuntimeStore(tmp_path / "state-only").commit_ledger_uow(
+            **base,
+            state_after={
+                "runtime": {"opening_allowed": False},
+                "strategy_allocations": allocation,
+            },
+        )
+    committed = BTCRuntimeStore(tmp_path / "matched").commit_ledger_uow(
+        **base,
+        allocation_payload=allocation,
+        state_after={
+            "runtime": {"opening_allowed": False},
+            "strategy_allocations": allocation,
+        },
+    )
+    assert committed["payload"]["strategy_allocation"] == allocation
+    assert committed["state_after"]["strategy_allocations"] == allocation
+
+
 def test_checkpoint_behind_and_truncated_tail_restore_last_complete_fact_fail_closed(
     tmp_path,
 ) -> None:

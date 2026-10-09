@@ -1,0 +1,62 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "same Donchian member decision rebuild creates a different default UUID signal identity",
+    "committed projection repair accepts a ledger UOW whose strategy allocation plan differs from the persisted pending decision",
+    "partial member observation overlap is accepted instead of requiring a compatible event clock",
+    "expired or changed review binding blocks repair before a committed economic action can be projected",
+    "Donchian member evaluation reads common account position instead of its sealed member allocation share",
+    "legacy single-member jobs created before registration reservations can conflict with later cohort approval",
+    "cohort execution advances neither the original maintenance clock nor the original delayed-fill cost sequence"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "architect"
+  ],
+  "created_at": "2026-10-04T12:16:49.136773Z",
+  "deliverable_commit": "6ff5aec49862f6631909dc1951d8e3fc7f626266",
+  "deliverables": [
+    {
+      "path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "independent_cohort_entry_recovery_failure_checks_v2",
+      "sha256": "0bc96daa380dd8c68fabfdeebf3cb10e420e40691f9baa90775f577688a94550",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "rejected-btc-cohort-entry-recovery-independent-20261004-38112f213"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-cohort-independent-clock-middleware-20261004-6ff5aec49",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-entry-recovery-closeout-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest -q tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "evidence_path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "result": "failed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest -q tests/integrations/test_btc_cohort_entry_independent_acceptance.py -k real_app_factory",
+      "evidence_path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "transition_for": ""
+}

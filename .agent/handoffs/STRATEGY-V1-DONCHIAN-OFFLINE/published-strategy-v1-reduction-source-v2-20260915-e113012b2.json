@@ -1,0 +1,156 @@
+{
+  "base_commit": "2b4cada2ce62bdaba434f28099fffac0b6d0e03f",
+  "blockers": [
+    "owner:architect_and_integrator independent demo_execution_semantics committed-source review and integration have not been performed; this producer branch is not released",
+    "owner:architect REDUCE_ONLY dispatcher projection maps protective action to TradingMode.CANCEL_ONLY while PermissionEvaluator only accepts NORMAL or REDUCE_ONLY, so real Donchian reversal remains fail-closed with trading_mode_does_not_support_reduction; this permission-state mapping was outside the authorized source-contract touch set",
+    "owner:architect M1 exact historical runtime blob test remains pending independent source-identity review; the frozen expectation was not modified",
+    "owner:future_v1 offline runner package identity, canonical visible-frame digest, post-ledger evidence repair, and close-restart-open phase recovery remain pending and were not expanded in this bounded source-contract closeout",
+    "owner:future_v1 submit-response-loss, partial-fill, reject, cancel and conflicting-fill scenarios were not added to this bounded vertical slice; existing focused OMS recovery tests remain green",
+    "owner:release readonly frontend association, service publication and page acceptance were not run; Demo, paper, private, order and live remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-15T05:03:28Z",
+  "deliverable_commit": "e113012b231d3cf314761018af69e58cdc30fc87",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/donchian_offline_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v1_donchian_offline_replay_v1",
+      "sha256": "dfddf2f0655b398dcb1a54efb2f926c9d34f3aebe77e55de345c17938b81cd1a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1_signal_reduction_source",
+      "sha256": "b3ef605abe676b948ba40bd4f6fa35d3bf827feb99bb0bc8eca9fb64edeb8824",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/portfolio/decision.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t3_risk_reduction_plan_v2",
+      "sha256": "b6c907253114dc8f16f69514be328445757542fcf2029f70b24cc245c6a0d497",
+      "type": "schema"
+    },
+    {
+      "path": "quant_crypto/oms/shared_platform_v3.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t5_signal_forecast_binding_v1",
+      "sha256": "fc15438c143a64d11631786b707bd7d81e93951b77c7a585af849868f214dfaf",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/strategy_runtime/decision_envelope.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_evidence_v1",
+      "sha256": "a7765800e595a58e85503e292a49c1082e25c534e41a8d66a99c1747b3ddc361",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_strategy_v1_donchian_offline_v1",
+      "sha256": "323d8bcf4a2df417865d89942d5c90f36084faa9e60c05c246fa7ec9c077455a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_t3_reduction_source_v2",
+      "sha256": "5a53c5f5d309cf05200e57635663bf0b1a0398b0cb48a855689fa7a3a51f5a3e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_oms_delegation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_t5_reduction_source_binding_v1",
+      "sha256": "b395ee862a3c4bf17ee280e4feee6a08bb17dd7a1daf4f694539c3eb49926033",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/fixtures/strategy_v1/offline_contract.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v1_offline_fixture_v1",
+      "sha256": "3bae9974cba3b029568341b48c4288f8c1efc1caaaf7d252b8722b60a4fd7167",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/strategy-admission-v1.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_admission_v1_report_v2",
+      "sha256": "c1a175ded144be5882f59b4d9da89f25583355cae1f80d3fe55cf502fb941e37",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-strategy-v0-freeze-20260915-e0b7a08f8"
+  ],
+  "domain": "btc",
+  "event_id": "published-strategy-v1-reduction-source-v2-20260915-e113012b2",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/strategy-v1-donchian-offline",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-strategy-v1-donchian-offline-20260915-8d166f7c9"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_strategy_v1_donchian_offline.py -q",
+      "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_production_composition.py -q",
+      "evidence_path": "tests/contracts/test_btc_demo_production_composition.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/portfolio/decision.py quant_crypto/oms/shared_platform_v3.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_strategy_v1_donchian_offline.py",
+      "evidence_path": "quant_crypto/portfolio/decision.py",
+      "result": "passed"
+    },
+    {
+      "command": "real Donchian long-to-short reversal through the existing dispatcher",
+      "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "failed"
+    },
+    {
+      "command": "M1 exact historical runtime blob assertion",
+      "evidence_path": "tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "not_run"
+    },
+    {
+      "command": "offline runner identity, frame digest, evidence repair, and reversal restart recovery extensions",
+      "evidence_path": "quant_crypto/application/donchian_offline_replay.py",
+      "result": "not_run"
+    },
+    {
+      "command": "frontend readonly association and page acceptance",
+      "evidence_path": "docs/architecture/strategy-admission-v1.md",
+      "result": "not_run"
+    },
+    {
+      "command": "independent demo_execution_semantics source review and integration",
+      "evidence_path": ".agent/handoffs/STRATEGY-V1-DONCHIAN-OFFLINE/published-strategy-v1-reduction-source-v2-20260915-e113012b2.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "STRATEGY-V1-DONCHIAN-OFFLINE",
+  "transition_for": ""
+}

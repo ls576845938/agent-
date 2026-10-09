@@ -1,0 +1,71 @@
+{
+  "aggregate_sha256": "62bed3a6efa945d8fa4f52917667dc44a276add7ed280bb45085ef52950d10af",
+  "blockers": [],
+  "coverage": {
+    "end": "2026-09-01T00:00:00Z",
+    "start": "2025-02-13T00:00:00Z"
+  },
+  "data_schema": "btc_donchian_history_input_v1",
+  "dataset_id": "donchian-long-input",
+  "dataset_version": "donchian-long-input-20260921-v2",
+  "file_count": 7,
+  "files": [
+    {
+      "bytes": 837,
+      "path": "binding_identity.json",
+      "sha256": "5244a48a7707b3da3354e6deaedf1357f9aea30c32623a0f44d6ba22adde3139"
+    },
+    {
+      "bytes": 2085,
+      "path": "binding_seal.json",
+      "sha256": "f2ed8da3f05589597e50f7d00b614a534a9bea935c9e38bfeafa6b9b625e086e"
+    },
+    {
+      "bytes": 1710842,
+      "path": "history_input/daily_bars.parquet",
+      "sha256": "7f68b0e0d1a044a12c67135218eefe37adb2cae15a2b45ea36e575c6b2f34101"
+    },
+    {
+      "bytes": 136212,
+      "path": "history_input/funding.parquet",
+      "sha256": "d3aca4901fc93620ea78f6763ab127ecda68098331f5e977ed8607570d3ae68f"
+    },
+    {
+      "bytes": 906523,
+      "path": "history_input/mark.parquet",
+      "sha256": "6328df235333b428e9fbdadb36cc97d8e8810c0bce60bd70bfd1a6a24713497e"
+    },
+    {
+      "bytes": 899352,
+      "path": "history_input/premium.parquet",
+      "sha256": "03dcf771292d155a585c804213cf9f96375a9cd569fc27b7a9dde6a562494e94"
+    },
+    {
+      "bytes": 28959,
+      "path": "terminal_funding_public_receipt.json",
+      "sha256": "5b124d80cbc3dce9ab87cd2d1a8c14e202192ccdd6fd48e67d62caee9cf1664e"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "reconstructed_availability_not_original_receipt",
+    "settlement_mark_approximated_by_previous_visible_hour",
+    "derived_basis_not_official_premium_index",
+    "no_historical_depth_or_rule_lineage"
+  ],
+  "producer_commit": "0dd7af8834984d2a29d3fc2fedc431629df2c3bf",
+  "producer_role": "data_steward",
+  "published_at": "2026-09-20T23:56:56Z",
+  "quality_status": "pass_with_research_only_warnings",
+  "readiness_class": "quality_checked",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/donchian-long-input/donchian-long-input-20260921-v2",
+  "total_bytes": 3684810
+}

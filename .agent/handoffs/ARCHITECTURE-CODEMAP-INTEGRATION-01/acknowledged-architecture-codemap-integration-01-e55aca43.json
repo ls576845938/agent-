@@ -1,0 +1,49 @@
+{
+  "base_commit": "7403c5331057cbba21b9c013b8d6c0ee4c517d91",
+  "blockers": [
+    "Canonical browser acceptance pending",
+    "Backend official check blocked: backend_fixture_fallback_must_be_false; runtime-root bootstrap and promotion rebuild not authorized"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-10T13:53:33Z",
+  "deliverable_commit": "e55aca43a2b47820330a1efc67b38732d50a6601",
+  "deliverables": [],
+  "depends_on": [
+    "published-architecture-codemap-01-506cc2401"
+  ],
+  "domain": "shared",
+  "event_id": "acknowledged-architecture-codemap-integration-01-e55aca43",
+  "event_type": "acknowledged",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/architecture-codemap-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "official validate_handoff_against_git plus exact 15-path comparison",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-map.mjs (8/8), baseline inventory, tsc, fingerprint, Vite build",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-CODEMAP-INTEGRATION-01",
+  "transition_for": "published-architecture-codemap-01-506cc2401"
+}

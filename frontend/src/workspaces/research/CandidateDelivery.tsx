@@ -9,25 +9,46 @@ import {createDeliveryRequest,deliveryRequest,DeliveryApiError,diagnosticAdmissi
 const labels:Record<DeliveryRecord['status'],string>={validated:'包验证通过 · 待绑定',validation_blocked:'验证受阻',
   bound:'已绑定 · 待审定',reviewed:'审定通过 · 待登记',rejected:'审定拒绝',registered:'已登记候选管理记录 · 运行另查',revoked:'已撤销'};
 
+async function publicOfflineCapabilities(signal:AbortSignal):Promise<Record<string,unknown>>{
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20_000);
+  const cancel=()=>controller.abort(signal.reason);
+  signal.addEventListener('abort',cancel,{once:true});
+  try{
+    if(signal.aborted)cancel();
+    const {offlineRequest}=await import('./candidate-offline-api');
+    return await offlineRequest('/capabilities','',undefined,controller.signal) as Record<string,unknown>;
+  }finally{
+    clearTimeout(timer);signal.removeEventListener('abort',cancel);
+  }
+}
+
 export default function CandidateDelivery({source,target}:{
   source:HandoffSource;
   target:HandoffTarget;
 }) {
   const [open,setOpen]=useState(false),[key,setKey]=useState('');
   const [workspaceAccess,setWorkspaceAccess]=useState<ResearchWorkspaceAccess>(()=>researchWorkspaceAccess(null));
+  const [readonlyOfflineCap,setReadonlyOfflineCap]=useState<Record<string,unknown>|null>(null);
   const [cap,setCap]=useState<DeliveryCapabilities|null>(null);
   const [authMode,setAuthMode]=useState<'key'|'local_no_password'|null>(null);
   const [rows,setRows]=useState<DeliveryRecord[]>([]),[row,setRow]=useState<DeliveryRecord|null>(null);
-  const [accounts,setAccounts]=useState<DeliveryAccount[]>([]),[account,setAccount]=useState('');
+  type CohortAccount=DeliveryAccount&{offline_runtime?:{schema_version:string;adapter_id?:string;adapter_ids?:string[];
+    initial_equity_usdt:number;currency:string;contract_digest:string}};
+  const [accounts,setAccounts]=useState<CohortAccount[]>([]),[account,setAccount]=useState('');
   const [reason,setReason]=useState(''),[ack,setAck]=useState(false);
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
   const [unknown,setUnknown]=useState<PendingDeliveryRequest|null>(null);
   const alive=useRef(true),abort=useRef(new AbortController());
   useEffect(()=>{alive.current=true;abort.current=new AbortController();return()=>{alive.current=false;abort.current.abort();};},[]);
   useEffect(()=>{
-    apiGet<ResearchWorkspaceHealth>('/api/health',{signal:abort.current.signal})
-      .then(value=>{if(alive.current)setWorkspaceAccess(researchWorkspaceAccess(value));})
-      .catch(()=>{if(alive.current)setWorkspaceAccess(researchWorkspaceAccess(null));});
+    Promise.allSettled([
+      apiGet<ResearchWorkspaceHealth>('/api/health',{signal:abort.current.signal}),
+      publicOfflineCapabilities(abort.current.signal)])
+      .then(([health,offline])=>{if(alive.current){
+        setWorkspaceAccess(researchWorkspaceAccess(health.status==='fulfilled'?health.value:null));
+        setReadonlyOfflineCap(offline.status==='fulfilled'?offline.value:null);
+      }});
   },[]);
   const receive=(value:unknown)=>{
     const result=verifyDelivery(value,source,target);
@@ -45,7 +66,7 @@ export default function CandidateDelivery({source,target}:{
         deliveryRequest('/packages',key,undefined,abort.current.signal) as Promise<{records:DeliveryRecord[]}>,
         deliveryRequest('/accounts',key,undefined,abort.current.signal) as Promise<{accounts:DeliveryAccount[]}>]);
       const records=catalog.records.filter(item=>matchesDelivery(item,source,target)).map(item=>verifyDelivery(item,source,target));
-      if(alive.current){setCap(result);setRows(records);setAccounts(bindings.accounts.filter(item=>item.environment===target && item.verified===true));}
+      if(alive.current){setCap(result);setRows(records);setAccounts((bindings.accounts as CohortAccount[]).filter(item=>item.environment===target && item.verified===true));}
     } catch(e){if(alive.current)setError(String(e));}
     finally{if(alive.current)setBusy(false);}
   };
@@ -75,7 +96,8 @@ export default function CandidateDelivery({source,target}:{
   useEffect(()=>{if(open)void authenticate();},[open]); // GET-only discovery; never submits a command.
   if(!workspaceAccess.candidateManagement)return <section className="candidate-delivery" aria-label="服务端候选交付">
     <p><strong>候选管理写入口保持关闭。</strong> {workspaceAccess.reason}</p>
-    <p>交接草稿、精确来源与只读证据仍可查看；此处不会请求 <code>/api/strategy-delivery/*</code>。</p>
+    <p>交接草稿、精确来源与只读证据仍可查看；此处不会请求 <code>/api/strategy-delivery/*</code>、候选包或账户目录。</p>
+    <ReadonlyCohortEntry capability={readonlyOfflineCap}/>
   </section>;
   return <section className="candidate-delivery" aria-label="服务端候选交付">
     <button type="button" aria-expanded={open} onClick={()=>setOpen(!open)}>服务端验证、审定与登记</button>
@@ -123,9 +145,10 @@ export default function CandidateDelivery({source,target}:{
           {!!row.package.limitations?.length&&<details><summary>适用范围与限制</summary><ul>{row.package.limitations.map(item=><li key={item}>{item}</li>)}</ul></details>}
           {['validated','bound','reviewed'].includes(row.status)&&<>
             <label>服务端允许的目标账户<select value={account} disabled={disabled} onChange={(e:{target:HTMLSelectElement})=>{setAccount(e.target.value);setAck(false);}}>
-              <option value="">请选择；没有记录时不得手填</option>{accounts.map(item=><option key={item.account_ref} value={item.account_ref}>{item.account_ref} · {item.environment}</option>)}
+              <option value="">请选择；没有记录时不得手填</option>{accounts.filter(item=>item.offline_runtime?.schema_version!=='delivery_offline_runtime_v3').map(item=><option key={item.account_ref} value={item.account_ref}>{item.account_ref} · {item.environment}</option>)}
             </select></label>
-            {!accounts.length&&<p>没有可绑定账户证据；不会自动采集私有账户。</p>}
+            {accounts.some(item=>item.offline_runtime?.schema_version==='delivery_offline_runtime_v3')&&<p>两成员须各自绑定原源账户并登记；组合提案再单独审定第三个共同模拟账户。其固定 5000 USDT 权益不会与源账户余额合并，启动请求不能改绑。</p>}
+            {!accounts.some(item=>item.offline_runtime?.schema_version!=='delivery_offline_runtime_v3')&&<p>没有可绑定的源账户证据；不会以共同账户替代源绑定，也不会自动采集私有账户。</p>}
             <button type="button" disabled={disabled||!account} onClick={()=>act('bind',{account_ref:account})}>绑定账户（使旧审定失效）</button>
           </>}
           {row.review&&<p>审定：{row.review.decision} · {row.review.actor} · 有效截止 {row.review.expires_at}</p>}
@@ -141,9 +164,30 @@ export default function CandidateDelivery({source,target}:{
             运行证据须从下方精确作业另行读取；登记本身不证明执行成功。Demo 操作仍禁用。</p>
             <label>撤销原因<textarea value={reason} maxLength={500} onChange={(e:{target:HTMLTextAreaElement})=>setReason(e.target.value)}/></label>
             <button type="button" disabled={disabled||!reason.trim()} onClick={()=>act('revoke',{reason})}>撤销登记（不执行平仓或撤单）</button></>}
-          {target==='offline'&&row.registration&&<RegisteredCandidateRunControls key={row.id} row={row} credential={key}/>}
+          {target==='offline'&&row.registration&&<RegisteredCandidateRunControls key={row.id} row={row} credential={key} accounts={accounts}/>}
         </>}
       </>}
     </>}
+  </section>;
+}
+
+function ReadonlyCohortEntry({capability}:{capability:Record<string,unknown>|null}){
+  const supported=capability?.cohort_source_supported===true;
+  const configured=capability?.deployed_configured===true;
+  const enabled=capability?.offline_commands_enabled===true;
+  const executionCompatible=capability?.cohort_execution_policy_compatible===true;
+  const protectionCompatible=capability?.cohort_protection_policy_compatible===true;
+  const blockers=Array.isArray(capability?.blockers)
+    ?capability.blockers.filter((item):item is string=>typeof item==='string'):[];
+  return <section aria-label="共同账户组合离线只读入口">
+    <h5>共同账户组合离线入口（只读）</h5>
+    <p>源码能力：{supported?'支持':'未确认'}；部署配置：{configured?'已配置':'未配置'}；离线写命令：{enabled?'服务端声称开放，但当前页面仍禁用':'关闭'}。</p>
+    <p>源码已实现 exact-2 身份、审定与恢复边界；当前登记 Donchian 的 t+1 成交与冻结 Qlib 的 t+2 延迟开盘／成本合同不兼容，现有单一共同订单不能同时保持两者，执行能力：{executionCompatible?'兼容':'阻断'}（cohort_member_execution_policy_incompatible）。</p>
+    <p>当前原始保护合同也不兼容：Donchian 100/200bps 与注册 Qlib 400/800bps 的完整 policy hash 不同；保护能力：{protectionCompatible?'兼容':'阻断'}（multi_strategy_cohort_protection_policy_incompatible）。页面不会统一 hash 或改写任一包的退出参数。</p>
+    <p>即使未来出现执行时钟兼容的精确包，仍须保护政策完全兼容，且仅允许 long／hold／成员各自减仓；short、冲突、加仓、反转或保护证据不完整均须在经济动作前阻断。</p>
+    <p>当前页面没有候选管理权限，无法读取真实登记、包、账户或成员输入，因此不会推断存在合格组合。真实 Qlib final 包缺失、共同账户未绑定或保护政策不兼容时必须保持 blocked；合成 fixture 不是实际候选。</p>
+    {!!blockers.length&&<p role="status">公开能力阻断：{blockers.join('；')}。</p>}
+    {!capability&&<p role="status">公开离线能力未返回；入口按 fail-closed 禁用。</p>}
+    <button type="button" disabled>启动共同账户组合离线作业（需候选管理授权）</button>
   </section>;
 }

@@ -1,0 +1,93 @@
+{
+  "base_commit": "42918ccf4fe6ca745c11f96e78f13108e21a8a43",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "full_pytest_terminal_summaries_unavailable",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T02:09:00Z",
+  "deliverable_commit": "cdf85c84fbbc49c060e567456e02838c2052089c",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "bbc89625e9262eee713aa4d2c000fbe26d5059219f29fde9cbd62c1095ea9f33",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "98649d58a5d9c17ce54153b6df6bba8e95b1ddab2e34cc2decd38d23289e8d11",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b1d0a1aa1892adaf667bedf6bf8b1e818e11f2479813bb6781d4065fedf88245",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-fault-drill-shared-terminal-projection-30-cdf85c84f-corr1",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-terminal-projection-30",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-demo-fault-drill-shared-terminal-projection-30-cdf85c84f"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill_postflight_accepts_only_reconciled_terminal_as_new_terminal or shared_fault_drill_terminal_projection_requires_unique_durable_truth or incident_recovery_posts_only_one_ioc_then_exact_oco_cancel or incident_recovery_already_flat_is_read_only_and_clears_freeze' -q",
+      "evidence_path": "7 passed, 327 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k incident_recovery_receipt_preserves_runtime_final_projection -q",
+      "evidence_path": "2 passed, 139 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -p no:cacheprovider",
+      "evidence_path": "executed once; runner exited after visible 43 percent progress but terminal summary was unavailable",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -p no:cacheprovider",
+      "evidence_path": "executed once; runner exited after visible progress but terminal summary was unavailable",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FAULT-DRILL-SHARED-TERMINAL-PROJECTION-30",
+  "transition_for": ""
+}

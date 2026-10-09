@@ -1,0 +1,92 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-nonflat-evidence-autocapture-01-cf529f5a",
+  "ticket_id": "BTC-V3-NONFLAT-EVIDENCE-AUTOCAPTURE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-nonflat-evidence-autocapture-01",
+  "base_commit": "6ee6c4439f6bf6e8a8209ca6a919ccd48f896624",
+  "deliverable_commit": "cf529f5abfbaad022edfb6f5f3f0156bd70934a6",
+  "created_at": "2026-07-24T09:39:45Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-v3-demo-oms-runtime-hardening-01-goal6-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/research/btc_nonflat_evidence_autocapture.py",
+      "sha256": "60327aebeb34bb5b6b0b76847f1ac0f5a337fb72ef5cfb79b58f1c408c199642",
+      "schema_version": "btc_nonflat_evidence_autocapture_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/research/btc_perpetual_paper_runtime_replay.py",
+      "sha256": "ffa9ec41c5f0a2be3a6caffeab1d614afc1a7737c379406a1dd6633e0ab7d932",
+      "schema_version": "btc_perpetual_paper_runtime_replay_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_nonflat_evidence_autocapture.py",
+      "sha256": "5d95393cbbe78aef0c4867e92ed2224f348dbe1db79c3f5cd385d3675d928477",
+      "schema_version": "btc_nonflat_evidence_autocapture_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/handoffs/BTC-V3-NONFLAT-EVIDENCE-AUTOCAPTURE-01.md",
+      "sha256": "23e7899eea945b9d73ccd0c93e9bd2f3072003cc7968e60c47f956bfae460176",
+      "schema_version": "btc_nonflat_evidence_autocapture_delivery_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_nonflat_evidence_autocapture.py -q -p no:cacheprovider --basetemp <unique>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_nonflat_evidence_autocapture.py"
+    },
+    {
+      "command": "py -3 -m pytest <ticket-owned plus related BTC replay, gate, observation and OMS contracts> -q -p no:cacheprovider --basetemp <unique>",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-NONFLAT-EVIDENCE-AUTOCAPTURE-01.md"
+    },
+    {
+      "command": "py -3 -m py_compile <three touched Python files>",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-NONFLAT-EVIDENCE-AUTOCAPTURE-01.md"
+    },
+    {
+      "command": "py -3 -m ruff check <touch-set>",
+      "result": "not_run",
+      "evidence_path": "docs/handoffs/BTC-V3-NONFLAT-EVIDENCE-AUTOCAPTURE-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:btc_observation current_natural_non_flat_sample_not_observed",
+    "owner:btc_operations private_ws_real_observation_not_authorized_or_missing",
+    "owner:btc_operations funding_cashflow_real_observation_not_authorized_or_missing",
+    "owner:data_steward immutable_timestamp_aligned_l2_evidence_required",
+    "owner:architect manual_promotion_approval_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

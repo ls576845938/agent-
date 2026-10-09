@@ -1,0 +1,64 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "real_Donchian_Qlib_execution_clock_cost_and_protection_policy_incompatible",
+    "real_common_nonzero_execution_protection_attribution_and_economic_recovery_not_run_blocked",
+    "real_Qlib_final_positive_calibration_missing_effective_independent_sample_below_30"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-10-04T14:39:38Z",
+  "deliverable_commit": "7f6fdb4b2416bfe0af6890ddd3ec553787255b0d",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/btc-cohort-offline-readonly-governance-review-20261004.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_offline_readonly_evidence_v1",
+      "sha256": "92089ebdc1723c8e11977dbbc08b0a291d69bf857d7c03ba2d67b2e2381c3f43",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-cohort-offline-readonly-governance-20261004-ef5271fdd",
+    "integrated-btc-cohort-entry-recovery-limited-readonly-20261004-aa9905ee3"
+  ],
+  "domain": "governance",
+  "event_id": "integrated-btc-cohort-offline-readonly-governance-review-20261004-7f6fdb4b2",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-offline-readonly-delivery-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "root full governance review of ef5271fdd06639a170bf5e7c0c28c5e265ca5475",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py --verify-source",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/agent_governance/test_btc_cohort_offline_readonly_delivery_20261004.py (71 passed in 102.89s)",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-review-20261004.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-COHORT-OFFLINE-READONLY-GOVERNANCE-20261004",
+  "transition_for": "published-btc-cohort-offline-readonly-governance-20261004-ef5271fdd"
+}

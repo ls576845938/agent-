@@ -1,0 +1,88 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-worker-optional-liveness-34-55daa2020",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-FAULT-DRILL-WORKER-OPTIONAL-LIVENESS-34",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-worker-liveness-34-int",
+  "base_commit": "5134844aa84a87e3b32f13409db29822a12d74d1",
+  "deliverable_commit": "55daa20203647b7853df9ddb05570f848233b5bd",
+  "created_at": "2026-08-12T10:45:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-worker-optional-liveness-34-805dcaa00"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-worker-optional-liveness-34-805dcaa00",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "bd83394cdd4931adef972a8621da72902141b05abcffd392a2b5607ad3a7a9b1",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "f6f5fe8290adfcc0609ffe62883c4e6e6cb481b422d5d2d4e59ea34856de7843",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-FAULT-DRILL-WORKER-OPTIONAL-LIVENESS-34/published-btc-okx-demo-worker-optional-liveness-34-805dcaa00.json",
+      "sha256": "f9500468b363cb95b4107d3ce046d37d3b23e8a5b61dcd8985f150c1fcf900f1",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'dead_man or authoritative_liveness or write_path_trusted'",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 31 passed, 320 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill_without_worker or worker_required_liveness or fault_drill_dead_man_loop_renews or dead_man_expiry or authoritative_liveness_mismatch'",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 10 passed, 341 deselected"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; exit=0"
+    },
+    {
+      "command": "git diff 5134844aa84a87e3b32f13409db29822a12d74d1..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; clean"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FAULT-DRILL-WORKER-OPTIONAL-LIVENESS-34/published-btc-okx-demo-worker-optional-liveness-34-805dcaa00.json"
+    },
+    {
+      "command": "backend restart; promotion artifact/read-model rebuild; Demo; S1; endpoint or secret access",
+      "result": "not_run",
+      "evidence_path": "ticket boundary; deferred_to_final_single_publication"
+    }
+  ],
+  "blockers": [
+    "baseline_known_failure_inherited: producer pre-change bounded run had 5 stale-worker failures; no new failure observed in the integrator optional-worker/authoritative-liveness/dead-man selections",
+    "backend_restart_deferred_to_final_single_publication",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-source-provenance-02-e81141d28",
+  "ticket_id": "STRATEGY-SOURCE-PROVENANCE-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-source-provenance-02-integration",
+  "base_commit": "71b104883d4d23db6790bbc6f4057e8e2c31aaaa",
+  "deliverable_commit": "e81141d280a042340600685b2448b7647cbca144",
+  "created_at": "2026-09-08T15:03:44.535Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-source-provenance-02-5f1b6a076"],
+  "supersedes": [],
+  "transition_for": "published-strategy-source-provenance-02-5f1b6a076",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02-INTEGRATION.md",
+      "sha256": "ad3fa5ab5d91115ea1491560d50e86fa9204a56762d398e6dd89bc308a2618b4",
+      "schema_version": "source_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "2d313dab741325f3a9c680e8af063e1b2c1903638ee8c99b2707466564c79897",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "01510f91c75a9c259b7d2f7dc2f75878c47f73941199630636c677d1606399e7",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/strategy-history-provenance.ts",
+      "sha256": "fc5718fe8d145a7ba8b276e01acbbce537e7cf4a893c7b464268d6bb90fc23f4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "18f831bafbbafab566a18d03995b83f463502fe0c65e9964e9adc0ea9e161882",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-strategy-history-provenance.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-history-provenance.mjs"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build -> 5228 modules, 14.53s, existing large-bundle warning",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02-INTEGRATION.md"
+    },
+    {
+      "command": "9 provenance plus 3 existing heatmap canonical browser tests and narrow/wide real-page QA",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:root main no-ff, canonical restart, 9+3 browser regression and actual narrow/wide QA pending",
+    "historical continuous equity/drawdown/trades/fills/ledger absent; only published aggregate reviews rendered",
+    "promotion artifact unavailable; historical data not current-HEAD; promotion rebuild not authorized"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

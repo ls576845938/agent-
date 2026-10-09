@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-canonical-recovery-binding-consumer-multihop-25-bb03f88c3",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-CANONICAL-RECOVERY-BINDING-CONSUMER-MULTIHOP-25",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-rec-bind-multihop25-int",
+  "base_commit": "528316e4ce52d544e737dfc1839f3b7c09a84cad",
+  "deliverable_commit": "bb03f88c33e49b76f8183abfeb38f57469a21559",
+  "created_at": "2026-08-12T00:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-canonical-recovery-binding-consumer-multihop-25-9a5899b77"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-canonical-recovery-binding-consumer-multihop-25-9a5899b77",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "e4c6cca279de7c02e19031f64f4fc9b444897f67fce5bb7a15ac59ecb4f04b47",
+      "schema_version": "btc_okx_demo_recovery_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "856fcee1d4314f0557a159a987e11739fe7a9762c85b19f0627baf295ca21c14",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k 'incident_recovery_consumer_accepts_only_ticket24_multihop_ancestry or incident_recovery_binding_consumer_accepts_verified_multihop_marker'",
+      "result": "passed",
+      "evidence_path": "2 passed, 322 deselected in 11.04s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "result": "passed",
+      "evidence_path": "324 runtime contracts completed in the sparse integration worktree"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q",
+      "result": "passed",
+      "evidence_path": "129 fault-drill contracts completed in the sparse integration worktree"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py; git diff --check 528316e4ce52d544e737dfc1839f3b7c09a84cad...HEAD",
+      "result": "passed",
+      "evidence_path": "offline sparse integration worktree"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <integrated-handoff>",
+      "result": "passed",
+      "evidence_path": "integrated envelope validated before commit"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration_not_executed_by_this_offline_ticket",
+    "canonical_recovery_not_executed_by_this_offline_ticket",
+    "promotion_artifact_not_rebuilt",
+    "private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

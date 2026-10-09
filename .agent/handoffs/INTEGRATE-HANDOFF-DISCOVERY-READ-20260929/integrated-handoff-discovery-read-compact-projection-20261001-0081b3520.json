@@ -1,0 +1,93 @@
+{
+  "base_commit": "6e40b00fab2cba096c69129dea78050683da02a9",
+  "blockers": [
+    "owner:main_session reviewed_handoff_fix_not_yet_present_in_production_source_baseline",
+    "historical_invalid_handoffs_17_remain_visible_and_fail_closed",
+    "not_promotion_evidence_no_fit_no_paper_no_live_no_private_no_order"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-30T18:09:55Z",
+  "deliverable_commit": "0081b352086e57146f4525230292bdf3baf709e5",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "handoff_discovery_compact_projection_v1",
+      "sha256": "8f54e48ecff30890300bce0330aa2dd51c1b8fa935c687c78fc78ae9a2442010",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "handoff_discovery_compact_projection_tests_v1",
+      "sha256": "ce11f7924241b306bd58e0d13d2d049e235bb5f067901f70f1c0f34b8b736d04",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/HANDOFF-DISCOVERY-READ-20260929/published-handoff-discovery-read-compact-projection-correction-20261001-3eb3caa3d.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "c45c2331566308412d2a53ce21cd7f5da9b6fce7333f8a97a4f88db0e1fdc27d",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-handoff-discovery-read-compact-projection-correction-20261001-3eb3caa3d",
+    "integrated-handoff-discovery-read-20260929-3617f9fa1"
+  ],
+  "domain": "governance",
+  "event_id": "integrated-handoff-discovery-read-compact-projection-20261001-0081b3520",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-handoff-discovery-read-20260929",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "reproduce old versus rejected 02a full_git shared malformed blob across distinct projections",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "compare old versus final 3eb full_git output on the same distinct-projection malformed-blob fixture",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest tests/agent_governance/test_handoff.py tests/agent_governance/test_team_context.py -q",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "independent focused full_git invalid, global deadline, mismatched ref cap, and missing/wrong-type/malformed cached-root regressions",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "current repository discovery_only scan under unchanged 10 second deadline",
+      "evidence_path": "tools/agent_governance/handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate final producer envelope on integrated commit",
+      "evidence_path": ".agent/handoffs/HANDOFF-DISCOVERY-READ-20260929/published-handoff-discovery-read-compact-projection-correction-20261001-3eb3caa3d.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-HANDOFF-DISCOVERY-READ-20260929",
+  "transition_for": "published-handoff-discovery-read-compact-projection-correction-20261001-3eb3caa3d"
+}

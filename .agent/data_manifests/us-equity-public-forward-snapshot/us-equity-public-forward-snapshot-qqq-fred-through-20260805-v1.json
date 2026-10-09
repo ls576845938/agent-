@@ -1,0 +1,75 @@
+{
+  "aggregate_sha256": "e47a8f850de68350b81a095020c2674ce6c1b5404164039aedd655b0b20f3e82",
+  "blockers": [],
+  "coverage": {
+    "end": "2026-08-05T00:00:00Z",
+    "start": "2010-01-04T00:00:00Z"
+  },
+  "data_schema": "us_equity_public_forward_snapshot_lineage_v1",
+  "dataset_id": "us-equity-public-forward-snapshot",
+  "dataset_version": "us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1",
+  "file_count": 8,
+  "files": [
+    {
+      "bytes": 49050,
+      "path": "fred_macro_latest_vintage.csv",
+      "sha256": "2794f824ef2a536a34018e8fc0a102ca8e4f68a5bc99f010e38387d9fa375e30"
+    },
+    {
+      "bytes": 15547,
+      "path": "lineage.json",
+      "sha256": "49ccc4345b3581bb4f2d3b3511ef2369cc1f5c2948a90881018ba2f22b5f43c4"
+    },
+    {
+      "bytes": 2587,
+      "path": "macro_source_report.json",
+      "sha256": "c884c488bad31e62b9b36adb2ff0fa9750c5c8ddc73419924b83790d14446676"
+    },
+    {
+      "bytes": 396807,
+      "path": "market_qqq_1d.parquet",
+      "sha256": "54983b22493dd0aa718ad726306620d26f9bfb2444e4204b66fb48656b1ea045"
+    },
+    {
+      "bytes": 1525,
+      "path": "market_source_report.json",
+      "sha256": "a1866fdcd4e9532f94aef59fe715770ea6c06c51934afbb330dd76f46d0718ff"
+    },
+    {
+      "bytes": 2681,
+      "path": "quality_report.json",
+      "sha256": "17bdd41f1428435715b96f3e232e6348e95fbc813baa859c1a37252975b12479"
+    },
+    {
+      "bytes": 688127,
+      "path": "yahoo/QQQ_1D.csv",
+      "sha256": "fddbba0b8712811b2e8434a453208460325dac5adc1a57f248afa4fd5ec9e309"
+    },
+    {
+      "bytes": 7474,
+      "path": "yahoo/lineage.json",
+      "sha256": "674c38155752aa3669d8ae4735c7f43e761c87f307e463f1ca7ecd793dd873ac"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "yahoo_survivorship_bias_and_current_adjustment_vintage",
+    "fred_latest_vintage_non_pit_without_realtime_bounds",
+    "historical_counterfactual_replay_not_supported"
+  ],
+  "producer_commit": "23723c7b05c5b7d651d0f979a64cb923894dc6a1",
+  "producer_role": "data_steward",
+  "published_at": "2026-08-06T03:49:19Z",
+  "quality_status": "pass_with_research_only_warnings",
+  "readiness_class": "quality_checked",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1",
+  "total_bytes": 1163798
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-guardian-operator-recovery-closure-01-894adc581",
+  "ticket_id": "BTC-DEMO-GUARDIAN-OPERATOR-RECOVERY-CLOSURE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-guardian-operator-recovery-closure-01",
+  "base_commit": "635e11e95849322a46f442754fa80358e8cc7056",
+  "deliverable_commit": "894adc58124e5173c3e67b0e23f5b057c823f84d",
+  "created_at": "2026-08-24T12:36:20Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "quant_crypto/application/runtime_risk_guardian.py", "sha256": "bbebe0f78bf6c420acccc0371ddf5ccaf6397a73f19e06406093ab729de4b24d", "schema_version": "btc_demo_guardian_recovery_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_crypto/application/btc_demo_production_composition.py", "sha256": "e3fc6bfe157b9086b5689b5ed57cc36343eb0dbb500aa841c81130514704e6ba", "schema_version": "btc_demo_guardian_recovery_composition_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_crypto/application/btc_operator_contract_v2.py", "sha256": "3d56c2c954376a024d53e40dfe27f5d728549f041653535d22eac9b2fb96c9b3", "schema_version": "btc_demo_guardian_operator_contract_v2", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "backend/app/services/btc_demo_runtime.py", "sha256": "b2f574ce7f343aa8ae2b0460ecb5a1d7f91789b72128e10c76e90daba7a7b9ea", "schema_version": "btc_demo_guardian_operator_runtime_projection_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "backend/tests/test_btc_demo_runtime_service.py", "sha256": "2e0e07bd179381cb75c41b816032d1836b17064f69fd1f5dd18af2cb82aa1f18", "schema_version": "btc_demo_guardian_operator_runtime_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts", "sha256": "e72173d3c8cfa46b778548e0455d4e83c222f45d5b283d4b52c4ea69637a402b", "schema_version": "btc_demo_guardian_operator_contract_client_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "7296881fa6eb9f63e760a1c07f8e3f2a22bd5b665c32d8afcdbe4b6555d604ff", "schema_version": "btc_demo_guardian_operator_ui_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-types.ts", "sha256": "f17991e451063836c69cf96c6bda0c2b9e966bd5e920a4c481815bcbf8fe9987", "schema_version": "btc_demo_guardian_operator_types_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-v2-contract.mjs", "sha256": "007470534de122e260e2fb59754553b1f0a2e17630d5a968e88aba79989cbace", "schema_version": "btc_demo_guardian_operator_client_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_btc_demo_guardian_operator_recovery.py", "sha256": "c3fd3971066ec68453315b02d21a539374de3dd7945ae6d17a31bef0e7ed4274", "schema_version": "btc_demo_guardian_operator_recovery_tests_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguardred tests/contracts/test_btc_demo_guardian_operator_recovery.py", "result": "failed", "evidence_path": "failure-first RED: F..F., 2 failed/3 passed; missing-latch healthy bootstrap and stale-observation cases were blocked by empty positions being treated as unknown before the implementation fix"},
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguard14 tests/contracts/test_btc_demo_guardian_operator_recovery.py backend/tests/test_btc_demo_runtime_service.py::test_status_guardian_projection_is_get_only_and_does_not_create_latch_files backend/tests/test_btc_demo_runtime_service.py::test_status_guardian_persistence_error_is_observable_without_physical_latch_path backend/tests/test_btc_demo_runtime_service.py::test_status_exposes_protective_projection_errors_without_latch_path_or_action_authority", "result": "passed", "evidence_path": "10 passed in 1.62s"},
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguard15 tests/contracts/test_btc_demo_guardian_operator_recovery.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py tests/contracts/test_btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py", "result": "passed", "evidence_path": "142 passed in 7.24s"},
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguard16 tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py", "result": "passed", "evidence_path": "76 passed in 1.74s"},
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguard11 tests/contracts/test_btc_demo_guardian_operator_recovery.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py tests/contracts/test_btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_control_center_operator_contract.py", "result": "failed", "evidence_path": "sparse baseline collection blocked by ModuleNotFoundError: quant_cn and ModuleNotFoundError: quant_us in the API/application/control-center modules; no PYTHONPATH bypass used"},
+    {"command": "py -3 -m py_compile quant_crypto/application/runtime_risk_guardian.py quant_crypto/application/btc_operator_contract_v2.py quant_crypto/application/btc_demo_production_composition.py backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_demo_guardian_operator_recovery.py", "result": "passed", "evidence_path": "all touched Python paths compiled"},
+    {"command": "node frontend/scripts/test-btc-operator-v2-contract.mjs", "result": "passed", "evidence_path": "btc_demo_operator_contract_v2 static contract ok; 8 actions and Guardian read model"},
+    {"command": "npm --prefix frontend run lint", "result": "passed", "evidence_path": "tsc --noEmit passed using temporary junction to registered-main node_modules; junction removed"},
+    {"command": "npm --prefix frontend run build", "result": "passed", "evidence_path": "Vite production build passed; 5218 modules transformed"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "deliverable worktree"},
+    {"command": "py -3 -m pytest -q --basetemp=C:\\tmp\\qsxguard13 tests/risk/test_runtime_risk_guardian.py tests/contracts/test_btc_demo_guardian_operator_recovery.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py", "result": "failed", "evidence_path": "not a product regression: sparse baseline collection stopped at ModuleNotFoundError: quant_us"},
+    {"command": "npm exec -- playwright test frontend/e2e/btc-demo-console.spec.ts", "result": "not_run", "evidence_path": "deferred_to_integrated_current_main; producer did not start a frontend/service"}
+  ],
+  "blockers": [
+    "independent_integrator_required_by_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "backend_api_application_control_center_tests_blocked_by_sparse_missing_quant_cn_and_quant_us",
+    "producer_playwright_deferred_to_integrated_current_main",
+    "promotion_artifact_not_rebuilt_and_promotion_remains_blocked",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-shared-runtime-live-canary-01-correction-owned-id-restore-04-8299836ba",
+  "ticket_id": "BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-OWNED-ID-RESTORE-04",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-owned-id-restore-04",
+  "base_commit": "29081b9da952916d16ab8916c16456eb4d4a6201",
+  "deliverable_commit": "8299836ba1ec78e1bf9a0831f35136c4d82b0999",
+  "created_at": "2026-08-09T00:58:46Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-btc-okx-shared-runtime-live-canary-01-correction-owned-id-restore-04-14aa35500",
+    "14aa355005398c78a6888658bfa4415bee2d710f",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-owned-id-restore-04-8516e772c",
+    "8516e772cfb934e3f84871535130d659a59b63a1",
+    "e0b627108a6bd80e35892292c9006c190e549eb4",
+    "99154b2e0b715d7b9e70f86a635f0def57cda009"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "bd1d573fe2e1ac9e475c5a68171424f463ddb7e2a2cf250709e4b92337713a0d",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "ad767d5957ccc5ed8244c14f7e30e569f23a128232d92ed2d46cd9edee6975a6",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "5eb1c66075de01803f4d56ae89d1ba36ba041e6e881d0feb7235e93e4c5143dc",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "2a94cc7d97c79b6f02a73a5557e942618dbf0304169df0c938fdfb72c11d2d53",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py -q --basetemp <external> -p no:cacheprovider [observed: 290 passed in 40.83s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py -q --basetemp <external> -p no:cacheprovider [observed: 55 passed in 0.84s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py scripts/run_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py [observed: passed]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check [observed: passed]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "quant-agent-preflight context packet [catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c; scoped initial dirty=clean; final scoped dirty=clean]",
+      "evidence_path": ".agent/handoffs/BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-OWNED-ID-RESTORE-04",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "supersedes_namespace_rejected_14aa355005398c78a6888658bfa4415bee2d710f_and_99154b2e0b715d7b9e70f86a635f0def57cda009",
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "current_main_artifact_not_rebuilt_by_source_only_ticket",
+    "no_demo_private_order_live_endpoint_access_or_secret_read",
+    "owned_id_restore_is_identity_only_and_does_not_unlock_paper_promotion_or_live",
+    "archive_compatibility_and_promotion_gates_remain_blocked_until_current_head_integration_and_gate_review"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "base_commit": "5134844aa84a87e3b32f13409db29822a12d74d1",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T09:08:00Z",
+  "deliverable_commit": "805dcaa006b97098a04022c67bfabca925ff7eef",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "bd83394cdd4931adef972a8621da72902141b05abcffd392a2b5607ad3a7a9b1",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "f6f5fe8290adfcc0609ffe62883c4e6e6cb481b422d5d2d4e59ea34856de7843",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-attached-protection-query-33-227cd2393"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-worker-optional-liveness-34-805dcaa00",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-worker-liveness-34",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill_without_worker or worker_required_liveness or fault_drill_dead_man_loop_renews'",
+      "evidence_path": "baseline: 5 failed because worker_heartbeat_stale blocked false-worker liveness and prevented dead-man renewal",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill_without_worker or worker_required_liveness or fault_drill_dead_man_loop_renews or dead_man_expiry or authoritative_liveness_mismatch'",
+      "evidence_path": "10 passed, 341 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'dead_man or authoritative_liveness or write_path_trusted'",
+      "evidence_path": "31 passed, 320 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FAULT-DRILL-WORKER-OPTIONAL-LIVENESS-34",
+  "transition_for": ""
+}

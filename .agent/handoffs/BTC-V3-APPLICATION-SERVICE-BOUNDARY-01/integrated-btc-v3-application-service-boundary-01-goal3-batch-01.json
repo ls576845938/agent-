@@ -1,0 +1,136 @@
+{
+  "base_commit": "e8fdfa4210161b2ec23a0625357adaef16fa6edd",
+  "blockers": [
+    "owner:btc_research promotion_evidence_not_produced_by_engineering_boundary_goal",
+    "owner:architect paper_and_live_gates_remain_fail_closed",
+    "classification:goal3_integration_blocker=false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T04:57:23Z",
+  "deliverable_commit": "09d535160594418907d2d529dc574bf102bb5a09",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_application_service_backend_facade_v1",
+      "sha256": "1793f74c7e0094bb83c5e2e684b71d5a9068227f5fe1fada33d113ca5f09e9e1",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/crypto_closure.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_application_service_backend_facade_v1",
+      "sha256": "3ef2eced78da4424396daa2994aa75ddb3deaaeace5466157c26848bda25782a",
+      "type": "code"
+    },
+    {
+      "path": "docs/handoffs/BTC-V3-APPLICATION-SERVICE-BOUNDARY-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_application_service_boundary_report_v1",
+      "sha256": "6c7d4c87f95143d058bd506bbaacd9f231995459ce05064bb5ebc8b72111cfde",
+      "type": "report"
+    },
+    {
+      "path": "quant_crypto/adapters/closure_evidence_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_closure_evidence_uow_v1",
+      "sha256": "31c0729309bdb4f52c0f10783f3716f6c13b2f0ca7ade8910e4575ac73b95203",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_application_service_v1",
+      "sha256": "2aa0ba187fb3427b879283941d2b1bc5a2d5488bc7823fafea167efc2c0f054b",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/closure_ports.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_closure_application_ports_v1",
+      "sha256": "9ec03d843e932d8243b597512714343fb7c4043052019270685b5569724d3b2a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/crypto_closure.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_closure_application_service_v1",
+      "sha256": "02e3560baf474a6d6fb3cb05a96363a37acb9ee9f629eea555f0767bf44034de",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/runtime_ports.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_application_ports_v1",
+      "sha256": "3b553d164c1e30e81daefe278e3a6b9a532f8099fea06869e4aa6ca8c904f29f",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_crypto_closure_api_characterization.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_closure_api_characterization_v1",
+      "sha256": "aeee5ba5d78b46f56af68a80eda6eb57d0cf15e9feaceb3d1422b854e32c9b7d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_application_service_boundary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_application_service_boundary_contract_v1",
+      "sha256": "6b03e826c5a3263e703ff3c9929656fddaaf15f8766311f6a2a2fa7595fe78a8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-application-service-boundary-01-7b7ae32a"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-v3-application-service-boundary-01-goal3-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal3-batch-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/api/test_crypto_closure_api_characterization.py -q -p no:cacheprovider --basetemp <unique> [observed: 3 passed]",
+      "evidence_path": "tests/api/test_crypto_closure_api_characterization.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_application_service_boundary.py tests/api/test_crypto_closure_api_characterization.py backend/tests/test_crypto_closure.py tests/backtest/test_crypto_closure_service.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py -q -p no:cacheprovider --basetemp <unique> [observed: 29 passed]",
+      "evidence_path": "tests/contracts/test_btc_application_service_boundary.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/api/test_background_tasks.py -q -p no:cacheprovider --basetemp <unique> [observed: 20 passed]",
+      "evidence_path": "tests/api/test_background_tasks.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_architecture_gate.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_gate_snapshot.py -q -p no:cacheprovider --basetemp <unique> [observed: 29 passed]",
+      "evidence_path": "tests/contracts/test_btc_architecture_gate.py",
+      "result": "passed"
+    },
+    {
+      "command": "source business commit 7b7ae32af3fb6bd81305d7e61c991d4b9b036033; committed-byte SHA-256 and no-overlap precheck",
+      "evidence_path": "docs/handoffs/BTC-V3-APPLICATION-SERVICE-BOUNDARY-01.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-APPLICATION-SERVICE-BOUNDARY-01",
+  "transition_for": "published-btc-v3-application-service-boundary-01-7b7ae32a"
+}

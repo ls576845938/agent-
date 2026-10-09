@@ -1,0 +1,84 @@
+{
+  "schema_version": "btc_okx_l2_blocked_attestation_v2",
+  "ticket_id": "DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01",
+  "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+  "dataset_version": "btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116",
+  "producer_role": "data_steward",
+  "source_head": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "generated_at": "2026-07-26T20:34:00.037Z",
+  "timezone": "UTC",
+  "status": "blocked",
+  "decision": "preserve_rejected_l2_report_as_immutable_blocked_source_receipt",
+  "venue": "okx",
+  "instrument_id": "BTC-USDT-SWAP",
+  "channel": "books",
+  "source_receipt": {
+    "repo_relative_path": "artifacts/btc_scalping_readiness/latest/btc_okx_timestamp_aligned_l2_capture_report.json",
+    "shared_payload_path": "source_receipt/btc_okx_timestamp_aligned_l2_capture_report.json",
+    "sha256": "e2a79ab6150c1c0d91b4db0f3fb317d5b6f051460ef6b32236f5bd6490df35b6",
+    "bytes": 3384,
+    "mtime_utc": "2026-07-26T20:10:47.5955817Z",
+    "working_git_blob": "5c35edc331e29b02dcbc10fe4c9e3539b223f8c6",
+    "report_schema_version": "btc_okx_timestamp_aligned_l2_capture_report_v1",
+    "report_status": "rejected",
+    "report_generated_at": "2026-07-26T20:10:47.588105Z",
+    "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_daily_roll_90d_v1",
+    "completed_sample_count": 0,
+    "book_level_row_count": 0,
+    "trade_row_count": 0,
+    "network_called_in_original_report": true,
+    "private_endpoint_used_in_original_report": false,
+    "order_endpoint_used_in_original_report": false
+  },
+  "publication": {
+    "storage_relative_path": "datasets/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116",
+    "aggregate_sha256": "2296e41a6994979120a90326dbc8dc864ffe381eb43d6287aad391dde7c4b8dc",
+    "file_count": 1,
+    "total_bytes": 3384
+  },
+  "coverage": {
+    "start": null,
+    "end": null,
+    "history_window_days": 0,
+    "completed_sample_count": 0,
+    "book_level_row_count": 0,
+    "trade_row_count": 0,
+    "sequence_gap_count": null,
+    "two_sided_coverage_pct": 0.0
+  },
+  "readiness": {
+    "quality_checked": false,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false
+  },
+  "known_gaps": [
+    "completed_sample_count_zero",
+    "book_level_row_count_zero",
+    "trade_row_count_zero",
+    "natural_history_zero_days"
+  ],
+  "blockers": [
+    "btc_okx_selected_bundle_dir_missing",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified"
+  ],
+  "guardrails": {
+    "source_bytes_mutated": false,
+    "public_network_called_by_this_ticket": false,
+    "api_key_used_by_this_ticket": false,
+    "secret_read": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "schema_version": "btc_okx_l2_blocked_attestation_v1",
+  "ticket_id": "BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01",
+  "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+  "dataset_version": "btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+  "producer_role": "data_steward",
+  "source_head": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "generated_at": "2026-07-26T15:40:45.300Z",
+  "timezone": "UTC",
+  "status": "blocked",
+  "decision": "block_timestamp_aligned_okx_l2_publication_fail_closed",
+  "venue": "okx",
+  "instrument_id": "BTC-USDT-SWAP",
+  "channel": "books",
+  "audited_sources": [
+    {
+      "source_kind": "selected_90d_bundle",
+      "repo_relative_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_daily_roll_90d_v1",
+      "exists": false,
+      "usable_as_timestamp_aligned_l2": false,
+      "reason": "btc_okx_selected_bundle_dir_missing"
+    },
+    {
+      "source_kind": "timestamp_aligned_diagnostic_report",
+      "repo_relative_path": "artifacts/btc_scalping_readiness/latest/btc_okx_timestamp_aligned_l2_capture_report.json",
+      "sha256": "d664923474ffedb4f4daf97561427f4d5be27af88fcd5c39a8da1a6ace1c873f",
+      "bytes": 3384,
+      "report_status": "rejected",
+      "completed_sample_count": 0,
+      "book_level_row_count": 0,
+      "trade_row_count": 0,
+      "report_generated_at": "2026-07-26T15:10:47.350554Z",
+      "network_called_reported": true,
+      "report_source_head_matches": false,
+      "usable_as_timestamp_aligned_l2": false
+    },
+    {
+      "source_kind": "depth_observation_batch_report",
+      "repo_relative_path": "artifacts/btc_l2_depth_observation/latest/btc_okx_l2_depth_observation_batch_report.json",
+      "sha256": "9a2f3c68047997a55310a1b6a65dd2a8aff0540b916b8161a8fdefc9312ce1b6",
+      "bytes": 7264,
+      "report_status": "free_public_l2_depth_batch_partial_research_only",
+      "report_source_head": "0c2b9f807c21fb16595764238d4b76c5bd89605a",
+      "report_source_head_matches": false,
+      "two_sided_snapshot_count": 0,
+      "two_sided_coverage_days": 0.0,
+      "promotion_evidence_ready": false,
+      "usable_as_timestamp_aligned_l2": false
+    },
+    {
+      "source_kind": "mutable_rest_tail_order_book_snapshot",
+      "repo_relative_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/order_book_depth.csv",
+      "sha256": "10c6db705541181a68a12aa34ae729e9e002a9f6f737414feec1d967b228288d",
+      "bytes": 23315,
+      "row_count": 100,
+      "event_time_start": "2026-07-26T15:10:41.105000Z",
+      "event_time_end": "2026-07-26T15:10:41.105000Z",
+      "sequence_fields_present": false,
+      "snapshot_only": true,
+      "usable_as_timestamp_aligned_l2": false
+    },
+    {
+      "source_kind": "mutable_rest_tail_trades",
+      "repo_relative_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/agg_trades.csv",
+      "sha256": "09b696f5f935d8add094950acab25f37f1185bc531461b01b7528ae7d6bcba53",
+      "bytes": 22782,
+      "row_count": 100,
+      "event_time_start": "2026-07-26T15:10:25.137000Z",
+      "event_time_end": "2026-07-26T15:10:38.177000Z",
+      "usable_as_timestamp_aligned_l2": false
+    }
+  ],
+  "public_collection_attempt": {
+    "attempted_at": "2026-07-26T15:39:53Z",
+    "endpoint": "wss://ws.okx.com:8443/ws/v5/public",
+    "subscription": {
+      "channel": "books",
+      "instId": "BTC-USDT-SWAP"
+    },
+    "requested_duration_seconds": 30,
+    "requested_max_messages": 2000,
+    "collector": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py",
+    "command": "py -3 scripts/fetch_btc_okx_public_ws_l2_raw_capture.py --repo-root . --bundle-dir <task-unique-segment-dir> --capture-report <task-unique-report> --execute-network --duration-seconds 30 --max-messages 2000 --channels books --recv-timeout-seconds 5 --forced-reconnect-after-messages 0",
+    "status": "failed_before_socket_connection",
+    "network_socket_opened": false,
+    "network_data_collected": false,
+    "error_type": "ModuleNotFoundError",
+    "error": "No module named 'websocket'",
+    "dependency_check": {
+      "py_3_websocket_client_installed": false,
+      "main_venv_websocket_client_installed": false
+    },
+    "repair_owner": "btc_developer",
+    "next_executable_action": "declare_and_install_or_vendor_the_committed_collectors_websocket_client_runtime_dependency_then_rerun_public_only_capture"
+  },
+  "coverage": {
+    "start": null,
+    "end": null,
+    "history_window_days": 0.0,
+    "observed_history_seconds": 0.0,
+    "sequence_gap_count": null,
+    "two_sided_coverage_pct": 0.0
+  },
+  "readiness": {
+    "quality_checked": false,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false
+  },
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_okx_selected_bundle_dir_missing",
+    "btc_okx_ws_collector_dependency_missing:websocket",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "l2_artifact_source_head_mismatch"
+  ],
+  "guardrails": {
+    "immutable_payload_published": false,
+    "network_execution_authorized": false,
+    "public_network_attempted": true,
+    "public_network_socket_opened": false,
+    "api_key_used": false,
+    "secret_read": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false
+  }
+}

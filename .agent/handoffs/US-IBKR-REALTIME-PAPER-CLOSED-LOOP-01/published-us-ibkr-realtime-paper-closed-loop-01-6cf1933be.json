@@ -1,0 +1,168 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-realtime-paper-closed-loop-01-6cf1933be",
+  "ticket_id": "US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-realtime-paper-closed-loop-correction-01",
+  "base_commit": "2f53a265130793d2b4bf73c0440173137d02aa6a",
+  "deliverable_commit": "6cf1933be4cfa71b67bdeed6d5454b54e30bf6e7",
+  "created_at": "2026-08-07T04:17:29Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-us-ibkr-realtime-paper-closed-loop-01-0e40d88ce"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "schema",
+      "path": "configs/data/us_ibkr_yahoo_runtime_semantic_contract_v1.json",
+      "sha256": "c0ad71e4f27f8ae98f81e2499b753fdbd47a42c68d2e1d5ee8db5e163d20086c",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_v1.1.0",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/execution/ibkr_insync_facade.py",
+      "sha256": "5837e6076ed8bd29ab36bca97e86c78612a2503bac6ee7515162f4ec3034cf83",
+      "schema_version": "ibkr_insync_facade_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/ibkr_runtime_market_data.py",
+      "sha256": "21a9f3cd903df20e60b544204456d013c3f7a63b1394c597aebbdd03129b5a78",
+      "schema_version": "us_ibkr_runtime_market_data_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "7a3fe4f3189199b0f516c40cc496cb689339083584f338b7119ac04b83a96092",
+      "schema_version": "us_ibkr_paper_closed_loop_runtime_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_ibkr_paper_closed_loop_receipt.schema.json",
+      "sha256": "11f4d8921637c0e6640e4242c65f8b87da54bf17ae07cbde604043536584f23b",
+      "schema_version": "us_ibkr_paper_closed_loop_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_ibkr_yahoo_runtime_semantic_contract.schema.json",
+      "sha256": "d628f3bee27d317021df9c02cb8338114bca1c35353ae5f95d722be7a2544591",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_us_equity_ibkr_paper.py",
+      "sha256": "fc426cff4e3d64f4619f465b8f35f713507c96d0870ce323799b6b4b1c02f1a3",
+      "schema_version": "us_ibkr_paper_composition_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_ibkr_yahoo_runtime_semantic_contract.py",
+      "sha256": "918438c3a05d78844806ead394b1d9efce349508ae83e06df39f12dd052ab73e",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_tests_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_closed_loop.py",
+      "sha256": "2ca253a34e8febd686fa402fdfcba68b6ebbb160658962d117db3311c910f760",
+      "schema_version": "us_ibkr_paper_closed_loop_tests_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_runtime_market_data.py",
+      "sha256": "b4038121a44730e39e15979648cda31defa217814200acc8818c359325380c0c",
+      "schema_version": "us_ibkr_runtime_market_data_tests_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q <13 related IBKR/runtime/ledger/semantic contract test files> --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/<isolated> [174 passed in 56.12s]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_closed_loop.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/us-ibkr-correction-live [191 passed in 102.81s]",
+      "result": "passed",
+      "evidence_path": "tests/live"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_us_etf_26_ibkr_no_submit_shadow.py --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/<isolated> [13 passed in 19.14s]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "py -3 -m py_compile <changed-python-files>",
+      "result": "passed",
+      "evidence_path": "quant_us/live/ibkr_runtime_market_data.py"
+    },
+    {
+      "command": "git diff --check and git diff --cached --check",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live tests/contracts --basetemp <isolated> [preexisting collection error: DEFAULT_TEMPLATE missing from scripts/build_us_equity_broker_credentials_review_report.py]",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_us_equity_broker_credentials_local_review_init.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live tests/contracts excluding test_us_equity_broker_credentials_local_review_init.py --basetemp <isolated> [tool timeout after 304s without failure output]",
+      "result": "not_run",
+      "evidence_path": "tests/contracts"
+    },
+    {
+      "command": "py -3 -m ruff check/format --check <changed-python-files> [ruff not installed]",
+      "result": "not_run",
+      "evidence_path": "quant_us/execution/ibkr_insync_facade.py"
+    }
+  ],
+  "blockers": [
+    "change_risk=unclassified;strict_independent_integrator_path_required",
+    "initial_dirty_paths=[];producer_correction_worktree_was_clean_for_all_declared_paths",
+    "catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+    "active_pitfall_ids=GOV-CONCURRENCY-001,GOV-DIRTY-001,GOV-ENGINEERING-CIRCUIT-001,GOV-HANDOFF-001,GOV-OBJECTIVE-001,GOV-PITFALL-001,GOV-ROOT-001,GOV-STORAGE-001,GOV-WORKTREE-001,QSYS-GATE-001,QSYS-SECURITY-001,GOV-PROMPT-001,GOV-WINDOWS-001",
+    "semantic_contract_id=us-ibkr-yahoo-runtime-semantic-contract-v1;version=1.1.0;contract_sha256=3d62fc290c903b172c511a6a70988500e55b77f34b940391b135bc0ff6e78a67",
+    "ibkr_runtime_price_semantics=IBKR_ADJUSTED_LAST_completed_daily_bar_triggered_by_IBKR_realtime_RTH_close;status_only_or_raw_split_bars_fail_closed",
+    "no_gateway_or_network_was_used;transport_and_facade_were_exercised_only_with_injected_local_fixtures",
+    "data/paper_ledger/paper_runtime_audit.jsonl_test_side_effect_restored_to_HEAD_blob=b3c39107d86d53bc465d1ce28346d9d4d86eb3ab;registered_main_untouched",
+    "full_live_plus_contracts_collection_has_preexisting_DEFAULT_TEMPLATE_import_error_outside_ticket_touch_set",
+    "full_suite_without_the_preexisting_collection_test_exceeded_304s_tool_timeout;bounded_related_regression_and_full_live_suite_passed",
+    "ruff_not_installed;py_compile_and_git_diff_checks_passed",
+    "corporate_action_entitlement_and_IBKR_live_market_data_entitlement_must_be_verified_at_runtime_fail_closed",
+    "independent_integrator_must_replay_deliverable_commit_and rerun tests before registered-main integration",
+    "current_HEAD_closed_loop_receipt_and_gate_read_model_not_rebuilt_by_producer",
+    "30_natural_day_forward_observation_not_started;offline_fixture_never_counts",
+    "manual_operator_paper_submit_authorization_still_required_before any real paper order path",
+    "integrator_command_1=py -3 tools/agent_governance/worktree_plan.py --role integrator --task-id integrate-us-ibkr-realtime-paper-closed-loop-correction-01 --base-ref refs/heads/main --apply",
+    "integrator_command_2=git cherry-pick 6cf1933be4cfa71b67bdeed6d5454b54e30bf6e7",
+    "integrator_command_3=validate this superseding handoff, rerun recorded tests, preserve paper_runtime_audit byte-for-byte, and rebuild current-HEAD evidence with all paper/live/promotion flags false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

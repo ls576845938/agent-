@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-quant-frontend-full-tradingview-suite-forwardport-01-health-auth-correction-bcc28e91",
+  "ticket_id": "QUANT-FRONTEND-FULL-TRADINGVIEW-SUITE-FORWARDPORT-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/quant-frontend-full-tradingview-suite-forwardport-01",
+  "base_commit": "b5042dbd76bce7efda88e4d7f84c9b78a816e409",
+  "deliverable_commit": "bcc28e9119a038d2dbf27805b63df0b317db3c15",
+  "created_at": "2026-07-26T02:46:54Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-full-tradingview-suite-forwardport-01-b4f6a30f"
+  ],
+  "supersedes": [
+    "published-quant-frontend-full-tradingview-suite-forwardport-01-b4f6a30f"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/LiveTradingDashboard.tsx",
+      "sha256": "95440ae52cdcef8555c48a5f6f6a3a7d136df80a7f65c3d3cefb80f4fd3ef4ad",
+      "schema_version": "quant_frontend_execution_health_authorization_semantics_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "sha256": "f93d6d9ad39658e20dff23a9d4c22be6c90381dd04ff75c212b0060732ff6a50",
+      "schema_version": "quant_frontend_full_terminal_suite_e2e_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/LiveTradingDashboard.tsx"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/system-workbench.spec.ts (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    },
+    {
+      "command": "npx.cmd playwright test (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/LiveTradingDashboard.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "playwright-cli headed execution screenshot with healthy read-only fixture at 1600x1000",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    }
+  ],
+  "blockers": [
+    "current_head_domain_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "paper_runner_authorization_and_start_evidence_remain_absent",
+    "paper_live_order_private_network_secret_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

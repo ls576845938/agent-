@@ -1,0 +1,80 @@
+{
+  "base_commit": "bcc31f0b9bfb1ffa97a7f91dc14debb1c05683c7",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "promotion_artifact_rebuild_required_by_policy",
+    "backend_restart_required_by_policy_not_applicable_to_offline_data_publication",
+    "btc_5m_selection_prefix_not_promotion_evidence",
+    "btc_5m_frozen_holdout_excluded_and_unread",
+    "btc_execution_latency_queue_l2_funding_mark_index_liquidation_evidence_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-27T05:24:00Z",
+  "deliverable_commit": "8748a177561e66537b597c8c6537bb69092adef0",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-5m-qcv2r1-selection-prefix/btc-5m-qcv2r1-selection-prefix-248270-qc2r1.json",
+      "readiness_class": "research_ready",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "0c38ae5cd13fb47f074573047c68b3a6da1ca237b2ef75c9e5fcb651c8dd35d3",
+      "type": "data_manifest"
+    },
+    {
+      "path": "tests/contracts/test_btc_5m_qcv2r1_selection_prefix.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "678f0482ed79fb9fa0a1ae880ce7f05feec2f9acb81a292af7e9eed562a452c4",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-5m-current-immutable-refresh-01-correction-04-8297034305"
+  ],
+  "domain": "data",
+  "event_id": "published-btc-5m-qcv2r1-selection-prefix-01-8748a1775",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-5m-qcv2r1-selection-prefix-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_5m_qcv2r1_selection_prefix.py -q",
+      "evidence_path": "2 passed in 2.72s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest <selection-prefix Git manifest>",
+      "evidence_path": "status=resolved; full prefix payload and physical manifest hashes matched",
+      "result": "passed"
+    },
+    {
+      "command": "unbuffered raw readline prefix extraction",
+      "evidence_path": "rows=248270; bytes=89831446; payload_sha256=b00557b75b3b4049bde1c09bfa69d31a8856993bb9f4fbdc71cfb49078b8f9b5; application_bytes_after_boundary=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": "deliverable touch set only; no overlap or whitespace error",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-5M-QCV2R1-SELECTION-PREFIX-01",
+  "transition_for": ""
+}

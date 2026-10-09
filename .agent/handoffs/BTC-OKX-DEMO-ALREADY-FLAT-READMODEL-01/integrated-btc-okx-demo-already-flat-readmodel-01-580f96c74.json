@@ -1,0 +1,86 @@
+{
+  "base_commit": "f2b1b0b65ab6156980045f7827445d070038a176",
+  "blockers": [
+    "owner:backend_operator backend_restart_required_after_integration",
+    "registered_main_not_advanced_integration_branch_only",
+    "ticket_contract_no_artifact_built_no_promotion_evidence_rebuild",
+    "quality_checked_source_is_not_promotion_evidence",
+    "no_service_no_network_no_secret_no_demo_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-06T11:38:24Z",
+  "deliverable_commit": "580f96c74436d29e9881d0fdabefd6cec2c04512",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "48dba71add8273882bc63b0252e6a3ace6041e72469489c28728d5035f7ef5fa",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "e3abb97f2886ac33f73c3b9a13bfffdb5cfd30b14536f942fc28434d85cca2b4",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-already-flat-readmodel-01-259b3b4a4"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-already-flat-readmodel-01-580f96c74",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-demo-already-flat-readmodel-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3.14 -m pytest -q four selected already-flat runtime contracts --basetemp <unique> (4 passed in 3.62s)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3.14 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <unique> (250 passed in 46.30s)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3.14 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "static already-flat read-model order and zero-POST probe",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --quiet f2b1b0b65ab6156980045f7827445d070038a176 HEAD -- quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-ALREADY-FLAT-READMODEL-01",
+  "transition_for": "published-btc-okx-demo-already-flat-readmodel-01-259b3b4a4"
+}

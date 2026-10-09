@@ -1,0 +1,86 @@
+{
+  "base_commit": "0e50f868a6febe488e2e08bdea7a6ddc62b79136",
+  "blockers": [
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live",
+    "btc_lean_microlive:real_private_ws_observation_missing",
+    "btc_lean_microlive:runtime_account_snapshot_missing",
+    "btc_lean_microlive:operator_live_session_not_started",
+    "btc_lean_microlive:live_order_capability_not_enabled_by_ticket",
+    "btc_lean_microlive:human_approval_proof_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-29T14:20:31Z",
+  "deliverable_commit": "0842770e5b75436881cf9caa2d25b33caf122cc3",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_v1",
+      "sha256": "883b6fc6c43c439f985b3a80f08259249ad35c8a795d946e750b41a70ccfab0a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "c043f0751daa4743bef94e47b4d48e474ed7a8dafa07f61ed4dde90dec066de8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-lean-canary-signal-01-9e328534"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-lean-microlive-producer-01-correction-02-0842770e5",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-lean-microlive-producer-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "BTC-LEAN-MICROLIVE-PRODUCER-01-published-01"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py::test_okx_native_signal_data_reads_explicit_generic_public_swap_bundle_layout [failure-first before fix: 1 failed with okx_demo_paper_okx_native_data_manifest_unavailable:FileNotFoundError; after fix: 1 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_paper_oms_lifecycle.py tests/contracts/test_btc_paper_oms_session_reconciliation.py tests/contracts/test_btc_execution_quality.py tests/contracts/test_btc_venue_rules.py tests/contracts/test_btc_liquidation_risk.py tests/contracts/test_btc_paper_live_kill_switch_status.py [observed: original 54 plus new regression, 55 passed in 3.32s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "actual-reader readonly validation using committed shared manifest 9e328534f3e2d53d7b8e7bb1596be7ad0243691e:.agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json [observed: eligible=true; integrity=true; freshness=pass; 5280 confirmed bars; duplicate_count=0; gap_count=0; mark/index/funding present; physical root redacted; promotion_evidence_ready=false]",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+      "result": "passed"
+    },
+    {
+      "command": "network/private/order/live endpoint, secret read, paper queue write, demo order, real order, or repo-local artifact fallback",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-LEAN-MICROLIVE-PRODUCER-01-CORRECTION-02",
+  "transition_for": ""
+}

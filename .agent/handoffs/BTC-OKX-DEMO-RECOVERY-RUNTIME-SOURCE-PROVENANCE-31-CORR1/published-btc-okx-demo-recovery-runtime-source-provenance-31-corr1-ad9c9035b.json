@@ -1,0 +1,112 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-recovery-runtime-source-provenance-31-corr1-ad9c9035b",
+  "ticket_id": "BTC-OKX-DEMO-RECOVERY-RUNTIME-SOURCE-PROVENANCE-31-CORR1",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-recovery-provenance-31-c1",
+  "base_commit": "7782dc3f6e4ca168fa233037425fedf082ba3be6",
+  "deliverable_commit": "ad9c9035b7334f5c6149c1b78e0391f5082ed4b4",
+  "created_at": "2026-08-12T05:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-recovery-runtime-source-provenance-31-4c36860e0"
+  ],
+  "supersedes": [
+    "published-btc-okx-demo-recovery-runtime-source-provenance-31-4c36860e0"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "830416458ce700198d9767a5819b5778dfbfa370a3cf67709fe06c634c115a47",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "482f51e62e671d5e7543637af6f38de5737bceb8bf43306e2049243733a594ee",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "5b8efc3a0f953782c4e5a3b890e54006126428d566b875111b818b32983b7d69",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "f3f238bb0b261bab123800131f8ecc7b300e8ac4961d87197165fc3c359627a5",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k \"ignores_owned_id_restore_applied_archive_source_provenance or rejects_archive_source_in_ordinary_runtime_event\"; py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"incident_recovery_source_chain_ignores_owned_id_restore_archive_provenance or incident_recovery_source_chain_rejects_archive_source_in_ordinary_event\"",
+      "result": "failed",
+      "evidence_path": "failure-first before implementation: application binding raised fault_drill_recovery_binding_runtime_source_mismatch and OMS source-chain returned false; ordinary-event negatives already rejected"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k \"ignores_owned_id_restore_applied_archive_source_provenance or rejects_archive_source_in_ordinary_runtime_event\"; py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"incident_recovery_source_chain_ignores_owned_id_restore_archive_provenance or incident_recovery_source_chain_rejects_archive_source_in_ordinary_event\"",
+      "result": "passed",
+      "evidence_path": "2 passed, 141 deselected; 2 passed, 334 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k \"canonical_binding or owned_id_restore\"",
+      "result": "passed",
+      "evidence_path": "canonical/owned-ID selection passed; Windows py wrapper omitted terminal summary"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"incident_recovery_source_chain or incident_recovery_binding\"",
+      "result": "passed",
+      "evidence_path": "9 passed, 327 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "not_run",
+      "evidence_path": "executed; no failure observed, but terminal exit summary unavailable due Windows process wrapper; circuit-breaker stopped repeat and independent reviewer must rerun focused/selection matrix"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "not_run",
+      "evidence_path": "executed; no failure observed, but terminal exit summary unavailable due Windows process wrapper; circuit-breaker stopped repeat and independent reviewer must rerun focused/selection matrix"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "PYCOMPILE_EXIT=0"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "DIFF_CHECK_EXIT=0"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "full_suite_terminal_summary_unavailable_windows_wrapper",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

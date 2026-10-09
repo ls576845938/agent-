@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-panorama-wait-race-local-geometry-20261002-84d38b3a1",
+  "ticket_id": "BTC-PANORAMA-WAIT-RACE-20261002",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-panorama-wait-race-20261002",
+  "base_commit": "3b4ad82d14ef441e6c5ad780edf2fb4acd80e5b1",
+  "deliverable_commit": "84d38b3a14f3bdb1e0fa7a8975b845c9c8b97d18",
+  "created_at": "2026-10-02T15:39:31Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-btc-panorama-wait-race-correction-20261002-07ffba116"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-system-panorama.spec.ts",
+      "sha256": "7fd88414edd77773a81855d501168948d9f53406196ee4db97336ba769227e60",
+      "schema_version": "btc_system_panorama_browser_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/BTC-PANORAMA-WAIT-RACE-20261002.md",
+      "sha256": "c74819457c91669a4b1c8ee8b2941979f1a8215679f0564c4b43831b5ac48bb7",
+      "schema_version": "btc_panorama_wait_race_acceptance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first static contract requiring scroll-invariant arranged layout signature and rejecting cross-round viewport boxes",
+      "result": "failed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "post-fix static contract requiring two fit gates, local transform/size signature, hit checks and no cross-round viewport boxes",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "git diff --check -- frontend/e2e/btc-system-panorama.spec.ts docs/acceptance/BTC-PANORAMA-WAIT-RACE-20261002.md",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "post-fix canonical current-main four-spec 29-test browser matrix",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent committed-source review and integration required by research_readonly_release",
+    "owner:integrator frontend identity refresh and canonical main restart pending after integration",
+    "owner:root canonical current-main four-spec 29-test browser acceptance pending after publication",
+    "historical 30-second navigation and cumulative timeout root cause remains unproven and is not claimed fixed",
+    "readiness_ceiling_quality_checked_not_promotion_evidence",
+    "no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

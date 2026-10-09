@@ -1,0 +1,189 @@
+{
+  "base_commit": "76ef603c1bdb88f1ff7ef86efef1ab8508c8d242",
+  "blockers": [
+    "owner:root merge_integrator_commit_into_registered_main_with_non_fast_forward_history_preserved",
+    "owner:root rerun_identity_checks_and_canonical_main_mock_playwright_after_final_main_merge",
+    "owner:root restart_canonical_frontend_and_backend_after_final_main_merge",
+    "owner:root promotion_artifact_rebuild_required_by_unclassified_delivery_policy",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_and_secret_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-02T10:15:50Z",
+  "deliverable_commit": "45fea8dd286b7cd2d4d8a64c78a6ac370c6dd43c",
+  "deliverables": [
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "b1eef02ff6a57e64fbb445907cc8580912c63276f30074e8de82af8f01029a12",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "7558658d731761cad328962a118a5d6449f82f1e3dcf18bf469045e3bc69e618",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "6e59c533b12c9789a86094a321a6d2e2473320c9eac97082018b31b9fbbc25da",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "1ed8a7a409f44eb048068f4b9493aab3e2ffb1ee81c299d5bd87a03459a49090",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "c17fce680a3f1f838292607c7bf0a4a4012b0b79047eedf551e1dc1809921be0",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "76d6bfe42aa94c621c14fd972f7dfcb2ca543190054b1d10cae95a9f3eb0cf33",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "static_regression_v1",
+      "sha256": "6c4d196f92702e7b5a5556a82d664ab876394156bc237d1d9959f503ca347c35",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "6e9fb0829ab4421d3d2ffd0ec2d571731ea73f82b09774cdcf1c53cd178e7f8c",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-frontend-1608-restore-01-98c1f93e4"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-frontend-1608-restore-01-45fea8dd2",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-frontend-1608-restore-01-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root <integrator-worktree> validate --input published-btc-frontend-1608-restore-01-98c1f93e4.json",
+      "evidence_path": ".agent/handoffs/BTC-FRONTEND-1608-RESTORE-01/published-btc-frontend-1608-restore-01-98c1f93e4.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent Git object and SHA-256 audit: base/current-main matched 76ef603c; producer ancestry passed; seven frontend/test blobs equal 1c31f77805f77f55944e1599d96405ce96dc3474; all eight envelope hashes matched",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff c57bd94da33572a80c31093893db8c63391a5fc2 -m merge: integrate Sep 2 16:08 frontend restore",
+      "evidence_path": ".agent/handoffs/BTC-FRONTEND-1608-RESTORE-01/published-btc-frontend-1608-restore-01-98c1f93e4.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 76ef603c..45fea8dd -- approved integration touch set",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd ci (117 packages)",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint initial parallel attempt; manually interrupted after no completion signal; exit 1",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "failed"
+    },
+    {
+      "command": "npm.cmd run lint standalone rerun (tsc --noEmit; exit 0)",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build (5219 modules; existing chunk-size warning only)",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check (manifest_match=true; baseline_ancestor=true; dirty_paths=[])",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:test (object_targets=4)",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test (12 runtime drift scenarios)",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_api.py -q --basetemp .tmp\\pytest-btc-demo-runtime-api-1608-integrator (14 passed, 1 environment error: missing basetemp parent)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_api.py -q --basetemp <unique-system-temp> (fixture-only; 15 passed in 16.34s)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_private_readonly_observation_projection.py -q --basetemp <unique-system-temp> (fixture-only; 5 passed in 6.61s)",
+      "evidence_path": "backend/tests/test_btc_private_readonly_observation_projection.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright frontend/e2e/crypto.spec.ts after root merges integration commit",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "canonical frontend/backend restart after root merges integration commit",
+      "evidence_path": "scripts/start_frontend_current_main.ps1",
+      "result": "not_run"
+    },
+    {
+      "command": "promotion artifact rebuild required by unclassified delivery policy",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-FRONTEND-1608-RESTORE-01",
+  "transition_for": "published-btc-frontend-1608-restore-01-98c1f93e4"
+}

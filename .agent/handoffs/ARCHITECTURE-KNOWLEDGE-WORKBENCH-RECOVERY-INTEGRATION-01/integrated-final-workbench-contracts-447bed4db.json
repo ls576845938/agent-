@@ -1,0 +1,83 @@
+{
+  "base_commit": "aba010d6264d24d2b08b07904ae21446c0070677",
+  "blockers": [
+    "owner_root_registered_main_merge_official_restart_and_38_canonical_playwright_tests_pending",
+    "identity_runtime_inventory_changed_for_e2e_contract_and_requires_official_restart_after_main_merge",
+    "research_registry_dirty_data_remains_fail_closed_409_json_decode_error",
+    "btc_runtime_artifact_missing_remains_fail_closed_503",
+    "current_head_promotion_artifacts_not_rebuilt_and_missing_trading_artifacts_remain_blocked",
+    "M1_M4_unstarted_and_research_does_not_unlock_promotion_paper_private_order_broker_or_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T05:09:30Z",
+  "deliverable_commit": "447bed4db2b71f4ce560ea3b77956fcc9676c407",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "a9a380caeea7e893dd69b9312b9e8839724ab3530acc362284f294d51e9fc7f3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "8af0453047f990431940a0c71eee5b5e3956439cfd04842015060670fe7737ee",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-architecture-canonical-correction-b8381acce",
+    "published-final-workbench-test-contracts-f59f51035"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-final-workbench-contracts-447bed4db",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/arch-knowledge-workbench-recovery-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate committed published-final-workbench-test-contracts-f59f51035",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01/published-final-workbench-test-contracts-f59f51035.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent committed delta review and git diff --check; one E2E test file only, no product source change",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs; node --test frontend/scripts/test-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "TypeScript, build, architecture static tests and backend tests",
+      "evidence_path": "covered by integrated-architecture-canonical-correction-b8381acce; intentionally not repeated for this test-only delta",
+      "result": "not_run"
+    },
+    {
+      "command": "registered-main official restart and 38 canonical Playwright tests",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-INTEGRATION-01",
+  "transition_for": "published-final-workbench-test-contracts-f59f51035"
+}

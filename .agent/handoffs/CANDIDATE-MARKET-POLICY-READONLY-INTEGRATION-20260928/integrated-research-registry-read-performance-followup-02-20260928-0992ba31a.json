@@ -1,0 +1,90 @@
+{
+  "base_commit": "c982620431ddcccce5db27b301763602b1ee108d",
+  "blockers": [
+    "formal current-main ordinary merge, c982 rollback ref, official research_readonly restart and 8765/3000 identity acceptance remain pending",
+    "TestClient prevalidation is not canonical runtime or browser acceptance",
+    "existing evidence registry conflict remains visible and fail-closed",
+    "research A/B remains incomplete: conditioned arm stopped fail-closed at 1956/2960 with terminal short -0.01 contracts preserved",
+    "candidate management, management writes, Demo, promotion, paper, live, private, order, real_order, transfer, withdraw, execution permission and runtime observation remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T05:18:26Z",
+  "deliverable_commit": "0992ba31a342a4587f3910777782970eb920687b",
+  "deliverables": [
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_evidence_registry_v1",
+      "sha256": "74a60de4886d884c76d83b923ec99258d92d41954b03752403dd5835ce97b34b",
+      "type": "code"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_evidence_registry_tests_v1",
+      "sha256": "31391823b1221ef77bd721a59cb519a27f0cff52ec5fdf10463be53446836098",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/research-registry-read-performance-followup-02-integration-20260928.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_registry_read_performance_integration_review_v1",
+      "sha256": "5f2ac07c4e1dc4020722132121933632015d2ec721ac3d19b06e49c537ad715b",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-research-registry-read-performance-followup-02-75ebeb543",
+    "integrated-candidate-market-policy-readonly-source-review-20260928-f261744d5"
+  ],
+  "domain": "research",
+  "event_id": "integrated-research-registry-read-performance-followup-02-20260928-0992ba31a",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate followup-02 plus git diff c982..75eb",
+      "evidence_path": "valid envelope; exact two source/test paths; rejected followup-01 not consumed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest evidence registry, summary API and readonly boundaries",
+      "evidence_path": "22 passed, 1 skipped in 26.72s; Windows symlink privilege skip",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest Qlib pipeline and M1 readonly archive",
+      "evidence_path": "29 passed, 1 existing StarletteDeprecationWarning in 33.54s",
+      "result": "passed"
+    },
+    {
+      "command": "complete-app TestClient 12-way readonly refresh against registered-main data/artifacts",
+      "evidence_path": "prevalidation only: wall 9.428s under unchanged 12s; registry 10731 bytes CONFLICT; Qlib 23838 bytes and 17 runs; all 12 HTTP 200",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main 8765 12-way refresh and canonical browser acceptance",
+      "evidence_path": "requires ordinary independent integration merge, official restart and final runtime acceptance",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CANDIDATE-MARKET-POLICY-READONLY-INTEGRATION-20260928",
+  "transition_for": "published-research-registry-read-performance-followup-02-75ebeb543"
+}

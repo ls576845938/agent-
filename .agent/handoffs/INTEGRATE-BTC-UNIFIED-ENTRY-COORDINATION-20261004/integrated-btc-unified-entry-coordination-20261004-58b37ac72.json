@@ -1,0 +1,88 @@
+{
+  "base_commit": "eaa88400f01e47e5c8da377606b6df52a9543382",
+  "blockers": [
+    "formal_current_main_browser_ui_http_acceptance_not_run",
+    "real_qlib_model_and_real_four_table_donchian_evidence_not_part_of_fixture_validation",
+    "real_comparable_candidate_pairs_zero_and_research_not_started",
+    "promotion_demo_paper_live_private_order_real_order_transfer_withdraw_execution_permission_runtime_observed_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-10-04T07:30:52Z",
+  "deliverable_commit": "58b37ac726cfd0d5276356782e7868c873f1aab1",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_unified_entry_coordination_independent_review_v1",
+      "sha256": "b9a053dc62e851e732a646b7005a79563d4850fcb5a880b0d9d4a89f9fcc9a7e",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-rule-forecast-doc-correction-20261004-057f44d53",
+    "published-btc-unified-entry-coordination-20261004-stage1-corrected-18823663e",
+    "published-btc-unified-entry-coordination-20261004-stage2-47b93c9a1",
+    "published-btc-unified-entry-coordination-20261004-stage2-correction-d733e0b00",
+    "published-btc-unified-entry-coordination-20261004-stage2-allocation-seal-dependency-corrected-f54d242da"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-unified-entry-coordination-20261004-58b37ac72",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-unified-entry-coordination-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "python -m pytest -q tests/contracts/test_btc_multi_strategy_coordination.py tests/contracts/test_btc_strategy_allocations.py tests/integrations/test_btc_multi_strategy_offline.py --basetemp <external-os-temp>",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k hosted_protection_projection_is_redacted_and_does_not_mutate_snapshot_or_submit_delegates_explicit_authoritative_t2_t3_bundle_to_oms --basetemp <external-os-temp>",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest -q tests/integrations/test_registered_donchian_lifecycle.py --basetemp <external-os-temp>",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest -q tests/integrations/test_candidate_offline_lifecycle.py::test_default_bootstrap_publish_http_start_result_and_idempotency[0] --basetemp <external-os-temp>",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-unified-candidate-offline.mjs && tsc --noEmit -p frontend/tsconfig.json",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "python -m py_compile <nine touched quant_crypto modules>",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "remaining five Qlib lifecycle cases, Qlib stop/crash, full repository/year matrix, browser/UI/HTTP flow, training/research",
+      "evidence_path": "docs/acceptance/btc-unified-entry-coordination-independent-review-20261004.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-UNIFIED-ENTRY-COORDINATION-20261004",
+  "transition_for": "published-btc-unified-entry-coordination-20261004-stage2-allocation-seal-dependency-corrected-f54d242da"
+}

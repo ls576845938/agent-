@@ -1,0 +1,102 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-ptrade-fidelity-03-correction-04-7f9ef42b",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-FIDELITY-03-CORRECTION-04-INTEGRATE",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "integrator"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-ptrade-fidelity-03-correction-04-int",
+  "base_commit": "c3d353c100d6872ccaf7699ea57b441294803344",
+  "deliverable_commit": "72c0ac1cd034515b62af3e54c4727d6e99bab8b3",
+  "created_at": "2026-08-14T00:00:00Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-ptrade-fidelity-03-correction-04-72c0ac1cd-corr2"],
+  "supersedes": [],
+  "transition_for": "published-strategy-workbench-ptrade-fidelity-03-correction-04-72c0ac1cd-corr2",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "type": "code",
+      "sha256": "4e3f04de15dc3f81af125b1990e8bfa45fd3d0d16631c15ae63aabec7a456c87",
+      "schema_version": "strategy_workbench_ptrade_fidelity_correction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "928234a71a083370728375835e063279fd5c8d3aadf3210fe584eb017bffa272",
+      "schema_version": "strategy_workbench_ptrade_fidelity_correction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/strategy-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "f0e49dc05892243cf39bd84d4cb3c59188ad96f827a4e1272c7688119a246a58",
+      "schema_version": "strategy_workbench_ptrade_fidelity_correction_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate corr2 published envelope; raw bytes 3353 and SHA-256 6bcc6686c06d48db0612ed8e07724f5ac77228008b78b8b863650736fb5a0ffe",
+      "result": "passed",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/worktrees/super_developer-ptrade-fidelity-c4/.agent/handoffs/STRATEGY-WORKBENCH-PTRADE-FIDELITY-03-CORRECTION-04/published-strategy-workbench-ptrade-fidelity-03-correction-04-72c0ac1cd-corr2.json"
+    },
+    {
+      "command": "git merge --ff-only 72c0ac1cd034515b62af3e54c4727d6e99bab8b3 from expected main c3d353c100d6872ccaf7699ea57b441294803344",
+      "result": "passed",
+      "evidence_path": "registered main 7f9ef42bbd1840d63ef1ebc3a9623ec5e59f2ac6"
+    },
+    {
+      "command": "npm.cmd run identity:refresh; npm.cmd run identity:check; npm.cmd run identity:test; node scripts/start-current-main.mjs --check",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/strategy-workbench.spec.ts --reporter=line --workers=1",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/quantstation-ptrade-fidelity-c4-playwright (3 passed)"
+    },
+    {
+      "command": "external mocked visual runner at 1440x960 with >=160 candles, Donchian, BUY/SELL, equity/drawdown, trade PnL, costs, and dock",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/quantstation-ptrade-fidelity-c4-visual/strategy-workbench-1440x960.png"
+    },
+    {
+      "command": "design QA comparison against supplied reference; final result: passed",
+      "result": "passed",
+      "evidence_path": "design-qa.md"
+    },
+    {
+      "command": "canonical frontend identity GET and browser console smoke",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "real backend identity probe",
+      "result": "passed",
+      "evidence_path": "HTTP 409 observed; live page remained fail-closed and no real data was fabricated"
+    },
+    {
+      "command": "backend/artifact/read-model/Demo/private/order/live/transfer/withdraw activity",
+      "result": "not_run",
+      "evidence_path": "explicitly prohibited by ticket"
+    }
+  ],
+  "blockers": [
+    "real_backend_identity_http_409_fail_closed_no_live_data",
+    "promotion_artifact_read_model_and_backend_restart_not_requested",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

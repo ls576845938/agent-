@@ -1,0 +1,116 @@
+{
+  "base_commit": "07e32a043a3fd48e5b50f67dd90ed59679bf6af7",
+  "blockers": [
+    "cn_broker_capability_unproven",
+    "cn_data_coverage_incomplete",
+    "cn_data_freshness_not_pass",
+    "cn_data_source_routing_successor_approval_missing",
+    "cn_dataready_missing",
+    "cn_license_scope_unverified",
+    "cn_market_rule_data_missing",
+    "domain_read_model_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T04:00:00Z",
+  "deliverable_commit": "62416296b56b37eddb2795dec8d169f88c6922ee",
+  "deliverables": [
+    {
+      "path": "quant_cn/market/corporate_actions.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_corporate_actions_pit_v1",
+      "sha256": "37b7b8ec0e688e62e1cb79b9092cfefcd9fae69ed627e34250306bcd9883309f",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/price_state.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_price_state_pit_v1",
+      "sha256": "337641f441f548683a8311e3ebf1f8c206004dc70434dd00fa1ff73dcabbfd91",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/status.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_security_status_pit_v1",
+      "sha256": "d537c3e13a92b7ab2c9991fd2e66c5c93ab6d515d5cb8547f20e8e0aa5ac1a6a",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/settlement.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_settlement_inventory_v1",
+      "sha256": "bcfb657d1ad0247679a069531d5c98e2e922ab904ff31be9d784edd2d5a72034",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/rules.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_rules_v2",
+      "sha256": "e48ae2d409f20db860d572a9c8c4f85ea16c5de244add9ab2d26f584454b576b",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_market_semantics.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_semantics_tests_v1",
+      "sha256": "a11c44ee28fde9057214dcb9c450af1e8fa33ba0ffb5ce03b3b90a1ebb0154ab",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/cn_equity/test_corporate_actions.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_corporate_actions_tests_v1",
+      "sha256": "f69debfb19f2e678709d04cea105798145d8db5ba109122516da2e16359aaf1f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-cn-v3-current-main-foundation-01-batch-02-takeover"
+  ],
+  "domain": "cn_equity",
+  "event_id": "published-cn-v3-market-semantics-01-62416296",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-market-semantics-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/cn_equity/test_market_semantics.py tests/cn_equity/test_corporate_actions.py -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q <goal touch set>",
+      "evidence_path": "quant_cn/market",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <goal touch set>",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CN-V3-MARKET-SEMANTICS-01",
+  "transition_for": ""
+}

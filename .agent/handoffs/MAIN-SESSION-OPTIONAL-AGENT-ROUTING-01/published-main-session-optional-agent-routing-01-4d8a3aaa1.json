@@ -1,0 +1,55 @@
+{
+  "base_commit": "98bdec3112f5e314b3022da7e1c84e7d0259ba2e",
+  "blockers": [
+    "independent_integrator_required_for_governance_control",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T09:16:17Z",
+  "deliverable_commit": "4d8a3aaa11104a8f4fbcc4c26331dc5b13b452a5",
+  "deliverables": [
+    {
+      "path": "AGENTS.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_governance_v2",
+      "sha256": "d0a9415b44dc359af12ad095399d5f9ad0d1fb26d3fda1e79118da4853d238d9",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-main-session-optional-agent-routing-01-4d8a3aaa1",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/main-session-optional-agent-routing-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "PowerShell static governance regression: direct execution clause present; legacy mandatory named-agent routing absent",
+      "evidence_path": "AGENTS.md",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- AGENTS.md",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MAIN-SESSION-OPTIONAL-AGENT-ROUTING-01",
+  "transition_for": ""
+}

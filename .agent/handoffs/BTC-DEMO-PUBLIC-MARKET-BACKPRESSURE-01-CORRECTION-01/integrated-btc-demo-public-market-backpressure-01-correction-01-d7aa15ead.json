@@ -1,0 +1,93 @@
+{
+  "base_commit": "3acafd0638931eaabf9c35a3737efd17a003ac7c",
+  "blockers": [
+    "owner:operator backend_restart_required_after_integration",
+    "promotion_artifact_not_required_for_demo_transport_hotfix",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T14:40:00Z",
+  "deliverable_commit": "d7aa15ead1eec369b11545d7a0c31591ac4d5193",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_market_backpressure_forming_bar_e2e_v1",
+      "sha256": "7d74b6bdf056ec3ea14f0db9b51411993de6503ef8e93460dc5863df0d9f7979",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "383bd4907a7279d494ef6b679c0978312e66b62de1ae4a21940facae7f03539c",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-public-market-backpressure-01-correction-01-bd8ed0ec6",
+    "integrated-btc-demo-public-market-backpressure-01-f93614d80"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-public-market-backpressure-01-correction-01-d7aa15ead",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-bp-c1-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "integrated-btc-demo-public-market-backpressure-01-f93614d80"
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --workers=1 --reporter=line --trace=off",
+      "evidence_path": "33 passed in 1.9m; existing canonical 3000 listener reused; no service started",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "tsc --noEmit passed using a temporary read-only junction to registered-main frontend/node_modules; no dependency files committed",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "baseline_commit=6e8ff4ec5e286f24486ce08fa3704f1cd1f2e675 fingerprint=54ac64bf557eac361a8d37b9fa94358bc776a420b67ff13cd0fde36ce8fec2b3",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "passed; manifest_match=true; canonical=false in integrator worktree",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "passed; canonical=false in integrator worktree",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "exit 0",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-PUBLIC-MARKET-BACKPRESSURE-01-CORRECTION-01/integrated-btc-demo-public-market-backpressure-01-correction-01-d7aa15ead.json",
+      "evidence_path": "status=valid",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PUBLIC-MARKET-BACKPRESSURE-01-CORRECTION-01",
+  "transition_for": "published-btc-demo-public-market-backpressure-01-correction-01-bd8ed0ec6"
+}

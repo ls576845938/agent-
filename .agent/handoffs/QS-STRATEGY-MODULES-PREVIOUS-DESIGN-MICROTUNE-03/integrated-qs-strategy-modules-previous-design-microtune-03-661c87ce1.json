@@ -1,0 +1,75 @@
+{
+  "base_commit": "9f172b8de4601f60f4dfe2afdb9630d34856ffde",
+  "blockers": [
+    "owner:root canonical current-main mocked Playwright and visual acceptance deferred until the canonical frontend is restarted at the integrated HEAD",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; explicit producer envelope was validated directly from committed object",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, service or Demo execution",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": ["architect"],
+  "created_at": "2026-08-19T14:11:27.8227171Z",
+  "deliverable_commit": "661c87ce1750099956663c179ca03497666d54b1",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_visual_map_v3",
+      "sha256": "04a085df95d6fa0e45ae33f625f697bd66e62a6638e99d2ead93fb9056957555",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_css_v2",
+      "sha256": "3d971f0c1d1ec4d1cee57579b1c747a3d1fada62cbd822a9439aff0759d0b098",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_strategy_modules_visual_contract_v2",
+      "sha256": "6a398c8975aec1dc5e39bb0d10e047c6770e9fc145ea674d7a1fd1297eff579a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "8b23d1582a7623b1ba79f40ea9b1174742dc9b917869fb22cb81329934162bf6",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "published-qs-strategy-modules-previous-design-microtune-03-aa703c8e2"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-qs-strategy-modules-previous-design-microtune-03-661c87ce1",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/qs-strategy-modules-previous-design-microtune-03",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "npm --prefix frontend run lint", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run build (Vite; existing chunk-size warning only)", "evidence_path": "", "result": "passed"},
+    {"command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list (8 tests collected)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check (manifest_match=true; baseline_ancestor=true)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:test (object_targets=4)", "evidence_path": "", "result": "passed"},
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input producer envelope", "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03/published-qs-strategy-modules-previous-design-microtune-03-aa703c8e2.json", "result": "passed"},
+    {"command": "git diff --check", "evidence_path": "", "result": "passed"},
+    {"command": "canonical mocked Playwright and visual QA on registered main (deferred until canonical frontend restart)", "evidence_path": "", "result": "not_run"}
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03",
+  "transition_for": "published-qs-strategy-modules-previous-design-microtune-03-aa703c8e2"
+}

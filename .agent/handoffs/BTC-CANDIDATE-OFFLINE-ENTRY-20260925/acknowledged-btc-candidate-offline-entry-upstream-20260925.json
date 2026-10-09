@@ -1,0 +1,45 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-btc-candidate-offline-entry-upstream-20260925",
+  "ticket_id": "BTC-CANDIDATE-OFFLINE-ENTRY-20260925",
+  "event_type": "acknowledged",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-candidate-offline-entry-20260925",
+  "base_commit": "15b2ea256de08c37e5d6cf15f1d5d0ece4178221",
+  "deliverable_commit": "15b2ea256de08c37e5d6cf15f1d5d0ece4178221",
+  "created_at": "2026-09-25T05:43:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-candidate-package-runtime-20260925-3950f16ca"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-candidate-package-runtime-20260925-3950f16ca",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "handoff.py validate upstream published-btc-candidate-package-runtime-20260925-3950f16ca",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-CANDIDATE-PACKAGE-RUNTIME-20260925/published-btc-candidate-package-runtime-20260925-3950f16ca.json"
+    }
+  ],
+  "blockers": [
+    "P1 public VerifiedRegisteredInputs dynamic dispatch can bypass source validation; development correction required",
+    "P1 frozen candidate hard-stop differs from registered protection; correction required",
+    "independent final integration/review required; no promotion or deployment authority"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

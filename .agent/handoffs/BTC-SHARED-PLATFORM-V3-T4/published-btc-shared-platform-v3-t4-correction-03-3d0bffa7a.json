@@ -1,0 +1,89 @@
+{
+  "base_commit": "545fbc817c86e2404d1809e8282b5b77703b7db4",
+  "blockers": [
+    "promotion_artifact_rebuild_required_by_unclassified_policy_deferred",
+    "backend_restart_required_by_unclassified_policy_deferred",
+    "btc_runtime_artifact_root_unavailable_baseline_blocker",
+    "sparse_worktree_missing_quant_us_quant_cn_blocks_us_cn_adoption_and_frozen_session",
+    "independent_integrator_required; registered_main_not_modified",
+    "promotion_paper_private_live_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-08-23T00:00:00Z",
+  "deliverable_commit": "3d0bffa7afa84239fc35d7c318664dd771c51fd2",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/runtime_risk_guardian.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t4_guardian_latch_v1",
+      "sha256": "2e15d10e73357c463aec8e0b21eaa6650ed77ae8e2386c23566bc7295f7fe2dd",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_guardian_latch.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t4_guardian_contract_tests_v4",
+      "sha256": "6abb50c0d8dfc7ebc5389c470d2bf7d57c131b94620a4a80f0ad1301f3542683",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t1-0be95b352",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "published-btc-shared-platform-v3-t3-correction-01-26d9b2df5",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-shared-platform-v3-t4-correction-03-3d0bffa7a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-shared-platform-v3-t4",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-shared-platform-v3-t4-correction-02-78c89e967"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_guardian_latch.py -q",
+      "evidence_path": "36 passed in 0.55s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/shared_platform/test_runtime_permission_semantics_v3.py tests/shared_platform/test_core_and_boundary.py tests/contracts/test_btc_shared_boundary_adoption.py -q",
+      "evidence_path": "151 passed in 3.58s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/runtime_risk_guardian.py quant_crypto/application/__init__.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py",
+      "evidence_path": "correction-03 producer sparse worktree",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "evidence_path": "deliverable commit 3d0bffa7a",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py tests/live/test_live_frozen_session_gate.py -q",
+      "evidence_path": "not run in correction-03; US/CN/frozen sparse baseline is reserved for integrator",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T4",
+  "transition_for": ""
+}

@@ -1,0 +1,134 @@
+{
+  "base_commit": "98bdec3112f5e314b3022da7e1c84e7d0259ba2e",
+  "blockers": [
+    "registered_main_not_advanced_candidate_only",
+    "backend_restart_required_after_main_integration",
+    "current_main_frontend_identity_and_browser_contract_verification_required_after_main_integration",
+    "real_demo_account_refresh_and_start_not_run_private_order_permissions_false",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T10:00:59Z",
+  "deliverable_commit": "4ee7af94450534bf4864c9cf585e2d01817da328",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "7f46d0f60dffb52b065cfbaf2be88a2db2d2d9b8085ca9a7287a4a3721bd115b",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_demo_operator_commands.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_refresh_account_snapshot_command_v1",
+      "sha256": "96b2eb824457b390073d01fb04dafd10b85de74c3e4abd9ad78741222f76815e",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operation_read_model_v2",
+      "sha256": "e5ed759e63d5265ffd0e1d252d83eca6d09debcbf18e530ee4ab6efd91d84733",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_demo_operator_operation_v2.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "json_schema_draft_2020_12",
+      "sha256": "4c52a641628c49c76cd3f0e3a9a6d4127e48c45cb7b69417e18f972f81c59e8d",
+      "type": "schema"
+    },
+    {
+      "path": "tests/fixtures/btc_demo_operator_operation_v2.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operation_read_model_v2_fixture_v1",
+      "sha256": "9f1925a055e58a6887afc60e08ee21b076ba93d7cd9c568e07dcdc47363f4441",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "6a22270246c416c2f0094baff346481cad83c6086ae14f8f09f001fb153741c9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_contract_harness_v1",
+      "sha256": "12b81a4027e6fa8e989b87dfa41b869df6b4437e2862f949694673912c42bff1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "66ffe196a86ca9b91f1a4198e9d1898aef5bdd9ca39fccc6ca1b7a02daf15063",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-refresh-operation-protocol-01-add112212"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-refresh-operation-protocol-01-4ee7af944",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-refresh-protocol-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff validation, producer ancestry, immutable SHA, exact touch-set and shared JSON schema review",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-REFRESH-OPERATION-PROTOCOL-01/published-btc-demo-refresh-operation-protocol-01-add112212.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py -q",
+      "evidence_path": "pytest stdout: 120 passed",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "evidence_path": "frontend contract harness: actions=8, fenced_ack_posts=1, payload_asserted=true",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:refresh; commit frontend/public/frontend-identity.json; npm run identity:check; npm run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint; npm run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff 24272a4bb8f9a01f6aea7506bb38568bfc9b93ec; git diff --check on declared integration touch set",
+      "evidence_path": "schemas/btc_demo_operator_operation_v2.schema.json",
+      "result": "passed"
+    },
+    {
+      "command": "real Demo account refresh/start, service restart, private/order/live endpoints, canonical current-main browser acceptance",
+      "evidence_path": "not_run_by_integrator_scope_and_private_order_live_prohibition",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-REFRESH-OPERATION-PROTOCOL-01",
+  "transition_for": "published-btc-demo-refresh-operation-protocol-01-add112212"
+}

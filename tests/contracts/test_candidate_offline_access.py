@@ -94,6 +94,21 @@ def test_frontend_components_and_selectors_without_worktree_server():
     script = "const e=require('esbuild');const r=e.buildSync({entryPoints:['e2e/candidate-offline.spec.ts'],bundle:true,platform:'node',format:'cjs',write:false,external:['react','react-dom/server','react-router-dom']});eval(r.outputFiles[0].text);"
     result = subprocess.run(["node", "-e", script], cwd=ROOT / "frontend", capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stdout + result.stderr
+    delivery=(ROOT/"frontend/src/workspaces/research/CandidateDelivery.tsx").read_text(encoding="utf-8")
+    controls=(ROOT/"frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx").read_text(encoding="utf-8")
+    assert "apiGet<ResearchWorkspaceHealth>('/api/health'" in delivery
+    assert "const timer=setTimeout(()=>controller.abort(),20_000)" in delivery
+    assert "await import('./candidate-offline-api')" in delivery
+    assert "offlineRequest('/capabilities','',undefined,controller.signal)" in delivery
+    assert "publicOfflineCapabilities(abort.current.signal)" in delivery
+    assert "apiGet<Record<string,unknown>>('/api/candidate-offline/capabilities'" not in delivery
+    assert "offlineRequest('/catalog'" not in delivery and "offlineRequest('/jobs'" not in delivery
+    assert "item.offline_runtime?.schema_version!=='delivery_offline_runtime_v3'" in delivery
+    assert "两成员须各自绑定原源账户并登记；组合提案再单独审定第三个共同模拟账户" in delivery
+    assert "cohort_member_execution_policy_incompatible" in delivery+controls
+    assert "multi_strategy_cohort_protection_policy_incompatible" in delivery+controls
+    assert "disabled={disabled||!executionCompatible||!protectionCompatible||!reason.trim()||!reviewExpires||!ack}" in controls
+    assert "disabled={disabled||!executionCompatible||!protectionCompatible||!ack}" in controls
 
 
 def test_store_integrity_owner_reservation_and_idempotency_are_fail_closed(tmp_path):
@@ -215,14 +230,148 @@ def test_worker_preflight_keeps_supported_factory_adapter_available(tmp_path, mo
             "input_revision_id": "input-1", "input_digest": "c" * 64}
     assert service._start_row(body) == row
     capabilities = service.capabilities("test-only")
-    assert capabilities["supported_adapter_ids"] == ["factory_lgbm_ast_v1"]
+    assert capabilities["supported_adapter_ids"] == ["factory_lgbm_ast_v1", "btc_donchian_history_offline_v1"]
+    assert capabilities["cohort_support_scope"] == "exact2_source_contract_implemented_execution_policy_blocked"
+    assert capabilities["cohort_execution_policy_compatible"] is False
+    assert capabilities["cohort_execution_blocker"] == "cohort_member_execution_policy_incompatible"
+    assert capabilities["cohort_protection_policy_compatible"] is False
+    assert capabilities["cohort_protection_blocker"] == "multi_strategy_cohort_protection_policy_incompatible"
     assert capabilities["protection_execution_supported"] is True
     assert capabilities["protection_execution_scope"] == "new_current_code_runs_explicit_sampled_mark_only"
     assert capabilities["protection_execution_limitations"] == [
         "intrainterval_mark_path_not_inferred",
         "legacy_blocked_results_remain_authoritative",
+        "cohort_unattributed_hosted_protection_fill_blocks_recovery",
     ]
     assert not service.store.path.exists()
+
+
+def test_cohort_identity_binds_both_sources_common_account_budget_and_clock():
+    from quant_shared.strategy_delivery.offline_contract import (seal_cohort_job_identity,
+        require_cohort_job_identity,cohort_identity_fields)
+    members=[]
+    for ordinal,adapter in enumerate(("btc_donchian_history_offline_v1","factory_lgbm_ast_v1")):
+        members.append({"member_id":"delivery_"+str(ordinal+1)*32,
+            "registration_id":"delivery_"+str(ordinal+1)*32,"registration_revision":ordinal+1,
+            "content_digest":str(ordinal+1)*64,"binding_digest":str(ordinal+3)*64,
+            "source_account_ref":"source-"+str(ordinal+1),"source_account_identity_hash":str(ordinal+5)*64,
+            "adapter_id":adapter,"input_revision_id":"input-"+str(ordinal+1),"input_digest":str(ordinal+7)*64,
+            "input_head":"a"*40,"input_evidence_kind":"verified_historical_observations",
+            "source_head":"b"*40,"strategy_id":"strategy-"+str(ordinal+1),"strategy_version":"v1"})
+    runtime={"schema_version":"delivery_offline_runtime_v3","simulation_namespace":"cohort-ns",
+        "account_ref":"common-account","state_directory_sha256":"c"*64,"run_id":"cohort-run",
+        "adapter_ids":["btc_donchian_history_offline_v1","factory_lgbm_ast_v1"],"initial_equity_usdt":5000,
+        "currency":"USDT","equity_unit":"USDT","simulated_venue_identity_hash":"d"*64,
+        "venue_adapter":"donchian_controller_qlib_observed_venue_v1"}
+    runtime["contract_digest"]=digest(runtime)
+    record={"schema_version":"candidate_offline_cohort_binding_v1","id":"cbnd_"+"e"*32,
+        "revision":2,"status":"approved","members":members,
+        "common_account":{"account_ref":"common-account","identity_hash":"f"*64,"offline_runtime":runtime},
+        "budget_policy":{},"event_clock":{},"member_list_sha256":digest(members),
+        "budget_policy_sha256":digest({}),"event_clock_sha256":digest({}),"cohort_authority_sha256":"1"*64,
+        "execution_head":"2"*40,"catalog_sha256":"3"*64,"actor":"operator","reason":"reviewed",
+        "created_at":"2026-10-04T00:00:00+00:00","review":{"decision":"approve"}}
+    record["binding_digest"]=digest({k:v for k,v in record.items()
+        if k not in {"binding_digest","revision","status","review"}})
+    sealed=seal_cohort_job_identity(record,execution_head="2"*40,catalog_sha256="3"*64)
+    job={"schema_version":"candidate_offline_cohort_job_v1","id":sealed["job_id"],**cohort_identity_fields(sealed)}
+    assert require_cohort_job_identity(job,job["id"])["members"]==members
+    changed={**job,"job_identity":{**job["job_identity"],"members":[{**members[0],"input_digest":"9"*64},members[1]]}}
+    with pytest.raises(DeliveryError,match="identity_mismatch"):
+        require_cohort_job_identity(changed,job["id"])
+
+
+def test_cohort_strict_union_requires_proposal_review_start_and_never_accepts_signal(tmp_path):
+    _,service=empty_service(tmp_path,enabled=True)
+    app=FastAPI();app.include_router(build_candidate_offline_router(service),prefix="/api")
+    client=TestClient(app,headers={"X-API-Key":"test-only","Idempotency-Key":"cohort-contract"})
+    direct={"schema_version":"candidate_offline_cohort_start_v1","cohort_binding_id":"cbnd_"+"a"*32,
+        "binding_digest":"b"*64,"expected_revision":2,"signal":"long",
+        "common_account_ref":"attacker-account","account_max_notional_usdt":"999"}
+    assert client.post("/api/candidate-offline/jobs",json=direct).status_code==422
+    proposal={"schema_version":"candidate_offline_cohort_proposal_v1","common_account_ref":"common-account",
+        "members":[],"account_max_notional_usdt":"50","account_max_loss_usdt":"10","reason":"review"}
+    assert client.post("/api/candidate-offline/jobs",json=proposal).status_code==422
+    assert not service.store.path.exists()
+
+
+def test_current_real_pair_rejects_all_cohort_writes_before_persistence_or_dispatch(tmp_path,monkeypatch):
+    _,service=empty_service(tmp_path,enabled=True)
+    monkeypatch.setattr(service,"_dispatch",lambda *_:pytest.fail("incompatible_pair_must_not_dispatch"))
+    commands=(
+        {"schema_version":"candidate_offline_cohort_proposal_v1","common_account_ref":"common-account",
+            "members":[],"account_max_notional_usdt":"50","account_max_loss_usdt":"10","reason":"review"},
+        {"schema_version":"candidate_offline_cohort_review_v1","cohort_binding_id":"cbnd_"+"a"*32,
+            "binding_digest":"b"*64,"expected_revision":1,"decision":"approve","reason":"review",
+            "expires_at":"2026-10-05T00:00:00+00:00"},
+        {"schema_version":"candidate_offline_cohort_start_v1","cohort_binding_id":"cbnd_"+"a"*32,
+            "binding_digest":"b"*64,"expected_revision":2},
+    )
+    for index,command in enumerate(commands):
+        with pytest.raises(DeliveryError,match="cohort_member_execution_policy_incompatible"):
+            service.start(command,key=f"incompatible-{index}",credential="test-only")
+    assert not service.store.path.exists()
+
+
+def test_mock_compatible_cohort_proposal_review_and_start_management_seam(tmp_path,monkeypatch):
+    """Management lifecycle only; it is not evidence that the real pair can execute."""
+    from datetime import timedelta
+    _,service=empty_service(tmp_path,enabled=True)
+    monkeypatch.setattr(service,"_require_cohort_entry_compatible",lambda:None)
+    adapters=("btc_donchian_history_offline_v1","factory_lgbm_ast_v1")
+    rows={}
+    refs={}
+    for ordinal,adapter in enumerate(adapters):
+        identity="delivery_"+str(ordinal+1)*32
+        rows[identity]={"id":identity,"revision":ordinal+1,"status":"registered","target":"offline",
+            "content_digest":str(ordinal+1)*64,"binding_digest":str(ordinal+3)*64,
+            "binding":{"account_ref":"source-"+str(ordinal+1),"identity_hash":str(ordinal+5)*64},
+            "package":{"adapter_id":adapter,"source_head":"a"*40,"strategy_id":"strategy-"+str(ordinal+1),
+                "strategy_version":"v1"}}
+        ref={"schema_version":"candidate_offline_donchian_history_v1"} if ordinal==0 else {}
+        ref.update(input_revision_id="input-"+str(ordinal+1),content_digest=str(ordinal+7)*64,
+            input_head="b"*40,evidence_kind="verified_historical_observations")
+        refs[ref["input_revision_id"]]=ref
+    runtime={"schema_version":"delivery_offline_runtime_v3","simulation_namespace":"cohort-ns",
+        "account_ref":"common-account","state_directory_sha256":"c"*64,"run_id":"cohort-run",
+        "adapter_ids":list(adapters),"initial_equity_usdt":5000,"currency":"USDT","equity_unit":"USDT",
+        "simulated_venue_identity_hash":"d"*64,"venue_adapter":"donchian_controller_qlib_observed_venue_v1"}
+    runtime["contract_digest"]=digest(runtime)
+    common={"account_ref":"common-account","identity_hash":"e"*64,"offline_runtime":runtime}
+    monkeypatch.setattr(service.delivery,"get",lambda identity:rows[identity])
+    monkeypatch.setattr(service.delivery.accounts,"get",lambda identity:common)
+    monkeypatch.setattr(service.inputs,"ref",lambda identity,expected=None:refs[identity])
+    monkeypatch.setattr(service,"_dispatch",lambda *_:pytest.fail("review_must_not_dispatch"))
+    members=[{"registration_id":row["id"],"content_digest":row["content_digest"],
+        "expected_revision":row["revision"],"input_revision_id":"input-"+str(index+1),
+        "input_digest":str(index+7)*64,"member_max_notional_usdt":"20","member_max_loss_usdt":"4"}
+        for index,row in enumerate(rows.values())]
+    proposal={"schema_version":"candidate_offline_cohort_proposal_v1","common_account_ref":"common-account",
+        "members":members,"account_max_notional_usdt":"50","account_max_loss_usdt":"10","reason":"explicit review"}
+    proposed=service.start(proposal,key="proposal-1",credential="test-only")
+    assert proposed["status"]=="proposed" and service.store.read("job")==[]
+    review={"schema_version":"candidate_offline_cohort_review_v1","cohort_binding_id":proposed["cohort_binding_id"],
+        "binding_digest":proposed["binding_digest"],"expected_revision":1,"decision":"approve",
+        "reason":"approved exact sources","expires_at":(service.delivery.clock()+timedelta(days=1)).isoformat()}
+    approved=service.start(review,key="review-1",credential="test-only")
+    assert approved["status"]=="approved" and service.store.read("job")==[]
+    binding=service.store.read("cohort_binding",approved["cohort_binding_id"])
+    assert binding["common_account"]["account_ref"]=="common-account"
+    assert {member["source_account_ref"] for member in binding["members"]}=={"source-1","source-2"}
+    with service.store.transaction() as conn:
+        assert conn.execute("SELECT COUNT(*) FROM reservations").fetchone()==(4,)
+    dispatched=[];monkeypatch.setattr(service,"_dispatch",lambda identity,generation:dispatched.append((identity,generation)))
+    start={"schema_version":"candidate_offline_cohort_start_v1","cohort_binding_id":approved["cohort_binding_id"],
+        "binding_digest":approved["binding_digest"],"expected_revision":2}
+    started=service.start(start,key="start-1",credential="test-only")
+    assert started==service.start(start,key="start-1",credential="test-only") and len(dispatched)==1
+    with pytest.raises(DeliveryError,match="existing_job"):
+        service.start(start,key="start-2",credential="test-only")
+    status=service.status(started["job_id"])
+    assert status["status"]=="interrupted"
+    resumed=service.command(started["job_id"],"resume",expected_revision=status["revision"],
+        key="resume-1",credential="test-only")
+    assert resumed["status"]=="queued" and len(dispatched)==2
 
 
 IDENTITY_FIELDS = ("job_id", "registration_id", "content_digest", "binding_digest",

@@ -1,0 +1,60 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-data-fix-btc-v3-kline-serialization-01-batch-03",
+  "ticket_id": "DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-dataready-fix-batch-03",
+  "base_commit": "57055c7a1161c3a96b9ab69525ff7709b4b2458c",
+  "deliverable_commit": "08db4e13c3c693239b860c924823a050da8bbf47",
+  "created_at": "2026-07-26T17:16:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-data-fix-btc-v3-kline-serialization-01-b7577b339"
+  ],
+  "supersedes": [],
+  "transition_for": "published-data-fix-btc-v3-kline-serialization-01-b7577b339",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "producer envelope validation plus two committed deliverable SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/published-data-fix-btc-v3-kline-serialization-01-b7577b339.json"
+    },
+    {
+      "command": "HEAD decimal18 successor manifest default full-hash read-only resolve",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b.json"
+    },
+    {
+      "command": "exact selector report Kline manifest and full physical validation passed with aggregate e000f25f293c688a14f1cbe43d1eb0e4ef182f25c264e8dea8d90578cc9cd8a4",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json"
+    }
+  ],
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "kline_successor_quality_checked_but_not_research_backtest_or_promotion_ready",
+    "promotion_paper_live_private_order_broker_withdraw_secret_demo_paper_queue_real_order_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

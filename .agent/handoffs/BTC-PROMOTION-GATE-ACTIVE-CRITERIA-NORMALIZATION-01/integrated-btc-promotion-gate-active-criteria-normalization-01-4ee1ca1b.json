@@ -1,0 +1,170 @@
+{
+  "base_commit": "53fe146179ec7225b5437773140933f4896f8bcc",
+  "blockers": [
+    "current_head_artifact_and_read_model_rebuild_required_after_integration",
+    "backend_restart_required_after_current_main_integration",
+    "active_criteria_evidence_not_yet_published_for_current_data_version",
+    "current_10s_feed_55_997s_embargo_yields_zero_eligible_windows_and_ess",
+    "btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "btc_okx_native:25_hour_demo_observation_window_incomplete",
+    "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "btc_okx_native:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward"
+  ],
+  "created_at": "2026-08-29T04:08:56.914286Z",
+  "deliverable_commit": "4ee1ca1b95a601fb8306c785680d35c05bf70106",
+  "deliverables": [
+    {
+      "path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_promotion_gate_active_criteria_normalization_ticket_v1",
+      "sha256": "55edfdee9999da9dab975be05e76633e0cc4c0e89209a48ebe7d7d69189faa54",
+      "type": "document"
+    },
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_evaluation_v1",
+      "sha256": "f35ead436a698c0886ff3b29ebeaf243e1494acead9a92138b79052c6d12125f",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_domain_read_model_v1",
+      "sha256": "d58a128be6f024293582319f0bdf49f38df51f7502a263a436d820893184e64a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "912360b40412f380b603fe3c5a2228825030b7a028548138fa0e9cca2e989e0a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/research/btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_promotion_gate_active_criteria_v1",
+      "sha256": "dc1717d065ac06a906aa17434f4a1a5ae9bbaec442c8f7bfd90524314112e517",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_next_stage_current_head_orchestrator.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "7e4d96eb6c221d226a28c43c8170bf0ced09c0f6209297e8d826ba6cfa8ac92e",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_next_stage_engineering_evidence.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_engineering_evidence_v2",
+      "sha256": "c6f6f2ca736665d36906bc1349c7db64a06b8fb484349ef8327762658247caf0",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_active_criteria_contract_tests_v1",
+      "sha256": "2579586c471eb3083f652db11b3fe4d0e614a69188a21513de6e653e180c5680",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_domain_read_model_blocker_canonicalization_tests_v1",
+      "sha256": "50d336a0dfdb5f7c36865ca44ce3a825e63a635ff173dca2e093b9d7e39b3482",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_required_blocker_contract_tests_v1",
+      "sha256": "119a413444166f2c3afb1130cb35a7747c2b3c618d2d11312794aac5d020b69a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_promotion_gate_active_criteria_contract_tests_v1",
+      "sha256": "7909096eef8a59555377890b562ba71c63f8247f2b7abec7bf90218dc84e4ed2",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-promotion-gate-active-criteria-normalization-01-correction-01-96beb031d"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-promotion-gate-active-criteria-normalization-01-4ee1ca1b",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-gate-criteria-norm-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pre-merge correction failure-first exact prereg (missing ref, missing file, changed content) and attestation (forged URI, missing file, hash mismatch, manifest membership mismatch, producer role mismatch) -> 8 passed, 21 deselected in 7.26s",
+      "evidence_path": "tests/contracts/test_btc_okx_native_promotion_gate.py;tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "pre-merge active criteria contract -> 12 passed in 3.91s; authoritative attestation success/cross-identity and forged-root-nondisclosure assertions passed",
+      "evidence_path": "tests/contracts/test_btc_okx_native_promotion_gate.py;tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_10s_microstructure_data_contract_report.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_domain_read_model.py -q -> 62 passed in 64.15s",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_next_stage_current_head_orchestrator.py -q -> 35 passed in 185.21s",
+      "evidence_path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_domain_read_model.py -q -> 22 passed in 16.06s",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q Python touch set; JSON parse 2 schemas; git diff --check base..integration",
+      "evidence_path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate original and correction published events -> valid",
+      "evidence_path": ".agent/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression not run due GOV-STORAGE-001 and bounded promotion_evidence touch set",
+      "evidence_path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01.md",
+      "result": "not_run"
+    },
+    {
+      "command": "artifact/read-model publication, backend restart, network, private, order, paper, and live actions not run",
+      "evidence_path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01",
+  "transition_for": "published-btc-promotion-gate-active-criteria-normalization-01-correction-01-96beb031d"
+}

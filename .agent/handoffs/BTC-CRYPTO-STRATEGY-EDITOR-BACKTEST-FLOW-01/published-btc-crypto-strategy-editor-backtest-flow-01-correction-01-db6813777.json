@@ -1,0 +1,85 @@
+{
+  "base_commit": "fa406d3626cec0754efccfe6dfb39ad54b524b6c",
+  "blockers": [
+    "owner:integrator correction_deliverable_not_integrated_to_registered_main",
+    "canonical_playwright_and_design_screenshot_remain_deferred_to_integrated_current_main",
+    "promotion_artifact_rebuild_required_by_unclassified_change_risk"
+  ],
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "created_at": "2026-08-18T01:07:28.2795595Z",
+  "deliverable_commit": "db6813777e0702cd57a3e2fb54f865e4e047adf8",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_strategy_editor_event_handler_typing_correction_v1",
+      "sha256": "729c2d485d40e0fd4968bc73de6c5933dda2f270b44f7d6cd569f17283b6f673",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "a8af22c5dd707165e7ddb500c3a66bc443c57ad6ede83e37ef331ac7c1c26084",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-btc-crypto-strategy-editor-backtest-flow-01-correction-01-db6813777",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-crypto-strategy-editor-backtest-flow-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["published-btc-crypto-strategy-editor-backtest-flow-01-c18eb74b5"],
+  "ticket_id": "BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01-CORRECTION-01",
+  "tests": [
+    {
+      "command": "npm --prefix frontend run lint (baseline before correction: TS7006 at lines 208, 230, 254, 255, 256)",
+      "evidence_path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run lint (after ValueEvent annotations)",
+      "evidence_path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build (Vite 5214 modules transformed)",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 7ccb17e7b^..7ccb17e7b",
+      "evidence_path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "transition_for": ""
+}

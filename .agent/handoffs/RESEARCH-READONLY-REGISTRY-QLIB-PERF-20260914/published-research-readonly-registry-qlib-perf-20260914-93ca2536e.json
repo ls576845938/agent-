@@ -1,0 +1,113 @@
+{
+  "base_commit": "1925362a76a5c48476642373c1f26ee7196aafce",
+  "blockers": [
+    "owner:integrator independent committed-source review and integration required",
+    "owner:integrator registered-main publication and backend restart pending",
+    "owner:integrator canonical-main HTTP and browser acceptance pending",
+    "owner:operator existing evidence registry requires an explicit rebuild before it can carry validation_index_v1; GET remains read-only and fail-closed",
+    "four pre-existing platform or optional-dependency test failures remain unchanged"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-14T03:32:29Z",
+  "deliverable_commit": "93ca2536e49da5c8277b27a0d7592957e90b0d02",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_v1",
+      "sha256": "718869b23a45c89fcee15fc43ca8e4ffcf5d9cbf9da206bb9f8aec4c9fa1b821",
+      "type": "code"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_v1",
+      "sha256": "e1407d846d1523e0bc1831bb6b8174cd9071d5ff541721b9f0eb5768e98891d0",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "evidence_registry_validation_index_v1",
+      "sha256": "b48c47a19f2a726ddb534289dc580f6d452664f664a1e599e47eb222beb303cd",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_tests_v1",
+      "sha256": "625c6b5881d09e942337aaad5da389033f28a33643001e9e67846836a131c245",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_tests_v1",
+      "sha256": "428dd8ffb94fcb42f930b7441f2a72d55534a803075e05d586061d9f9d601692",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_acceptance_v1",
+      "sha256": "97c9e2175851c0a2acca5651e484516cda42ad5fa2f1e532d764d6b17e07cfaa",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-research-readonly-registry-qlib-perf-20260914-93ca2536e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-readonly-registry-qlib-perf-20260914",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first focused performance regressions before implementation -> 6 failed",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_qlib_pipeline.py -> 14 passed",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "focused Evidence Registry and Qlib compatibility/safety suites excluding four confirmed baseline failures -> 87 passed, 4 deselected",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "passed"
+    },
+    {
+      "command": "research-readonly route, projection and archive suites -> 62 passed, 2 skipped, 1 pre-existing Windows stderr decode failure",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "failed"
+    },
+    {
+      "command": "registered main exact baseline rerun -> same Windows path, stale PID and two missing-pyqlib failures",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "failed"
+    },
+    {
+      "command": "canonical main service restart, HTTP cold/hot and Playwright page acceptance",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-READONLY-REGISTRY-QLIB-PERF-20260914",
+  "transition_for": ""
+}

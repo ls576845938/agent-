@@ -1,0 +1,2252 @@
+{
+  "schema_version": "donchian_offline_closeout_seal_v1",
+  "sha256": "a83e6745d485c0ce2e90259f284128722c4ae744d0bd8212d6114b7d8ce89a9a",
+  "summary": {
+    "counts": {
+      "decisions": 5,
+      "fills": 4,
+      "ledger_events": 4,
+      "orders": 4
+    },
+    "final": {
+      "equity_usdt": "4999.98800000",
+      "fee_cashflow_usdt": "-0.01200000",
+      "funding_cashflow_usdt": "0",
+      "position_contracts": "0.00"
+    },
+    "fixture_path": "tests/fixtures/strategy_v1/offline_contract.json",
+    "fixture_sha256": "9e91e86e9913047386b319ca7ae2859f6687ac06af84ff46f353ec5ab4de8605",
+    "identity": {
+      "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+      "data_version": "v1-closeout-continuous-ohlcv-v1",
+      "identity_digest": "108a5ff35d89d8519e77c51bda3b065de7dbb10b2470524ff608ea606e8bbb83",
+      "instrument_id": "BTC-USDT-SWAP",
+      "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+      "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+      "run_id": "v3donchian01",
+      "schema_version": "strategy_v1_offline_identity_v1",
+      "strategy_id": "long_short_donchian_top5_okx_native",
+      "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+    },
+    "permissions": {
+      "demo_control_enabled": false,
+      "execution_permission": false,
+      "live": false,
+      "order": false,
+      "paper": false,
+      "private": false,
+      "promotion": false,
+      "real_order": false,
+      "runtime_observed": false,
+      "transfer": false,
+      "withdraw": false
+    },
+    "scenario": {
+      "account_id": "offline-account",
+      "fee_rate": "-0.0005",
+      "funding_rate": "0.0001",
+      "index_price": "60000",
+      "initial_equity_usdt": "5000",
+      "mark_price": "60000",
+      "market_data_usage": "signal_input_only",
+      "simulated_execution_price": "60000"
+    },
+    "schema_version": "donchian_offline_closeout_v1",
+    "selector": "donchian-v3-closeout-20260920",
+    "source_head": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+    "stages": [
+      {
+        "after": {
+          "equity_usdt": "4999.99700000",
+          "fill_count": 1,
+          "position_contracts": "0.01",
+          "submitted_orders": 1
+        },
+        "checkpoint": "open_long",
+        "completed_bar_close_utc": "2023-08-05T23:00:00+00:00",
+        "evidence": {
+          "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+          "context_digest": "30777605fec6fbedbd398999cc26127d338d3703e54cc145258226c250a83334",
+          "data_version": "v1-closeout-continuous-ohlcv-v1",
+          "decision_id": "be96cb381a0a91fc7192a53a2d9ddf30c5f2863f9b424fe323ba0841b6dd3b86",
+          "event_id": "65c24c70e7f2546472caadfd4c00aaa6541ef03ecb68feb381e40b4aab4c6e5f",
+          "evidence_kind": "offline_execution",
+          "input_digest": "88835a1e887effaae946b368d0dfe60293252f96bf7707413e721da14ded0bd5",
+          "links": {
+            "action": "open_long",
+            "client_order_id": "btcDPv3donchi0001",
+            "decision_outcome": "order_terminal",
+            "exchange_order_id": "offline-order-1",
+            "fill_ids": [
+              "offline-fill-1"
+            ],
+            "ledger_event_hash": "66e700795d9c664666b41fa3594326ff0e175640b6ede578445245d881a0442e",
+            "ledger_event_id": "ledger:v3donchian01:b25546f5ea555212ae7cf6f3cd4a82a1fbcf89d023fe666479b32fdf466b51aa:43d8b4dd1159023cc3f133665e21dc1e29f69d3d06e5b8c7d445ccfbff6ec15e",
+            "order_intent_id": "oint_363461905a3d48a3",
+            "risk_check_id": "risk_dca1938b59df44a6",
+            "signal_id": "sig_86b2f50059e74211",
+            "target_position_id": "tgt_6e02b79491394083"
+          },
+          "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+          "phase": "primary",
+          "run_id": "v3donchian01",
+          "runtime_observed": false,
+          "schema_version": "strategy_decision_evidence_v2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+        },
+        "fills": [
+          {
+            "client_order_id": "btcDPv3donchi0001",
+            "execution_type": "",
+            "fee": "-0.00300000",
+            "fee_currency": "USDT",
+            "fill_id": "offline-fill-1",
+            "instrument_id": "BTC-USDT-SWAP",
+            "order_id": "offline-order-1",
+            "pnl": "0",
+            "pnl_observed": true,
+            "position_side": "long",
+            "price": "60000",
+            "side": "buy",
+            "size": "0.01",
+            "timestamp_ms": "1789430400001"
+          }
+        ],
+        "ledger": {
+          "event_hash": "66e700795d9c664666b41fa3594326ff0e175640b6ede578445245d881a0442e",
+          "event_id": "ledger:v3donchian01:b25546f5ea555212ae7cf6f3cd4a82a1fbcf89d023fe666479b32fdf466b51aa:43d8b4dd1159023cc3f133665e21dc1e29f69d3d06e5b8c7d445ccfbff6ec15e",
+          "projection": {
+            "cash_ledger": {
+              "available_usdt": "0",
+              "equity_usdt": "4999.99700000",
+              "reconciliation_match": true,
+              "timestamp_ms": "",
+              "unrealized_pnl_observed": true,
+              "unrealized_pnl_usdt": "0"
+            },
+            "fill_ledger": [
+              {
+                "client_order_id": "btcDPv3donchi0001",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-1",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-1",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "buy",
+                "size": "0.01",
+                "timestamp_ms": "1789430400001"
+              }
+            ],
+            "funding_ledger": {
+              "bills": [],
+              "cashflow": "0",
+              "cashflow_reconciled": true,
+              "fixture": false,
+              "observation_count": 0
+            },
+            "order_ledger": {
+              "orders": [
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0001",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-1",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "60030.2",
+                  "reduce_only": false,
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                }
+              ],
+              "pending_algo_orders": [
+                {
+                  "algo_client_order_id": "btcDPv3donchi0001A",
+                  "algo_id": "offline-algo-1",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_type": "oco",
+                  "parent_client_order_id": "btcDPv3donchi0001",
+                  "position_side": "long",
+                  "reduce_only": null,
+                  "reduce_only_status": "unknown",
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "live",
+                  "stop_loss_order_price": "-1",
+                  "stop_loss_trigger": "59429.8",
+                  "stop_loss_trigger_type": "mark",
+                  "take_profit_order_price": "-1",
+                  "take_profit_trigger": "61230.9",
+                  "take_profit_trigger_type": "mark",
+                  "updated_at_ms": "1789430400001"
+                }
+              ],
+              "pending_orders": [],
+              "record_type": "terminal_order_followup",
+              "terminal_order": {
+                "candidate_target_position": null,
+                "exchange_hosted_protection": {
+                  "algo_client_order_id": "btcDPv3donchi0001A",
+                  "algo_id": "offline-algo-1",
+                  "checks": {
+                    "algo_client_order_id": true,
+                    "algo_id": true,
+                    "contracts": true,
+                    "instrument_id": true,
+                    "position_side": true,
+                    "stop_loss_market_exit": true,
+                    "stop_loss_trigger": true,
+                    "stop_loss_trigger_type": true,
+                    "take_profit_market_exit": true,
+                    "take_profit_trigger": true,
+                    "take_profit_trigger_type": true
+                  },
+                  "contracts": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "market_exit": true,
+                  "parent_acknowledged": true,
+                  "parent_client_order_id": "btcDPv3donchi0001",
+                  "parent_conflict_reconciled": false,
+                  "parent_fail_code": "",
+                  "policy": {
+                    "policy_id": "btc_demo_p0_exchange_guard",
+                    "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                    "sl_distance_bps": "100",
+                    "tp_distance_bps": "200",
+                    "trigger": "mark",
+                    "version": "1"
+                  },
+                  "position_side": "long",
+                  "query_first": true,
+                  "query_only_readback_attempts": 1,
+                  "readback_source": "order_algo",
+                  "sl_trigger_px": "59429.8",
+                  "status": "exchange_accepted",
+                  "tp_trigger_px": "61230.9",
+                  "trigger_type": "mark",
+                  "verified_at_utc": "2026-09-15T00:00:00.001000+00:00"
+                },
+                "exchange_order_id": "offline-order-1",
+                "exchange_state": "filled",
+                "fills": [
+                  {
+                    "client_order_id": "btcDPv3donchi0001",
+                    "execution_type": "",
+                    "fee": "-0.00300000",
+                    "fee_currency": "USDT",
+                    "fill_id": "offline-fill-1",
+                    "instrument_id": "BTC-USDT-SWAP",
+                    "order_id": "offline-order-1",
+                    "pnl": "0",
+                    "pnl_observed": true,
+                    "position_side": "long",
+                    "price": "60000",
+                    "side": "buy",
+                    "size": "0.01",
+                    "timestamp_ms": "1789430400001"
+                  }
+                ],
+                "forecast": null,
+                "oms": {
+                  "broker_order_id": "offline-order-1",
+                  "client_order_id": "btcDPv3donchi0001",
+                  "events": [
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "client_order_id": "btcDPv3donchi0001",
+                        "lifecycle_version": "btc_paper_oms_lifecycle_v1",
+                        "order_intent_id": "oint_363461905a3d48a3"
+                      },
+                      "reason": "order_intent_received",
+                      "remaining_quantity": 0.01,
+                      "status": "created",
+                      "timestamp_utc": "2026-09-15T00:00:00+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "risk_approved": true
+                      },
+                      "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+                      "remaining_quantity": 0.01,
+                      "status": "risk_checked",
+                      "timestamp_utc": "2026-09-20T12:46:38.447920+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": ""
+                      },
+                      "reason": "authorized_okx_demo_submit_attempted_after_durable_intent",
+                      "remaining_quantity": 0.01,
+                      "status": "submitted",
+                      "timestamp_utc": "2026-09-20T12:46:38.526972+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": "",
+                        "retry_allowed_without_status_query": false
+                      },
+                      "reason": "submit_outcome_unknown_query_before_retry",
+                      "remaining_quantity": 0.01,
+                      "status": "unknown",
+                      "timestamp_utc": "2026-09-20T12:46:38.526981+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": "offline-order-1"
+                      },
+                      "reason": "accepted",
+                      "remaining_quantity": 0.01,
+                      "status": "accepted",
+                      "timestamp_utc": "2026-09-20T12:46:38.531648+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.01,
+                      "metadata": {
+                        "fill_id": "offline-fill-1",
+                        "fill_quantity": 0.01,
+                        "price": 60000.0
+                      },
+                      "reason": "fill_received",
+                      "remaining_quantity": 0.0,
+                      "status": "filled",
+                      "timestamp_utc": "2026-09-20T12:46:38.536261+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.01,
+                      "metadata": {},
+                      "reason": "fill_reconciled",
+                      "remaining_quantity": 0.0,
+                      "status": "reconciled",
+                      "timestamp_utc": "2026-09-20T12:46:38.536282+00:00"
+                    }
+                  ],
+                  "filled_quantity": 0.01,
+                  "lifecycle_version": "btc_paper_oms_lifecycle_v1",
+                  "order_id": "btc_order_6179d7a249824b53",
+                  "order_intent_id": "oint_363461905a3d48a3",
+                  "quantity": 0.01,
+                  "reject_record": null,
+                  "remaining_quantity": 0.0,
+                  "side": "buy",
+                  "status": "reconciled",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "symbol": "BTC-USDT-SWAP",
+                  "target_position_id": "tgt_6e02b79491394083"
+                },
+                "order_plan": {
+                  "action": "open_long",
+                  "arrival_price": "60000.1",
+                  "attached_protection": {
+                    "attachAlgoClOrdId": "btcDPv3donchi0001A",
+                    "policy": {
+                      "policy_id": "btc_demo_p0_exchange_guard",
+                      "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                      "sl_distance_bps": "100",
+                      "tp_distance_bps": "200",
+                      "trigger": "mark",
+                      "version": "1"
+                    },
+                    "slOrdPx": "-1",
+                    "slTriggerPx": "59429.8",
+                    "slTriggerPxType": "mark",
+                    "tpOrdPx": "-1",
+                    "tpTriggerPx": "61230.9",
+                    "tpTriggerPxType": "mark"
+                  },
+                  "client_order_id": "btcDPv3donchi0001",
+                  "contracts": "0.01",
+                  "entry_order_type": "fok",
+                  "estimated_notional_usdt": "6.00302",
+                  "limit_price": "60030.2",
+                  "partial_fill_recovery": false,
+                  "position_after_contracts": "0.01",
+                  "position_before_contracts": "0",
+                  "position_side": "long",
+                  "reversal_close_only": false,
+                  "risk": {
+                    "cost_model_complete": true,
+                    "depth_mapping": {
+                      "best_price": "60000.1",
+                      "book_timestamp_ms": "1789430400000",
+                      "fully_mapped": true,
+                      "impact_bps": "0",
+                      "mapped_contracts": "0.01",
+                      "requested_contracts": "0.01",
+                      "side": "buy",
+                      "weighted_average_price": "60000.1"
+                    },
+                    "fee_bps": "5",
+                    "funding_bps": "1",
+                    "impact_bps": "0",
+                    "max_net_contracts": "0.01",
+                    "max_notional_usdt": "10",
+                    "order_contracts": "0.01",
+                    "slippage_budget_bps": "5",
+                    "spread_bps": "0.01666665277778935184220679816"
+                  },
+                  "risk_reducing_only": false,
+                  "side": "buy"
+                },
+                "risk_decision": {
+                  "adjusted_quantity": null,
+                  "approved": true,
+                  "checked_at": "2026-09-20T12:46:38.447833+00:00",
+                  "metadata": {
+                    "cost_facts": {
+                      "contract_notional_usdt": "6.00302",
+                      "contract_value_btc": "0.01",
+                      "cost_inputs_source": "order_plan_risk_bps_x_contract_notional",
+                      "cost_model_complete": true,
+                      "depth_mapping": {
+                        "best_price": "60000.1",
+                        "book_timestamp_ms": "1789430400000",
+                        "fully_mapped": true,
+                        "impact_bps": "0",
+                        "mapped_contracts": "0.01",
+                        "requested_contracts": "0.01",
+                        "side": "buy",
+                        "weighted_average_price": "60000.1"
+                      },
+                      "fee_bps": "5",
+                      "fees": "0.00300151",
+                      "funding_bps": "1",
+                      "funding_budget_source": "prospective_bps_separate_from_observed_cashflow",
+                      "funding_cashflow": 0.0,
+                      "funding_cashflow_observed": "0.0",
+                      "hosted_protection_facts": {
+                        "blockers": [],
+                        "schema_version": "btc_hosted_protection_facts_v1",
+                        "snapshot_sha256": "d2cbc4a3c0be0a730f28c8cc2ce501e6d28a10d4428ed2926e04ccb0be3b2d11"
+                      },
+                      "impact": "0.00000",
+                      "impact_bps": "0",
+                      "max_net_contracts": "0.01",
+                      "max_notional_usdt": "10",
+                      "order_contracts": "0.01",
+                      "prospective_funding_budget_usdt": "0.000600302",
+                      "realized_pnl": 0.0,
+                      "reconciliation_evidence": {
+                        "blockers": [],
+                        "cash_consistent": true,
+                        "contract_value_btc": "0.01",
+                        "counts": {
+                          "fills": 0,
+                          "funding_bills": 0,
+                          "orders": 0,
+                          "pending_algo_orders": 0,
+                          "pending_orders": 0,
+                          "positions": 1
+                        },
+                        "exposure_consistent": true,
+                        "mark_price": "60000.0",
+                        "open_orders_consistent": true,
+                        "pnl": {
+                          "daily": 0.0,
+                          "funding_cashflow": 0.0,
+                          "realized_pnl": 0.0,
+                          "unrealized_pnl": 0.0
+                        },
+                        "pnl_consistent": true,
+                        "positions_consistent": true,
+                        "protection": {
+                          "consistent": true,
+                          "exchange_payload": {
+                            "attachAlgoClOrdId": "btcDPv3donchi0001A",
+                            "policy": {
+                              "policy_id": "btc_demo_p0_exchange_guard",
+                              "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                              "sl_distance_bps": "100",
+                              "tp_distance_bps": "200",
+                              "trigger": "mark",
+                              "version": "1"
+                            },
+                            "slOrdPx": "-1",
+                            "slTriggerPx": "59429.8",
+                            "slTriggerPxType": "mark",
+                            "tpOrdPx": "-1",
+                            "tpTriggerPx": "61230.9",
+                            "tpTriggerPxType": "mark"
+                          },
+                          "order_type": "oco",
+                          "parent_client_order_id": "btcDPv3donchi0001",
+                          "position_side": "long",
+                          "present": true,
+                          "quantity": 0.01,
+                          "side": "sell",
+                          "source": "t2_attached_protection_projection",
+                          "trigger_price": 594.298
+                        },
+                        "protection_consistent": true,
+                        "snapshot_hash": "d2cbc4a3c0be0a730f28c8cc2ce501e6d28a10d4428ed2926e04ccb0be3b2d11",
+                        "snapshot_hash_match": true,
+                        "snapshot_match": true,
+                        "source": "btc_demo_commit_ledger_reconciliation_v1"
+                      },
+                      "slippage": "0.00300151",
+                      "slippage_budget_bps": "5",
+                      "spread_bps": "0.01666665277778935184220679816",
+                      "t2_protection_projection": {
+                        "exchange_payload": {
+                          "attachAlgoClOrdId": "btcDPv3donchi0001A",
+                          "policy": {
+                            "policy_id": "btc_demo_p0_exchange_guard",
+                            "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                            "sl_distance_bps": "100",
+                            "tp_distance_bps": "200",
+                            "trigger": "mark",
+                            "version": "1"
+                          },
+                          "slOrdPx": "-1",
+                          "slTriggerPx": "59429.8",
+                          "slTriggerPxType": "mark",
+                          "tpOrdPx": "-1",
+                          "tpTriggerPx": "61230.9",
+                          "tpTriggerPxType": "mark"
+                        },
+                        "order_type": "oco",
+                        "parent_client_order_id": "btcDPv3donchi0001",
+                        "position_side": "long",
+                        "present": true,
+                        "quantity": 0.01,
+                        "side": "sell",
+                        "trigger_price": 594.298
+                      },
+                      "unrealized_pnl": 0.0
+                    },
+                    "execution_permission": false,
+                    "live": false,
+                    "oms_bundle_digest": "79da08920cd66e838c47d5ace95e83ea687600976448b7c4bb2a8929671f644f",
+                    "order": false,
+                    "order_allowed": false,
+                    "paper": false,
+                    "position_after": 0.01,
+                    "position_before": 0.0,
+                    "private": false,
+                    "promotion": false,
+                    "proof_identity_digest": "bab0e17182de06cd6b5c0d45c63c71ed701bbbef8bfbfe258aeb212088d6c217",
+                    "real_order": false,
+                    "risk_effect": "INCREASE_ABS_EXPOSURE",
+                    "transfer": false,
+                    "venue_facts": {
+                      "contract_value_btc": "0.01",
+                      "instrument_id": "BTC-USDT-SWAP",
+                      "leverage": [
+                        {
+                          "instrument_id": "BTC-USDT-SWAP",
+                          "leverage": "1",
+                          "margin_mode": "isolated",
+                          "position_side": "long"
+                        },
+                        {
+                          "instrument_id": "BTC-USDT-SWAP",
+                          "leverage": "1",
+                          "margin_mode": "isolated",
+                          "position_side": "short"
+                        }
+                      ],
+                      "margin_mode": "isolated",
+                      "max_abs_position": "0.01",
+                      "max_notional": "10",
+                      "max_quantity": "0.01",
+                      "position_side": "long",
+                      "tick_size": "0.1",
+                      "venue": "okx_demo"
+                    },
+                    "withdraw": false
+                  },
+                  "order_intent_id": "oint_363461905a3d48a3",
+                  "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+                  "risk_check_id": "risk_dca1938b59df44a6",
+                  "risk_version": "btc_shared_platform_v3_t5_oms_v2",
+                  "rule_name": "BTC-SHARED-PLATFORM-V3-T5",
+                  "threshold": 600.302
+                },
+                "sealed_strategy_binding": {},
+                "signal": {
+                  "direction": "long",
+                  "horizon": "completed_1h_to_4h",
+                  "metadata": {
+                    "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+                    "decision_bar_close_utc": "2023-08-05T23:00:00+00:00",
+                    "direction": "long",
+                    "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+                    "no_future_function": true,
+                    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+                    "raw_signal": "1",
+                    "runtime_public_candle_tail": {},
+                    "source": "injected_offline_completed_frame",
+                    "strategy_id": "long_short_donchian_top5_okx_native",
+                    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+                    "target_contracts": "0.01"
+                  },
+                  "reason": "frozen_long_short_donchian_top5_completed_bar",
+                  "signal_id": "sig_86b2f50059e74211",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "strength": 1.0,
+                  "symbol": "BTC-USDT-SWAP",
+                  "timestamp_utc": "2026-09-15T00:00:00+00:00"
+                },
+                "target_position": {
+                  "metadata": {
+                    "demo_only": true,
+                    "order_generation_allowed": true,
+                    "risk": {
+                      "cost_model_complete": true,
+                      "depth_mapping": {
+                        "best_price": "60000.1",
+                        "book_timestamp_ms": "1789430400000",
+                        "fully_mapped": true,
+                        "impact_bps": "0",
+                        "mapped_contracts": "0.01",
+                        "requested_contracts": "0.01",
+                        "side": "buy",
+                        "weighted_average_price": "60000.1"
+                      },
+                      "fee_bps": "5",
+                      "funding_bps": "1",
+                      "impact_bps": "0",
+                      "max_net_contracts": "0.01",
+                      "max_notional_usdt": "10",
+                      "order_contracts": "0.01",
+                      "slippage_budget_bps": "5",
+                      "spread_bps": "0.01666665277778935184220679816"
+                    },
+                    "source_kind": "signal",
+                    "source_signal_id": "sig_86b2f50059e74211"
+                  },
+                  "signal_id": "sig_86b2f50059e74211",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "symbol": "BTC-USDT-SWAP",
+                  "target_position_id": "tgt_6e02b79491394083",
+                  "target_quantity": 0.01,
+                  "target_weight": 1.0,
+                  "timestamp_utc": "2026-09-15T00:00:00+00:00"
+                }
+              }
+            },
+            "position_ledger": {
+              "positions": [
+                {
+                  "average_price": "60000",
+                  "contracts": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "leverage": "1",
+                  "liquidation_price": "30000",
+                  "margin_mode": "isolated",
+                  "mark_price": "60000",
+                  "position_side": "long",
+                  "realized_pnl": "0",
+                  "realized_pnl_observed": true,
+                  "unrealized_pnl": "0",
+                  "unrealized_pnl_observed": true,
+                  "updated_at_ms": "1789430400001"
+                }
+              ],
+              "reconciliation_match": true,
+              "signed_contracts": "0.01"
+            }
+          },
+          "projection_sha256": "dca382578c8fbc8f2593f00f0ce51b0a643276f3c18e6d57657f577f972de388",
+          "raw_payload_sha256": "d4328a1404a9fe64742ae381f1e28fb3af75e555a1aa8acecaec8275e8cc37ce",
+          "sequence": 7
+        },
+        "order": {
+          "accFillSz": "0.01",
+          "attachAlgoOrds": [
+            {
+              "attachAlgoClOrdId": "btcDPv3donchi0001A",
+              "attachAlgoId": "offline-algo-1",
+              "failCode": "0",
+              "failReason": ""
+            }
+          ],
+          "avgPx": "60000",
+          "clOrdId": "btcDPv3donchi0001",
+          "instId": "BTC-USDT-SWAP",
+          "ordId": "offline-order-1",
+          "ordType": "fok",
+          "posSide": "long",
+          "px": "60030.2",
+          "side": "buy",
+          "state": "filled",
+          "sz": "0.01",
+          "tag": "btcP0Demo",
+          "tdMode": "isolated"
+        },
+        "order_plan": {
+          "action": "open_long",
+          "client_order_id": "btcDPv3donchi0001",
+          "contracts": "0.01",
+          "position_after_contracts": "0.01",
+          "position_before_contracts": "0",
+          "reversal_close_only": false,
+          "risk_reducing_only": false
+        },
+        "phase": "primary",
+        "risk_decision": {
+          "approved": true,
+          "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+          "risk_check_id": "risk_dca1938b59df44a6"
+        },
+        "signal": {
+          "direction": "long",
+          "horizon": "completed_1h_to_4h",
+          "metadata": {
+            "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+            "decision_bar_close_utc": "2023-08-05T23:00:00+00:00",
+            "direction": "long",
+            "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+            "no_future_function": true,
+            "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+            "raw_signal": "1",
+            "runtime_public_candle_tail": {},
+            "source": "injected_offline_completed_frame",
+            "strategy_id": "long_short_donchian_top5_okx_native",
+            "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+            "target_contracts": "0.01"
+          },
+          "reason": "frozen_long_short_donchian_top5_completed_bar",
+          "signal_id": "sig_86b2f50059e74211",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strength": 1.0,
+          "symbol": "BTC-USDT-SWAP",
+          "timestamp_utc": "2026-09-15T00:00:00+00:00"
+        },
+        "stage_sha256": "f5838089e2a53769c147a83d151359718a32ae879a50ec2cf61ff9c390ef514f",
+        "target_position": {
+          "metadata": {
+            "demo_only": true,
+            "order_generation_allowed": true,
+            "risk": {
+              "cost_model_complete": true,
+              "depth_mapping": {
+                "best_price": "60000.1",
+                "book_timestamp_ms": "1789430400000",
+                "fully_mapped": true,
+                "impact_bps": "0",
+                "mapped_contracts": "0.01",
+                "requested_contracts": "0.01",
+                "side": "buy",
+                "weighted_average_price": "60000.1"
+              },
+              "fee_bps": "5",
+              "funding_bps": "1",
+              "impact_bps": "0",
+              "max_net_contracts": "0.01",
+              "max_notional_usdt": "10",
+              "order_contracts": "0.01",
+              "slippage_budget_bps": "5",
+              "spread_bps": "0.01666665277778935184220679816"
+            },
+            "source_kind": "signal",
+            "source_signal_id": "sig_86b2f50059e74211"
+          },
+          "signal_id": "sig_86b2f50059e74211",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "symbol": "BTC-USDT-SWAP",
+          "target_position_id": "tgt_6e02b79491394083",
+          "target_quantity": 0.01,
+          "target_weight": 1.0,
+          "timestamp_utc": "2026-09-15T00:00:00+00:00"
+        }
+      },
+      {
+        "after": {
+          "equity_usdt": "4999.99700000",
+          "fill_count": 1,
+          "position_contracts": "0.01",
+          "submitted_orders": 1
+        },
+        "checkpoint": "hold_long",
+        "completed_bar_close_utc": "2023-08-06T00:00:00+00:00",
+        "evidence": {
+          "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+          "context_digest": "d1925a952f929bc56e932fc874e1fe18973fb6f7ba5681416890bd4469ded48a",
+          "data_version": "v1-closeout-continuous-ohlcv-v1",
+          "decision_id": "ec91c24d88511ef72af106ed8266232271aaa15f6bf45c0094272f699f38c58a",
+          "event_id": "bd02dffd84c9a38e8ef9c410ed5598f4ea3fa7d1333f179383d5638c41de49e5",
+          "evidence_kind": "offline_execution",
+          "input_digest": "c2e4a9956e58128db0749ed6ae07f5fc6a53cba4cb2376e4795d1ac20ed57e04",
+          "links": {
+            "action": "hold",
+            "client_order_id": null,
+            "current_contracts": "0.01",
+            "decision_digest": "6c5155a8214cb524885b305668f27b508a72908ea22bad7d359d434e33a6e238",
+            "decision_outcome": "no_order",
+            "exchange_order_id": null,
+            "fill_ids": [],
+            "ledger_event_hash": null,
+            "ledger_event_id": null,
+            "order_intent_id": null,
+            "raw_signal": "1",
+            "target_contracts": "0.01"
+          },
+          "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+          "phase": "hold",
+          "run_id": "v3donchian01",
+          "runtime_observed": false,
+          "schema_version": "strategy_decision_evidence_v2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+        },
+        "fills": [],
+        "ledger": null,
+        "order": null,
+        "order_plan": null,
+        "phase": "hold",
+        "risk_decision": null,
+        "signal": {
+          "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+          "decision_bar_close_utc": "2023-08-06T00:00:00+00:00",
+          "direction": "long",
+          "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+          "no_future_function": true,
+          "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+          "raw_signal": "1",
+          "runtime_public_candle_tail": {},
+          "source": "injected_offline_completed_frame",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+          "target_contracts": "0.01"
+        },
+        "stage_sha256": "c0a8cd25a925714e965a76c24d95d8bc023f3116dd5eb634a2222671b6e870dc",
+        "target_position": {}
+      },
+      {
+        "after": {
+          "equity_usdt": "4999.99400000",
+          "fill_count": 2,
+          "position_contracts": "0.00",
+          "submitted_orders": 2
+        },
+        "checkpoint": "reverse_to_short",
+        "completed_bar_close_utc": "2024-06-07T23:00:00+00:00",
+        "evidence": {
+          "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+          "context_digest": "b397fc02b11cd3ec3a429e5c3b4bd63480aa1560e2c305b944deac66444c08db",
+          "data_version": "v1-closeout-continuous-ohlcv-v1",
+          "decision_id": "c2abb3f4dda66d7acc2dc39aa220c39f0fb5dd7ea50c3160564f4292b74a718c",
+          "event_id": "67ff04beec119cd3ac6db580cc8a52fe523938233a65cebba24fe403efe4f491",
+          "evidence_kind": "offline_execution",
+          "input_digest": "d2fb018a83ea0274e16a7428a3db031205e39aeed7b24c1171774ad4761c57b0",
+          "links": {
+            "action": "close_long",
+            "client_order_id": "btcDPv3donchi0002",
+            "decision_outcome": "order_terminal",
+            "exchange_order_id": "offline-order-2",
+            "fill_ids": [
+              "offline-fill-2"
+            ],
+            "ledger_event_hash": "09cf521771bc1c182eef7be295de0058495946040a9171d573761c83cc13f1f0",
+            "ledger_event_id": "ledger:v3donchian01:7c7761cf930c87945e6fb674dfe416af850a72fb3b32099e75926559f614cfce:772139ff5f01dc44be3ad616077f867a3579aca9cf652583f524df7aea2a6fbc",
+            "order_intent_id": "oint_b3fd1b3580bd4b00",
+            "risk_check_id": "risk_8c78507a74f64bae",
+            "signal_id": "sig_82dc49274f4f42f1",
+            "target_position_id": "tgt_77c07192e5794c34"
+          },
+          "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+          "phase": "reversal_close",
+          "run_id": "v3donchian01",
+          "runtime_observed": false,
+          "schema_version": "strategy_decision_evidence_v2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+        },
+        "fills": [
+          {
+            "client_order_id": "btcDPv3donchi0002",
+            "execution_type": "",
+            "fee": "-0.00300000",
+            "fee_currency": "USDT",
+            "fill_id": "offline-fill-2",
+            "instrument_id": "BTC-USDT-SWAP",
+            "order_id": "offline-order-2",
+            "pnl": "0",
+            "pnl_observed": true,
+            "position_side": "long",
+            "price": "60000",
+            "side": "sell",
+            "size": "0.01",
+            "timestamp_ms": "1789430402001"
+          }
+        ],
+        "ledger": {
+          "event_hash": "09cf521771bc1c182eef7be295de0058495946040a9171d573761c83cc13f1f0",
+          "event_id": "ledger:v3donchian01:7c7761cf930c87945e6fb674dfe416af850a72fb3b32099e75926559f614cfce:772139ff5f01dc44be3ad616077f867a3579aca9cf652583f524df7aea2a6fbc",
+          "projection": {
+            "cash_ledger": {
+              "available_usdt": "0",
+              "equity_usdt": "4999.99400000",
+              "reconciliation_match": true,
+              "timestamp_ms": "",
+              "unrealized_pnl_observed": true,
+              "unrealized_pnl_usdt": "0"
+            },
+            "fill_ledger": [
+              {
+                "client_order_id": "btcDPv3donchi0001",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-1",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-1",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "buy",
+                "size": "0.01",
+                "timestamp_ms": "1789430400001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0002",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-2",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-2",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "sell",
+                "size": "0.01",
+                "timestamp_ms": "1789430402001"
+              }
+            ],
+            "funding_ledger": {
+              "bills": [],
+              "cashflow": "0",
+              "cashflow_reconciled": true,
+              "fixture": false,
+              "observation_count": 0
+            },
+            "order_ledger": {
+              "orders": [
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0001",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-1",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "60030.2",
+                  "reduce_only": false,
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0002",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-2",
+                  "order_type": "ioc",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "59970",
+                  "reduce_only": false,
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                }
+              ],
+              "pending_algo_orders": [],
+              "pending_orders": [],
+              "record_type": "exchange_order_snapshot",
+              "terminal_order": {}
+            },
+            "position_ledger": {
+              "positions": [
+                {
+                  "average_price": "60000",
+                  "contracts": "0",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "leverage": "1",
+                  "liquidation_price": "",
+                  "margin_mode": "isolated",
+                  "mark_price": "60000",
+                  "position_side": "long",
+                  "realized_pnl": "0",
+                  "realized_pnl_observed": true,
+                  "unrealized_pnl": "0",
+                  "unrealized_pnl_observed": true,
+                  "updated_at_ms": "1789430402002"
+                }
+              ],
+              "reconciliation_match": true,
+              "signed_contracts": "0"
+            }
+          },
+          "projection_sha256": "44fab5acf4f4ad5e8286b9fcc0fc43a33bdfe21ad495c42cfa3c1cf678c1571b",
+          "raw_payload_sha256": "3228e8ca1b31d0714b0aeaeef60d2ccbfd1d1ee3ed36cf2fc4d6c4e5129ff026",
+          "sequence": 22
+        },
+        "order": {
+          "accFillSz": "0.01",
+          "attachAlgoOrds": [],
+          "avgPx": "60000",
+          "clOrdId": "btcDPv3donchi0002",
+          "instId": "BTC-USDT-SWAP",
+          "ordId": "offline-order-2",
+          "ordType": "ioc",
+          "posSide": "long",
+          "px": "59970",
+          "side": "sell",
+          "state": "filled",
+          "sz": "0.01",
+          "tag": "btcP0Demo",
+          "tdMode": "isolated"
+        },
+        "order_plan": {
+          "action": "close_long",
+          "client_order_id": "btcDPv3donchi0002",
+          "contracts": "0.01",
+          "position_after_contracts": "0",
+          "position_before_contracts": "0.01",
+          "reversal_close_only": true,
+          "risk_reducing_only": true
+        },
+        "phase": "reversal_close",
+        "risk_decision": {
+          "approved": true,
+          "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+          "risk_check_id": "risk_8c78507a74f64bae"
+        },
+        "signal": {
+          "direction": "short",
+          "horizon": "completed_1h_to_4h",
+          "metadata": {
+            "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+            "decision_bar_close_utc": "2024-06-07T23:00:00+00:00",
+            "direction": "short",
+            "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+            "no_future_function": true,
+            "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+            "raw_signal": "-1",
+            "runtime_public_candle_tail": {},
+            "source": "injected_offline_completed_frame",
+            "strategy_id": "long_short_donchian_top5_okx_native",
+            "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+            "target_contracts": "-0.01"
+          },
+          "reason": "frozen_long_short_donchian_top5_completed_bar",
+          "signal_id": "sig_82dc49274f4f42f1",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strength": 1.0,
+          "symbol": "BTC-USDT-SWAP",
+          "timestamp_utc": "2026-09-15T00:00:02+00:00"
+        },
+        "stage_sha256": "fda4ce4c76f1bb4e147e1ecdd4d7f291368ed75b4edbd8e47fc414ba392dbc2c",
+        "target_position": {
+          "metadata": {
+            "demo_only": true,
+            "order_generation_allowed": false,
+            "risk": {
+              "cost_model_complete": true,
+              "depth_mapping": {
+                "best_price": "60000",
+                "book_timestamp_ms": "1789430402000",
+                "fully_mapped": true,
+                "impact_bps": "0",
+                "mapped_contracts": "0.01",
+                "requested_contracts": "0.01",
+                "side": "sell",
+                "weighted_average_price": "60000"
+              },
+              "fee_bps": "5",
+              "funding_bps": "1",
+              "impact_bps": "0",
+              "max_net_contracts": "0.01",
+              "max_notional_usdt": "10",
+              "order_contracts": "0.01",
+              "slippage_budget_bps": "5",
+              "spread_bps": "0.01666665277778935184220679816"
+            },
+            "source_kind": "signal",
+            "source_signal_id": "sig_82dc49274f4f42f1"
+          },
+          "signal_id": "sig_82dc49274f4f42f1",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "symbol": "BTC-USDT-SWAP",
+          "target_position_id": "tgt_77c07192e5794c34",
+          "target_quantity": 0.0,
+          "target_weight": 0.0,
+          "timestamp_utc": "2026-09-15T00:00:02+00:00"
+        }
+      },
+      {
+        "after": {
+          "equity_usdt": "4999.99100000",
+          "fill_count": 3,
+          "position_contracts": "-0.01",
+          "submitted_orders": 3
+        },
+        "checkpoint": "reverse_to_short",
+        "completed_bar_close_utc": "2024-06-07T23:00:00+00:00",
+        "evidence": {
+          "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+          "context_digest": "f28f3e749790fabef8afb228ab7202dc2b5ef9eaf3ef555b49f53e269bf65e39",
+          "data_version": "v1-closeout-continuous-ohlcv-v1",
+          "decision_id": "5e30e5e4d6ba8ffa3ecdb14ab4c388b958f092eeb6d09bfe0db13276725f6ad4",
+          "event_id": "67ff04beec119cd3ac6db580cc8a52fe523938233a65cebba24fe403efe4f491",
+          "evidence_kind": "offline_execution",
+          "input_digest": "d2fb018a83ea0274e16a7428a3db031205e39aeed7b24c1171774ad4761c57b0",
+          "links": {
+            "action": "open_short",
+            "client_order_id": "btcDPv3donchi0003",
+            "decision_outcome": "order_terminal",
+            "exchange_order_id": "offline-order-3",
+            "fill_ids": [
+              "offline-fill-3"
+            ],
+            "ledger_event_hash": "2be32d383fb5f81d1cb13172cdf442b5814d19195f3c4e0157ab803c690b7c0e",
+            "ledger_event_id": "ledger:v3donchian01:7a3f9fc841af52be5aaa3dc1e4ad4af3e23ce98883f9c47754e67c7997c6b121:eb20db1a9c2b152f15e8a3418cf2ca31eae5df846557ed8e1303e527fd6db284",
+            "order_intent_id": "oint_81393fc93d774ecf",
+            "risk_check_id": "risk_9a5ab8c5501441df",
+            "signal_id": "sig_699d16622d304027",
+            "target_position_id": "tgt_40ce7d76abca4d9a"
+          },
+          "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+          "phase": "reversal_open",
+          "run_id": "v3donchian01",
+          "runtime_observed": false,
+          "schema_version": "strategy_decision_evidence_v2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+        },
+        "fills": [
+          {
+            "client_order_id": "btcDPv3donchi0003",
+            "execution_type": "",
+            "fee": "-0.00300000",
+            "fee_currency": "USDT",
+            "fill_id": "offline-fill-3",
+            "instrument_id": "BTC-USDT-SWAP",
+            "order_id": "offline-order-3",
+            "pnl": "0",
+            "pnl_observed": true,
+            "position_side": "short",
+            "price": "60000",
+            "side": "sell",
+            "size": "0.01",
+            "timestamp_ms": "1789430403001"
+          }
+        ],
+        "ledger": {
+          "event_hash": "2be32d383fb5f81d1cb13172cdf442b5814d19195f3c4e0157ab803c690b7c0e",
+          "event_id": "ledger:v3donchian01:7a3f9fc841af52be5aaa3dc1e4ad4af3e23ce98883f9c47754e67c7997c6b121:eb20db1a9c2b152f15e8a3418cf2ca31eae5df846557ed8e1303e527fd6db284",
+          "projection": {
+            "cash_ledger": {
+              "available_usdt": "0",
+              "equity_usdt": "4999.99100000",
+              "reconciliation_match": true,
+              "timestamp_ms": "",
+              "unrealized_pnl_observed": true,
+              "unrealized_pnl_usdt": "0"
+            },
+            "fill_ledger": [
+              {
+                "client_order_id": "btcDPv3donchi0001",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-1",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-1",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "buy",
+                "size": "0.01",
+                "timestamp_ms": "1789430400001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0002",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-2",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-2",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "sell",
+                "size": "0.01",
+                "timestamp_ms": "1789430402001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0003",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-3",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-3",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "short",
+                "price": "60000",
+                "side": "sell",
+                "size": "0.01",
+                "timestamp_ms": "1789430403001"
+              }
+            ],
+            "funding_ledger": {
+              "bills": [],
+              "cashflow": "0",
+              "cashflow_reconciled": true,
+              "fixture": false,
+              "observation_count": 0
+            },
+            "order_ledger": {
+              "orders": [
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0001",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-1",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "60030.2",
+                  "reduce_only": false,
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0002",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-2",
+                  "order_type": "ioc",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "59970",
+                  "reduce_only": false,
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0003",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-3",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "short",
+                  "price": "59970",
+                  "reduce_only": false,
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                }
+              ],
+              "pending_algo_orders": [
+                {
+                  "algo_client_order_id": "btcDPv3donchi0003A",
+                  "algo_id": "offline-algo-3",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_type": "oco",
+                  "parent_client_order_id": "btcDPv3donchi0003",
+                  "position_side": "short",
+                  "reduce_only": null,
+                  "reduce_only_status": "unknown",
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "live",
+                  "stop_loss_order_price": "-1",
+                  "stop_loss_trigger": "60569.7",
+                  "stop_loss_trigger_type": "mark",
+                  "take_profit_order_price": "-1",
+                  "take_profit_trigger": "58770.6",
+                  "take_profit_trigger_type": "mark",
+                  "updated_at_ms": "1789430403001"
+                }
+              ],
+              "pending_orders": [],
+              "record_type": "terminal_order_followup",
+              "terminal_order": {
+                "candidate_target_position": null,
+                "exchange_hosted_protection": {
+                  "algo_client_order_id": "btcDPv3donchi0003A",
+                  "algo_id": "offline-algo-3",
+                  "checks": {
+                    "algo_client_order_id": true,
+                    "algo_id": true,
+                    "contracts": true,
+                    "instrument_id": true,
+                    "position_side": true,
+                    "stop_loss_market_exit": true,
+                    "stop_loss_trigger": true,
+                    "stop_loss_trigger_type": true,
+                    "take_profit_market_exit": true,
+                    "take_profit_trigger": true,
+                    "take_profit_trigger_type": true
+                  },
+                  "contracts": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "market_exit": true,
+                  "parent_acknowledged": true,
+                  "parent_client_order_id": "btcDPv3donchi0003",
+                  "parent_conflict_reconciled": false,
+                  "parent_fail_code": "",
+                  "policy": {
+                    "policy_id": "btc_demo_p0_exchange_guard",
+                    "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                    "sl_distance_bps": "100",
+                    "tp_distance_bps": "200",
+                    "trigger": "mark",
+                    "version": "1"
+                  },
+                  "position_side": "short",
+                  "query_first": true,
+                  "query_only_readback_attempts": 1,
+                  "readback_source": "order_algo",
+                  "sl_trigger_px": "60569.7",
+                  "status": "exchange_accepted",
+                  "tp_trigger_px": "58770.6",
+                  "trigger_type": "mark",
+                  "verified_at_utc": "2026-09-15T00:00:03.001000+00:00"
+                },
+                "exchange_order_id": "offline-order-3",
+                "exchange_state": "filled",
+                "fills": [
+                  {
+                    "client_order_id": "btcDPv3donchi0003",
+                    "execution_type": "",
+                    "fee": "-0.00300000",
+                    "fee_currency": "USDT",
+                    "fill_id": "offline-fill-3",
+                    "instrument_id": "BTC-USDT-SWAP",
+                    "order_id": "offline-order-3",
+                    "pnl": "0",
+                    "pnl_observed": true,
+                    "position_side": "short",
+                    "price": "60000",
+                    "side": "sell",
+                    "size": "0.01",
+                    "timestamp_ms": "1789430403001"
+                  }
+                ],
+                "forecast": null,
+                "oms": {
+                  "broker_order_id": "offline-order-3",
+                  "client_order_id": "btcDPv3donchi0003",
+                  "events": [
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "client_order_id": "btcDPv3donchi0003",
+                        "lifecycle_version": "btc_paper_oms_lifecycle_v1",
+                        "order_intent_id": "oint_81393fc93d774ecf"
+                      },
+                      "reason": "order_intent_received",
+                      "remaining_quantity": 0.01,
+                      "status": "created",
+                      "timestamp_utc": "2026-09-15T00:00:03+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "risk_approved": true
+                      },
+                      "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+                      "remaining_quantity": 0.01,
+                      "status": "risk_checked",
+                      "timestamp_utc": "2026-09-20T12:47:01.186921+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": ""
+                      },
+                      "reason": "authorized_okx_demo_submit_attempted_after_durable_intent",
+                      "remaining_quantity": 0.01,
+                      "status": "submitted",
+                      "timestamp_utc": "2026-09-20T12:47:01.300922+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": "",
+                        "retry_allowed_without_status_query": false
+                      },
+                      "reason": "submit_outcome_unknown_query_before_retry",
+                      "remaining_quantity": 0.01,
+                      "status": "unknown",
+                      "timestamp_utc": "2026-09-20T12:47:01.300937+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.0,
+                      "metadata": {
+                        "broker_order_id": "offline-order-3"
+                      },
+                      "reason": "accepted",
+                      "remaining_quantity": 0.01,
+                      "status": "accepted",
+                      "timestamp_utc": "2026-09-20T12:47:01.308515+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.01,
+                      "metadata": {
+                        "fill_id": "offline-fill-3",
+                        "fill_quantity": 0.01,
+                        "price": 60000.0
+                      },
+                      "reason": "fill_received",
+                      "remaining_quantity": 0.0,
+                      "status": "filled",
+                      "timestamp_utc": "2026-09-20T12:47:01.317484+00:00"
+                    },
+                    {
+                      "filled_quantity": 0.01,
+                      "metadata": {},
+                      "reason": "fill_reconciled",
+                      "remaining_quantity": 0.0,
+                      "status": "reconciled",
+                      "timestamp_utc": "2026-09-20T12:47:01.317518+00:00"
+                    }
+                  ],
+                  "filled_quantity": 0.01,
+                  "lifecycle_version": "btc_paper_oms_lifecycle_v1",
+                  "order_id": "btc_order_cd6d039523a34a99",
+                  "order_intent_id": "oint_81393fc93d774ecf",
+                  "quantity": 0.01,
+                  "reject_record": null,
+                  "remaining_quantity": 0.0,
+                  "side": "sell",
+                  "status": "reconciled",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "symbol": "BTC-USDT-SWAP",
+                  "target_position_id": "tgt_40ce7d76abca4d9a"
+                },
+                "order_plan": {
+                  "action": "open_short",
+                  "arrival_price": "60000",
+                  "attached_protection": {
+                    "attachAlgoClOrdId": "btcDPv3donchi0003A",
+                    "policy": {
+                      "policy_id": "btc_demo_p0_exchange_guard",
+                      "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                      "sl_distance_bps": "100",
+                      "tp_distance_bps": "200",
+                      "trigger": "mark",
+                      "version": "1"
+                    },
+                    "slOrdPx": "-1",
+                    "slTriggerPx": "60569.7",
+                    "slTriggerPxType": "mark",
+                    "tpOrdPx": "-1",
+                    "tpTriggerPx": "58770.6",
+                    "tpTriggerPxType": "mark"
+                  },
+                  "client_order_id": "btcDPv3donchi0003",
+                  "contracts": "0.01",
+                  "entry_order_type": "fok",
+                  "estimated_notional_usdt": "5.997",
+                  "limit_price": "59970",
+                  "partial_fill_recovery": false,
+                  "position_after_contracts": "-0.01",
+                  "position_before_contracts": "0",
+                  "position_side": "short",
+                  "reversal_close_only": false,
+                  "risk": {
+                    "cost_model_complete": true,
+                    "depth_mapping": {
+                      "best_price": "60000",
+                      "book_timestamp_ms": "1789430403000",
+                      "fully_mapped": true,
+                      "impact_bps": "0",
+                      "mapped_contracts": "0.01",
+                      "requested_contracts": "0.01",
+                      "side": "sell",
+                      "weighted_average_price": "60000"
+                    },
+                    "fee_bps": "5",
+                    "funding_bps": "1",
+                    "impact_bps": "0",
+                    "max_net_contracts": "0.01",
+                    "max_notional_usdt": "10",
+                    "order_contracts": "0.01",
+                    "slippage_budget_bps": "5",
+                    "spread_bps": "0.01666665277778935184220679816"
+                  },
+                  "risk_reducing_only": false,
+                  "side": "sell"
+                },
+                "risk_decision": {
+                  "adjusted_quantity": null,
+                  "approved": true,
+                  "checked_at": "2026-09-20T12:47:01.186841+00:00",
+                  "metadata": {
+                    "cost_facts": {
+                      "contract_notional_usdt": "5.99700",
+                      "contract_value_btc": "0.01",
+                      "cost_inputs_source": "order_plan_risk_bps_x_contract_notional",
+                      "cost_model_complete": true,
+                      "depth_mapping": {
+                        "best_price": "60000",
+                        "book_timestamp_ms": "1789430403000",
+                        "fully_mapped": true,
+                        "impact_bps": "0",
+                        "mapped_contracts": "0.01",
+                        "requested_contracts": "0.01",
+                        "side": "sell",
+                        "weighted_average_price": "60000"
+                      },
+                      "fee_bps": "5",
+                      "fees": "0.0029985",
+                      "funding_bps": "1",
+                      "funding_budget_source": "prospective_bps_separate_from_observed_cashflow",
+                      "funding_cashflow": 0.0,
+                      "funding_cashflow_observed": "0.0",
+                      "hosted_protection_facts": {
+                        "blockers": [],
+                        "schema_version": "btc_hosted_protection_facts_v1",
+                        "snapshot_sha256": "0a8c956f58d0f40ba1a21d3ec7cfc5c2306dd4e5b12037cc22caed0703a4a1c9"
+                      },
+                      "impact": "0.00000",
+                      "impact_bps": "0",
+                      "max_net_contracts": "0.01",
+                      "max_notional_usdt": "10",
+                      "order_contracts": "0.01",
+                      "prospective_funding_budget_usdt": "0.0005997",
+                      "realized_pnl": 0.0,
+                      "reconciliation_evidence": {
+                        "blockers": [],
+                        "cash_consistent": true,
+                        "contract_value_btc": "0.01",
+                        "counts": {
+                          "fills": 2,
+                          "funding_bills": 0,
+                          "orders": 2,
+                          "pending_algo_orders": 0,
+                          "pending_orders": 0,
+                          "positions": 1
+                        },
+                        "exposure_consistent": true,
+                        "mark_price": "60000.0",
+                        "open_orders_consistent": true,
+                        "pnl": {
+                          "daily": 0.0,
+                          "funding_cashflow": 0.0,
+                          "realized_pnl": 0.0,
+                          "unrealized_pnl": 0.0
+                        },
+                        "pnl_consistent": true,
+                        "positions_consistent": true,
+                        "protection": {
+                          "consistent": true,
+                          "exchange_payload": {
+                            "attachAlgoClOrdId": "btcDPv3donchi0003A",
+                            "policy": {
+                              "policy_id": "btc_demo_p0_exchange_guard",
+                              "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                              "sl_distance_bps": "100",
+                              "tp_distance_bps": "200",
+                              "trigger": "mark",
+                              "version": "1"
+                            },
+                            "slOrdPx": "-1",
+                            "slTriggerPx": "60569.7",
+                            "slTriggerPxType": "mark",
+                            "tpOrdPx": "-1",
+                            "tpTriggerPx": "58770.6",
+                            "tpTriggerPxType": "mark"
+                          },
+                          "order_type": "oco",
+                          "parent_client_order_id": "btcDPv3donchi0003",
+                          "position_side": "short",
+                          "present": true,
+                          "quantity": 0.01,
+                          "side": "buy",
+                          "source": "t2_attached_protection_projection",
+                          "trigger_price": 605.697
+                        },
+                        "protection_consistent": true,
+                        "snapshot_hash": "0a8c956f58d0f40ba1a21d3ec7cfc5c2306dd4e5b12037cc22caed0703a4a1c9",
+                        "snapshot_hash_match": true,
+                        "snapshot_match": true,
+                        "source": "btc_demo_commit_ledger_reconciliation_v1"
+                      },
+                      "slippage": "0.0029985",
+                      "slippage_budget_bps": "5",
+                      "spread_bps": "0.01666665277778935184220679816",
+                      "t2_protection_projection": {
+                        "exchange_payload": {
+                          "attachAlgoClOrdId": "btcDPv3donchi0003A",
+                          "policy": {
+                            "policy_id": "btc_demo_p0_exchange_guard",
+                            "policy_sha256": "28e04b92827f23d0c06579056094b3d48db5fb905d38eaa6ec67aa727e550465",
+                            "sl_distance_bps": "100",
+                            "tp_distance_bps": "200",
+                            "trigger": "mark",
+                            "version": "1"
+                          },
+                          "slOrdPx": "-1",
+                          "slTriggerPx": "60569.7",
+                          "slTriggerPxType": "mark",
+                          "tpOrdPx": "-1",
+                          "tpTriggerPx": "58770.6",
+                          "tpTriggerPxType": "mark"
+                        },
+                        "order_type": "oco",
+                        "parent_client_order_id": "btcDPv3donchi0003",
+                        "position_side": "short",
+                        "present": true,
+                        "quantity": 0.01,
+                        "side": "buy",
+                        "trigger_price": 605.697
+                      },
+                      "unrealized_pnl": 0.0
+                    },
+                    "execution_permission": false,
+                    "live": false,
+                    "oms_bundle_digest": "51323a7ddb163c4de2e80a1f56694820090a8c52ff711fd412af3710737e5a6b",
+                    "order": false,
+                    "order_allowed": false,
+                    "paper": false,
+                    "position_after": -0.01,
+                    "position_before": 0.0,
+                    "private": false,
+                    "promotion": false,
+                    "proof_identity_digest": "86ad3f7282398b9bbb9e8837de0e811084e08cd12d7394fd93f22e021bf06238",
+                    "real_order": false,
+                    "risk_effect": "INCREASE_ABS_EXPOSURE",
+                    "transfer": false,
+                    "venue_facts": {
+                      "contract_value_btc": "0.01",
+                      "instrument_id": "BTC-USDT-SWAP",
+                      "leverage": [
+                        {
+                          "instrument_id": "BTC-USDT-SWAP",
+                          "leverage": "1",
+                          "margin_mode": "isolated",
+                          "position_side": "long"
+                        },
+                        {
+                          "instrument_id": "BTC-USDT-SWAP",
+                          "leverage": "1",
+                          "margin_mode": "isolated",
+                          "position_side": "short"
+                        }
+                      ],
+                      "margin_mode": "isolated",
+                      "max_abs_position": "0.01",
+                      "max_notional": "10",
+                      "max_quantity": "0.01",
+                      "position_side": "short",
+                      "tick_size": "0.1",
+                      "venue": "okx_demo"
+                    },
+                    "withdraw": false
+                  },
+                  "order_intent_id": "oint_81393fc93d774ecf",
+                  "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+                  "risk_check_id": "risk_9a5ab8c5501441df",
+                  "risk_version": "btc_shared_platform_v3_t5_oms_v2",
+                  "rule_name": "BTC-SHARED-PLATFORM-V3-T5",
+                  "threshold": 599.7
+                },
+                "sealed_strategy_binding": {},
+                "signal": {
+                  "direction": "short",
+                  "horizon": "completed_1h_to_4h",
+                  "metadata": {
+                    "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+                    "decision_bar_close_utc": "2024-06-07T23:00:00+00:00",
+                    "direction": "short",
+                    "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+                    "no_future_function": true,
+                    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+                    "raw_signal": "-1",
+                    "runtime_public_candle_tail": {},
+                    "source": "injected_offline_completed_frame",
+                    "strategy_id": "long_short_donchian_top5_okx_native",
+                    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+                    "target_contracts": "-0.01"
+                  },
+                  "reason": "frozen_long_short_donchian_top5_completed_bar",
+                  "signal_id": "sig_699d16622d304027",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "strength": 1.0,
+                  "symbol": "BTC-USDT-SWAP",
+                  "timestamp_utc": "2026-09-15T00:00:03+00:00"
+                },
+                "target_position": {
+                  "metadata": {
+                    "demo_only": true,
+                    "order_generation_allowed": true,
+                    "risk": {
+                      "cost_model_complete": true,
+                      "depth_mapping": {
+                        "best_price": "60000",
+                        "book_timestamp_ms": "1789430403000",
+                        "fully_mapped": true,
+                        "impact_bps": "0",
+                        "mapped_contracts": "0.01",
+                        "requested_contracts": "0.01",
+                        "side": "sell",
+                        "weighted_average_price": "60000"
+                      },
+                      "fee_bps": "5",
+                      "funding_bps": "1",
+                      "impact_bps": "0",
+                      "max_net_contracts": "0.01",
+                      "max_notional_usdt": "10",
+                      "order_contracts": "0.01",
+                      "slippage_budget_bps": "5",
+                      "spread_bps": "0.01666665277778935184220679816"
+                    },
+                    "source_kind": "signal",
+                    "source_signal_id": "sig_699d16622d304027"
+                  },
+                  "signal_id": "sig_699d16622d304027",
+                  "strategy_id": "long_short_donchian_top5_okx_native",
+                  "symbol": "BTC-USDT-SWAP",
+                  "target_position_id": "tgt_40ce7d76abca4d9a",
+                  "target_quantity": -0.01,
+                  "target_weight": -1.0,
+                  "timestamp_utc": "2026-09-15T00:00:03+00:00"
+                }
+              }
+            },
+            "position_ledger": {
+              "positions": [
+                {
+                  "average_price": "60000",
+                  "contracts": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "leverage": "1",
+                  "liquidation_price": "90000",
+                  "margin_mode": "isolated",
+                  "mark_price": "60000",
+                  "position_side": "short",
+                  "realized_pnl": "0",
+                  "realized_pnl_observed": true,
+                  "unrealized_pnl": "0",
+                  "unrealized_pnl_observed": true,
+                  "updated_at_ms": "1789430403001"
+                }
+              ],
+              "reconciliation_match": true,
+              "signed_contracts": "-0.01"
+            }
+          },
+          "projection_sha256": "6fb82c699acc83858beb492b4cd815cd932aab6f8050d0c727ca57dd4cbaef4b",
+          "raw_payload_sha256": "d5a0172d23560553fea173471d7cec5a3543e84ee463043e12d2963634465d79",
+          "sequence": 30
+        },
+        "order": {
+          "accFillSz": "0.01",
+          "attachAlgoOrds": [
+            {
+              "attachAlgoClOrdId": "btcDPv3donchi0003A",
+              "attachAlgoId": "offline-algo-3",
+              "failCode": "0",
+              "failReason": ""
+            }
+          ],
+          "avgPx": "60000",
+          "clOrdId": "btcDPv3donchi0003",
+          "instId": "BTC-USDT-SWAP",
+          "ordId": "offline-order-3",
+          "ordType": "fok",
+          "posSide": "short",
+          "px": "59970",
+          "side": "sell",
+          "state": "filled",
+          "sz": "0.01",
+          "tag": "btcP0Demo",
+          "tdMode": "isolated"
+        },
+        "order_plan": {
+          "action": "open_short",
+          "client_order_id": "btcDPv3donchi0003",
+          "contracts": "0.01",
+          "position_after_contracts": "-0.01",
+          "position_before_contracts": "0",
+          "reversal_close_only": false,
+          "risk_reducing_only": false
+        },
+        "phase": "reversal_open",
+        "risk_decision": {
+          "approved": true,
+          "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+          "risk_check_id": "risk_9a5ab8c5501441df"
+        },
+        "signal": {
+          "direction": "short",
+          "horizon": "completed_1h_to_4h",
+          "metadata": {
+            "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+            "decision_bar_close_utc": "2024-06-07T23:00:00+00:00",
+            "direction": "short",
+            "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+            "no_future_function": true,
+            "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+            "raw_signal": "-1",
+            "runtime_public_candle_tail": {},
+            "source": "injected_offline_completed_frame",
+            "strategy_id": "long_short_donchian_top5_okx_native",
+            "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+            "target_contracts": "-0.01"
+          },
+          "reason": "frozen_long_short_donchian_top5_completed_bar",
+          "signal_id": "sig_699d16622d304027",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strength": 1.0,
+          "symbol": "BTC-USDT-SWAP",
+          "timestamp_utc": "2026-09-15T00:00:03+00:00"
+        },
+        "stage_sha256": "75216b766f8f6851831a52a87efe93ad5235d6f78bea778c3b53467f5de1ba14",
+        "target_position": {
+          "metadata": {
+            "demo_only": true,
+            "order_generation_allowed": true,
+            "risk": {
+              "cost_model_complete": true,
+              "depth_mapping": {
+                "best_price": "60000",
+                "book_timestamp_ms": "1789430403000",
+                "fully_mapped": true,
+                "impact_bps": "0",
+                "mapped_contracts": "0.01",
+                "requested_contracts": "0.01",
+                "side": "sell",
+                "weighted_average_price": "60000"
+              },
+              "fee_bps": "5",
+              "funding_bps": "1",
+              "impact_bps": "0",
+              "max_net_contracts": "0.01",
+              "max_notional_usdt": "10",
+              "order_contracts": "0.01",
+              "slippage_budget_bps": "5",
+              "spread_bps": "0.01666665277778935184220679816"
+            },
+            "source_kind": "signal",
+            "source_signal_id": "sig_699d16622d304027"
+          },
+          "signal_id": "sig_699d16622d304027",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "symbol": "BTC-USDT-SWAP",
+          "target_position_id": "tgt_40ce7d76abca4d9a",
+          "target_quantity": -0.01,
+          "target_weight": -1.0,
+          "timestamp_utc": "2026-09-15T00:00:03+00:00"
+        }
+      },
+      {
+        "after": {
+          "equity_usdt": "4999.98800000",
+          "fill_count": 4,
+          "position_contracts": "0.00",
+          "submitted_orders": 4
+        },
+        "checkpoint": "exit_short",
+        "completed_bar_close_utc": "2024-10-12T11:00:00+00:00",
+        "evidence": {
+          "code_version": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+          "context_digest": "a837e26fa6963e136bf7e33169a16bce04ed9ad3fa017f933800b5ade27b4ee4",
+          "data_version": "v1-closeout-continuous-ohlcv-v1",
+          "decision_id": "cc86a5a76b399051ad1d10b8d41431e618dc630a741bedfeea3ec355051a9f23",
+          "event_id": "8b09b36a4c2586de229924a5919467576dec66eb7d0428d998914d90c702d5d1",
+          "evidence_kind": "offline_execution",
+          "input_digest": "e4f0a454abc2a57dab35964723b9219bea210cd6c18891ef46c615ab059f8edb",
+          "links": {
+            "action": "close_short",
+            "client_order_id": "btcDPv3donchi0004",
+            "decision_outcome": "order_terminal",
+            "exchange_order_id": "offline-order-4",
+            "fill_ids": [
+              "offline-fill-4"
+            ],
+            "ledger_event_hash": "a4d918b4b86901acdb78ff539c547e042bf6cd88b3358587ff8dd4c73d45d3cb",
+            "ledger_event_id": "ledger:v3donchian01:1788919691c387ff6f6d2f857ca1e19859453404f3154754dee82bd207fdec57:5a2cf52a047172ada2ebbac18702b2366527bd8d31a91bb921d017611cb5d836",
+            "order_intent_id": "oint_672514b0f0dd425a",
+            "risk_check_id": "risk_7f3dada476334a9a",
+            "signal_id": "sig_9e62275466bb48e2",
+            "target_position_id": "tgt_0e066674f5ed4f0e"
+          },
+          "package_digest": "a6d6d1264ccb2810378c05026de8e852be5ceacb64c1e0d4553381e0b7648856",
+          "phase": "exit",
+          "run_id": "v3donchian01",
+          "runtime_observed": false,
+          "schema_version": "strategy_decision_evidence_v2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+        },
+        "fills": [
+          {
+            "client_order_id": "btcDPv3donchi0004",
+            "execution_type": "",
+            "fee": "-0.00300000",
+            "fee_currency": "USDT",
+            "fill_id": "offline-fill-4",
+            "instrument_id": "BTC-USDT-SWAP",
+            "order_id": "offline-order-4",
+            "pnl": "0",
+            "pnl_observed": true,
+            "position_side": "short",
+            "price": "60000",
+            "side": "buy",
+            "size": "0.01",
+            "timestamp_ms": "1789430404001"
+          }
+        ],
+        "ledger": {
+          "event_hash": "a4d918b4b86901acdb78ff539c547e042bf6cd88b3358587ff8dd4c73d45d3cb",
+          "event_id": "ledger:v3donchian01:1788919691c387ff6f6d2f857ca1e19859453404f3154754dee82bd207fdec57:5a2cf52a047172ada2ebbac18702b2366527bd8d31a91bb921d017611cb5d836",
+          "projection": {
+            "cash_ledger": {
+              "available_usdt": "0",
+              "equity_usdt": "4999.98800000",
+              "reconciliation_match": true,
+              "timestamp_ms": "",
+              "unrealized_pnl_observed": true,
+              "unrealized_pnl_usdt": "0"
+            },
+            "fill_ledger": [
+              {
+                "client_order_id": "btcDPv3donchi0001",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-1",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-1",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "buy",
+                "size": "0.01",
+                "timestamp_ms": "1789430400001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0002",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-2",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-2",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "long",
+                "price": "60000",
+                "side": "sell",
+                "size": "0.01",
+                "timestamp_ms": "1789430402001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0003",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-3",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-3",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "short",
+                "price": "60000",
+                "side": "sell",
+                "size": "0.01",
+                "timestamp_ms": "1789430403001"
+              },
+              {
+                "client_order_id": "btcDPv3donchi0004",
+                "execution_type": "",
+                "fee": "-0.00300000",
+                "fee_currency": "USDT",
+                "fill_id": "offline-fill-4",
+                "instrument_id": "BTC-USDT-SWAP",
+                "order_id": "offline-order-4",
+                "pnl": "0",
+                "pnl_observed": true,
+                "position_side": "short",
+                "price": "60000",
+                "side": "buy",
+                "size": "0.01",
+                "timestamp_ms": "1789430404001"
+              }
+            ],
+            "funding_ledger": {
+              "bills": [],
+              "cashflow": "0",
+              "cashflow_reconciled": true,
+              "fixture": false,
+              "observation_count": 0
+            },
+            "order_ledger": {
+              "orders": [
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0001",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-1",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "60030.2",
+                  "reduce_only": false,
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0002",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-2",
+                  "order_type": "ioc",
+                  "pnl": "0",
+                  "position_side": "long",
+                  "price": "59970",
+                  "reduce_only": false,
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0003",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-3",
+                  "order_type": "fok",
+                  "pnl": "0",
+                  "position_side": "short",
+                  "price": "59970",
+                  "reduce_only": false,
+                  "side": "sell",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                },
+                {
+                  "algo_client_order_id": "",
+                  "algo_id": "",
+                  "average_price": "60000",
+                  "client_order_id": "btcDPv3donchi0004",
+                  "created_at_ms": "",
+                  "fee": "0",
+                  "filled_size": "0.01",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "order_id": "offline-order-4",
+                  "order_type": "ioc",
+                  "pnl": "0",
+                  "position_side": "short",
+                  "price": "60030.2",
+                  "reduce_only": false,
+                  "side": "buy",
+                  "size": "0.01",
+                  "state": "filled",
+                  "updated_at_ms": ""
+                }
+              ],
+              "pending_algo_orders": [],
+              "pending_orders": [],
+              "record_type": "exchange_order_snapshot",
+              "terminal_order": {}
+            },
+            "position_ledger": {
+              "positions": [
+                {
+                  "average_price": "60000",
+                  "contracts": "0",
+                  "instrument_id": "BTC-USDT-SWAP",
+                  "leverage": "1",
+                  "liquidation_price": "",
+                  "margin_mode": "isolated",
+                  "mark_price": "60000",
+                  "position_side": "long",
+                  "realized_pnl": "0",
+                  "realized_pnl_observed": true,
+                  "unrealized_pnl": "0",
+                  "unrealized_pnl_observed": true,
+                  "updated_at_ms": "1789430404002"
+                }
+              ],
+              "reconciliation_match": true,
+              "signed_contracts": "0"
+            }
+          },
+          "projection_sha256": "770b94bb081a464d27f49dcc571280c53a9986b7cfdb070a09d37351a62c9803",
+          "raw_payload_sha256": "0cbfef0d93ce2a555ef72e739db5023903fa90d82af129acda4cf62137b68de4",
+          "sequence": 39
+        },
+        "order": {
+          "accFillSz": "0.01",
+          "attachAlgoOrds": [],
+          "avgPx": "60000",
+          "clOrdId": "btcDPv3donchi0004",
+          "instId": "BTC-USDT-SWAP",
+          "ordId": "offline-order-4",
+          "ordType": "ioc",
+          "posSide": "short",
+          "px": "60030.2",
+          "side": "buy",
+          "state": "filled",
+          "sz": "0.01",
+          "tag": "btcP0Demo",
+          "tdMode": "isolated"
+        },
+        "order_plan": {
+          "action": "close_short",
+          "client_order_id": "btcDPv3donchi0004",
+          "contracts": "0.01",
+          "position_after_contracts": "0",
+          "position_before_contracts": "-0.01",
+          "reversal_close_only": false,
+          "risk_reducing_only": true
+        },
+        "phase": "exit",
+        "risk_decision": {
+          "approved": true,
+          "reason": "btc_shared_platform_v3_t5_bound_oms_bundle",
+          "risk_check_id": "risk_7f3dada476334a9a"
+        },
+        "signal": {
+          "direction": "flat",
+          "horizon": "completed_1h_to_4h",
+          "metadata": {
+            "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+            "decision_bar_close_utc": "2024-10-12T11:00:00+00:00",
+            "direction": "flat",
+            "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close",
+            "no_future_function": true,
+            "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+            "raw_signal": "0",
+            "runtime_public_candle_tail": {},
+            "source": "injected_offline_completed_frame",
+            "strategy_id": "long_short_donchian_top5_okx_native",
+            "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+            "target_contracts": "0"
+          },
+          "reason": "frozen_long_short_donchian_top5_completed_bar",
+          "signal_id": "sig_9e62275466bb48e2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "strength": 0.0,
+          "symbol": "BTC-USDT-SWAP",
+          "timestamp_utc": "2026-09-15T00:00:04+00:00"
+        },
+        "stage_sha256": "1028c023555db7db11cc81bcdc9b381a73fd338a0eb7ca92687ebdec83333204",
+        "target_position": {
+          "metadata": {
+            "demo_only": true,
+            "order_generation_allowed": false,
+            "risk": {
+              "cost_model_complete": true,
+              "depth_mapping": {
+                "best_price": "60000.1",
+                "book_timestamp_ms": "1789430404000",
+                "fully_mapped": true,
+                "impact_bps": "0",
+                "mapped_contracts": "0.01",
+                "requested_contracts": "0.01",
+                "side": "buy",
+                "weighted_average_price": "60000.1"
+              },
+              "fee_bps": "5",
+              "funding_bps": "1",
+              "impact_bps": "0",
+              "max_net_contracts": "0.01",
+              "max_notional_usdt": "10",
+              "order_contracts": "0.01",
+              "slippage_budget_bps": "5",
+              "spread_bps": "0.01666665277778935184220679816"
+            },
+            "source_kind": "signal",
+            "source_signal_id": "sig_9e62275466bb48e2"
+          },
+          "signal_id": "sig_9e62275466bb48e2",
+          "strategy_id": "long_short_donchian_top5_okx_native",
+          "symbol": "BTC-USDT-SWAP",
+          "target_position_id": "tgt_0e066674f5ed4f0e",
+          "target_quantity": 0.0,
+          "target_weight": 0.0,
+          "timestamp_utc": "2026-09-15T00:00:04+00:00"
+        }
+      }
+    ],
+    "status": "sealed_offline_summary",
+    "truth_kind": "offline_execution_simulation"
+  }
+}

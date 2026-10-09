@@ -1,0 +1,42 @@
+{
+  "base_commit": "69ef575f709609f36f754f86040822bc6eeca1c6",
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics final review, M1 exact-blob source approval, and integration have not been performed; this producer branch is not released",
+    "owner:runtime_acceptance an intent persisted before an unknown post result remains submit_pending and fail-closed across restart; no blind retry occurs and controlled venue-authoritative resolution remains required before any future runtime use",
+    "owner:future_v1 partial fill, reject, general cancel-response-loss, and conflicting-fill scenarios were not added to this frozen vertical scenario; existing focused OMS regressions remain green",
+    "owner:release readonly frontend association, service publication, and page acceptance were not run; Demo, paper, private, order, live, and promotion remain disabled"
+  ],
+  "consumer_roles": ["integrator", "architect"],
+  "created_at": "2026-09-15T07:24:25Z",
+  "deliverable_commit": "b0defd454919b5eb319ba23d331a226fc822619f",
+  "deliverables": [
+    {"path": "quant_crypto/application/donchian_offline_replay.py", "readiness_class": "quality_checked", "schema_version": "strategy_v1_donchian_offline_replay_v2", "sha256": "b9641675ec1c92e75f5012b4381eecb40ad8d18cf0ead965f151803ec07e438d", "type": "code"},
+    {"path": "quant_shared/strategy_runtime/decision_envelope.py", "readiness_class": "quality_checked", "schema_version": "strategy_decision_evidence_v2_legacy_v1_readable", "sha256": "d3d088ecbd128111d3d8a0fc74278dfa862554575f17e95fe8d4acec2584657f", "type": "schema"},
+    {"path": "tests/contracts/test_strategy_v1_donchian_offline.py", "readiness_class": "quality_checked", "schema_version": "pytest_strategy_v1_closeout_v2", "sha256": "1a896a7cd9decbe06650e010e71977d9b87da3ef94bc9b5265945eb9f262084b", "type": "test_evidence"},
+    {"path": "tests/fixtures/strategy_v1/offline_contract.json", "readiness_class": "quality_checked", "schema_version": "strategy_v1_offline_fixture_v2", "sha256": "a87b25bf8d9476a2a0ac4a41d99c3a013684b65801aa906bf7b579c9ba9c53a7", "type": "test_evidence"},
+    {"path": "docs/architecture/strategy-admission-v1.md", "readiness_class": "quality_checked", "schema_version": "strategy_admission_v1_report_v4", "sha256": "6d66ba8eb73a849e316cc61b50ff0511684ded2147bd5005df8a66b3f274e442", "type": "report"}
+  ],
+  "depends_on": ["published-strategy-v1-closeout-candidate-20260915-69ef575f7", "published-strategy-v0-freeze-20260915-e0b7a08f8"],
+  "domain": "btc",
+  "event_id": "published-strategy-v1-closeout-20260915-b0defd454",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/btc_developer/strategy-v1-closeout-20260915",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "fixed continuous main-sequence probe before closeout adapter corrections", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py -p no:cacheprovider -q (6 passed)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "passed"},
+    {"command": "V0 plus BTC registry/context/composition/risk/portfolio/Guardian/OMS and focused runtime compatibility subset (219 passed)", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "passed"},
+    {"command": "broader V0 command including non-materialized US adoption paths in this sparse worktree (71 passed, 2 missing-dependency failures)", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_m1_btc_behavior_freeze.py::test_m1_history_stays_frozen_with_only_reviewed_post_m1_safety_fixes -p no:cacheprovider -q (expected independent exact-blob approval failure)", "evidence_path": "tests/contracts/test_m1_btc_behavior_freeze.py", "result": "failed"},
+    {"command": "AST compile of three changed Python files and git diff --check on the exact touch set", "evidence_path": "quant_crypto/application/donchian_offline_replay.py", "result": "passed"},
+    {"command": "frontend readonly association, service start, page acceptance, and Demo/paper/private/order/live execution", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "not_run"}
+  ],
+  "ticket_id": "STRATEGY-V1-CLOSEOUT-20260915",
+  "transition_for": ""
+}

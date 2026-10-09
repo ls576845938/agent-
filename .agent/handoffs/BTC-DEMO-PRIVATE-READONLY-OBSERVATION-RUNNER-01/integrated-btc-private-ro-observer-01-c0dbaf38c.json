@@ -1,0 +1,113 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-private-ro-observer-01-c0dbaf38c",
+  "ticket_id": "BTC-DEMO-PRIVATE-READONLY-OBSERVATION-RUNNER-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-private-ro-observer-01-integration",
+  "base_commit": "0f95d2b973fb4a2508a1640ff2056d657375bb65",
+  "deliverable_commit": "c0dbaf38ca49ccf51c1503981c6efa77bf7db158",
+  "created_at": "2026-08-29T17:42:05Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-private-readonly-observation-runner-01-correction-02-b24349260"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-private-readonly-observation-runner-01-correction-02-b24349260",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "type": "code",
+      "schema_version": "btc_demo_private_readonly_observation_runner_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "5c89640e9f89c6d6ca687ccf680dbbddb0aad7c1a26805822d1482ab2864a684"
+    },
+    {
+      "path": "quant_crypto/research/btc_demo_observation_accumulator.py",
+      "type": "code",
+      "schema_version": "btc_demo_observation_accumulator_v3",
+      "readiness_class": "quality_checked",
+      "sha256": "80c7a2936eed53c9166cb59a119db964d5e7c065e94a17254e09047e3d1d6345"
+    },
+    {
+      "path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "type": "code",
+      "schema_version": "btc_demo_private_readonly_observation_cli_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "544ad02f0a689203cd90536059da5ad6171dbb08efdec7cef09ab1126c8372d7"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "type": "test_evidence",
+      "schema_version": "btc_demo_private_readonly_observation_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "08575b4b23646998c53dc457ad1e97231eda5208d9abb5a5a33615b383e9b9a8"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_observation_accumulator.py",
+      "type": "test_evidence",
+      "schema_version": "btc_demo_observation_accumulator_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "b3e61261ae099c7a9863ec5f7cf0db3136678a74b3df82f404b74bbd3f655ae7"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate correction-02 event; verify base -> deliverable -> handoff ancestry, exact seven-path committed touch set, and five Git-object SHA-256 values",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-PRIVATE-READONLY-OBSERVATION-RUNNER-01/published-btc-demo-private-readonly-observation-runner-01-correction-02-b24349260.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent no-ff merge; merge parents are approved main base 0f95d2b973fb and producer handoff ed238d9f1c45",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-PRIVATE-READONLY-OBSERVATION-RUNNER-01",
+      "result": "passed"
+    },
+    {
+      "command": "independent static review: separate CLI, GET/private WS subscribe-read only, exact readonly account permission, no raw account identity, REST/WS reconciliation, hourly fill/funding dedupe, OS lease, atomic state, hash-chain events/receipts, restart recovery, HTTP status enforcement, factual outage count, legacy receipt compatibility, and all write/readiness flags false",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py -q (141 passed in 3.91s)",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile five ticket source/test files; git diff --check 0f95d2b973fb..c0dbaf38ca49",
+      "evidence_path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression",
+      "evidence_path": "integration scope limited to approved offline contract matrix",
+      "result": "not_run"
+    },
+    {
+      "command": "actual credential read, private REST/WS connection, account/order/live endpoints, 25-hour natural observation, backend restart and browser E2E",
+      "evidence_path": "requires separate permission-layer task with private=true and order=false after canonical main integration",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "canonical_main_integration_pending",
+    "backend_restart_required_after_canonical_main_integration",
+    "actual_private_read_observation_requires_separate_private_true_order_false_task",
+    "25_hour_natural_demo_observation_not_started",
+    "promotion_paper_live_order_cancel_real_order_transfer_withdraw_remain_blocked"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

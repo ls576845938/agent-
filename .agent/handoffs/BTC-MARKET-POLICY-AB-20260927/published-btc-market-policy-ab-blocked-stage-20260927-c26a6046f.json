@@ -1,0 +1,77 @@
+{
+  "base_commit": "f2455bfbcafd15404bb4ff98dd6bb925728d0339",
+  "blockers": [
+    "conditioned_arm_blocked_fail_closed_at_event_1956_by_historical_protection_double_touch_ambiguous",
+    "conditioned_terminal_position_short_minus_0_01_contract_preserved_and_reconciled",
+    "complete_ab_effect_unavailable_due_to_incomplete_conditioned_arm",
+    "intrabar_ordering_not_observed_and_must_not_be_inferred",
+    "exact_state_projection_unavailable_across_frozen_python_pandas_environments",
+    "demo_paper_live_promotion_private_order_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-09-27T14:36:00Z",
+  "deliverable_commit": "c26a6046f4a0412281b630b2f31a8ea77504d240",
+  "deliverables": [
+    {
+      "path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_policy_trial_blocked_evidence_manifest_v1",
+      "sha256": "e9cac97788ccff223657174246bfcdd96e8e450683b700fd7a80b34335a1f9af",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-market-policy-ab-blocked-stage-20260927-c26a6046f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-market-policy-ab-evidence-20260927",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "recompute canonical JSON internal hashes and file SHA-256 for two ledger receipts and blocked-stage summary",
+      "evidence_path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "verify 48 consumer_phase/partial projections: metrics null, missing_fields sorted, state_binding_status verified",
+      "evidence_path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "verify baseline and conditioned read-only ledger recover/reconciliation receipts",
+      "evidence_path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "complete conditioned 2960-event arm and full A/B effect estimation",
+      "evidence_path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "result": "not_run"
+    },
+    {
+      "command": "exact-state helper across Python/pandas environments",
+      "evidence_path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-MARKET-POLICY-AB-20260927",
+  "transition_for": ""
+}

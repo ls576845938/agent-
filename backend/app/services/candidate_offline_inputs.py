@@ -4,6 +4,7 @@ import json
 import math
 from pathlib import Path
 import re
+import subprocess
 
 from quant_shared.strategy_delivery.models import DeliveryError, digest, identifier, source_ref, HEAD
 
@@ -68,7 +69,19 @@ class OfflineInputs:
         value = self.catalog()
         return {"revision": self.revision, "sha256": self.checksum,
                 "sources": [{"source_revision_id": r["source_revision_id"], "source": r["source"]} for r in value["sources"]],
-                "inputs": [{k: r[k] for k in ("input_revision_id", "content_digest", "evidence_kind", "input_head")} for r in value["inputs"]]}
+                "inputs": [{**{k: r[k] for k in ("input_revision_id", "content_digest", "evidence_kind", "input_head")},
+                    "input_kind": ("donchian_history" if r.get("schema_version")=="candidate_offline_donchian_history_v1" else "forecast_observations"),
+                    "supported_adapter_ids": (["btc_donchian_history_offline_v1"] if r.get("schema_version")=="candidate_offline_donchian_history_v1"
+                        else ["factory_lgbm_ast_v1"])} for r in value["inputs"]]}
+
+    def ref(self, identity, expected=None):
+        """Return one immutable catalogue row without loading heavyweight payloads."""
+        rows = [row for row in self.catalog()["inputs"] if row["input_revision_id"] == identifier(identity)]
+        if len(rows) != 1: raise DeliveryError("offline_input_revision_unknown", 404)
+        row = dict(rows[0])
+        if expected is not None and row.get("content_digest") != expected:
+            raise DeliveryError("offline_input_revision_mismatch")
+        return row
 
     def load(self, identity, expected):
         import pandas as pd
@@ -78,6 +91,28 @@ class OfflineInputs:
         if len(rows) != 1: raise DeliveryError("offline_input_revision_unknown", 404)
         row = rows[0]
         version = row.get("schema_version", "candidate_offline_input_v1")
+        if version == "candidate_offline_donchian_history_v1":
+            fields={"schema_version","input_revision_id","content_digest","evidence_kind","input_head",
+                "history_spec_git","history_spec_blob_sha256","history_spec_digest"}
+            if (set(row)!=fields or row["content_digest"]!=expected
+                or expected!=digest({k:v for k,v in row.items() if k!="content_digest"})
+                or row["evidence_kind"]!="verified_historical_observations"
+                or not isinstance(row["input_head"],str) or not HEAD.fullmatch(row["input_head"])
+                or not isinstance(row["history_spec_git"],str)
+                or not row["history_spec_git"].startswith(row["input_head"]+":")
+                or any(not isinstance(row[k],str) or re.fullmatch(r"[0-9a-f]{64}",row[k]) is None
+                    for k in ("history_spec_blob_sha256","history_spec_digest"))):
+                raise DeliveryError("offline_donchian_input_revision_mismatch")
+            from quant_crypto.application.donchian_history_spec import HistorySpec
+            from quant_crypto.application.donchian_historical_replay import load_historical_input
+            try:
+                spec=HistorySpec.from_git(self.repo,row["history_spec_git"])
+                if spec.blob_sha256!=row["history_spec_blob_sha256"] or spec.digest!=row["history_spec_digest"]:
+                    raise ValueError("history_spec_digest_mismatch")
+                historical_input=load_historical_input(self.repo,spec=spec)
+            except (OSError,ValueError,subprocess.CalledProcessError) as exc:
+                raise DeliveryError("offline_donchian_input_invalid") from exc
+            return row,{"input_kind":"donchian_history","history_spec":spec,"historical_input":historical_input}
         v1_fields = {"input_revision_id", "content_digest", "evidence_kind", "input_head", "manifest", "bars", "observations"}
         v2_fields = v1_fields | {"schema_version", "dataset_contract", "funding_rate_history"}
         if (set(row) != (v2_fields if version == "candidate_offline_input_v2" else v1_fields)
@@ -165,5 +200,5 @@ class OfflineInputs:
                 known = [fact for fact in history if fact["available_time"] <= decision and fact["event_time"] <= decision]
                 if not known or float(observation.funding_rate) != float(known[-1]["rate"]):
                     raise DeliveryError("offline_funding_rate_not_latest_known")
-        return row, {"bars": bars, "observations": observations, "market_manifest": data["manifest"],
+        return row, {"input_kind":"forecast_observations", "bars": bars, "observations": observations, "market_manifest": data["manifest"],
                      "market_manifest_digest": digest(data["manifest"])}

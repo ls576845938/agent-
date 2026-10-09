@@ -1,0 +1,75 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-v3-final-closeout-candidate-8c1242956",
+  "ticket_id": "V3-FINAL-CLOSEOUT-INTEGRATION-20260920",
+  "event_type": "published",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/v3-final-closeout-integration-20260920",
+  "base_commit": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+  "deliverable_commit": "8c124295616641080265cba603a95a0d5bf6edfc",
+  "created_at": "2026-09-20T13:20:58Z",
+  "expires_at": "",
+  "depends_on": ["v3-donchian-source-correction-e80fe7a79"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/v3-final-closeout-integration-20260920.md",
+      "sha256": "d640697fa3abb020b5cc65d2e958e21933a54f236a66e456e9b9d6101056bb52",
+      "schema_version": "v3_final_closeout_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/v3-final-closeout-integration-20260920.json",
+      "sha256": "77f11d27391ab322d6046dad31caadd2dcffa02186782bca9f092f45a44a4b7b",
+      "schema_version": "v3_final_closeout_integration_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider backend/tests/test_donchian_offline_views.py backend/tests/test_offline_execution_views.py (33 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-integration-20260920.md"
+    },
+    {
+      "command": "node --test frontend/scripts/test-donchian-offline-evidence.mjs frontend/scripts/test-strategy-delivery-map.mjs (6 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-integration-20260920.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint with existing main node_modules typeRoots and baseUrl",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-integration-20260920.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build with existing main node_modules junction (5262 modules)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-integration-20260920.md"
+    },
+    {
+      "command": "canonical current-main browser acceptance and research_readonly service verification",
+      "result": "not_run",
+      "evidence_path": "docs/operations/v3-final-closeout-integration-20260920.json"
+    }
+  ],
+  "blockers": [
+    "main_no_ff_publication_pending",
+    "canonical_research_readonly_service_and_browser_acceptance_pending",
+    "overall_v3_final_decision_pending"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

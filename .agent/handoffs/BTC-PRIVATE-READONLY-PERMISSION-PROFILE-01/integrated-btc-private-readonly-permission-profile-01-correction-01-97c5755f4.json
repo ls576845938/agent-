@@ -1,0 +1,149 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-private-readonly-permission-profile-01-correction-01-97c5755f4",
+  "ticket_id": "BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "btc_developer"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/btc-private-ro-perm-int-01",
+  "base_commit": "7b956be328016daf133c63ebb0a5632b72d8da1a",
+  "deliverable_commit": "97c5755f48ff80c71c1619c3b4a67b650b8f5970",
+  "created_at": "2026-08-30T05:03:15Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-private-readonly-permission-profile-01-correction-01-232f43e46",
+    "rejected-btc-private-readonly-permission-profile-01-cda21a399"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-private-readonly-permission-profile-01-correction-01-232f43e46",
+  "deliverables": [
+    {
+      "path": ".codex/hooks.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "2ac458294a6cf1a2b734bce850fc6ef5711970f116f3d6e36d3eddf006e07afe",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/inject_agent_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "c41706d868810715f74ec6a35b1bc143b3cf3d8de4e6c3ddd6077fdd7be0397b",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "2e5812f6aa81a3431bb451452108b4925c0a7acb6f530050fa153aaf61262908",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "87cfd6711188bedbfbb3e880d6c0cf647822d86e246f42ac8f7478e2e141804c",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_operator_allowed_signers",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "31568b48951716877551b142e62d24623d6c4cc51f14960d16b0a760c6a08f56",
+      "type": "schema"
+    },
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "fae7fe8b89f0ebe46c45ed9016d17de81b175b90729a92290605b56c1b22f918",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "ffa36472dbdd7fc5bebbe39d084b0bec9e42168300f184051693836da588cf0c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_private_readonly_permission_profile.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v2",
+      "sha256": "f85c03c66d36f361d8f274946146e8f8ab12cee63e2077ee5b7b20e5cdcc88e9",
+      "type": "document"
+    }
+  ],
+  "tests": [
+    {
+      "command": "producer correction handoff validation, ancestry, correction touch-set closure, and raw Git-blob SHA-256 verification [observed: valid; 8/8 hashes match]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01/published-btc-private-readonly-permission-profile-01-correction-01-232f43e46.json"
+    },
+    {
+      "command": "independent matcher and active-capability default-deny matrix for Read/MCP/computer-use/WebClient/BITS/certutil/node/native/other-script [observed: matcher=.*; every non-runner denied]",
+      "result": "passed",
+      "evidence_path": ".codex/hooks/pre_tool_guard.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q --basetemp <system-temp>: 30 passed in 76.31s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    },
+    {
+      "command": "ephemeral OpenSSH detached-signature matrix [observed: valid=true; forged/swapped-key/wrong-principal/wrong-namespace/tampered-head/tampered-runner-hash/tampered-TTL all false]",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q --basetemp <system-temp>: 112 passed, 2 failed in 414.05s; failures were 400-ref 4s environment timeout and sparse-missing .githooks/post-checkout",
+      "result": "failed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "isolated rerun tests/agent_governance/test_context_scalability.py::test_discovery_400_refs_uses_fixed_git_batches_and_one_blob_materialization -q: 1 passed in 59.40s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_context_scalability.py"
+    },
+    {
+      "command": "tests/agent_governance/test_disk_guard.py::test_post_checkout_hook_runs_sparse_backstop_before_lfs",
+      "result": "not_run",
+      "evidence_path": ".githooks/post-checkout"
+    },
+    {
+      "command": "py -3 -m py_compile scoped permission, hook, and test files plus git diff --check scoped integration range",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py"
+    },
+    {
+      "command": "private credentials, private/account/order/live endpoints, observer launch, backend restart, and artifact rebuild",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "canonical_main_integration_and_hook_retrust_required",
+    "operator_public_key_not_enrolled_fail_closed_private_false",
+    "external_human_operator_must_prepare_sign_and_install_receipt_outside_codex",
+    "new_observer_task_must_disable_hosted_tools_computer_use_and_existing_write_stdin_at_task_permission_layer",
+    "observer_launch_blocked_until_task_layer_disablement_is_proved",
+    "hooks_are_guardrails_not_os_or_platform_sandbox_under_danger_full_access",
+    "current_head_runtime_artifact_and_canonical_backend_identity_must_be_revalidated_before_observation",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "base_commit": "04e5647dbddd62a0e2b1676096b20ee8396a647e",
+  "blockers": [
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:researcher forward_observation_incomplete",
+    "owner:architect manual_approval_unavailable",
+    "owner:paper_operations paper_runtime_evidence_unavailable",
+    "owner:execution_engineering execution_control_evidence_unavailable",
+    "owner:super_developer current_head_artifact_evidence_unavailable",
+    "owner:super_developer promotion_evidence_incomplete",
+    "owner:architect unclassified_fail_closed_evidence",
+    "owner:paper_runtime pre_existing_durable_path_assertion_drift",
+    "owner:execution_engineering pre_existing_default_template_import_drift",
+    "classification:goal10_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_fail_closed"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "data_steward"
+  ],
+  "created_at": "2026-07-24T14:52:45Z",
+  "deliverable_commit": "487b76febed09d04c0c883141b229a17068e1e15",
+  "deliverables": [
+    {
+      "path": "quant_us/application/us_equity_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_current_head_gate_rebuild_v1",
+      "sha256": "baefb1286b56dec4fe666f6080438dbc137298ca51824bb48fbee08a50ef0851",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_equity_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_current_head_gate_rebuild_cli_v1",
+      "sha256": "6297d33f0cc12cbaaaef5fb5602c8e0177fb6a1af8da588dc4b38c64736e3581",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_current_head_gate_rebuild.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_current_head_gate_rebuild_v1",
+      "sha256": "09cfb1b946a5c0c40a5714601b7526ba9436dcfe379bd3fa438f4e92bda80ceb",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_equity_current_head_blocker_taxonomy.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_current_head_blocker_taxonomy_v1",
+      "sha256": "455e50ec0b6e14159575752395ff8aa173c1556e71a1990a00a59774a6ad6607",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_equity_operator_read_model.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_v1",
+      "sha256": "0d2441790e0dfa32b9b60061d84568c40475fb997d79a3581ce8ab5e82c62cf3",
+      "type": "schema"
+    },
+    {
+      "path": "configs/governance/us_v3_current_head_gate_rebuild_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_head_gate_rebuild_config_v1",
+      "sha256": "7b7eb9c523b7a150455fc33886a0eeb7902495c521a331240e70458835869d98",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b5e3aacb6fed668c28220b2f5e0afcc331f9f8b74dfb21859a14707bbc8b3095",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_head_gate_rebuild_wiring_v1",
+      "sha256": "e9c3f8c4bf40c6e855ae553b146d6712d48727db0ab885311b10062328186ea4",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_head_gate_rebuild_evidence_v1",
+      "sha256": "e7d4aa485d148c2b1394721c2efcd7eb69d669c8ea8ceca61bdf5c2720368ab2",
+      "type": "report"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/manifest.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_head_gate_rebuild_delivery_manifest_v1",
+      "sha256": "e91ce4c68c34eef330d5751f6191ccc578a00c0d47eb2f1c0c05f2cbe5887e9e",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-domain-read-model-01-goal9-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-current-head-gate-rebuild-01-487b76fe",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-current-head-gate-rebuild-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_current_head_gate_rebuild.py tests/contracts/test_us_equity_completion_dependency.py tests/contracts/test_us_equity_next_action_queue.py tests/contracts/test_us_equity_operator_unblock_packet.py tests/contracts/test_us_equity_completion_audit.py tests/contracts/test_us_equity_strategy_production_line.py tests/contracts/test_us_equity_portfolio_promotion.py tests/contracts/test_us_equity_paper_readiness.py tests/contracts/test_us_equity_paper_roll.py tests/contracts/test_us_equity_paper_evaluation.py tests/contracts/test_us_equity_live_readiness.py tests/contracts/test_us_equity_domain_read_model.py tests/contracts/test_us_equity_artifact_schema_coverage.py -q -p no:cacheprovider --basetemp <unique-system-temp> [83 passed]",
+      "evidence_path": "tests/contracts/test_us_equity_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/build_us_equity_current_head_gate_rebuild.py --repo-root . --run-id us-g10-business-74322c6be906 [complete_blocked; 12 current-head outputs; all safety flags false]",
+      "evidence_path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/report.json",
+      "result": "passed"
+    },
+    {
+      "command": "expanded US paper/OMS safety and reconciliation suite excluding two pre-existing collection blockers [135 passed, 1 pre-existing durable-path assertion drift]",
+      "evidence_path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/report.json",
+      "result": "failed"
+    },
+    {
+      "command": "full expanded paper suite collection [not run: pre-existing DEFAULT_TEMPLATE import drift and sparse-checkout quant_crypto registry dependency]",
+      "evidence_path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/report.json",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 tools/agent_governance/team_context.py --repo-root . --role super_developer --format markdown [us_equity freshness=current_head; invalid_handoffs=0]",
+      "evidence_path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/evidence/manifest.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "transition_for": ""
+}

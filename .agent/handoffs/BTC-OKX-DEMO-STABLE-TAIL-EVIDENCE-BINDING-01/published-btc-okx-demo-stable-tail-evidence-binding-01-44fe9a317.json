@@ -1,0 +1,73 @@
+{
+  "base_commit": "7bcdcd93a6ba16577bb69eb839c2a1fef084581c",
+  "blockers": [
+    "owner:main_agent deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:main_agent backend_restart_required_after_fast_forward"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "super_developer"
+  ],
+  "created_at": "2026-07-31T14:24:26Z",
+  "deliverable_commit": "44fe9a3176a61b521c94d735abd7da02c804471b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_v1",
+      "sha256": "c1a9ed57b75bc456ebed2801f651aa9a9c71f9d1c67aa193759d2ab45d4f6b7b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_stable_tail_evidence_binding_contract_v1",
+      "sha256": "2c11924d08c1b5cf49d0c77beb1e913bb8eec0322aab46f502c14d3c569c7350",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-stable-tail-evidence-binding-01-44fe9a317",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-stable-tail-evidence-binding-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k stable_strategy_signal_binds_empty_native_tail_evidence --basetemp C:/tmp/btc-stable-tail-binding-failure-first-02 -p no:cacheprovider -q",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k stable_strategy_signal_binds_empty_native_tail_evidence --basetemp C:/tmp/btc-stable-tail-binding-fixed-01 -p no:cacheprovider -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:/tmp/btc-stable-tail-binding-contracts-01 -p no:cacheprovider -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-STABLE-TAIL-EVIDENCE-BINDING-01",
+  "transition_for": ""
+}

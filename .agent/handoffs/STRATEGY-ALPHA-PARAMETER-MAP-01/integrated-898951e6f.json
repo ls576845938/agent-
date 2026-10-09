@@ -1,0 +1,65 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-alpha-parameter-map-01-898951e6f",
+  "ticket_id": "STRATEGY-ALPHA-PARAMETER-MAP-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-alpha-parameter-map-01-integration",
+  "base_commit": "dbe3cebc4729584dffa0c881052584fe417ad6a2",
+  "deliverable_commit": "898951e6fee5650d8fee3716497e7da64d224ff4",
+  "created_at": "2026-09-08T13:25:10.061Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-alpha-parameter-map-01-98a3be571-corrected"],
+  "supersedes": ["integrated-strategy-alpha-parameter-map-01-1aeff3932"],
+  "transition_for": "published-strategy-alpha-parameter-map-01-98a3be571-corrected",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "d08e4b22adaaca15af0e526296143566ad1d0543f51f1bc51d5bfbd131b5c336",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "9f69ea56ce63fd7dceff51ed00aafe3cbf4badafa2ca5c5a09684cef0db86602",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published-98a3be571-corrected",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-ALPHA-PARAMETER-MAP-01/published-98a3be571-corrected.json"
+    },
+    {
+      "command": "producer node frontend/scripts/test-strategy-parameter-map.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-parameter-map.mjs"
+    },
+    {
+      "command": "canonical 1131x975 three-test browser acceptance after restart",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-alpha-heatmap.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:root main no-ff, canonical restart and 1131x975 browser rerun pending",
+    "invalid published-strategy-alpha-parameter-map-01-98a3be571 intentionally not consumed; producer history remains append-only",
+    "promotion artifact unavailable; source_data_hashes_unavailable; historical sample already used for selection"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

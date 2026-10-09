@@ -1,0 +1,92 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-demo-oms-runtime-hardening-01-goal6-batch-01",
+  "ticket_id": "BTC-V3-DEMO-OMS-RUNTIME-HARDENING-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal6-batch-01",
+  "base_commit": "9f5fb84f77d5e85bef6e94203e186560c19bc78f",
+  "deliverable_commit": "2e2798e21027ce3e5848d84566568d8ff01b4498",
+  "created_at": "2026-07-24T09:08:15Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-demo-oms-runtime-hardening-01-7533afd9"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-demo-oms-runtime-hardening-01-7533afd9",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "b9bfcd3f23244e06e3c73dd058119af20f450fa1529d848c7f40711125ffdc61",
+      "schema_version": "btc_demo_oms_runtime_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/runtime_store.py",
+      "sha256": "2692a447c446d7746c5763878a909ba2249988d7b779460b20cf929ff9fa4eaa",
+      "schema_version": "btc_demo_oms_runtime_store_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "sha256": "f0a6c91decb9dda1f6ddde2368d13d99d494b61f31230536cda19deb052a8b36",
+      "schema_version": "btc_demo_oms_runtime_hardening_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/handoffs/BTC-V3-DEMO-OMS-RUNTIME-HARDENING-01.md",
+      "sha256": "e93e3c7dee86a519bce3a259d3d3b0f3883355824cefa79977232397b6723035",
+      "schema_version": "btc_demo_oms_runtime_hardening_delivery_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed from system TEMP CWD: 15 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_paper_oms_lifecycle.py tests/contracts/test_btc_paper_oms_session_reconciliation.py tests/contracts/test_btc_exchange_runtime_contract.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed from system TEMP CWD: 27 passed]",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-DEMO-OMS-RUNTIME-HARDENING-01.md"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/runtime_store.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_runtime_hardening.py [PYTHONPYCACHEPREFIX=<system-temp>]",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-DEMO-OMS-RUNTIME-HARDENING-01.md"
+    },
+    {
+      "command": "producer handoff validate; source business 7533afd9f2abb7ff0eb095026dbb80da5111ae61; source final/integration deliverable 2e2798e21027ce3e5848d84566568d8ff01b4498; committed-byte SHA-256 and exact touch-set precheck",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-DEMO-OMS-RUNTIME-HARDENING-01/published-btc-v3-demo-oms-runtime-hardening-01-7533afd9.json"
+    }
+  ],
+  "blockers": [
+    "owner:btc_operations actual_demo_private_order_execution_not_authorized",
+    "owner:btc_operations natural_runtime_reconciliation_observation_missing",
+    "owner:btc_operations funding_cashflow_demo_observation_missing",
+    "owner:architect promotion_approval_missing",
+    "classification:goal6_code_integration_blocker=false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

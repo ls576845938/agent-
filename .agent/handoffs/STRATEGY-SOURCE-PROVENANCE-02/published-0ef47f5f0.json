@@ -1,0 +1,108 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-source-provenance-02-0ef47f5f0",
+  "ticket_id": "STRATEGY-SOURCE-PROVENANCE-02",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-source-provenance-02",
+  "base_commit": "bbc39bec1449c5ea6947c200be1541988d34db2c",
+  "deliverable_commit": "0ef47f5f0eb73901e4be971f51769fa820dc9051",
+  "created_at": "2026-09-08T15:19:15.770Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-source-provenance-02-7bf4db75c"
+  ],
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md",
+      "sha256": "c900212dc6b42634bfae68d107d8a059f41b7686f8e01d51c7683d72c3c113ba",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/e2e/strategy-source-provenance.spec.ts",
+      "sha256": "4817abc0ccb2da4274c4a9c8ba04534a3d132512233f0f9ad54d7faf224755fe",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-strategy-history-provenance.mjs",
+      "sha256": "23486f940f78fad1b612cb8cf611a170269e84e2308204fcbdda7ae7b9389829",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "01510f91c75a9c259b7d2f7dc2f75878c47f73941199630636c677d1606399e7",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/strategy-history-provenance.ts",
+      "sha256": "fc5718fe8d145a7ba8b276e01acbbce537e7cf4a893c7b464268d6bb90fc23f4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "9eec311a9ed55eab64183c3b811a16c37020a4ab06ee570df6acadbec628737e",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "cold-load real long source_ref on canonical old CSS; filetab134.234px violates <120px; failure-first",
+      "result": "failed",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    },
+    {
+      "command": "2 corrected rendered-KPI browser tests against canonical3000 passed6.6s",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    },
+    {
+      "command": "node frontend/scripts/test-strategy-history-provenance.mjs and tsc --noEmit",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-history-provenance.mjs"
+    },
+    {
+      "command": "Vite build after scoped CSS correction5225modules13.01s; diff check",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/strategy-workbench.css"
+    },
+    {
+      "command": "final 12 canonical browser tests and narrow/wide actual QA after integration",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:architect and independent integrator consume combined text assertion and scoped narrow-header correction",
+    "owner:root final canonical12browser and narrow/wide QA pending",
+    "historical series/ledger absent; promotion artifact unavailable; all trading permissions false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "transition_for": ""
+}

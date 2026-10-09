@@ -1,0 +1,124 @@
+{
+  "base_commit": "b102078eca7e00443a5bd053b5924852c57a8ec1",
+  "blockers": [
+    "owner:integrator deliverable_not_integrated_to_refs_heads_main",
+    "owner:shared_config_repository_default_btc_api_key_permission_fixture_missing_at_base_head",
+    "btc_runtime_artifacts_not_modified_or_rebuilt_by_api_source_ticket",
+    "btc_current_head_gate_not_rebuilt",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T04:43:11Z",
+  "deliverable_commit": "6a878487f8f21fa249de9b433dd76e9d0881e330",
+  "deliverables": [
+    {
+      "path": "backend/app/api/btc_outbound_path_redaction.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_outbound_path_redaction_v1",
+      "sha256": "5edffcc5b29c17a8846922b8f4cd39daef0721ace3f9c21ed139645ef9d111d7",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_api_v1",
+      "sha256": "a7a98b856fbdeaba9dcaff74bc351dfc4dfe28654bb448730a81ef9c0f868097",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_research_control_center_frontend_v1",
+      "sha256": "9948623294f0d70a80baeb1b2025f5570375cc645d1d17898257dc145257e591",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_outbound_path_redaction.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_outbound_path_redaction_contract_v1",
+      "sha256": "2ed0f15f5d813d5b56f2b3a97b0f262218ed912fdab20fb6a62446246874e29d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_api_contract_v1",
+      "sha256": "50f00aec6157e56c76e03a433ffd045eb64862ca60c147797fb85276996c5984",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_control_center_operator_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_control_center_operator_contract_v1",
+      "sha256": "9e66a5f8888c4e2c6145ff595a92173661b1780a3dbf65c8387417bc4d3b8731",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-backend-physical-path-redaction-01-6a878487",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-backend-physical-path-redaction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_outbound_path_redaction.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_control_center_operator_contract.py -q --basetemp <unique-system-temp>",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "failed"
+    },
+    {
+      "command": "git sparse-checkout add quant_cn quant_us",
+      "evidence_path": "backend/app/api/app_factory.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_outbound_path_redaction.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_control_center_operator_contract.py -q --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_btc_control_center_operator_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_api_key_permission_audit.py -q --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_btc_api_key_permission_audit.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_btc_outbound_path_redaction.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_control_center_operator_contract.py -q --basetemp <unique-system-temp>",
+      "evidence_path": "backend/tests/test_btc_outbound_path_redaction.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q backend/app/api/btc_outbound_path_redaction.py backend/app/api/btc_demo_runtime.py backend/app/api/app_factory.py backend/tests/test_btc_outbound_path_redaction.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_control_center_operator_contract.py",
+      "evidence_path": "backend/app/api/btc_outbound_path_redaction.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check -- <declared-touch-set>",
+      "evidence_path": "backend/app/api/btc_outbound_path_redaction.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-BACKEND-PHYSICAL-PATH-REDACTION-01",
+  "transition_for": ""
+}

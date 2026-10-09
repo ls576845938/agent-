@@ -1,0 +1,95 @@
+{
+  "base_commit": "71942957f9938926fd0d377e59f2a7d1335ca3c1",
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_rebuild_not_required_by_ticket",
+    "no_real_private_order_or_live_endpoint_validation_per_ticket",
+    "all_promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-10T13:37:32Z",
+  "deliverable_commit": "006dbe96a02b2250c7ad76e3ad4906fc8be97efb",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_operating_closure_windows_pid_liveness_v1",
+      "sha256": "2e0ab2e35c2a03a07f1c3dcdd69f795d93b79e6684a6c23c3e24b29d51a6dd1e",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_operating_closure_windows_pid_liveness_tests_v1",
+      "sha256": "643b512b06b78ae343793779ebf8fb5eaed69cc34e21a7ee3f88b0f728a43d7a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-operating-closure-01-006dbe96a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-operating-closure-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-operating-closure-failure-first-before-fix tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'owner_marker_winerror87 or owner_marker_process_lookup_error' --disable-warnings --maxfail=5 [observed: 2 failed, 2 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-operating-closure-failure-first-final tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'owner_marker_winerror87 or owner_marker_process_lookup_error' --disable-warnings --maxfail=1 [observed: 4 passed, 274 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-operating-closure-focused tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fresh_state or owner_marker or restart or recover' --disable-warnings --maxfail=1 [observed: 110 passed, 168 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-operating-closure-full tests/contracts/test_btc_okx_demo_paper_runtime.py --disable-warnings --maxfail=1 [observed: 278 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -c \"import os; import quant_crypto.oms.okx_demo_paper_runtime as m; print(m._canonical_windows_process_liveness(os.getpid()))\" [observed: True]",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -c \"import quant_crypto.oms.okx_demo_paper_runtime as m; print(m._canonical_windows_process_liveness(32532))\" [observed: False]",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-OPERATING-CLOSURE-01",
+  "transition_for": ""
+}

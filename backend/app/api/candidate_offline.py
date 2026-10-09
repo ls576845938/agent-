@@ -1,5 +1,6 @@
 """Opaque-reference offline commands; no HTTP supplied market data or paths."""
 import sqlite3
+from typing import Literal
 from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from pydantic import Field, StrictInt
@@ -15,6 +16,42 @@ class Start(CommandModel):
     expected_revision: StrictInt = Field(ge=1)
     input_revision_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,159}$")
     input_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class CohortMember(CommandModel):
+    registration_id: str = Field(pattern=r"^delivery_[0-9a-f]{32}$")
+    content_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    expected_revision: StrictInt = Field(ge=1)
+    input_revision_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,159}$")
+    input_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    member_max_notional_usdt: str = Field(pattern=r"^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$")
+    member_max_loss_usdt: str = Field(pattern=r"^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$")
+
+
+class CohortProposal(CommandModel):
+    schema_version: Literal["candidate_offline_cohort_proposal_v1"]
+    common_account_ref: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,159}$")
+    members: list[CohortMember] = Field(min_length=2,max_length=2)
+    account_max_notional_usdt: str = Field(pattern=r"^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$")
+    account_max_loss_usdt: str = Field(pattern=r"^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$")
+    reason: str = Field(min_length=1,max_length=500)
+
+
+class CohortReview(CommandModel):
+    schema_version: Literal["candidate_offline_cohort_review_v1"]
+    cohort_binding_id: str = Field(pattern=r"^cbnd_[0-9a-f]{32}$")
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    expected_revision: StrictInt = Field(ge=1)
+    decision: Literal["approve","reject"]
+    reason: str = Field(min_length=1,max_length=500)
+    expires_at: str = Field(min_length=20,max_length=40)
+
+
+class CohortStart(CommandModel):
+    schema_version: Literal["candidate_offline_cohort_start_v1"]
+    cohort_binding_id: str = Field(pattern=r"^cbnd_[0-9a-f]{32}$")
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    expected_revision: StrictInt = Field(ge=2)
 
 
 class Revision(CommandModel):
@@ -64,12 +101,17 @@ def build_candidate_offline_router(service):
         if service is None:
             return {**safety(), "source_implemented": True, "deployed_configured": False,
                     "capability_enabled": False, "offline_commands_enabled": False,
-                    "offline_start_allowed": False, "blockers": ["candidate_offline_not_configured"]}
+                    "offline_start_allowed": False, "blockers": ["candidate_offline_not_configured"],
+                    "cohort_source_supported": True,
+                    "cohort_support_scope":"compatible_exact2_long_hold_reduce_only"}
         return service.capabilities(context if context is not None else key)
 
     @router.get("/catalog")
     def catalog(_=Depends(reader)):
-        return invoke(lambda: {**service.inputs.list(), "publications": service.index.entries(), **safety()})
+        return invoke(lambda: {**service.inputs.list(), "publications": service.index.entries(),
+            "registrations":[row for row in service.delivery.list()
+                if row.get("target")=="offline" and row.get("status")=="registered"],
+            "cohort_bindings":service.cohort_bindings(),**safety()})
 
     @router.post("/publish")
     def publish(body: Publish, credential=Depends(writer), key: str = Header(alias="Idempotency-Key")):
@@ -87,7 +129,8 @@ def build_candidate_offline_router(service):
         return invoke(lambda: service.result(identity, before=before))
 
     @router.post("/jobs", status_code=202)
-    def start(body: Start, credential=Depends(writer), key: str = Header(alias="Idempotency-Key")):
+    def start(body: Start | CohortProposal | CohortReview | CohortStart,
+              credential=Depends(writer), key: str = Header(alias="Idempotency-Key")):
         return invoke(lambda: service.start(body.model_dump(), key=key, credential=credential))
 
     @router.post("/jobs/{identity}/stop")

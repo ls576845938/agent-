@@ -1,0 +1,134 @@
+{
+  "base_commit": "4606f309c5d04aafe78edae89889ad4d936fc774",
+  "blockers": [
+    "owner:architect registered_main_not_yet_fast_forwarded",
+    "owner:architect canonical_current_main_playwright_and_identity_postcheck_pending",
+    "owner:architect canonical_backend_frontend_restart_and_runtime_validation_not_run_by_integrator",
+    "no_secret_or_private_order_live_transfer_withdraw_endpoint_access_performed",
+    "no_promotion_artifact_read_model_manifest_or_ledger_rebuilt"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-17T09:54:50Z",
+  "deliverable_commit": "05a733c3d69bf9da70778c8aaee8210ef0f55f38",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "dd71668c113d6a363c8caa6580828c79fdafc28cb6c5a030b3bc12419f8dce9f",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "266e3a6929d1b8ecac46fcb1a7453f2f088f7640dc117ca45757c486faf91a35",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_source_v1",
+      "sha256": "d98d806001bf68756eebd2b7b14fad561b8aa3e36b6a217b1fb2900304f927bf",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_source_v1",
+      "sha256": "82d44059b2f62de86e345b552a9cfd6f83750c6922e4de547c96973f0309edd4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "459547a18dd3faff6fbcb919d0fa52bcd1f0c3e7e2d847dac9417c53ef5f5034",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "f666adb7323b25aaa0173737151ed9cd1b003e36c6d397487165ad1396dfe9dd",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "SUPERSEDE-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-EVIDENCE-24739FE35"
+  ],
+  "domain": "btc",
+  "event_id": "INTEGRATED-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-05A733C3D",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-demo-liveness-async-recovery-ux-02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "initial targeted pytest with basetemp C:/tmp/pytest-btc-liveness-async-integrator-targeted [invalid test path contained live substring; state-directory guard correctly blocked 4 tests]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k targeted-authoritative-liveness-set --basetemp C:/tmp/qsx02-817a-target [9 passed, 401 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp C:/tmp/qsx02-817a-full [410 passed in 79.10s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "initial npm run lint without sparse-worktree dependencies [tsc command unavailable]",
+      "evidence_path": "frontend/package.json",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint with verified temporary registered-main node_modules junction [tsc --noEmit passed]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build [vite built 5212 modules in 26.46s; existing chunk-size warning only]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --list [22 tests discovered]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check [manifest_match=true, baseline_ancestor=true]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:test [passed, object_targets=4]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 4606f309c5d04aafe78edae89889ad4d936fc774..05a733c3d69bf9da70778c8aaee8210ef0f55f38 -- declared touch set",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02",
+  "transition_for": "SUPERSEDE-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-EVIDENCE-24739FE35"
+}

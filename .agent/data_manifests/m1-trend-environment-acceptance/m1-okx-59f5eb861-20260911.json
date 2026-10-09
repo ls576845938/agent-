@@ -1,0 +1,836 @@
+{
+  "aggregate_sha256": "593eb9f893c280703b26423f00a4eaff62542152110ebff1dd5b5ad69061bcde",
+  "blockers": [],
+  "coverage": {
+    "end": "2026-07-30T00:00:00+00:00",
+    "start": "2025-12-22T01:00:00+00:00"
+  },
+  "data_schema": "m1_research_observation_acceptance_v1",
+  "dataset_id": "m1-trend-environment-acceptance",
+  "dataset_version": "m1-okx-59f5eb861-20260911",
+  "file_count": 160,
+  "files": [
+    {
+      "bytes": 169171,
+      "path": "alpha_factory/m1-okx-factory/events.jsonl",
+      "sha256": "d36877badf4136400047509d1296f392e30f49ef394908b1d26831110398774d"
+    },
+    {
+      "bytes": 127836,
+      "path": "alpha_factory/m1-okx-factory/lineage.json",
+      "sha256": "6d94eef37dd05d166b8d463c57ccbc37b16cfb4503f7a9837215923483f20128"
+    },
+    {
+      "bytes": 1567,
+      "path": "alpha_factory/m1-okx-factory/profile.json",
+      "sha256": "78002eb2af0fa25b73db506e28746ea9b6d15d7aafc794d49b5bb5af468dd44c"
+    },
+    {
+      "bytes": 200,
+      "path": "alpha_factory/m1-okx-factory/request.json",
+      "sha256": "543eef84c8a3d62146d8c5cb22c34e269c033b57d1ae2eb3da814b07c12caf87"
+    },
+    {
+      "bytes": 211488,
+      "path": "alpha_factory/m1-okx-factory/result.json",
+      "sha256": "c08016694275aa859873662eb759ad403fdf0566c7e980bb11312588f5b18534"
+    },
+    {
+      "bytes": 671,
+      "path": "alpha_factory/m1-okx-factory/seal.json",
+      "sha256": "9665329c24e196663d7e4a534d90d9dfed7322108f059a7dafc263b4f00465f6"
+    },
+    {
+      "bytes": 1090,
+      "path": "alpha_factory/m1-okx-factory/state.json",
+      "sha256": "6ee1754f4859070d5057b2d30132d081512ab97dfa229a1570b3197a5cdaced7"
+    },
+    {
+      "bytes": 4376,
+      "path": "alpha_factory/m1-okx-factory/trial_cache.json",
+      "sha256": "11f059a40a248a48a258d1873881f085ffda7e7c91e98e0a97182e63bd53f915"
+    },
+    {
+      "bytes": 938645,
+      "path": "m1_acceptance.json",
+      "sha256": "d7b1278480adae33ff48b8f08c1aa5a2393275a65ab78663e4a81775d12af78b"
+    },
+    {
+      "bytes": 25099,
+      "path": "m1_inventory.json",
+      "sha256": "65433604d9566b7f03d638aba696c8d549e2a94293b9c6f56a6a46a7ac89f63d"
+    },
+    {
+      "bytes": 3960,
+      "path": "projection_metadata.json",
+      "sha256": "4d8fa01dbaa337a2928914cd438885ddfe2c9cd29de21831d31f157410091faa"
+    },
+    {
+      "bytes": 521,
+      "path": "qlib_runs/m1-okx-factory-input/pipeline_result.json",
+      "sha256": "f6b1e03278a407e47ee15d32b1ba6431da5269875f560bcba5a626cdaa5d4eeb"
+    },
+    {
+      "bytes": 977,
+      "path": "qlib_runs/m1-okx-factory-input/provider_manifest.json",
+      "sha256": "8bf2e23b07fb8876760357da45b6ce226a5dcb48296ca268b34d5a113f604287"
+    },
+    {
+      "bytes": 712405,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_input/daily_bars.parquet",
+      "sha256": "1c170ba3d8daa448eb5d185db57dd557ec72da95aa3a4d72bf17540eb10e860b"
+    },
+    {
+      "bytes": 164609,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_input/dataset_manifest.json",
+      "sha256": "fef196f71d049088a9033ff1dbc41845f91bfaf519462d27a518a2cc0f9e029a"
+    },
+    {
+      "bytes": 27219,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_input/funding.parquet",
+      "sha256": "ed4856c11f6c28fa2394aced9a18a24840b99bb298694f101e23eb6e72d58f89"
+    },
+    {
+      "bytes": 410098,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_input/mark.parquet",
+      "sha256": "a6b738eb2b222bb01dd6071175c5d2708b9298ef73fb62fab9ab5af585f121dc"
+    },
+    {
+      "bytes": 400824,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_input/premium.parquet",
+      "sha256": "e4d719c611bf104460f4d2afd5b00892567f13d9d24ac771331e63d332ee4498"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-factory-input/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 1924,
+      "path": "qlib_runs/m1-okx-factory-input/run_seal.json",
+      "sha256": "839938b71e78dd042a2e8afd9129122948bb414848e789fc68d2243fb7e40076"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/factory_config.yaml",
+      "sha256": "870f3877889420415cc7df37558f82d35b1a281376c24580a5edc8e95d38f364"
+    },
+    {
+      "bytes": 132317,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/factory_features.parquet",
+      "sha256": "f4dc0cbdb0204e08e2ecb5e6b726eb121ad849e1050d15f6150066938a7f8e84"
+    },
+    {
+      "bytes": 67202,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/factory_labels.parquet",
+      "sha256": "890d79b3c50dbd992096146965073ea8ae977b2cb3cf3633580eda894bfa43c8"
+    },
+    {
+      "bytes": 1119,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/factory_trial.json",
+      "sha256": "9fde8af7159bb7c9042390b4ae212a8a5c542f860738c1e0af04e50197a1560e"
+    },
+    {
+      "bytes": 8896,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/model.txt",
+      "sha256": "239129f2b2000fb577556c57f4930538b10d19213bdd256cf897275620cec297"
+    },
+    {
+      "bytes": 1231,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/pipeline_result.json",
+      "sha256": "8451ebf8b1e3d4711ba32b3b02af34ad2697fe02d65170f2a5409335b84073d9"
+    },
+    {
+      "bytes": 10715,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/pred_score.parquet",
+      "sha256": "6a2bc83a79c20cbf5d1adda08bafd241e185f88e71149bbea20c5785c41a4df8"
+    },
+    {
+      "bytes": 162,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/provider_manifest.json",
+      "sha256": "42fee184ec4765750669ebe1a1d2774b719a5ae2e554380320292e6049a9f374"
+    },
+    {
+      "bytes": 382,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_backtest_summary.json",
+      "sha256": "cb92f47527b02417cf02fd62db6d9e0cb46d942d710d9bd3c1cdea360c91d5b5"
+    },
+    {
+      "bytes": 163777,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_input/dataset_manifest.json",
+      "sha256": "2bc9cd790c892bd522c41eaa5fbc708e6b0c2ca1e3fd1e7a2aff4c0550b00c52"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 982,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_run_metadata.json",
+      "sha256": "d8a3ac609a6902a3850dbe86057c5292fdccc75f596eddcf083c1bcbc33bc67f"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/qlib_workflow_config.yaml",
+      "sha256": "870f3877889420415cc7df37558f82d35b1a281376c24580a5edc8e95d38f364"
+    },
+    {
+      "bytes": 2319,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/recorder_metrics.json",
+      "sha256": "6fed7c3dbebcc8d90528159e156504450c90b3f7a461a49821822ef44c5f5fe2"
+    },
+    {
+      "bytes": 2802,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/run_seal.json",
+      "sha256": "6db884ada03759cac9424d47d7207127b26cfff8b27166394d4eb4d1e93d7a6f"
+    },
+    {
+      "bytes": 4124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/trend_environment.json",
+      "sha256": "eac18ba1e8a571503935817a2e32efd1e56e29aea502bd2699affa5f7937213f"
+    },
+    {
+      "bytes": 6312552,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/trend_environment_observations.jsonl",
+      "sha256": "03f88796227e1ee18e280219cab6714af1b649f99493db65a2cf6f7512dcd343"
+    },
+    {
+      "bytes": 1695,
+      "path": "qlib_runs/m1-okx-factory-t1-fold1/workflow_run_result.json",
+      "sha256": "978dae37aa3e8a82738bb8f852c3794015c267ea4bc73cf36c88c7fd6d191793"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/factory_config.yaml",
+      "sha256": "c4417f76f44c4ace8f0badff5e3ef3cc67bf6cf8b32a099f52ccf9422dc6a0bd"
+    },
+    {
+      "bytes": 139455,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/factory_features.parquet",
+      "sha256": "2b19d3a74c9ce2c2c022c4c0ec57b5edac8784a741abf2a7af7836fefb13cb22"
+    },
+    {
+      "bytes": 70657,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/factory_labels.parquet",
+      "sha256": "51e06d7cbd20741e1ccd984959453ec2c53b9d4c0ab950961d2413b672aa398b"
+    },
+    {
+      "bytes": 1119,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/factory_trial.json",
+      "sha256": "a977289e0f6063025e766258863f11692f1bd7de53e446b61c143205043913ae"
+    },
+    {
+      "bytes": 6410,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/model.txt",
+      "sha256": "e2f7a3118c87157147974cd422f4ead46cf039d86cc95ffd5accf63786c7d443"
+    },
+    {
+      "bytes": 1231,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/pipeline_result.json",
+      "sha256": "5104dcc3cdd4ec2d3eafe69cc5f81a872bf26c1599a68b31496a6d5f5d364343"
+    },
+    {
+      "bytes": 10702,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/pred_score.parquet",
+      "sha256": "6abea14a056c0e1c3d57287d73752b6b3dfb0b3ea5fe57733c2efaef829e0e56"
+    },
+    {
+      "bytes": 162,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/provider_manifest.json",
+      "sha256": "6a6d3b71625ca48241e9f86a7d2062916523da9734dd5f3d385a7d940b6d58b6"
+    },
+    {
+      "bytes": 382,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_backtest_summary.json",
+      "sha256": "88225ee19746b0cb20ba5802890e8bf14d9a5e715c640b7ee5a7fa48934c5bd9"
+    },
+    {
+      "bytes": 163777,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_input/dataset_manifest.json",
+      "sha256": "44827b5f41488dd3946bb207340f40ce06152138f3a323b6a1c5eaa13c75ce16"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 982,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_run_metadata.json",
+      "sha256": "6cf5700dd9688096a500f0ad46fae413da21b0ccff563a95bd1b9d09977e6cca"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/qlib_workflow_config.yaml",
+      "sha256": "c4417f76f44c4ace8f0badff5e3ef3cc67bf6cf8b32a099f52ccf9422dc6a0bd"
+    },
+    {
+      "bytes": 2319,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/recorder_metrics.json",
+      "sha256": "a2d91d2a5e06f1e0fd27ecbda4e14ab1123e69cb09ce76868f505d40d5a8de0d"
+    },
+    {
+      "bytes": 2802,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/run_seal.json",
+      "sha256": "4ba3edbb4f164f4dffd8dd0179ed43c53062d64094ec2978a5350a16858fa012"
+    },
+    {
+      "bytes": 4124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/trend_environment.json",
+      "sha256": "9be0803c13317aac9b3b6cfb03cbe77bea655fe61fcf1f4e32b05ba0bf0be14d"
+    },
+    {
+      "bytes": 6653937,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/trend_environment_observations.jsonl",
+      "sha256": "70adba833eee0bdf45ee44444277691c39b299c7cbcee45203c0b8782b13142e"
+    },
+    {
+      "bytes": 1695,
+      "path": "qlib_runs/m1-okx-factory-t1-fold2/workflow_run_result.json",
+      "sha256": "f14c26ee40bf746b016710dc59ffb7d1e6a50578455532de14a80a1c7d60925e"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/factory_config.yaml",
+      "sha256": "281bb08ef9232f26480f73c767efcbf03289f0ea614de67a206a263fbe6dc13b"
+    },
+    {
+      "bytes": 146591,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/factory_features.parquet",
+      "sha256": "69651c461d4343691ff33515768f9d7a03c8df61d09061890cba21156d40a220"
+    },
+    {
+      "bytes": 74113,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/factory_labels.parquet",
+      "sha256": "dcce589073edc7f5a4ea5774ed9cb2d724e41f2a49a3b63d10cfbbc2e5bc81bd"
+    },
+    {
+      "bytes": 1119,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/factory_trial.json",
+      "sha256": "6be2d9c31a7c88a9bd27ffda4cb76cb9143af3090d387db4c071000115c069e7"
+    },
+    {
+      "bytes": 7245,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/model.txt",
+      "sha256": "6a87c0fec5cc666fceee10a36006244bc321bc5d2ce2d6ee1ae8adeb82e15f2d"
+    },
+    {
+      "bytes": 1231,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/pipeline_result.json",
+      "sha256": "3a602e3832bdb5c2af84dc84ef678f8bc0002d66173c337cd82ffe8472de4ce7"
+    },
+    {
+      "bytes": 10612,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/pred_score.parquet",
+      "sha256": "229dab2b420ba9cf2661690e909def911d62f313d2807b9e6c7e1204071a2544"
+    },
+    {
+      "bytes": 162,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/provider_manifest.json",
+      "sha256": "904654c10bee8973edd17bae75dfb7a6b7503deb2a47f1e92a00db3ab2099f27"
+    },
+    {
+      "bytes": 382,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_backtest_summary.json",
+      "sha256": "18bdbdb1bc48de1cf0523fd905908f1a9986a4ff2e5867b438078c8fa2d91af3"
+    },
+    {
+      "bytes": 163777,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_input/dataset_manifest.json",
+      "sha256": "c5b47f84ac2c83d3ce989d7e2ba4889d6f6bd5a6668d9c16c2c2052b678fc04e"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 982,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_run_metadata.json",
+      "sha256": "e9c2d320bb33f1e97336c2bdf38824bc2e82731ee17f684e8dcb97fff2c34d1f"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/qlib_workflow_config.yaml",
+      "sha256": "281bb08ef9232f26480f73c767efcbf03289f0ea614de67a206a263fbe6dc13b"
+    },
+    {
+      "bytes": 2319,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/recorder_metrics.json",
+      "sha256": "76b008204ebbe8aa6002a46dfd5416559d7aa41e3786b4a3a03d5d07bf2541ee"
+    },
+    {
+      "bytes": 2802,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/run_seal.json",
+      "sha256": "6c74fc1939711366608a8b0842c5e8c4d393c07bbb350bc3b5b0897be767bcae"
+    },
+    {
+      "bytes": 4124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/trend_environment.json",
+      "sha256": "e9ee8a25c18ceb2ca2189ee857447b27b926bafe9c496e6823cfcf529d115600"
+    },
+    {
+      "bytes": 6995217,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/trend_environment_observations.jsonl",
+      "sha256": "4dff6dedf4a6627185a5a39971a20dc76ce2c9107bed41a0ebd9f7980d3c2818"
+    },
+    {
+      "bytes": 1695,
+      "path": "qlib_runs/m1-okx-factory-t1-fold3/workflow_run_result.json",
+      "sha256": "ca44fb8eb908c6ebbbd3c544af14f0cdbb7e415fa2475a8a0075ad3d9b006f81"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/factory_config.yaml",
+      "sha256": "ebc341774b044f8d2aeea18fa42d786e9aa8e9bf1d3c58ec449f4cfd9aa6a5be"
+    },
+    {
+      "bytes": 154264,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/factory_features.parquet",
+      "sha256": "c01a3c27b9cc4620c34208533f08d34ca2fd333adc6388773a440c3401919c6b"
+    },
+    {
+      "bytes": 78644,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/factory_labels.parquet",
+      "sha256": "3c03291bc9e2a51e0e07adfc72cbb5c9f0aeadec7f480354d6ec8aaa41bc2794"
+    },
+    {
+      "bytes": 1119,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/factory_trial.json",
+      "sha256": "64d9c70e2c188a2286fd0f6281c38f70e07d408f107500679f72032238bc286f"
+    },
+    {
+      "bytes": 3937,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/model.txt",
+      "sha256": "c2db34e71cfa74308de5b4e81cc78fd2cb9b055955dd474b45b7a293473a7aab"
+    },
+    {
+      "bytes": 1231,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/pipeline_result.json",
+      "sha256": "40f06829fe79ed117b6e09c8c2f61657698162b23c26bfd953e8dc864297e323"
+    },
+    {
+      "bytes": 10471,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/pred_score.parquet",
+      "sha256": "5b03f77d2019d4602ea2691d461f43add2e4e2a7eecacae3197f0bc37c7f6d21"
+    },
+    {
+      "bytes": 162,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/provider_manifest.json",
+      "sha256": "8397400f6b9ea5ad961dd7b754cce73da8a48d59a508cbf9927654cdf6c62714"
+    },
+    {
+      "bytes": 382,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_backtest_summary.json",
+      "sha256": "59abd34d240048c7b6397634eb03af1baee3d458b764da01fb3bf1fc6b8296e4"
+    },
+    {
+      "bytes": 163777,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_input/dataset_manifest.json",
+      "sha256": "807695483e9b36a1873577fb133c6a373b48dba4e79a42617dea119c36861237"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 982,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_run_metadata.json",
+      "sha256": "c78d5bbca4a9e7712eba9eb550d9a0a75879bda7d09306d70900f27b68dd2c55"
+    },
+    {
+      "bytes": 2421,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/qlib_workflow_config.yaml",
+      "sha256": "ebc341774b044f8d2aeea18fa42d786e9aa8e9bf1d3c58ec449f4cfd9aa6a5be"
+    },
+    {
+      "bytes": 2319,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/recorder_metrics.json",
+      "sha256": "adcf3d074e66be136aaf82c9dcd614ffbe623731cf6a339abc5f1333e8b25f6b"
+    },
+    {
+      "bytes": 2802,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/run_seal.json",
+      "sha256": "a4eb8be32aad6455f56f220f0ae8e8345b10b386a6c83b7c0209b188c1826be8"
+    },
+    {
+      "bytes": 4124,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/trend_environment.json",
+      "sha256": "25b2381aead8524039ef00c29c9db3b2744174ceb96ef231fec0618f548880bc"
+    },
+    {
+      "bytes": 7335626,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/trend_environment_observations.jsonl",
+      "sha256": "bfebfe49ae7073406fd6a6f0dac83ba887882ce77b0148217fdfc1785014d651"
+    },
+    {
+      "bytes": 1695,
+      "path": "qlib_runs/m1-okx-factory-t1-fold4/workflow_run_result.json",
+      "sha256": "9960440da18e570272ade67e2a92e8f8e8ee75cc20c7258eef70095824e77845"
+    },
+    {
+      "bytes": 4468,
+      "path": "qlib_runs/m1-okx-qlib/imported_recorder_metrics.json",
+      "sha256": "fc14c41688f6b49d1d4200834dd5c20155a1ea9e5ed450b1892a49467d459fa1"
+    },
+    {
+      "bytes": 5332,
+      "path": "qlib_runs/m1-okx-qlib/model.txt",
+      "sha256": "8b44ef4bc97be069c21240cbf70a78b7e2f29fc182b057925328503196e16b74"
+    },
+    {
+      "bytes": 4048,
+      "path": "qlib_runs/m1-okx-qlib/pipeline_result.json",
+      "sha256": "508cebcee092d3427be253bcac070c119afa4497cf30a7772f9f6fb47e07780d"
+    },
+    {
+      "bytes": 21220,
+      "path": "qlib_runs/m1-okx-qlib/pred_score.parquet",
+      "sha256": "c6456f68c35c221d7f3d093723ab92f2cc0d2af34f8bae4544f2d41f296988e5"
+    },
+    {
+      "bytes": 515,
+      "path": "qlib_runs/m1-okx-qlib/pred_score_import_result.json",
+      "sha256": "6d6d4edd978e3164852f14606f725f7203aeb80c81b0cb68a079ace00149fa92"
+    },
+    {
+      "bytes": 932,
+      "path": "qlib_runs/m1-okx-qlib/provider_manifest.json",
+      "sha256": "1af9bf61984fdb79eb590a85e9d749fe29ba20b2e8176490f33ff0e785bfb66c"
+    },
+    {
+      "bytes": 370,
+      "path": "qlib_runs/m1-okx-qlib/qlib_backtest_summary.json",
+      "sha256": "b9565a70f9770bfba8cacdab3c9d17d869774026002b5ba0cd6255c4765d019f"
+    },
+    {
+      "bytes": 712405,
+      "path": "qlib_runs/m1-okx-qlib/qlib_input/daily_bars.parquet",
+      "sha256": "1c170ba3d8daa448eb5d185db57dd557ec72da95aa3a4d72bf17540eb10e860b"
+    },
+    {
+      "bytes": 164546,
+      "path": "qlib_runs/m1-okx-qlib/qlib_input/dataset_manifest.json",
+      "sha256": "b232b282cc3db66ee50df074e94aef34efaeb6e88c3799580ff085a7ebef4075"
+    },
+    {
+      "bytes": 27219,
+      "path": "qlib_runs/m1-okx-qlib/qlib_input/funding.parquet",
+      "sha256": "ed4856c11f6c28fa2394aced9a18a24840b99bb298694f101e23eb6e72d58f89"
+    },
+    {
+      "bytes": 410098,
+      "path": "qlib_runs/m1-okx-qlib/qlib_input/mark.parquet",
+      "sha256": "a6b738eb2b222bb01dd6071175c5d2708b9298ef73fb62fab9ab5af585f121dc"
+    },
+    {
+      "bytes": 400824,
+      "path": "qlib_runs/m1-okx-qlib/qlib_input/premium.parquet",
+      "sha256": "e4d719c611bf104460f4d2afd5b00892567f13d9d24ac771331e63d332ee4498"
+    },
+    {
+      "bytes": 110880,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/calendars/60min.txt",
+      "sha256": "59829ae4d69d8ae19241bf093ee7caaf6928f3ad764ac4e225faa44fb99fa93f"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/close.60min.bin",
+      "sha256": "b2ef4b48b7a73d5ff1cb1a4f7d83a712fdbf097fda9df0695b6b42c3451fbdfc"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/factor.60min.bin",
+      "sha256": "22c865905d3a168b99b7a097a02bc6ccb210608a9df9414eba42325024e66673"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/high.60min.bin",
+      "sha256": "55222096b0e9750d96a92d3b402ad17b52699ba4f653e5348b49c2b0388bc21d"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/low.60min.bin",
+      "sha256": "f75c7595f336efc8434f66d1e0b1988da82181eada1568a20da995ab9c42daf2"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/open.60min.bin",
+      "sha256": "d7b9e140febfe9937a84a11a02060958d2e883528c596c5972b302e950fc3a24"
+    },
+    {
+      "bytes": 21124,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/features/btc-usdt-swap/volume.60min.bin",
+      "sha256": "64418f8de9079dc7b8858e1b153d14f55e1950584afd46eb0cb85a7e76392d80"
+    },
+    {
+      "bytes": 55,
+      "path": "qlib_runs/m1-okx-qlib/qlib_provider/instruments/all.txt",
+      "sha256": "56116760c3783f2765414a0d42d48e83a616eccd850c21a3263e141671c33edb"
+    },
+    {
+      "bytes": 936,
+      "path": "qlib_runs/m1-okx-qlib/qlib_run_metadata.json",
+      "sha256": "a140b54157e072a92043a6a3bc4837d5c26b8910a7a692a24ec5a59a479180b6"
+    },
+    {
+      "bytes": 7129,
+      "path": "qlib_runs/m1-okx-qlib/qlib_strategy_manifest.json",
+      "sha256": "cdcf0791800f44e1df110b37c7edef8fc1c0d3b6aa1686a867dc2d163b9aefeb"
+    },
+    {
+      "bytes": 4307,
+      "path": "qlib_runs/m1-okx-qlib/qlib_workflow_config.yaml",
+      "sha256": "783b91ab84a93cfb95e517d5e5ba713312b2a32d484ab8b38b1bd75a7f71f14f"
+    },
+    {
+      "bytes": 2999,
+      "path": "qlib_runs/m1-okx-qlib/recorder_metrics.json",
+      "sha256": "bc9c469c3f8ede5c6f7932dce2003e0dd885211be50e2aa95becf10d9aa18477"
+    },
+    {
+      "bytes": 11405318,
+      "path": "qlib_runs/m1-okx-qlib/research_decisions.jsonl",
+      "sha256": "c5458e48251e13d24533cc1e0327f8614e770aa0f46bc78ca190ce59ccbe6c11"
+    },
+    {
+      "bytes": 73153,
+      "path": "qlib_runs/m1-okx-qlib/research_ledger.jsonl",
+      "sha256": "e2728b7ec94234df95799ba1d761e42e811ecf240337c92ceeb70b8867805b1d"
+    },
+    {
+      "bytes": 22368,
+      "path": "qlib_runs/m1-okx-qlib/research_model_scores.parquet",
+      "sha256": "61e58f5a7c15f3715d9143b1bea31db4981317eb4c6dea28be7abe5e666a8bef"
+    },
+    {
+      "bytes": 16276,
+      "path": "qlib_runs/m1-okx-qlib/research_trace.json",
+      "sha256": "f058e9dd3b2654c858026e93abb87e04b35b8c6b2cf83d8d089f070c40f8c9bc"
+    },
+    {
+      "bytes": 3628,
+      "path": "qlib_runs/m1-okx-qlib/run_seal.json",
+      "sha256": "bdfc25ea800de2f96fbff21ffd5214ef9345c183943ea0f2bcf46ecea0069202"
+    },
+    {
+      "bytes": 4241,
+      "path": "qlib_runs/m1-okx-qlib/signal_evaluation.json",
+      "sha256": "429c2bf29de214c5e75b0166a2a38d5f67913b7dad7b4b3e66f95a4881118619"
+    },
+    {
+      "bytes": 3896,
+      "path": "qlib_runs/m1-okx-qlib/trend_environment.json",
+      "sha256": "f1ab9ae866823c695faccf8128ca4f13dffa39d86fdb0b84573c73d4f0a4ff8e"
+    },
+    {
+      "bytes": 9244534,
+      "path": "qlib_runs/m1-okx-qlib/trend_environment_observations.jsonl",
+      "sha256": "3054b10c6569b4e6239bf1e07b7ef43817791bda5e0210d43aed83035427be47"
+    },
+    {
+      "bytes": 1596,
+      "path": "qlib_runs/m1-okx-qlib/workflow_run_result.json",
+      "sha256": "df0655a1523937798385103a372abfeda09c50bfdb3d48010db522851e84c6c6"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "historical_reconstructed_availability",
+    "factory_candidate_rejected",
+    "canonical_publication_and_browser_acceptance_pending",
+    "not_execution_evidence"
+  ],
+  "producer_commit": "59f5eb86132fd0e386d1d4e733c9fbc53ff80d7e",
+  "producer_role": "data_steward",
+  "published_at": "2026-09-11T15:17:54Z",
+  "quality_status": "pass_with_research_only_warnings",
+  "readiness_class": "quality_checked",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911",
+  "total_bytes": 56134415
+}

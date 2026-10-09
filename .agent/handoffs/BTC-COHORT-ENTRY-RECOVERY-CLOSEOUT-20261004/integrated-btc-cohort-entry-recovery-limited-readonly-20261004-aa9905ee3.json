@@ -1,0 +1,81 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "current registered Donchian t+1 and Qlib t+2 delayed-open/cost contracts cannot share one common order",
+    "current registered Donchian and Qlib full protection-policy hashes are incompatible",
+    "real common nonzero execution, hosted-protection attribution, and economic recovery remain unsupported",
+    "no eligible real Qlib final package exists and independent effective sample remains below 30",
+    "limited main merge, restart, rollback readiness, and formal research_readonly browser acceptance remain owned by the root task"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-10-04T13:55:04Z",
+  "deliverable_commit": "aa9905ee37f42c5434d7b783fbe7fba2664fdbe1",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/btc-cohort-entry-recovery-independent-final-review-20261004.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_entry_recovery_independent_final_review_v1",
+      "sha256": "1f5729f8e6bdc93344bd1ccd2640f705888e1b1838e9bf646894bb8555cd8571",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-cohort-entry-recovery-seam-correction-20261004-af7d1ba32"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-cohort-entry-recovery-limited-readonly-20261004-aa9905ee3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-entry-recovery-closeout-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "rejected-btc-cohort-final-independent-20261004-a020fd0de"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/integrations/test_btc_cohort_entry_independent_acceptance.py tests/integrations/test_registered_cohort_recovery.py -q --tb=short",
+      "evidence_path": "11 passed in 33.66s",
+      "result": "passed"
+    },
+    {
+      "command": "seven targeted candidate-offline readonly, management, identity, UI, and compatibility contract nodes",
+      "evidence_path": "7 passed in 64.54s; UTF-8 SSR rerun 1 passed in 6.12s",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-unified-candidate-offline.mjs",
+      "evidence_path": "unified candidate offline static contracts: ok",
+      "result": "passed"
+    },
+    {
+      "command": "fixed integration HEAD original five candidate-offline lifecycle nodes",
+      "evidence_path": "D:/codex-test-tmp/btc-cohort-final-long-6d1fd20e/junit.xml; 5 passed, 3 warnings in 1208.16s; SHA256 13638dcdfa06a4ca173895c45c6fb9ceb122c2056623778edf1b528a21464cd2",
+      "result": "passed"
+    },
+    {
+      "command": "actual two-real-member nonzero common-account execution and recovery",
+      "evidence_path": "original execution timing, cost, and protection contracts remain structurally incompatible and are rejected before persistence",
+      "result": "not_run"
+    },
+    {
+      "command": "formal main research_readonly browser acceptance",
+      "evidence_path": "requires authorized main integration and restart; no worktree server was started",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "transition_for": "published-btc-cohort-entry-recovery-seam-correction-20261004-af7d1ba32"
+}

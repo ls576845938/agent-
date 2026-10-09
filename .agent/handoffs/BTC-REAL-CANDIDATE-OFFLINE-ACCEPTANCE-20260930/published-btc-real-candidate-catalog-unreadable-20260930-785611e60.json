@@ -1,0 +1,84 @@
+{
+  "base_commit": "4b6340e15f025b72518575f2a5701f402d44b89d",
+  "blockers": [
+    "owner:integrator independent_review_and_integration_of_commit_785611e60_pending",
+    "owner:architect real_candidate_bounded_fit_and_same_run_page_acceptance_not_completed",
+    "owner:btc_developer formal_48_decision_v2_replay_remains_blocked_at_2026-06-17T11:52:30Z",
+    "owner:security_governance risk_evidence_proof_failure_dimension_remains_unresolved",
+    "catalog_read_failure_normalization_is_quality_checked_only_and_does_not_validate_candidate_effectiveness",
+    "no_candidate_package_approved_no_account_bound_no_candidate_registered_no_offline_job_started",
+    "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-30T12:23:56Z",
+  "deliverable_commit": "785611e60ad4d8cb79836d729ccb12ebdd2cfc49",
+  "deliverables": [
+    {
+      "path": "backend/app/services/candidate_delivery_bootstrap.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_research_catalog_read_v1",
+      "sha256": "bb7098823b4c5a25db877111c06650ffd00eab746ca519ce02433d7711296f25",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_api_contract_v1",
+      "sha256": "f13e8efbc2fd618d0e77b8a7104739735842a40a8d53148fa5cdc8f538d525a5",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-real-candidate-research-catalog-read-20260930-7d99d901",
+    "published-btc-real-candidate-offline-cache-wall-roles-20260930-ff13ccdf",
+    "data_manifest_commit_314c440ac2fc20c958472da14ff68265351ce0b0"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-real-candidate-catalog-unreadable-20260930-785611e60",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-real-candidate-20260930",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-real-candidate-research-catalog-read-20260930-7d99d901"
+  ],
+  "transition_for": "",
+  "tests": [
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/api/test_qlib_pipeline.py::test_unreadable_configured_catalog_is_stable_503[missing] tests/api/test_qlib_pipeline.py::test_catalog_deleted_after_startup_is_stable_503 -q --basetemp D:/codex-test-tmp/candidate-catalog-unreadable-red-0930",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "failed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/api/test_qlib_pipeline.py::test_unreadable_configured_catalog_is_stable_503 tests/api/test_qlib_pipeline.py::test_catalog_deleted_after_startup_is_stable_503 -q --basetemp D:/codex-test-tmp/candidate-catalog-unreadable-green-0930",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/api/test_qlib_pipeline.py::test_qlib_gets_use_validated_external_candidate_catalog tests/api/test_qlib_pipeline.py::test_configured_catalog_tamper_fails_closed_without_legacy_fallback tests/api/test_qlib_pipeline.py::test_invalid_configured_catalog_is_503_not_empty_legacy tests/api/test_qlib_pipeline.py::test_qlib_run_listing_has_market_profiles tests/api/test_qlib_pipeline.py::test_evidence_root_is_server_owned_and_invalid_seal_exposes_no_facts tests/api/test_alpha_factory.py::test_app_factory_reads_alpha_run_from_validated_external_catalog tests/api/test_alpha_factory.py::test_get_is_readonly_and_lists_disabled_markets tests/api/test_alpha_factory.py::test_get_path_escape_and_unknown_run_do_not_create_storage -q --basetemp D:/codex-test-tmp/candidate-catalog-related-final-0930",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python py_compile backend/app/services/candidate_delivery_bootstrap.py tests/api/test_qlib_pipeline.py and git diff --check",
+      "evidence_path": "backend/app/services/candidate_delivery_bootstrap.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930"
+}

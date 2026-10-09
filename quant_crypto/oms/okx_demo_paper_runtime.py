@@ -81,6 +81,11 @@ from quant_crypto.oms.okx_demo_private_ws import (
     _safe_subscription_channels as _safe_probe_channels,
 )
 from quant_crypto.oms.runtime_store import BTCRuntimeStore
+from quant_crypto.oms.strategy_allocations import (
+    StrategyAllocationError,
+    allocate_funding_bill,
+    validate_allocation_conservation,
+)
 from quant_crypto.portfolio.forecast import BTCForecast
 from quant_crypto.runtime.control_plane import (
     BTCExecutionDispatchFacts,
@@ -8301,6 +8306,7 @@ class OkxDemoPaperRuntimeController:
             "position_side",
             "contracts",
             "fact_binding",
+            "offline_residual_revision_sha256",
         }
         intent_fields = {
             "status",
@@ -8309,7 +8315,7 @@ class OkxDemoPaperRuntimeController:
             "order",
             "fact_binding",
         }
-        return {
+        projection = {
             "schema_version": "btc_hosted_protection_facts_v1",
             "snapshot_sha256": canonical_ledger_snapshot_sha256(snapshot),
             "fact_binding": self._hosted_protection_fact_binding(snapshot),
@@ -8337,6 +8343,14 @@ class OkxDemoPaperRuntimeController:
                 if parent_id and isinstance(intents.get(parent_id), Mapping)
             },
         }
+        residual_revision = _mapping(
+            risk.get("offline_residual_protection_revision")
+        )
+        if residual_revision:
+            projection["offline_residual_protection_revision"] = json.loads(
+                json.dumps(residual_revision, default=str)
+            )
+        return projection
 
     def _submit_order_plan(
         self,
@@ -8348,6 +8362,7 @@ class OkxDemoPaperRuntimeController:
         incident_recovery_receipt_sha256: str = "",
         emergency_exit: bool = False,
         sealed_strategy_objects: Mapping[str, Any] | None = None,
+        offline_multi_strategy_context: Any | None = None,
     ) -> dict[str, Any]:
         timestamp = self._clock()
         is_opening = order_plan.get("risk_reducing_only") is not True
@@ -8380,7 +8395,43 @@ class OkxDemoPaperRuntimeController:
         sealed_forecast: BTCForecast | None = None
         sealed_candidate_target: TargetPosition | None = None
         sealed_binding: Mapping[str, Any] = {}
-        if sealed_strategy_objects is None:
+        multi_strategy_context: Any | None = None
+        if offline_multi_strategy_context is not None:
+            if sealed_strategy_objects is not None:
+                raise OkxDemoPaperRuntimeError(
+                    "okx_demo_multi_strategy_context_conflicts_with_sealed_forecast"
+                )
+            if (
+                self.config.offline_completed_frame_provider is None
+                or self.config.credential_service != "quant-system.okx-demo.offline"
+                or isinstance(client, OkxDemoClient)
+            ):
+                raise OkxDemoPaperRuntimeError(
+                    "okx_demo_multi_strategy_context_offline_only"
+                )
+            from quant_crypto.application.btc_multi_strategy_offline import (
+                OfflineMultiStrategyContextError,
+                validate_offline_multi_strategy_context,
+            )
+
+            try:
+                multi_strategy_context = validate_offline_multi_strategy_context(
+                    offline_multi_strategy_context,
+                    run_id=str(self._state["runtime"].get("run_id") or ""),
+                    order_plan=order_plan,
+                    snapshot=snapshot,
+                    maximum_absolute_contracts=configured_max_net,
+                    current_allocation_state=self._state.get(
+                        "strategy_allocations"
+                    ),
+                )
+            except OfflineMultiStrategyContextError as exc:
+                raise OkxDemoPaperRuntimeError(str(exc)) from exc
+            signal = multi_strategy_context.signal
+            target = multi_strategy_context.execution_target
+            intent = multi_strategy_context.intent
+            sealed_binding = multi_strategy_context.binding
+        elif sealed_strategy_objects is None:
             direction = SignalDirection.LONG if decision["direction"] == "long" else SignalDirection.SHORT if decision["direction"] == "short" else SignalDirection.FLAT
             signal = Signal(
                 timestamp_utc=timestamp,
@@ -8958,6 +9009,31 @@ class OkxDemoPaperRuntimeController:
                 entry_fill_classification = "zero_fill"
         else:
             raise OkxDemoPaperRuntimeError("okx_demo_paper_order_terminal_state_missing")
+        multi_strategy_allocation: dict[str, Any] = {}
+        residual_protection_revision: dict[str, Any] = {}
+        if multi_strategy_context is not None:
+            try:
+                if (
+                    not is_opening
+                    and Decimal(str(position_after_contracts)) != 0
+                ):
+                    (
+                        multi_strategy_allocation,
+                        residual_protection_revision,
+                    ) = multi_strategy_context.revise_residual_protection(
+                        controller=self,
+                        client=client,
+                        order_id=order_id,
+                        fills=fills,
+                    )
+                else:
+                    multi_strategy_allocation = (
+                        multi_strategy_context.allocation_after_fills(fills)
+                    )
+            except ValueError as exc:
+                raise OkxDemoPaperRuntimeError(
+                    "okx_demo_strategy_allocation_or_protection_failed:" + str(exc)
+                ) from exc
         order_record = {
             "signal": signal.__dict__ | {"direction": signal.direction.value, "timestamp_utc": _iso(signal.timestamp_utc)},
             "forecast": (
@@ -8987,6 +9063,12 @@ class OkxDemoPaperRuntimeController:
             "fills": fills,
             "exchange_hosted_protection": protection_receipt,
         }
+        if residual_protection_revision:
+            order_record["offline_residual_protection_revision"] = (
+                residual_protection_revision
+            )
+        if multi_strategy_context is not None:
+            order_record["strategy_allocation"] = multi_strategy_allocation
         with self._lock:
             self._state["runtime"]["orders_submitted"] += 1
             self._state["runtime"]["fills_observed"] += len(fills)
@@ -10255,6 +10337,37 @@ class OkxDemoPaperRuntimeController:
                 "cashflow_reconciled": True,
                 "fixture": False,
             }
+            allocation_payload: dict[str, Any] = {}
+            order_allocation = _mapping(
+                _mapping(order_record).get("strategy_allocation")
+            )
+            current_allocation = _mapping(
+                self._state.get("strategy_allocations")
+            )
+            if order_allocation or current_allocation:
+                allocation_payload = json.loads(
+                    json.dumps(order_allocation or current_allocation)
+                )
+                try:
+                    for bill in funding_rows:
+                        allocation_payload = allocate_funding_bill(
+                            state=allocation_payload, raw_bill=bill
+                        )
+                    allocation_reconciliation = validate_allocation_conservation(
+                        state=allocation_payload,
+                        account_signed_contracts=_signed_position(positions),
+                    )
+                except StrategyAllocationError as exc:
+                    raise OkxDemoPaperRuntimeError(
+                        "okx_demo_strategy_allocation_reconciliation_failed:"
+                        + str(exc)
+                    ) from exc
+                if allocation_reconciliation["reconciled"] is not True:
+                    raise OkxDemoPaperRuntimeError(
+                        "okx_demo_strategy_allocation_reconciliation_failed:"
+                        + ";".join(allocation_reconciliation["blockers"])
+                    )
+                allocation_payload["reconciliation"] = allocation_reconciliation
             account_ledger_replay: dict[str, Any] = {
                 "status": "unknown",
                 "reconciled": False,
@@ -10353,6 +10466,10 @@ class OkxDemoPaperRuntimeController:
             state_after["account_risk_facts"] = json.loads(
                 json.dumps(account_drawdown_fact)
             )
+            if allocation_payload:
+                state_after["strategy_allocations"] = json.loads(
+                    json.dumps(allocation_payload)
+                )
             if account_drawdown_fact.get("risk_eligible") is True:
                 state_after["account_risk_last_valid_fact"] = json.loads(
                     json.dumps(account_drawdown_fact)
@@ -10381,6 +10498,7 @@ class OkxDemoPaperRuntimeController:
             funding=funding_ledger,
             risk_context=risk_context,
             account_drawdown_fact=account_drawdown_fact,
+            allocation_payload=allocation_payload,
             state_after=state_after,
             safety=safety,
         )
@@ -10389,6 +10507,8 @@ class OkxDemoPaperRuntimeController:
             self._state["account_risk_facts"] = account_drawdown_fact
             if account_drawdown_fact.get("risk_eligible") is True:
                 self._state["account_risk_last_valid_fact"] = account_drawdown_fact
+            if allocation_payload:
+                self._state["strategy_allocations"] = allocation_payload
             self._state["events"] = [event, *self._state["events"]][:100]
             self._persist_state()
 
@@ -14600,6 +14720,11 @@ class OkxDemoPaperRuntimeController:
             "reviewed_drawdown_policy",
             self._state["reviewed_drawdown_policy"],
         )
+        previous_allocations = previous.get("strategy_allocations")
+        if isinstance(previous_allocations, Mapping) and previous_allocations:
+            self._state["strategy_allocations"] = json.loads(
+                json.dumps(dict(previous_allocations))
+            )
         self._state["observation"] = previous.get(
             "observation",
             self._state["observation"],

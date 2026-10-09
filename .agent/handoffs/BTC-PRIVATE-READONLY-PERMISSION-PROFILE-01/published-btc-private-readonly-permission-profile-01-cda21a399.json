@@ -1,0 +1,101 @@
+{
+  "base_commit": "7b956be328016daf133c63ebb0a5632b72d8da1a",
+  "blockers": [
+    "independent_integrator_required_for_governance_control",
+    "canonical_main_integration_and_hook_retrust_required",
+    "human_operator_must_issue_short_lived_receipt_outside_codex_for_new_session",
+    "private_endpoint_remains_disallowed_until_post_integration_receipt_activation",
+    "promotion_paper_live_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-30T04:06:42Z",
+  "deliverable_commit": "cda21a399f9f3d03a1d914148de3a55defe5bf53",
+  "deliverables": [
+    {
+      "path": ".codex/hooks/inject_agent_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v1",
+      "sha256": "c41706d868810715f74ec6a35b1bc143b3cf3d8de4e6c3ddd6077fdd7be0397b",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v1",
+      "sha256": "6beb27c85eaf4798a9d49825860f12f16cd03337323d07a0e15380bee0f09e9a",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v1",
+      "sha256": "acbf431814ada1c756265f475f021ada94edb79c213e9a078d5971e9f7da1622",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v1",
+      "sha256": "2602f2e01f2f757afebe3bd6492abeabf54450d4c6c9fab42bd14eef7819af44",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_v1",
+      "sha256": "eb296bf224daf9d519bca6a3bcce33f41612e9d5016f15f96e588045008858db",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-btc-private-readonly-permission-profile-01-cda21a399",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-private-readonly-permission-profile-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first pytest tests/agent_governance/test_private_readonly_permission.py confirmed expected ImportError before implementation",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q: 22 passed in 25.54s",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q: 106 passed in 124.01s",
+      "evidence_path": "tests/agent_governance",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile scoped hook, permission, and test files",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- scoped touch set",
+      "evidence_path": ".codex/hooks/pre_tool_guard.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01",
+  "transition_for": ""
+}

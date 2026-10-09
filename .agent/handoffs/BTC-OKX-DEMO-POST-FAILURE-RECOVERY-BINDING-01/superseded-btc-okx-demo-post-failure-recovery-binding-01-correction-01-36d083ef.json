@@ -1,0 +1,83 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "superseded-btc-okx-demo-post-failure-recovery-binding-01-correction-01-36d083ef",
+  "ticket_id": "BTC-OKX-DEMO-POST-FAILURE-RECOVERY-BINDING-01-CORRECTION-01",
+  "event_type": "superseded",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-post-failure-recovery-binding-01",
+  "base_commit": "c98dbe6c4ecb6c64b3b2375f40190916c78afe09",
+  "deliverable_commit": "36d083ef41b0102471fe645adc0466d18293dfbe",
+  "created_at": "2026-08-09T05:09:26Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-btc-okx-demo-post-failure-recovery-binding-01-e7b7051f"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "a5cc8f5d1713c03c5fe37be437f376ac16dca289d325a4c7febe617636074946",
+      "schema_version": "btc_okx_demo_fault_drill_recovery_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "d2ac1a25672c09b94a3e2b140530975284bb204c6b199343cd3446affce6b326",
+      "schema_version": "btc_okx_demo_fault_drill_cli_recovery_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "fd56262a1a520396b1a4ef13941b21c014e38bc33393cc4642e4f0954006fd07",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <unique-system-temp> [307 passed on deliverable HEAD]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py; tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp <unique-system-temp> [55 passed on deliverable HEAD]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py; tests/contracts/test_btc_okx_demo_runtime_hardening.py; tests/contracts/test_btc_okx_demo_execution_watchdog.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py scripts/run_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check",
+      "evidence_path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "offline supplied failed receipt/runtime root canonical load with root=4b4995981bf5470c4ab009aa88b9773b8d48d72c9ec64d2bedccfb0376a85b95, state=9d9f6a282ea7c82d7e356cda569f8675c587bbb1e9a26c966e7e1ecc7a847572, events=97b632008207c878f4c8e6558ca457acb816be40528fd753d8ee4f4b72e7976d",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/immutable-evidence/btc-demo-final-904296e6-20260809T114754189Z-ca903c6d1897-receipts/btc_okx_demo_fault_drill/904296e6a0758a138964f3fb801ceeba8cd9ad7e/post_response_loss/btc-demo-final-904296e6-552d8bc9e038-post-response-loss.json",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "supersedes published-btc-okx-demo-post-failure-recovery-binding-01-e7b7051f",
+    "current_main_not_integrated: deliverable is on producer branch only",
+    "real_demo_recovery_not_run: no endpoint, private WS, order POST, key, or secret access",
+    "promotion_paper_live_unlock_remain_blocked_and_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

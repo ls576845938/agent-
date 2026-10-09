@@ -1,0 +1,81 @@
+{
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "blockers": [
+    "classification:preserved_unintegrated_legacy_contract_requires_separate_btc_ticket",
+    "classification:goal1_integration_blocker=false",
+    "recovery_commit_preserved:0f34fd295b1f381279ee0695d81ca05cd29aac3f",
+    "backtest_and_promotion_gate_blocker:request_data_contract_fail_closed_followup_required",
+    "legacy_recovery_contract_not_approved_goal1_upstream",
+    "paper_live_private_order_broker_withdraw_flags_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-24T03:11:17Z",
+  "deliverable_commit": "1e0da1b26e56c190627307ada1122a40dc48d9d0",
+  "deliverables": [
+    {
+      "path": "docs/handoffs/btc-v3-current-main-successor-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_current_main_successor_report_v1",
+      "sha256": "647cdf92ac6037cfc65aafc02cb421e4e9736df651eb0430b675a71eadf153a5",
+      "type": "document"
+    },
+    {
+      "path": "quant_crypto/application/btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_okx_native_goal1_v1",
+      "sha256": "681d5eefa5b035bdcc69f3c10871df2f8263d858e4658477098180f7e5f6ccb4",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_goal1_contract_v1",
+      "sha256": "2c0e9ff5dc2c054754cb79ab41321e5479d0202850e7924d5856d378e8c70791",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-strategy-registry-dirty-recovery-01-takeover",
+    "published-btc-v3-current-main-successor-01-final-299837ff"
+  ],
+  "domain": "btc",
+  "event_id": "acknowledged-btc-strategy-registry-dirty-recovery-01-legacy-contract-classification",
+  "event_type": "acknowledged",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal1-batch-02-takeover",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pytest current BTC registry direct contracts at integration 1e0da1b26e56c190627307ada1122a40dc48d9d0",
+      "evidence_path": "tests/contracts/test_btc_strategy_registry.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest recovery test blob c52943aca7183ef13f4445ea82f22d1a16d82427 against integration 1e0da1b26e56c190627307ada1122a40dc48d9d0",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-REGISTRY-DIRTY-RECOVERY-01/published-btc-strategy-registry-dirty-recovery-01-takeover.json",
+      "result": "failed"
+    },
+    {
+      "command": "git merge-base --is-ancestor ba418e30116ff3f3a58f9390f9a5b6a6a94fb26a 5ed06e2e7bbb271e92dbe36eff523424528d7c57 and baf9678e4be061f0f059ce3edc9349f44ff918bf both returned non-ancestor",
+      "evidence_path": "docs/handoffs/btc-v3-current-main-successor-01.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-REGISTRY-DIRTY-RECOVERY-01",
+  "transition_for": "published-btc-strategy-registry-dirty-recovery-01-takeover"
+}

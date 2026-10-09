@@ -5,8 +5,8 @@ from copy import deepcopy
 from datetime import timedelta
 import pytest
 
-from quant_shared.strategy_delivery.models import DeliveryError
-from tests.contracts.test_registered_candidate_execution import prepared, cases
+from quant_shared.strategy_delivery.models import DeliveryError, digest
+from tests.contracts.test_registered_candidate_execution import prepared, cases, ROOT
 from quant_crypto.application.btc_registered_candidate import (
     VerifiedRegisteredInputs, verify_registered_candidate_inputs,
     open_btc_registered_candidate_offline)
@@ -17,6 +17,94 @@ def test_review_p1_context_subclass_is_not_an_authority():
         class Forged(VerifiedRegisteredInputs):
             def check(self): return {"forged":True}
             def forecast(self,index): return None
+
+
+@pytest.mark.parametrize("field,value", [
+    ("adapter_id", "factory_lgbm_ast_v1"),
+    ("initial_equity_usdt", 4999),
+    ("currency", "USD"),
+])
+def test_history_account_contract_mismatch_precedes_economic_state(
+    tmp_path, field, value
+):
+    import json
+    from backend.app.services.candidate_delivery_accounts import DeliveryAccounts
+
+    output_root = tmp_path / "economic-history"
+    runtime = {
+        "schema_version": "delivery_offline_runtime_v2",
+        "adapter_id": "btc_donchian_history_offline_v1",
+        "output_root": str(output_root.resolve()),
+        "run_id": "history-account-test",
+        "initial_equity_usdt": 5000,
+        "currency": "USDT",
+        "equity_unit": "USDT",
+    }
+    runtime[field] = value
+    catalog = tmp_path / "catalog" / "accounts.json"
+    catalog.parent.mkdir()
+    catalog.write_text(json.dumps({
+        "schema_version": "delivery_account_catalog_v1",
+        "accounts": [{
+            "account_ref": "history-account-test",
+            "environment": "offline",
+            "revision": 1,
+            "market": "crypto",
+            "instruments": ["BTC-USDT-SWAP"],
+            "currency": "USDT",
+            "expires_at": "2027-01-01T00:00:00+00:00",
+            "simulation_namespace": "history-account-test",
+            "offline_runtime": runtime,
+        }],
+    }), encoding="utf-8")
+    accounts = DeliveryAccounts(catalog, repo_root=ROOT)
+    with pytest.raises(DeliveryError, match="account_catalog_invalid_or_unverified"):
+        accounts.get("history-account-test")
+    assert not output_root.exists()
+
+
+def test_history_input_digest_or_spec_mismatch_precedes_data_load(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import subprocess
+    from backend.app.services.candidate_offline_inputs import OfflineInputs
+    from quant_crypto.application.donchian_history_spec import HistorySpec
+
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    row = {
+        "schema_version": "candidate_offline_donchian_history_v1",
+        "input_revision_id": "invalid-history-input",
+        "evidence_kind": "verified_historical_observations",
+        "input_head": head,
+        "history_spec_git": f"{head}:docs/research/donchian-long-50usdt-20260921.json",
+        "history_spec_blob_sha256": "not-a-hash",
+        "history_spec_digest": "1" * 64,
+    }
+    row["content_digest"] = digest(row)
+    catalog = {
+        "schema_version": "candidate_offline_catalog_v1",
+        "repository_owner": digest({"repository": str(ROOT.resolve())}),
+        "revision": "invalid-history-v1",
+        "factory_root": "factory",
+        "qlib_root": "qlib",
+        "sources": [],
+        "inputs": [row],
+    }
+    path = tmp_path / "offline-catalog.json"
+    raw = json.dumps(catalog, separators=(",", ":")).encode()
+    path.write_bytes(raw)
+    inputs = OfflineInputs(
+        path, hashlib.sha256(raw).hexdigest(), "invalid-history-v1", repo=ROOT
+    )
+    monkeypatch.setattr(
+        HistorySpec,
+        "from_git",
+        classmethod(lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("heavy spec/data load reached")
+        )),
+    )
+    with pytest.raises(DeliveryError, match="offline_donchian_input_revision_mismatch"):
+        inputs.load(row["input_revision_id"], row["content_digest"])
 
 
 @pytest.mark.parametrize("attack",["construct","instance_method","fake_service"])

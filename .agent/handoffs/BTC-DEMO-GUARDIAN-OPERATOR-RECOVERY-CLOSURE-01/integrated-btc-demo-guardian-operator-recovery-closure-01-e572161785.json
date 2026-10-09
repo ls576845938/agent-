@@ -1,0 +1,57 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-guardian-operator-recovery-closure-01-e572161785",
+  "ticket_id": "BTC-DEMO-GUARDIAN-OPERATOR-RECOVERY-CLOSURE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-guardian-op-rec-cl01-int",
+  "base_commit": "635e11e95849322a46f442754fa80358e8cc7056",
+  "deliverable_commit": "e5721617853958fbeb2a595fe19919ce68361c06",
+  "created_at": "2026-08-24T12:47:34Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-guardian-operator-recovery-closure-01-894adc581"],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-guardian-operator-recovery-closure-01-894adc581",
+  "deliverables": [
+    {"type": "code", "path": "backend/app/services/btc_demo_runtime.py", "sha256": "b2f574ce7f343aa8ae2b0460ecb5a1d7f91789b72128e10c76e90daba7a7b9ea", "schema_version": "btc_demo_guardian_operator_runtime_projection_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "backend/tests/test_btc_demo_runtime_service.py", "sha256": "2e0e07bd179381cb75c41b816032d1836b17064f69fd1f5dd18af2cb82aa1f18", "schema_version": "btc_demo_guardian_operator_runtime_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-v2-contract.mjs", "sha256": "007470534de122e260e2fb59754553b1f0a2e17630d5a968e88aba79989cbace", "schema_version": "btc_demo_guardian_operator_client_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "7296881fa6eb9f63e760a1c07f8e3f2a22bd5b665c32d8afcdbe4b6555d604ff", "schema_version": "btc_demo_guardian_operator_ui_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts", "sha256": "e72173d3c8cfa46b778548e0455d4e83c222f45d5b283d4b52c4ea69637a402b", "schema_version": "btc_demo_guardian_operator_contract_client_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-types.ts", "sha256": "f17991e451063836c69cf96c6bda0c2b9e966bd5e920a4c481815bcbf8fe9987", "schema_version": "btc_demo_guardian_operator_types_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_crypto/application/btc_demo_production_composition.py", "sha256": "e3fc6bfe157b9086b5689b5ed57cc36343eb0dbb500aa841c81130514704e6ba", "schema_version": "btc_demo_guardian_recovery_composition_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_crypto/application/btc_operator_contract_v2.py", "sha256": "3d56c2c954376a024d53e40dfe27f5d728549f041653535d22eac9b2fb96c9b3", "schema_version": "btc_demo_guardian_operator_contract_v2", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_crypto/application/runtime_risk_guardian.py", "sha256": "bbebe0f78bf6c420acccc0371ddf5ccaf6397a73f19e06406093ab729de4b24d", "schema_version": "btc_demo_guardian_recovery_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_btc_demo_guardian_operator_recovery.py", "sha256": "c3fd3971066ec68453315b02d21a539374de3dd7945ae6d17a31bef0e7ed4274", "schema_version": "btc_demo_guardian_operator_recovery_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": ".agent/handoffs/BTC-DEMO-GUARDIAN-OPERATOR-RECOVERY-CLOSURE-01/published-btc-demo-guardian-operator-recovery-closure-01-894adc581.json", "sha256": "d8fc823cf191b155790acf6d14b8a0355d9bad0cf0aaf8a88c94763472f8b4a8", "schema_version": "agent_handoff_envelope_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qsxg-cl01-a tests/contracts/test_btc_demo_guardian_operator_recovery.py tests/risk/test_runtime_risk_guardian.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py tests/contracts/test_btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_control_center_operator_contract.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py", "result": "passed", "evidence_path": "248 passed, 1 warning in 31.27s"},
+    {"command": "node frontend/scripts/test-btc-operator-v2-contract.mjs", "result": "passed", "evidence_path": "ok=true; actions=8; contract=btc_demo_operator_contract_v2; read_model=btc_demo_operation_read_model_v2"},
+    {"command": "npm.cmd --prefix frontend run lint", "result": "passed", "evidence_path": "tsc --noEmit passed with temporary registered-main node_modules junction; junction removed"},
+    {"command": "npm.cmd --prefix frontend run build -- --logLevel error", "result": "passed", "evidence_path": "Vite production build passed"},
+    {"command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -c py_compile touched Python files", "result": "passed", "evidence_path": "5 touched Python files compiled to C:\\tmp\\qsxg-cl01-pyc"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "integration worktree"},
+    {"command": "handoff.py validate producer and integrated envelopes; committed ancestry/touch/blob verification", "result": "passed", "evidence_path": "producer event valid; base->deliverable->handoff and non-ff integration parents verified"},
+    {"command": "npm exec -- playwright test frontend/e2e/btc-demo-console.spec.ts", "result": "not_run", "evidence_path": "deferred to registered current-main restart/browser acceptance; no service started by integrator"},
+    {"command": "canonical backend/frontend restart and current-main GET acceptance", "result": "not_run", "evidence_path": "deferred to main session; no service, Demo, credential, private/order/live endpoint used"}
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_and_promotion_remains_blocked",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

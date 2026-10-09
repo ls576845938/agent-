@@ -1,0 +1,78 @@
+{
+  "base_commit": "6376a7b34d82658f5abb27b413f139460f081f80",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:backend_operator backend_restart_required_after_integration",
+    "ticket_contract_no_artifact_built_integrator_handles_post_integration_evidence",
+    "not_promotion_evidence_ready_no_paper_no_private_no_order_no_live"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-06T04:50:05Z",
+  "deliverable_commit": "1ffd2d2d39df83cade474a372afcad48428a6772",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "a3b36cc1d58e2a3d2f6222012d92e2274564d02e0666582abdc27138eb532a1b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "422bb40e77986450da22b7fd54c04b5d71d2a3fc3019720d28cb922e2c29bb63",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-pending-algo-history-query-01-1ffd2d2d3",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-pending-algo-history-query-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first expected rejection: py -3 -c actual OkxDemoClient.private_get orders-algo-history with instId ordType algoId",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest selected incident recovery and adapter allowlist contracts -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_adapter.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-PENDING-ALGO-HISTORY-QUERY-01",
+  "transition_for": ""
+}

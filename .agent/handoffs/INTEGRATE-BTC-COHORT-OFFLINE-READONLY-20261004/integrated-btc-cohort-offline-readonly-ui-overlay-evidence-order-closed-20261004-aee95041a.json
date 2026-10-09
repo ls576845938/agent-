@@ -1,0 +1,68 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "real_Donchian_Qlib_execution_clock_cost_and_protection_policy_incompatible",
+    "real_common_nonzero_execution_protection_attribution_and_economic_recovery_not_run_blocked",
+    "real_Qlib_final_positive_calibration_missing_effective_independent_sample_below_30",
+    "canonical_main_redeployment_and_browser_acceptance_pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-10-04T15:51:31Z",
+  "deliverable_commit": "aee95041acbeb6a8fb24a16e8ce819194761cdd8",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/btc-cohort-offline-readonly-integration-20261004.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_offline_readonly_evidence_v1",
+      "sha256": "86e35e8ba410c1bae662d9c3d973de2fe3375fc004d84711277a80090c6fbdb0",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-cohort-offline-readonly-ui-overlay-governance-review-identity-bound-20261004-cb8af7bc2",
+    "integrated-btc-cohort-offline-readonly-ui-overlay-identity-bound-release-20261004-fad8eb1db",
+    "published-btc-cohort-offline-readonly-ui-overlay-governance-20261004-780f8c23c"
+  ],
+  "domain": "governance",
+  "event_id": "integrated-btc-cohort-offline-readonly-ui-overlay-evidence-order-closed-20261004-aee95041a",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-offline-readonly-delivery-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "integrated-btc-cohort-offline-readonly-ui-overlay-identity-bound-release-20261004-fad8eb1db"
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py --verify-source",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-integration-20261004.md",
+      "result": "passed"
+    },
+    {
+      "command": "frontend identity refresh fad8eb1db41c3fafb40e9213d12a0fd435530699 precedes root governance and integration evidence",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "combined source overlay governance delta and append-only evidence validation",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-integration-20261004.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-COHORT-OFFLINE-READONLY-20261004",
+  "transition_for": "published-btc-cohort-offline-readonly-ui-overlay-governance-20261004-780f8c23c"
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-alpha-read-chain-browser-closure-final-20261002-9a936e619",
+  "ticket_id": "INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-alpha-read-chain-fix-20261002",
+  "base_commit": "576096f625368029c36bfedb68d5c85bc380059f",
+  "deliverable_commit": "9a936e6197c95f60c7d98edab1cad4b7ef2e562d",
+  "created_at": "2026-10-01T17:58:51Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-alpha-read-chain-fix-20261002-052258acc",
+    "integrated-alpha-read-chain-browser-closure-20261002-9a936e619"
+  ],
+  "supersedes": [
+    "integrated-alpha-read-chain-browser-closure-20261002-9a936e619"
+  ],
+  "transition_for": "integrated-alpha-read-chain-browser-closure-20261002-9a936e619",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/alpha-factory.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_v1",
+      "sha256": "49d2328adea3f95c433b844c2935e04f26d13134277e52e7f3f5f91eb1ad6017",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "c2f283ee92c2d2851ee321c639d1593d489396c36dd94a77dee3c6c36ebd1d90",
+      "type": "report"
+    }
+  ],
+  "tests": [
+    {
+      "command": "playwright alpha-factory.spec.ts against registered main 3000",
+      "evidence_path": "9 passed in 39.1s; no worktree server or preview",
+      "result": "passed"
+    },
+    {
+      "command": "registered main F576 canonical identity and one real Alpha browser read",
+      "evidence_path": "overview 4204ms; detail 2803ms; no alert; screenshot SHA256 9A81105FC2F2C6A41EBA45F84AE57EFA0B6604E7DF81FB9292E4CB35D58A5774",
+      "result": "passed"
+    },
+    {
+      "command": "direct backend cold-path timing",
+      "evidence_path": "HTTP 200; overview 17971ms and detail 3476ms; residual cold-start risk remains in blockers",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "fingerprint unchanged 0f756c00ac17dd13563d8362836507d31c4d50526647274a00a6c086ac610e77; manifest match; dirty_paths empty",
+      "result": "passed"
+    },
+    {
+      "command": "scoped git diff --check and safe_status",
+      "evidence_path": "test-only spec and report; production source unchanged",
+      "result": "passed"
+    },
+    {
+      "command": "formal test-package GUI lifecycle and closed-ledger reconciliation",
+      "evidence_path": "must run after architect merges this test-only closure and freezes final main G",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "architect_test_only_merge_and_final_current_main_restart_pending",
+    "formal_test_package_gui_lifecycle_and_closed_ledger_reconciliation_pending",
+    "cold_direct_overview_17971ms_remains_close_to_20s_budget",
+    "real_candidate_v3_research_and_48_hour_business_acceptance_remain_separate_and_incomplete",
+    "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

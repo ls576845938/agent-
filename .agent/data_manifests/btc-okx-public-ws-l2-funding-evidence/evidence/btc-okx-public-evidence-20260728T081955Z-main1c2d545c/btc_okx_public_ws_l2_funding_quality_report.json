@@ -1,0 +1,158 @@
+{
+  "schema_version": "btc_okx_public_ws_l2_funding_quality_report_v1",
+  "ticket_id": "DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-02",
+  "dataset_id": "btc-okx-public-ws-l2-funding-evidence",
+  "dataset_version": "btc-okx-public-evidence-20260728T081955Z-main1c2d545c",
+  "source_head": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "producer_role": "data_steward",
+  "venue": "okx",
+  "instrument_id": "BTC-USDT-SWAP",
+  "timezone": "UTC",
+  "status": "quality_checked_with_blockers",
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false
+  },
+  "batch": {
+    "capture_start": "2026-07-28T08:19:55Z",
+    "capture_end": "2026-07-28T08:25:22Z",
+    "public_only": true,
+    "bounded_batch_complete": true,
+    "natural_30_day_l2_history_complete": false
+  },
+  "runtime_dependency": {
+    "declared_requirement": "websocket-client>=1.8,<2",
+    "isolated_runtime_version": "1.9.0",
+    "wheel": "websocket_client-1.9.0-py3-none-any.whl",
+    "wheel_sha256": "af248a825037ef591efbf6ed20cc5faa03d3b47b9e5a2230a529eeee1c1fc3ef",
+    "global_environment_modified": false,
+    "repository_dependency_files_modified": false
+  },
+  "public_websocket_l2": {
+    "endpoint": "wss://ws.okx.com:8443/ws/v5/public",
+    "channel": "books",
+    "network_called": true,
+    "websocket_client_initialized": true,
+    "status": "partial_connection_failed_before_subscription_ack",
+    "error_type": "ConnectionResetError",
+    "error_code": 10054,
+    "error": "remote_host_forcibly_closed_existing_connection",
+    "dns_resolution_succeeded": true,
+    "tcp_8443_succeeded": true,
+    "connection_count": 0,
+    "message_count": 0,
+    "data_message_count": 0,
+    "book_message_count": 0,
+    "raw_row_count": 0,
+    "raw_messages_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "raw_manifest_sha256": "e081bd951c92a58e826e3a7620e77bc4724ebf56f1cb39a65c31f0679d0bfe48",
+    "exchange_event_time_observed": false,
+    "snapshot_time_observed": false,
+    "available_time_observed": false,
+    "seq_id_observed": false,
+    "prev_seq_id_observed": false,
+    "checksum_observed": false,
+    "two_sided_snapshot_count": 0,
+    "sequence_gap_count": null,
+    "reconnect_count": 0,
+    "observed_history_seconds": 0,
+    "integrity_conclusion": "unverified_no_messages"
+  },
+  "alternate_endpoint_diagnostic": {
+    "endpoint": "wss://wsaws.okx.com:8443/ws/v5/public",
+    "dns_resolution_succeeded": false,
+    "tcp_8443_succeeded": false,
+    "subscription_attempted": false,
+    "reason_not_attempted": "committed_collector_has_no_endpoint_parameter_and_business_code_change_is_out_of_scope"
+  },
+  "normalized_l2_export": {
+    "status": "blocked",
+    "decision": "block_immutable_okx_l2_export_fail_closed",
+    "row_count": 0,
+    "blockers": [
+      "l2_manifest_capture_duration_mismatch:segment-01",
+      "l2_manifest_connection_count_invalid:segment-01",
+      "l2_manifest_capture_errors_present:segment-01",
+      "l2_manifest_connection_gap_contract_invalid:segment-01",
+      "l2_raw_messages_empty:segment-01",
+      "l2_manifest_books_count_mismatch:segment-01",
+      "l2_manifest_monotonic_window_mismatch:segment-01"
+    ]
+  },
+  "funding_history": {
+    "endpoint": "/api/v5/public/funding-rate-history",
+    "status": "verified",
+    "capture_window_days": 1,
+    "start": "2026-07-27T08:00:00Z",
+    "end": "2026-07-28T08:00:00Z",
+    "row_count": 4,
+    "duplicate_source_record_id_count": 0,
+    "max_gap_hours": 8,
+    "sha256": "034b51e1c94a85c9629987e6a30f7f1e488dc3928b8dc3492304773c2809f01e",
+    "pit_required_fields_present": true,
+    "available_time_order_violation_count": 0,
+    "thirty_day_attempt_status": "timed_out_before_complete_bundle",
+    "thirty_day_attempt_timeout_seconds": 184
+  },
+  "server_time": {
+    "endpoint": "/api/v5/public/time",
+    "sample_count": 7,
+    "valid_sample_count": 7,
+    "capture_error_count": 0,
+    "selection_method": "minimum_round_trip_sample",
+    "offset_ms": 4641.123,
+    "round_trip_ms": 1548.698,
+    "max_abs_offset_ms_observed": 4945.719,
+    "threshold_ms": 1000,
+    "verified": false,
+    "blocker": "btc_okx_server_time_offset_exceeds_threshold"
+  },
+  "diagnostic_warnings": [
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only"
+  ],
+  "blockers": [
+    "btc_okx_public_ws_tls_or_runtime_path_connection_reset",
+    "btc_okx_public_ws_endpoint_not_configurable_for_bounded_fallback_probe",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "btc_okx_funding_history_only_1d_in_this_batch",
+    "not_promotion_evidence"
+  ],
+  "next_actions": [
+    {
+      "owner": "btc_developer",
+      "action": "add_a_public_only_allowlisted_ws_endpoint_parameter_or_runtime_fallback_contract_and_preserve_fail_closed_connection_receipts"
+    },
+    {
+      "owner": "data_steward",
+      "action": "rerun_bounded_public_books_capture_after_ws_connectivity_is_restored_then_export_sequence_valid_immutable_l2"
+    },
+    {
+      "owner": "operations",
+      "action": "verify_local_clock_ntp_state_before_any_paper_or_live_consideration"
+    },
+    {
+      "owner": "data_steward",
+      "action": "accumulate_real_l2_segments_over_natural_time_without_claiming_unobserved_30_day_coverage"
+    }
+  ],
+  "guardrails": {
+    "source_bytes_mutated": false,
+    "api_key_used": false,
+    "secret_read": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "paper_queue_write_allowed": false,
+    "position_increase_allowed": false,
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

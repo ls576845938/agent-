@@ -1,0 +1,84 @@
+{
+  "base_commit": "afeca215c55b54b2b7d8e1a28622678df65b2817",
+  "blockers": [
+    "independent_integrator_review_pending",
+    "historical_available_time_reconstructed_at_bar_close_not_original_receipt",
+    "instrument_snapshot_20260730_not_june_pit_effective_evidence",
+    "actual_exchange_funding_settlement_mark_unavailable_sampled_minute_close_policy",
+    "quality_checked_only_not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-29T18:07:27Z",
+  "deliverable_commit": "314c440ac2fc20c958472da14ff68265351ce0b0",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-real-candidate-minute-inputs/btc-real-candidate-1m-20260615T2359Z-20260618T0300Z-f20260929T180247Z-v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "8b8c87ffb4622eaec1536456b7f1975d1fa83768a32c97cdaab036f304ad5299",
+      "type": "data_manifest"
+    },
+    {
+      "path": "scripts/research/prepare_btc_real_candidate_inputs_20260930.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_real_candidate_input_preparer_v1",
+      "sha256": "d77d1d78810ad6527a25ae64f334c9eec8fa4a24ab3d770efbcf9af17cba0406",
+      "type": "code"
+    },
+    {
+      "path": "tests/research/test_prepare_btc_real_candidate_inputs_20260930.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "ee7acacaec6a4eb947638f760b3a04ba0e4f7bd3e7f9f2b8be635d9fa36aaf17",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/btc_real_candidate_inputs_20260930.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_real_candidate_input_spec_v1",
+      "sha256": "06e0ab799edb3132c05f74dec8b950ddc0750bf8e5a3e77ae80f6fe97e20ac89",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "data",
+  "event_id": "published-btc-real-candidate-data-0930-314c440ac",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-real-data-0930",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/research/test_prepare_btc_real_candidate_inputs_20260930.py -q --basetemp <unique-shared-temp>",
+      "evidence_path": "tests/research/test_prepare_btc_real_candidate_inputs_20260930.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/research/prepare_btc_real_candidate_inputs_20260930.py --execute-network <fixed-window-public-only-args>",
+      "evidence_path": ".agent/data_manifests/btc-okx-real-candidate-minute-inputs/btc-real-candidate-1m-20260615T2359Z-20260618T0300Z-f20260929T180247Z-v1.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest-git-spec HEAD:<manifest> --shared-root <shared-data>",
+      "evidence_path": ".agent/data_manifests/btc-okx-real-candidate-minute-inputs/btc-real-candidate-1m-20260615T2359Z-20260618T0300Z-f20260929T180247Z-v1.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-REAL-CANDIDATE-DATA-20260930",
+  "transition_for": ""
+}

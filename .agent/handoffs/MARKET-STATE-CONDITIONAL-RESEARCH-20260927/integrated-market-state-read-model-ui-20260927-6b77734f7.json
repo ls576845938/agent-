@@ -1,0 +1,48 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-market-state-read-model-ui-20260927-6b77734f7",
+  "event_type": "integrated",
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "domain": "shared",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "consumer_roles": ["architect", "integrator", "researcher", "btc_developer"],
+  "base_commit": "45a74ed888645938b1781d5e9f3eff52144eeb49",
+  "deliverable_commit": "6b77734f7c0fa34df7bb5d044b4bd15b665e558f",
+  "depends_on": [
+    "published-market-state-conditional-research-20260927-9c94c31df",
+    "integrated-market-state-shared-and-stage-evidence-20260927-b63cbf2f3"
+  ],
+  "supersedes": [],
+  "transition_for": "published-market-state-conditional-research-20260927-9c94c31df",
+  "created_at": "2026-09-27T03:37:53.051Z",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "deliverables": [
+    {"path": "backend/app/services/donchian_stage_views.py", "type": "code", "schema_version": "donchian_stage_read_model_with_market_state_v1", "readiness_class": "quality_checked", "sha256": "1882b1a1c6e3670865caf9866ddd67fafc24e9c02ce899dc509a56fdda85db6b"},
+    {"path": "backend/tests/test_donchian_stage_views.py", "type": "test_evidence", "schema_version": "pytest_source_v1", "readiness_class": "quality_checked", "sha256": "7552e6257adb56bf42158c790fbac862c83e2fc6e88bf1a90ffd367216e6f7bd"},
+    {"path": "docs/architecture/shared-market-state-v2.md", "type": "document", "schema_version": "shared_market_state_architecture_v1", "readiness_class": "quality_checked", "sha256": "4b0603960268b3433a2bf4fad2f168119632e5d16230db0415bd8589253ab44c"},
+    {"path": "frontend/scripts/test-donchian-stage-evidence.mjs", "type": "test_evidence", "schema_version": "node_test_source_v1", "readiness_class": "quality_checked", "sha256": "c98129f0e8d87157682241e9d0e35f0d7b00648e9eb9fd07256aa7230bb72120"},
+    {"path": "frontend/scripts/test-market-state-evidence.mjs", "type": "test_evidence", "schema_version": "node_test_source_v1", "readiness_class": "quality_checked", "sha256": "1b8344a15ac4148b43597639ec976af5672d33c44c91cf52b86782878e3c97b0"},
+    {"path": "frontend/src/workspaces/research/DonchianStageEvidence.tsx", "type": "code", "schema_version": "donchian_stage_evidence_view_v1", "readiness_class": "quality_checked", "sha256": "858139545be5e61ab3589465faa8ca68d01284503129b3c6238c758f55cf2c94"},
+    {"path": "frontend/src/workspaces/research/MarketStateEvidence.tsx", "type": "code", "schema_version": "market_state_evidence_view_v1", "readiness_class": "quality_checked", "sha256": "6a2e5f3cb6d1f478cef097d568b987bc3e8b2fb587894a87a00091545d4e5ba0"},
+    {"path": "quant_shared/trend_environment/README.md", "type": "document", "schema_version": "shared_market_state_readme_v1", "readiness_class": "quality_checked", "sha256": "31ae28d85d1102e8713c779fd7c083920db30c43f615ba7fe52444f1358061b6"}
+  ],
+  "tests": [
+    {"command": "handoff.py validate; ancestry, exact 8-file delta and declared blob hashes", "result": "passed", "evidence_path": ".agent/handoffs/MARKET-STATE-CONDITIONAL-RESEARCH-20260927/published-market-state-conditional-research-20260927-9c94c31df.json"},
+    {"command": "canonical venv pytest shared state, diagnostic, sidecar and Donchian read-model suite", "result": "passed", "evidence_path": "73 passed in 106.87s; diagnostic test consumed from exact committed producer blob without adding an unapproved file"},
+    {"command": "node --test market-state and Donchian-stage evidence scripts", "result": "passed", "evidence_path": "6 directly affected tests passed in 2068.87ms"},
+    {"command": "producer node suite including legacy trend-environment and TypeScript tsc --noEmit", "result": "passed", "evidence_path": "published producer evidence: 7 frontend tests passed and tsc exit 0; integrator sparse worktree independently ran the 6 affected tests"},
+    {"command": "Python py_compile and git diff --check", "result": "passed", "evidence_path": "exit 0"},
+    {"command": "page preview, service restart, main merge, policy replay, candidate registration, private/order/live access", "result": "not_run", "evidence_path": "outside source-only integration authorization"}
+  ],
+  "blockers": [
+    "owner:btc-consumer the sealed stage view truthfully remains attachment_consumed_by_btc_runtime=false and entry_policy_enabled=false; historical evidence is not rewritten by later code",
+    "owner:research counterfactual_entry_count_only=18 is not an effect estimate; policy A/B has not started",
+    "owner:research 2960 bars and 28 roundtrips remain exploratory partial-window evidence with funding available only as a total",
+    "owner:root source-only candidate is not merged to registered main and no research_readonly service restart or page acceptance was performed",
+    "promotion_paper_live_private_order_real_order_transfer_and_withdraw_permissions_remain_false"
+  ],
+  "guardrails": {"handoff_only": true, "promotion_unlock_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "order_endpoint_allowed": false, "real_order_submitted": false}
+}

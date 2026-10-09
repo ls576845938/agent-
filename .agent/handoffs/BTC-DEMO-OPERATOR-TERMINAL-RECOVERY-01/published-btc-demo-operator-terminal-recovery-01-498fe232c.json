@@ -1,0 +1,143 @@
+{
+  "base_commit": "0b07c62d0c6ee2d61e629baeeeffaca88169b2c7",
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "current_main_browser_verification_deferred_until_integration",
+    "backend_api_contract_test_collection_blocked_by_sparse_quant_cn_baseline",
+    "human_terminal_operation_acknowledgement_required_before_new_preflight",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-25T00:34:25Z",
+  "deliverable_commit": "498fe232ce0202c00d0397b1500adec405d87288",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_recovery_service_v1",
+      "sha256": "a86577f04bdcbe1bf6ae05b438696002eeb6e9a79558a3cede3af776eea6b15b",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_ack_api_v1",
+      "sha256": "fd553f129a4a36803a3402ac542108108fa93db250880d61ba5f0e1fea3a8b3e",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operation_read_model_v2_terminal_ack",
+      "sha256": "283cd2c14befdc17de6eb3267317590442eaf29fe0b50cced356d5404aa64d36",
+      "type": "schema"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_ack_controller_v1",
+      "sha256": "2ed3cb5a243f448985ca53945aae410aeebfc2d3d31d827fcfd8f0e399423156",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_ack_ui_v1",
+      "sha256": "16476c5b57e572d9a99b0978d9a8084cb683e9cfb4c9beef47ad387548cd3546",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_recovery_contract_tests_v1",
+      "sha256": "06b46351b777fa2543fb307eac64381823691532bcfbe08af2eedef2a4c8a720",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_ack_api_tests_v1",
+      "sha256": "fa3a5619c49469282b1335a3dcee2ed41d28ab62c33e6398f1ae3c04127dc0c1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_terminal_ack_frontend_tests_v1",
+      "sha256": "9389f83689c80919ccded2ccdb0a6b7394c70153d3a132d83297cc05377b339f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-operator-terminal-recovery-01-498fe232c",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-operator-terminal-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first: py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q",
+      "evidence_path": "before implementation: 5 failed, 43 passed; missing durable acknowledgement, operation discovery, and safe dispatch blocker projection",
+      "result": "failed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py -q",
+      "evidence_path": "Python 3.11.15: 92 passed in 9.08s",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "evidence_path": "operator contract decoder, terminal acknowledgement payload, rejected-action resolution, and action-scoped single-flight passed",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "evidence_path": "btc_demo_operator_attempt_state_v1 passed",
+      "result": "passed"
+    },
+    {
+      "command": "frontend TypeScript tsc --noEmit using the registered-main dependency runtime through a temporary removed junction",
+      "evidence_path": "tsc completed with no diagnostics; temporary frontend/node_modules junction removed",
+      "result": "passed"
+    },
+    {
+      "command": "Python 3.11 FastAPI TestClient smoke for POST /operator-v2/operations/{operation_id}/acknowledge",
+      "evidence_path": "HTTP 200, exact operation/revision payload forwarded, acknowledged=true",
+      "result": "passed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m py_compile backend/app/services/btc_demo_runtime.py backend/app/api/btc_demo_runtime.py quant_crypto/application/btc_operator_contract_v2.py",
+      "evidence_path": "Python 3.11 py_compile passed",
+      "result": "passed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest backend/tests/test_btc_demo_runtime_api.py::test_operator_terminal_acknowledgement_is_local_guarded_and_forwarded -q",
+      "evidence_path": "sparse baseline collection blocked by ModuleNotFoundError: quant_cn through app_factory; no PYTHONPATH bypass; equivalent isolated router smoke passed",
+      "result": "not_run"
+    },
+    {
+      "command": "current-main backend/frontend restart and browser acknowledgement-to-new-preflight verification",
+      "evidence_path": "deferred until independent integration; producer worktree service was not started",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-RECOVERY-01",
+  "transition_for": ""
+}

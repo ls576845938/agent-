@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-alpha-read-chain-identity-20261002-6ed094291",
+  "ticket_id": "INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-alpha-read-chain-fix-20261002",
+  "base_commit": "a3da539094547842908d19652ef52fc4f809ddcd",
+  "deliverable_commit": "6ed094291d83565c27aac32941c99d8e3eded99f",
+  "created_at": "2026-10-01T18:13:58Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-alpha-read-chain-browser-closure-final-20261002-9a936e619"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-alpha-read-chain-browser-closure-final-20261002-9a936e619",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "a31fde951751f1b6be452a71e8dcdf46f443a4334c1fc4fedb4a27d224064d06",
+      "type": "artifact"
+    },
+    {
+      "path": "docs/acceptance/INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "eee05863b87b2989b310fd3f694ebcfbf7541ae22eeb590258ffdbae59610f18",
+      "type": "report"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "baseline a3da539094547842908d19652ef52fc4f809ddcd; fingerprint b7f5aa813eb44c45a3c96b61fc5f6c8c2381fa7382e115a7fda2c8cbf913164c",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "manifest_match true; baseline_ancestor true; dirty_paths empty",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "exit 0 under normal local permissions",
+      "result": "passed"
+    },
+    {
+      "command": "scoped git diff --check and safe_status",
+      "evidence_path": "derived frontend identity and integration report only; production source unchanged",
+      "result": "passed"
+    },
+    {
+      "command": "final current-main restart and formal system-intake lifecycle",
+      "evidence_path": "must run after architect merges this derived identity commit and freezes final main HEAD",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "architect_identity_merge_and_final_current_main_restart_pending",
+    "formal_test_package_gui_lifecycle_and_closed_ledger_reconciliation_pending",
+    "cold_direct_overview_17971ms_remains_close_to_20s_budget",
+    "real_candidate_v3_research_and_48_hour_business_acceptance_remain_separate_and_incomplete",
+    "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

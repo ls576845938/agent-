@@ -1,0 +1,82 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-gov-handoff-git-latency-budget-02-37c1bb3bc",
+  "ticket_id": "GOV-HANDOFF-GIT-LATENCY-BUDGET-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/gov-handoff-git-latency-budget-02-int",
+  "base_commit": "dd8aa75965973f424915e67dfcd759cbe32dad3b",
+  "deliverable_commit": "37c1bb3bcbab19ea02a5812dbe208dd611b81d50",
+  "created_at": "2026-08-11T19:24:04Z",
+  "expires_at": "",
+  "depends_on": ["gov-handoff-git-latency-budget-02-0024aa05"],
+  "supersedes": [],
+  "transition_for": "gov-handoff-git-latency-budget-02-0024aa05",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "tools/agent_governance/handoff.py",
+      "sha256": "9702967157e2973f3c683adb3cbe04d2d2e83d93726ac2636c81d5304eab8713",
+      "schema_version": "governance_handoff_scan_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_handoff.py",
+      "sha256": "c4fcdaf24fc0cab8b52d51c3fb70efe8a5881fc9588184167d9b98fa47a66309",
+      "schema_version": "governance_handoff_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/gov-handoff-git-latency-budget-02/gov-handoff-git-latency-budget-02-0024aa05.json",
+      "sha256": "03b2b6bcd674d4d18808d5c47af8fdf190282938cdbe9537bb3247a1efa58f9a",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_handoff.py (14 passed in 22.20s)"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_context_scalability.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_context_scalability.py (6 passed in 41.73s; quant_crypto present as read-only sparse dependency)"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input .agent/handoffs/BTC-OKX-DEMO-CANONICAL-RECOVERY-RUN-SCOPING-19/integrated-btc-okx-demo-canonical-recovery-run-scoping-19-4f44768f6.json",
+      "result": "passed",
+      "evidence_path": "ticket19 integrated handoff (returncode 0, 1024.8ms, no handoff_git_timeout:cat-file)"
+    },
+    {
+      "command": "py -3 tools/agent_governance/team_context.py --repo-root . --role integrator --change-risk governance_control --max-chars 4000 --format json",
+      "result": "passed",
+      "evidence_path": "valid JSON; current_head=37c1bb3bcbab19ea02a5812dbe208dd611b81d50; returncode 2 reports 8 existing invalid_handoffs; team_context_unavailable absent; measured prior wall 2859.3ms"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py; git diff dd8aa75965973f424915e67dfcd759cbe32dad3b..HEAD --check",
+      "result": "passed",
+      "evidence_path": "candidate worktree"
+    }
+  ],
+  "blockers": [
+    "team_context_returncode_2_existing_invalid_handoffs_reported:8; discovery remains available and current_head is readable",
+    "promotion_paper_private_order_live_remain_blocked_and_false",
+    "services_endpoints_secrets_and_artifacts_not_used"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,389 @@
+{
+  "base_commit": "8bc235e9f9c5a42bf852ef24a4f89b12b6a1a682",
+  "blockers": [
+    "current_head_gate_artifacts_not_rebuilt_at_deliverable_commit",
+    "data_steward_immutable_kline_publication_missing",
+    "data_steward_real_timestamp_aligned_okx_l2_history_missing",
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_funding_cashflow_and_private_ws_reconciliation_natural_observation_incomplete",
+    "btc_30_60_day_observation_window_incomplete",
+    "architect_manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T11:53:00Z",
+  "deliverable_commit": "8c7763ada76aea8e38743885a4258b369316f366",
+  "deliverables": [
+    {
+      "path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "98d0d9f09fa8454037f31339d48afd7067588fa33c54e4cb16d1e0262d4b1d99",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-DATAREADY-EXPORT-TOOL-AND-SHARED-CONTRACT-CLEANUP-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "96f08ea897c740cc34d8508307f0aa7196d72050dc11a60b728f46e816d2913c",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-ENGINEERING-BLOCKER-CLOSURE-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "df40e63d8006aaf8cb8844f249f5bf4a8030aede15850e04d180608761c83eaa",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-GATE-AGGREGATION-SPARSE-IMPORT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "e65dfdb6be40feb46e84cb18beab96dec1a53d30133b769b985c81f74209e068",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-GATE-SNAPSHOT-WINDOWS-ATOMICITY-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "0664920aa6a47ac6e8fa6b830e67264886ac1b9bb3a7e06538dba535f9eb15e5",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-OKX-L2-HISTORY-PIPELINE-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "0124fbfdeedb41afacb43700a1e3e66398ec62dd0c2df583956ddf47dd9e526b",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-OKX-L2-IMMUTABLE-EXPORT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "7dafa14c998801d1da49147f7c42464136404cd8d05d79a49ab47a38b09abbf5",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-PAPER-READINESS-SCHEMA-DRIFT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "cdc21ecd438b1c4b376ad1f923c91caed0b1ae3894f8ce30465692070e0d098d",
+      "type": "document"
+    },
+    {
+      "path": "quant_crypto/adapters/legacy_quant_us.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "3e8c7c911e071f2dcf9471c490249d288c70d0ec160800019da86ad93130d2da",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "bb580455d846d7f81e77521c83cc21679043bf0a2f9c292ccacbdaea71611a8d",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_gate_snapshot.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "a16d635df276d385a7e0bf309d36c7c9a06da5bd88dad7d5677c839a953267ad",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "3a60c3d3f8181577879ce0615311f9665de9247097a36a3f275a0891d75d7ec2",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/immutable_kline_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "695c0502a5b402d3e0a4f40feaf3a22635cf5ed0b4c0fc2172bcc87c94139e02",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/immutable_okx_l2_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "cfa48d37153f72b48c55c4ac6337ec95a98355e7ed045917488bbabaedac8c1c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/okx_l2_capture_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "0d5b171e481c5168fb14cb4a3c38ee8ca460951e9b72772680c4cc0a12bc24b1",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/lifecycle.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "7eb5c03db0f4e9feb3eb00d4ebf723bb26d2384a43014e2e48c62d817d87c0db",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "2930dcd6364d1da8d7f499f662efb92fde90125756a647b316dbaffc14e7a6f7",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/paper_runtime_replay_session.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "60aaeb982ac8b3509173dd03bfdcf49d4609c7d0fb83b2b6b8b35c4375762ff4",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/venue_rules.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "fb7aaa6715b34713a438d5502ecee120cfe3aeaf1d734ed3635d4b78933c2976",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/portfolio/forecast.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "86ee3cbf448b281c478093762fe8fcd704553c333269b54f9b697653ac21368b",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/portfolio/order_intent.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "d02bc957de4681b5a2fbc641aeb03ee8b7dfd5a701287e91a5ec2ff1f43d4b34",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/shared_boundary_allowlist.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "2fa9e6ea175c6a742f9b000982822f6c8af13201519c0ec8b752732b5cfb7802",
+      "type": "schema"
+    },
+    {
+      "path": "quant_crypto/trading_contracts.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "14a204926b45a8a8f57b2ac2e5e280700f8d6de80a5946c29c420996967efe09",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_kline_dataready_attestation.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "2e328b5045360242b32b2d730ea6bd0313b00fc3a6e295011b406188e8bf22ca",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_okx_l2_dataready_attestation.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "f1318576f2c97da4a59465aabb5c5cc7639ffa3dfa2dda50fa703f91f8877fec",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_paper_readiness_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "02bf658f492367128a5c68f64d04037d4af5566df1ab477f4cb4c814ff05aa01",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/build_btc_completion_evidence.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "aa710bdb327dbdde9f853bc5a209d0eefaa58b8f1db74222c315f026f21f0eed",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "56f02e6c4823c07d0f5572f4523c51cf64a2a1e2ad34842afd682faa5b4bd3d8",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_okx_l2_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "bb3e4ddc391a796c748b1a269fe26710a0374fb1c41aa80ebcf545065caddef7",
+      "type": "code"
+    },
+    {
+      "path": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "ebecd1d9b34c833ac38cb75a75ad02327cf2eb7eec2b090a96befea0da66800d",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_trend_raw_forward_observation_roll.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "26892611f81c0e14fc4c0727469d45f9776d37e8d13c29db91c854c4dba091cd",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_cost_aware_order_intent.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "e17c3ea04b1ffb7f038dcec7ec7a51bbc2a4cef76e1aceb5f4fe41718efef2e4",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "067a4e745d82fb667554705550c534ca2c1ea5eabda1bf3b224aa57e59d8c22a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_execution_quality.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "0f88e904afbb4b865a0255e69efd76415dcf0fbc245a228f4d2be4c7448633db",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_forecast_layer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "e04b1d56f340a549e615ca7d92b309f3aeecb7257cff6f50e88d067fcc8f7623",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_gate_snapshot.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "bef4266126c9fdae89a54fe93f44ebc190635196dbee26052e79db184866cb78",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "c1b60368e53392519aa91598ff65b0d78bf5f78153e12e4dd55d0e96019ea55a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_liquidation_risk.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "2938e18c34a2db64688bb55a039717b254bbc71fa8df68bcf9d04f2ecf031be9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "2b3c3034a29bbcd2b45953564ae1552eb2d766437ddfddee03228860e7bdf052",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_paper_oms_lifecycle.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "095ceddbf95cdcc9389730495366db70e0802cf367b62f3906dc49b8323428b5",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_paper_oms_session_reconciliation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "8a985b0088c0bd66fe5a508eb969f9a521d906c6940aaaba5a70cc225c67a207",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_paper_readiness_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "3f35907639285495bf986b1f30a15b2286b2d7be4058fbc4cff5d911e337444c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_boundary_adoption.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "aeb00264cd0b9f469f6cace45083f1e035e138e0ca7808a4cbc7f061f0317635",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_venue_rules.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "git_blob_sha256_v1",
+      "sha256": "24bc9c7dc6baaf00ca146f3bc17ce86c8cc82990e3e67ba9b837ed2009a8898d",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-current-main-engineering-and-data-export-forwardport-01-63d2bfed"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-current-main-forwardport-successor-01-8c7763ada",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-main-eng-data-export-forwardport-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-v3-current-main-engineering-and-data-export-forwardport-01-63d2bfed"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique> <16 BTC data/lifecycle/risk/OMS/gate/collector modules> -q",
+      "evidence_path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py -q",
+      "evidence_path": "tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "result": "passed"
+    },
+    {
+      "command": "existing L2 capture-quality, replay, and reconnect fixture builder subset",
+      "evidence_path": "tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "latest-artifact report-reader subset in sparse writer worktree",
+      "evidence_path": "artifacts/btc_scalping_readiness/latest",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m compileall -q ticket-owned Python files",
+      "evidence_path": "quant_crypto/data/immutable_okx_l2_export.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --name-only 8bc235e9f9c5a42bf852ef24a4f89b12b6a1a682..8c7763ada76aea8e38743885a4258b369316f366 -- quant_crypto schemas scripts tests/contracts docs/tickets",
+      "evidence_path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01",
+  "transition_for": ""
+}

@@ -1,0 +1,111 @@
+{
+  "base_commit": "a315f1169d9b628e9a4acd70100f188076c32560",
+  "blockers": [
+    "owner:integrator the corrected demo_execution_semantics source candidate requires independent committed-source review and integration; this producer branch is not merged or released",
+    "owner:architecture V3 is not authorized and must be decided only after independent V2 review; no target-position, exit, risk, OMS, fill, ledger or runtime binding exists for the frozen Qlib candidate",
+    "owner:architecture qlib.init changes process-global provider state; V2 is accepted only as an isolated offline process and does not establish a concurrent online predictor",
+    "owner:research the frozen candidate retains negative test IC, zero research fills and no_simulated_fills; deterministic feature and prediction replay is not alpha or promotion evidence",
+    "owner:release service/UI/API, actual account, OKX Demo, private/order/live, promotion publication and main integration were not run and remain disabled",
+    "owner:baseline the inherited M1 static post-M1 file allowlist test fails on the reviewed V1 base; expected values were not changed and the failure remains outside this ticket"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-09-15T13:35:26Z",
+  "deliverable_commit": "c8a8c8d7d063d53ba81cf210f17a32ed43de633f",
+  "deliverables": [
+    {
+      "path": "integrations/qlib_adapter/frozen_inference.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_frozen_qlib_inference_v1",
+      "sha256": "62f7767a88868bd17b0b9e8709efa1ebaf4ba5619a12ef889780ae0417de5258",
+      "type": "code"
+    },
+    {
+      "path": "tests/integrations/test_qlib_frozen_inference.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_strategy_v2_frozen_qlib_v2",
+      "sha256": "26ec088df564a156490cd6c45297d4f76dbee9725abccc5d235aa9d669a14807",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/fixtures/strategy_v2/contract.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_frozen_inference_contract_v1",
+      "sha256": "4355745412823c19d07bf8ce9ccd50c925081b8321fdb4af493441cdfaf13da2",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/strategy-admission-v2.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_admission_report_v2",
+      "sha256": "38d23e55ec444f074a90ff13b111e274d586b0287c314dc8c85ea36aebc0180a",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-protection-parent-join-independent-review-20260915-cd6b37d59",
+    "published-strategy-v0-freeze-20260915-e0b7a08f8",
+    "published-strategy-v2-frozen-qlib-20260915-3b8b0d865"
+  ],
+  "domain": "shared",
+  "event_id": "published-strategy-v2-frozen-qlib-correction-20260915-c8a8c8d7d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/strategy-v2-frozen-qlib-20260915",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-strategy-v2-frozen-qlib-20260915-3b8b0d865"
+  ],
+  "tests": [
+    {
+      "command": "project .venv python -B -m pytest directed symbolic-manifest and clip-drift tests before correction (2 failed in 38.14s; both DID NOT RAISE)",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "failed"
+    },
+    {
+      "command": "project .venv python -B -m pytest -q -p no:cacheprovider --tb=short directed immutable-ref, calibration-evidence, clip-drift and invalid-clip tests (10 passed in 0.83s)",
+      "evidence_path": "tests/integrations/test_qlib_frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "project .venv python -B -m pytest -q -p no:cacheprovider --tb=short tests/integrations/test_qlib_frozen_inference.py first corrected full run (27 passed, 1 failed in 59.87s; only pre-existing feature-order error classification changed)",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "failed"
+    },
+    {
+      "command": "project .venv python -B -m pytest -q -p no:cacheprovider --tb=short tests/integrations/test_qlib_frozen_inference.py final corrected full run (28 passed in 58.42s; no skip)",
+      "evidence_path": "tests/integrations/test_qlib_frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "AST parse of two Python touch-set files, contract JSON parse and scoped git diff --check",
+      "evidence_path": "integrations/qlib_adapter/frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "historical initial-producer V0/M1/Qlib compatibility suite (62 passed, 1 inherited M1 allowlist failure in 114.16s) included two synthetic Qlib fits plus pytest-temporary MLflow/model/prediction/research-decision/research-ledger writes and synthetic research target/risk/exit/simulated-fill exercise; it did not retrain m1-okx-qlib or modify the sealed archive and was not rerun for this correction",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "failed"
+    },
+    {
+      "command": "frozen m1-okx-qlib retraining/search; V2-entry target/exit/risk/OMS/fill/persistent-ledger; services/UI/API; actual account; OKX Demo; private/order/live; promotion publication; V3; main integration",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "STRATEGY-V2-FROZEN-QLIB-20260915",
+  "transition_for": ""
+}

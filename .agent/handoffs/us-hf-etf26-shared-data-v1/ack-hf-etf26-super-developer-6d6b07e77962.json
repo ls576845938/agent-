@@ -1,0 +1,46 @@
+{
+  "base_commit": "1f23387a41ca8c2a22c0c4f1505f3e8a00e04958",
+  "blockers": [],
+  "consumer_roles": [
+    "data_steward",
+    "architect"
+  ],
+  "created_at": "2026-07-12T03:48:26Z",
+  "deliverable_commit": "1f23387a41ca8c2a22c0c4f1505f3e8a00e04958",
+  "deliverables": [],
+  "depends_on": [
+    "data-ready-hf-etf26-1min-6d6b07e77962"
+  ],
+  "domain": "data",
+  "event_id": "ack-hf-etf26-super-developer-6d6b07e77962",
+  "event_type": "acknowledged",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-development-v2",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . scan",
+      "evidence_path": ".agent/handoffs/us-hf-etf26-shared-data-v1/data-ready-hf-etf26-1min-6d6b07e77962.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest-git-spec <branch>:<manifest>",
+      "evidence_path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "us-hf-etf26-shared-data-v1",
+  "transition_for": "data-ready-hf-etf26-1min-6d6b07e77962"
+}

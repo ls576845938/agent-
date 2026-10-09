@@ -1,0 +1,64 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-gov-project-named-agent-routing-01-03decd518",
+  "ticket_id": "GOV-PROJECT-NAMED-AGENT-ROUTING-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/integrate-gov-routing-and-btc-completed-1h-03",
+  "base_commit": "ad8bcd4221450852fbdf0186612b329413c212f3",
+  "deliverable_commit": "a60970b271c3977b1726af4d79780fd94f61356e",
+  "created_at": "2026-08-17T20:00:00+08:00",
+  "expires_at": "",
+  "depends_on": ["published-gov-project-named-agent-routing-01-0b5b0c9e9"],
+  "supersedes": [],
+  "transition_for": "published-gov-project-named-agent-routing-01-0b5b0c9e9",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "AGENTS.md",
+      "sha256": "49ed351d8af7c60b19d670d5d3ad287df95edbca2e5bb6c4c4bd46993ecb718d",
+      "schema_version": "project_named_agent_routing_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/GOV-PROJECT-NAMED-AGENT-ROUTING-01/published-gov-project-named-agent-routing-01-0b5b0c9e9.json",
+      "sha256": "bbeb0b266951902c3107466cbb5dccdc311c61996356a654ae59e84f5999c70a",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/qs_it_bounded_03 tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py",
+      "result": "passed",
+      "evidence_path": "16 passed in 0.97s"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published-envelope>",
+      "result": "passed",
+      "evidence_path": "published envelope validator status=valid"
+    },
+    {
+      "command": "py -3 -m py_compile <governance-scope>; git diff --check -- AGENTS.md",
+      "result": "passed",
+      "evidence_path": "integrator sparse worktree"
+    }
+  ],
+  "blockers": [
+    "promotion/paper/live/private/order permissions remain false",
+    "the sequential BTC runtime integration is recorded separately below; no governance service restart was performed"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

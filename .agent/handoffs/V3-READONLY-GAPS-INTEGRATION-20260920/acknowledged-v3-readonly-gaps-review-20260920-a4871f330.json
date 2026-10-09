@@ -1,0 +1,59 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-v3-readonly-gaps-review-20260920-a4871f330",
+  "ticket_id": "V3-READONLY-GAPS-INTEGRATION-20260920",
+  "event_type": "acknowledged",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/v3-readonly-gaps-integration-20260920",
+  "base_commit": "7d686dbd6b8d63fd6c0b317e95ef23565ec4b924",
+  "deliverable_commit": "a4871f3309fb3e66b84deb260d500f95dfcc2573",
+  "created_at": "2026-09-20T09:06:35Z",
+  "expires_at": "",
+  "depends_on": ["published-v3-readonly-gaps-reviewed-20260920-958828c56"],
+  "supersedes": [],
+  "transition_for": "published-v3-readonly-gaps-reviewed-20260920-958828c56",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/v3-readonly-gaps-independent-review-20260920.md",
+      "sha256": "06257286f54d53ad1b1f4cbb3b65f90bcc4369a7fccdfbc8a56813073f5e494a",
+      "schema_version": "v3_readonly_gaps_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; 13 Git blob SHA-256 values; ancestry and full diff --check",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-independent-review-20260920.md"
+    },
+    {
+      "command": "canonical Python -B -m pytest -q -p no:cacheprovider backend/tests/test_offline_execution_views.py backend/tests/test_research_readonly_views.py backend/tests/test_backend_research_readonly.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-independent-review-20260920.md; 63 passed, 2 skipped"
+    },
+    {
+      "command": "two new Node presentation regressions; committed frontend fingerprint; read-only five-file V3 reseal",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-independent-review-20260920.md; digest equal, 1392 decisions, 0 fills"
+    }
+  ],
+  "blockers": [
+    "owner:release registered-main fast-forward, rollback tag, research_readonly canonical restart and real browser acceptance pending",
+    "owner:platform production BTC artifact root missing and registry conflicts/latency retained",
+    "legacy unchanged research-portfolio frozen rollback assertion already fails on base",
+    "safety: no real account/nonzero-fill evidence; demo/paper/live/private/order/promotion remain false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

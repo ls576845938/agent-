@@ -1,0 +1,111 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-map-progress-20260920-b21c470b9",
+  "ticket_id": "STRATEGY-MAP-PROGRESS-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/strategy-map-progress-20260920",
+  "base_commit": "42673c9b323689168a5984651d7dc3127561003b",
+  "deliverable_commit": "b21c470b98889e321d4f609757e95e1b8914a568",
+  "created_at": "2026-09-20T11:49:37.479Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/architecture/system-code-map/STRATEGY-DELIVERY-STATUS-20260920.md",
+      "sha256": "36bda4bc8d1f329bf350d96bd28b74a7cd58158f6e0b66b12d9aa78425b762a4",
+      "type": "report",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/strategy-map-progress-20260920.md",
+      "sha256": "89e32335a2fde7fef6df700f911222ebf0f1ae31d29d978b0c0789f439303448",
+      "type": "report",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "sha256": "f46371a5ba5fac33b5e6567a8f09b8e20173e78ba08ba4bdd29b60306f42c5c9",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-strategy-delivery-map.mjs",
+      "sha256": "51fef5cd6d533170097259dba32571792d03b87acc94563b408ca498810226b5",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "sha256": "1e82f8a3c7ab0d37a0bedc3add3000995bcab7a9b6649b23d09b1b723e3baef5",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/ArchitectureMindMap.tsx",
+      "sha256": "5095c52b209a5b77aff47309971482c4b1bc7aca8a5d060d24197d81507373d2",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/architecture-map.css",
+      "sha256": "92f52ab4917c3281c2bfcd91eada983f9464c9062a64193a415f4e460c790068",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "sha256": "e420a22081782eb3facf570433e788754c6ff9b692133945ca7fe759fe87fff2",
+      "type": "code",
+      "schema_version": "strategy_map_progress_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node --test frontend/scripts/test-strategy-delivery-map.mjs frontend/scripts/test-architecture-mindmap.mjs frontend/scripts/test-architecture-map.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-map-progress-20260920.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint; npm.cmd --prefix frontend run build",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-map-progress-20260920.md"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs (baseline and candidate: existing wording assertion)",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-map-progress-20260920.md"
+    }
+  ],
+  "blockers": [
+    "Independent limited map publication and canonical browser acceptance pending",
+    "V3 overall closeout and Donchian nonzero UI linkage remain outside this map ticket",
+    "Pre-existing knowledge wording assertion fails on unchanged baseline; not hidden or weakened",
+    "Production BTC runtime evidence and trading readiness remain blocked"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

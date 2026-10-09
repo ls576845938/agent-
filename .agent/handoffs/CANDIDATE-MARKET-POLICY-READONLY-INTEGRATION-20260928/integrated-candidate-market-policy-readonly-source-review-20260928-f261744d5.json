@@ -1,0 +1,94 @@
+{
+  "base_commit": "7f3788f8c80da74c9d256120ebc0c99c702805e6",
+  "blockers": [
+    "formal current-main integration, rollback ref, official research_readonly restart and canonical page acceptance remain pending",
+    "research comparison remains incomplete: baseline 2960/2960 and conditioned 1956/2960 fail-closed on ambiguous intrabar protection ordering",
+    "conditioned terminal short -0.01 contracts remains preserved and reconciled; it was not synthetically flattened",
+    "actual candidate catalog remains empty and legacy M1 v2 diagnostic management is not general runtime worker support",
+    "candidate management, management writes, Demo, promotion, paper, live, private, order, real_order, transfer, withdraw, execution permission and runtime observation remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T07:00:00Z",
+  "deliverable_commit": "f261744d54b43e24907358ac127f3e5acab7b220",
+  "deliverables": [
+    {
+      "path": "docs/agent_playbooks/candidate_market_policy_readonly_delivery_20260928.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_market_policy_readonly_delivery_contract_v1",
+      "sha256": "ce4f05df8b649355a83620dd54d544f8075c5bc85664d83dc4705da417a5e321",
+      "type": "schema"
+    },
+    {
+      "path": "docs/acceptance/candidate-market-policy-readonly-source-review-20260928.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_market_policy_readonly_source_review_v1",
+      "sha256": "3be0052664774ae80fee1fca6f3ffbda3e7548b6a7332402229f370ea4003792",
+      "type": "report"
+    },
+    {
+      "path": "docs/acceptance/candidate-market-policy-readonly-integration-20260928.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_market_policy_readonly_integration_review_v1",
+      "sha256": "5673ae736c50324552018d5a7417933ead6472bff78b52ad606aefaa3bb79ea3",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v2",
+      "sha256": "a6fa4850e15d85ad9442f0b96d12f750fd47f596d818fc7120adfd72b8e1d5f8",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-candidate-market-policy-readonly-governance-correction-01-0fae8a39c",
+    "integrated-candidate-offline-diagnostic-market-policy-closeout-20260927-deace3f2b",
+    "integrated-readonly-release-ui-20260928-833dec6f1",
+    "integrated-research-registry-read-performance-20260928-9ad0277b3"
+  ],
+  "domain": "governance",
+  "event_id": "integrated-candidate-market-policy-readonly-source-review-20260928-f261744d5",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical Python validate-source on cumulative integration tree",
+      "evidence_path": "status=valid; blockers=[]",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python focused governance regression",
+      "evidence_path": "22 passed in 65.75s",
+      "result": "passed"
+    },
+    {
+      "command": "compare frozen performance handoff blobs between a7a8c384d and governance candidate",
+      "evidence_path": "blobs 2c28d9a3bbc5f3b7d5155fea92ae074225e59f14 and 0862538586c2f6bce36998bb64b5445569aab432 unchanged",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main runtime and canonical browser acceptance",
+      "evidence_path": "pending exact main fast-forward, research_readonly restart, 8765/3000 identity and 12-second canonical page acceptance",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CANDIDATE-MARKET-POLICY-READONLY-INTEGRATION-20260928",
+  "transition_for": "published-candidate-market-policy-readonly-governance-correction-01-0fae8a39c"
+}

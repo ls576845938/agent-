@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-v3-forward-observation-01-goal11-batch-01",
+  "ticket_id": "US-V3-FORWARD-OBSERVATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "researcher",
+    "data_steward"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-goal11-batch-01",
+  "base_commit": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+  "deliverable_commit": "1ee0cbe1bc6779d02cfa3c1a5cfbf1084523b6a8",
+  "created_at": "2026-07-25T09:54:01Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-v3-forward-observation-01-5c6b1007"
+  ],
+  "supersedes": [],
+  "transition_for": "published-us-v3-forward-observation-01-5c6b1007",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_forward_observation.py -q -p no:cacheprovider --basetemp <unique-system-temp> [system-temp CWD first run: 5 passed, 6 failed only because the contract resolves schemas/us_equity_forward_observation_receipt.schema.json relative to repo root; repo-root rerun: 11 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_forward_observation.py"
+    },
+    {
+      "command": "writer JSONL call_HZVsS5qGFtl8Zq9pwqfPQBCp selector reproduced: py -3 -m pytest tests/contracts/test_us_equity_forward_observation.py tests/contracts/test_us_equity_pit_dataready_consumer.py tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py tests/contracts/test_us_etf_26_canonical_backtest.py tests/contracts/test_us_etf_26_candidate_strategy_card.py tests/contracts/test_us_equity_current_head_gate_rebuild.py tests/contracts/test_us_equity_artifact_schema_coverage.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 46 passed]",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json"
+    },
+    {
+      "command": "writer JSONL call_FMPZyuI6PZ4azvNuzcpsonWH selector reproduced: py -3 -m pytest tests/contracts/test_us_etf_forward_observation_daily.py tests/contracts/test_us_etf_forward_observation_runner.py tests/contracts/test_us_etf_forward_observation_daily_health_report.py tests/contracts/test_us_etf_forward_observation_evaluation_report.py tests/contracts/test_us_etf_forward_observation_replay_readiness_report.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 20 passed, 6 failed; all six failures are the same missing legacy validation latest path]",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_us_etf_forward_observation_runner.py"
+    },
+    {
+      "command": "py -3 -m ruff --version [observed: No module named ruff; no network installation attempted]",
+      "result": "not_run",
+      "evidence_path": "quant_us/application/us_equity_forward_observation.py"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/US-V3-FORWARD-OBSERVATION-01/published-us-v3-forward-observation-01-5c6b1007.json [committed-object validation: valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/US-V3-FORWARD-OBSERVATION-01/published-us-v3-forward-observation-01-5c6b1007.json"
+    }
+  ],
+  "blockers": [
+    "owner:data_steward expected_finalized_session_missing:2026-07-23",
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:natural_time paper_review_natural_days_in_progress:0_of_30",
+    "owner:natural_time independent_confirmation_sessions_in_progress:0_of_252",
+    "owner:legacy_artifact legacy_us_etf_validation_latest_missing_in_sparse_worktree",
+    "classification:goal11_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_blocked_external_data_and_natural_time",
+    "classification:producer_receipt_natural_day=2026-07-24",
+    "classification:producer_receipt_report_sha256=43837fd07b224509a34fa30c76a42aece970c86b4455cce240ba18515a0f5519",
+    "classification:producer_receipt_manifest_sha256=66ff598598f59106c021d88e057c890b19d6321623de050c7e7a6de3e0d4eea4",
+    "classification:producer_latest_pointer_sha256=a1a06b4b4aa4dfc254378453ef4c82c03e6742d9653c482f647712933245a9b1",
+    "classification:producer_expected_finalized_session=2026-07-23",
+    "classification:producer_immutable_coverage_end=2026-07-10",
+    "classification:operating_day_2026-07-25_durable_observation_not_started_by_integrator"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

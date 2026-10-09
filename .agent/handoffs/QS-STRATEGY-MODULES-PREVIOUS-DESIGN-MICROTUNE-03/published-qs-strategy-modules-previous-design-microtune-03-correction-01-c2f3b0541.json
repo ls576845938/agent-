@@ -1,0 +1,113 @@
+{
+  "base_commit": "478dfccb337c29b1513a5325d1a270d944727fc6",
+  "blockers": [
+    "owner:integrator independent integration required for unclassified frontend change_risk",
+    "owner:integrator complete canonical mocked Playwright on registered current main deferred_to_integrated_current_main",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, service or Demo execution",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; consumer must validate independently",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-19T00:00:00Z",
+  "deliverable_commit": "c2f3b05413dae3588d50c8a70301a14fa81a7a84",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_visual_map_v1",
+      "sha256": "4f1f708ce10255dd8afee51ac46067d2ce6167b4546d7700a0cf5b833a2177bd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_layout_v1",
+      "sha256": "435b471cd41a7217c4be849243b964f0553280b1228639c9a2a1d5c0eaedb60c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_playwright_contract_v1",
+      "sha256": "c983ad7ba4cb456ab08454bd3c83b67e695eb5547d27b54a095ecb070fd3c267",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "dabeab80ed2510dd9972bb39f6df2163327c8ad9889e55efcddd89ab62e0f195",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-previous-design-microtune-03-correction-01-c2f3b0541",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-microtune-corr-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "registered current main canonical mocked Playwright before CORRECTION-01",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/node_modules/@playwright/test/cli.js test frontend/e2e/strategy-modules.spec.ts --list --config frontend/playwright.config.ts",
+      "evidence_path": "frontend/e2e/strategy-modules.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical full mocked Playwright after integration",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03",
+  "transition_for": ""
+}

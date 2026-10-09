@@ -1,0 +1,167 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9",
+  "ticket_id": "QUANT-FRONTEND-BTC-TRADINGVIEW-FORWARDPORT-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/quant-frontend-btc-tradingview-forwardport-01",
+  "base_commit": "d95c3a11d42cc35a90e22c9e7c71167889093dbc",
+  "deliverable_commit": "2c9edbc9fac778e17c38731484c18c52c8af7aaf",
+  "created_at": "2026-07-26T00:58:58Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-btc-tradingview-merge-v1-591f56ef"
+  ],
+  "supersedes": [
+    "published-quant-frontend-btc-tradingview-merge-v1-591f56ef"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/package.json",
+      "sha256": "40cc55d38387febe1fc72c4b411012d9efb4d9a1f5bc8f4e809bc10e2f5f5457",
+      "schema_version": "quant_frontend_dependencies_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/package-lock.json",
+      "sha256": "c84e7c91ebec076e415c403a7cb77761b4f8f5628c0e691fccc7166b849a2eef",
+      "schema_version": "quant_frontend_dependencies_lock_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/App.tsx",
+      "sha256": "67280afd3daaf4210633848917375e0b378951dc33070c9ed9f22398ef16cc41",
+      "schema_version": "quant_frontend_current_main_route_shell_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "086f4a90b956d151bcfedf0fca7fa3e07753c89cec1206bc11d39d1ce6025af7",
+      "schema_version": "quant_frontend_btc_tradingview_workspace_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "sha256": "102a785c669ea501c4f2ff4b57f5cad86da8d112353bbbb58407b68ce08cfc77",
+      "schema_version": "quant_frontend_btc_lightweight_chart_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/BacktestWorkbench.tsx",
+      "sha256": "de7fdb989a4b5f11379c2706caf5d8a65d587e940230e75c748f4973ee87d6ad",
+      "schema_version": "quant_frontend_btc_strategy_tester_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "a4c5caa6cca778022fa05e6285ae135b84736e8f3a4e475eb99d3a2a0ec084fd",
+      "schema_version": "quant_frontend_btc_demo_console_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "frontend/src/lib/shared-types.ts",
+      "sha256": "08bef46e9b5db2d599b99adee2bbcc0d9afeb17568471cab27f7912ba1227a67",
+      "schema_version": "quant_frontend_btc_shared_types_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "sha256": "8d67c87e1033161c417e36530c69d3c6e7ae13de14378604ca86911c92c86d78",
+      "schema_version": "quant_frontend_btc_tradingview_entry_marker_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/crypto.spec.ts",
+      "sha256": "a16600468b94d524760fd430e6d03c167b46c5ce4a3896cfd997c11a4de4a356",
+      "schema_version": "quant_frontend_crypto_e2e_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-strategy-registry.spec.ts",
+      "sha256": "96d512c4163e1a96799aed9cdbd5476aaad8be1842d323f6314ba2ba247676f7",
+      "schema_version": "quant_frontend_btc_strategy_registry_e2e_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd install (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/crypto.spec.ts e2e/btc-backtest-workbench.spec.ts e2e/btc-canonical-evidence.spec.ts e2e/btc-control-summary.spec.ts e2e/btc-demo-console.spec.ts e2e/btc-strategy-registry.spec.ts e2e/btc-strategy-report.spec.ts --reporter=line (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "npx.cmd playwright test --reporter=line (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "playwright-cli --session btc-tv-forwardport open http://127.0.0.1:4317/crypto --headed; resize 1600 1000; snapshot; screenshot",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx"
+    }
+  ],
+  "blockers": [
+    "current_head_btc_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "paper_live_order_private_network_permissions_remain_false",
+    "historical_uncommitted_main_frontend_paths_require_separate_owner_cleanup"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

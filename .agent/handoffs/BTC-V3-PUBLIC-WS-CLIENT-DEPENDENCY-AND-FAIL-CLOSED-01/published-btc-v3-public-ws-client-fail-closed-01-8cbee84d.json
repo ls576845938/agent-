@@ -1,0 +1,100 @@
+{
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "blockers": [
+    "current_head_gate_artifacts_not_rebuilt_at_deliverable_commit",
+    "owner:data_steward immutable_approved_kline_publication_missing",
+    "owner:data_steward real_timestamp_aligned_okx_l2_history_missing",
+    "owner:btc_observation natural_execution_observation_missing",
+    "owner:btc_operations funding_and_private_ws_reconciliation_observations_incomplete",
+    "owner:btc_observation required_observation_windows_incomplete",
+    "owner:architect manual_promotion_approval_missing",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_secret_demo_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T15:49:10Z",
+  "deliverable_commit": "8cbee84d51e4d4a0a024559f2d4239e05d84afc2",
+  "deliverables": [
+    {
+      "path": "pyproject.toml",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_ws_optional_dependency_v1",
+      "sha256": "5a49dd2235692ca09e0a6737ab9e887a46b05ed31542cae371c96304bcb2dde3",
+      "type": "code"
+    },
+    {
+      "path": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_ws_l2_raw_capture_report_v1",
+      "sha256": "13b3f2236966cff78e7f2e786a260665444ccd58ff07bab2ddf43c84581adf89",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_collector_boundaries_contract_v1",
+      "sha256": "1466d81e4ad653a2b7e530640a88051972a0b319112f975bde232e66f10bc7ac",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_public_ws_client_dependency_fail_closed_ticket_v1",
+      "sha256": "625c5fb0d85206ee51f74f9bd1ebfab30d4fdf7874a84619f9da324c97692d72",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-public-ws-client-fail-closed-01-8cbee84d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-public-ws-client-fail-closed-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "docs/tickets/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest collector plus L2 exporter plus DataReady consumer contracts --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "docs/tickets/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile collector and collector contract test; collector --help; TOML dependency parse; scoped git diff --check",
+      "evidence_path": "docs/tickets/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "actual OKX public WebSocket collection",
+      "evidence_path": "docs/tickets/BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-PUBLIC-WS-CLIENT-DEPENDENCY-AND-FAIL-CLOSED-01",
+  "transition_for": ""
+}

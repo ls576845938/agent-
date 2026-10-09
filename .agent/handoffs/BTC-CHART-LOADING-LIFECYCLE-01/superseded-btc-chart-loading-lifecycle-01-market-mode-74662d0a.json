@@ -1,0 +1,74 @@
+{
+  "base_commit": "769d87a759db7b186d6cfd36d70c41a77aba9143",
+  "blockers": [
+    "canonical_green_deferred_to_integrator_after_fast_forward_main_identity_refresh_and_frontend_restart",
+    "frontend_identity_refresh_deferred_to_integrator_because_correction_touches_e2e_only",
+    "backend_restart_required_after_integration",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-23T23:51:42Z",
+  "deliverable_commit": "74662d0ad23d71f6efbf173acbf7e532449611ee",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_chart_loading_lifecycle_playwright_v1",
+      "sha256": "7dcf47dd34d1fb252e70079be177e3fcff7d8d6ddef0b32e1a8d5059bba126cd",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "superseded-btc-chart-loading-lifecycle-01-market-mode-74662d0a",
+  "event_type": "superseded",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-chart-loading-lifecycle-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-chart-loading-lifecycle-01-dbf5f3a5"
+  ],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-strategy-report.spec.ts --config=playwright.config.ts --reporter=line -g \"mounts after market\"",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts:108",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run check:btc-tradingview",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-CHART-LOADING-LIFECYCLE-01",
+  "transition_for": ""
+}

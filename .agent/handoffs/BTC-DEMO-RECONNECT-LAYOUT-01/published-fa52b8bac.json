@@ -1,0 +1,105 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-reconnect-layout-01-fa52b8bac",
+  "ticket_id": "BTC-DEMO-RECONNECT-LAYOUT-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-reconnect-layout-01",
+  "base_commit": "e3888924df645e1e69981c04190c14d15bcb9430",
+  "deliverable_commit": "fa52b8bace24c919853a90cfc6d490b1da74412d",
+  "created_at": "2026-09-06T14:59:10.165Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/BTC-DEMO-RECONNECT-LAYOUT-01.md",
+      "sha256": "a2a2cd00b680705123b91cd9be9b8bd210d843bae62916008ce260d1f444a2e9",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "c21dfa4fc4fae9cb1a133fbfd0231ced24a4cd7e34ba457bd04fd37a7e1f00cb",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "sha256": "be8023a32584b1866ee15e8b20426457cd080a7e91be46f5ada9bbdaeae1fead",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-operator-cleanup.mjs",
+      "sha256": "2a178391f4ee8e060e30aed87a9b36cf4349b87525a1c6b38fbe34a2e29f66ce",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "sha256": "0e263921401f6639d7061bf427af2b3e4dc21f6c0add45c6f59b0d6164ba0d60",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-start-feedback.ts",
+      "sha256": "227b915d73859d6aed572ad4b4cf0d03ad148b2f2ac0c18b01fdc7eddb584ef1",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "sha256": "47f9c573492e692c97997fa10126aab35346a973947a8c49939fa6c09705b238",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "sha256": "259df57cfb57a9f75e059ba72cf472856d0b0899af6b2bc615c81d61d4b512a1",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "139 Python tests; four frontend regression scripts; npm run lint; npm run build; failure-first regression documented",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-RECONNECT-LAYOUT-01.md"
+    },
+    {
+      "command": "Actual Demo start / private execution",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-RECONNECT-LAYOUT-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required; change_risk=demo_execution_semantics",
+    "owner:root canonical restart and browser QA pending",
+    "owner:operator real Demo/private startup not verified; capability private=false",
+    "promotion paper live private order remain false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

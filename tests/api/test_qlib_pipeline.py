@@ -758,7 +758,7 @@ def test_qlib_list_authentication_precedes_inflight_join(monkeypatch, tmp_path):
     catalog.release.set()
     allowed = client.get(
         "/api/integrations/qlib/runs",
-        headers={"X-API-Key": "fixture-secret"},
+        headers={"X-API-Key": "REDACTED_CREDENTIAL_LITERAL"},
     )
     assert allowed.status_code == 200
     assert catalog.calls == 1

@@ -1,0 +1,87 @@
+{
+  "base_commit": "e8fdfa4210161b2ec23a0625357adaef16fa6edd",
+  "blockers": [
+    "cn_boundary_test_shared_import_contract_stale",
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-24T04:50:00Z",
+  "deliverable_commit": "90946e736a51da127fd498fd3f66aedb4e07c81d",
+  "deliverables": [
+    {
+      "path": "quant_cn/compat/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adapter_v1",
+      "sha256": "b26c0592e8a03718b8a20aa083148b1baa7e8f1c65dc33c6fb96a5aed37dd0c0",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/compat/shared_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adapter_v1",
+      "sha256": "6b8fe153e15454577d1a55b4a31f8b98db20c63ddc1ad758f699c872c9400157",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_shared_platform_adoption.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adoption_tests_v1",
+      "sha256": "3b7a85b5815c7f6b08f7c1000be5fdcdf313c41eb09acd1c63832868f4b76bb7",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-shared-platform-v2-current-main-01-batch-02-takeover"
+  ],
+  "domain": "cn_equity",
+  "event_id": "published-cn-v3-shared-platform-v2-adoption-01-90946e73",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-shared-platform-v2-adoption-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/cn_equity/test_shared_platform_adoption.py -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity/test_shared_platform_adoption.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/shared_platform",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity/test_boundaries.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m compileall -q quant_cn/compat tests/cn_equity/test_shared_platform_adoption.py",
+      "evidence_path": "quant_cn/compat",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check quant_cn/compat tests/cn_equity/test_shared_platform_adoption.py",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CN-V3-SHARED-PLATFORM-V2-ADOPTION-01",
+  "transition_for": ""
+}

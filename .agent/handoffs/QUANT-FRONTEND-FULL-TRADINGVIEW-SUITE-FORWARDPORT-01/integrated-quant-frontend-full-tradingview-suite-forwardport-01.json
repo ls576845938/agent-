@@ -1,0 +1,83 @@
+{
+  "base_commit": "34ba474d91984b75620dc552539b779c61fa565f",
+  "blockers": [
+    "current_head_domain_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "paper_runner_authorization_and_start_evidence_remain_absent",
+    "paper_live_order_private_network_secret_permissions_remain_false",
+    "classification:frontend_is_read_only_and_fail_closed",
+    "classification:integration_does_not_unlock_promotion_paper_or_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-07-26T03:01:52Z",
+  "deliverable_commit": "307114ad9b4fa35ad8ef278a8f3e3b84f6ae1110",
+  "deliverables": [],
+  "depends_on": [
+    "published-quant-frontend-full-tradingview-suite-forwardport-01-b4f6a30f",
+    "published-quant-frontend-full-tradingview-suite-forwardport-01-health-auth-correction-bcc28e91"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-quant-frontend-full-tradingview-suite-forwardport-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/quant-frontend-full-tradingview-suite-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd ci --offline (cwd=frontend) [observed: 117 packages installed; 0 vulnerabilities; package-lock remained clean]",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend) [observed: 6 of 6 markers true]",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend) [observed: tsc --noEmit passed]",
+      "evidence_path": "frontend/src/components/workbench/Workbench.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: Vite build passed; 5203 modules transformed]",
+      "evidence_path": "frontend/src/main.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend) [observed: frontend smoke checks passed]",
+      "evidence_path": "frontend/scripts/smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend) [observed: CN operations workspace smoke passed]",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npx.cmd playwright test (cwd=frontend) [observed: 27 passed]",
+      "evidence_path": "frontend/e2e",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <two committed published events> [observed: both valid; 14 of 14 committed-byte SHA-256 values matched]",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-FULL-TRADINGVIEW-SUITE-FORWARDPORT-01",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QUANT-FRONTEND-FULL-TRADINGVIEW-SUITE-FORWARDPORT-01",
+  "transition_for": "published-quant-frontend-full-tradingview-suite-forwardport-01-health-auth-correction-bcc28e91"
+}

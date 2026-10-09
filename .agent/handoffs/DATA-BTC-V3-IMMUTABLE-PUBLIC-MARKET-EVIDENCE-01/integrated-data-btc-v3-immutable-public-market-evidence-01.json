@@ -1,0 +1,93 @@
+{
+  "base_commit": "311c5ec743dec6e4b6e4295bde41dad1710acf6e",
+  "blockers": [
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T08:52:17Z",
+  "deliverable_commit": "5867aeb2154bb69841d6c096111fa93040cbb89f",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "adb63e38565d4f40e19f30eb196de7ee1807667d5511b83761e6bd513884e804",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7/btc_okx_v3_public_market_attestation.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_v3_public_market_attestation_v1",
+      "sha256": "6938ecaf76a1a3a06dd2c5efb2f19574834a9fa88d42e21e979351752f7ad72c",
+      "type": "report"
+    },
+    {
+      "path": "docs/tickets/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "data_btc_v3_immutable_public_market_evidence_ticket_v1",
+      "sha256": "44e9d414ec7737a768241e147508691e16397699e73610ff6eefdf688f9912a8",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-v3-immutable-public-market-evidence-01-14080d3d"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-data-btc-v3-immutable-public-market-evidence-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/data-btc-v3-immutable-market-evidence-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <committed-producer-event> [observed: valid]",
+      "evidence_path": ".agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/published-data-btc-v3-immutable-public-market-evidence-01-14080d3d.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cat-file blob <producer-business-commit>:<deliverable-path> plus SHA-256 [observed: 3/3 raw committed-byte hashes matched]",
+      "evidence_path": ".agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/published-data-btc-v3-immutable-public-market-evidence-01-14080d3d.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <committed-manifest> [observed: aggregate 1fcd9cc02adbaca7c77bf97a4af021deef231916bd7d650768af654756fe5d24; 33 files; 4092849 bytes]",
+      "evidence_path": ".agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py -q [observed: 54 passed]",
+      "evidence_path": "tests/agent_governance/test_shared_data.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01",
+  "transition_for": "published-data-btc-v3-immutable-public-market-evidence-01-14080d3d"
+}

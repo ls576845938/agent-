@@ -1,0 +1,48 @@
+{
+  "aggregate_sha256": "ac599353f65ee31b4a40b1d516c8ad244fc9f30c1a098403167fdbc6e0774741",
+  "blockers": [
+    "btc_5m_selection_prefix_not_promotion_evidence",
+    "btc_5m_frozen_holdout_excluded_and_unread",
+    "btc_execution_latency_queue_l2_funding_mark_index_liquidation_evidence_missing"
+  ],
+  "coverage": {
+    "end": "2026-05-12T01:05:00Z",
+    "start": "2024-01-01T00:00:00Z"
+  },
+  "data_schema": "btc_5m_selection_prefix_attestation_v1",
+  "dataset_id": "btc-5m-qcv2r1-selection-prefix",
+  "dataset_version": "btc-5m-qcv2r1-selection-prefix-248270-parent76e8654c-mainbcc31f0b-corr01",
+  "file_count": 2,
+  "files": [
+    {
+      "bytes": 89831446,
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=5m/part-00000.jsonl",
+      "sha256": "b00557b75b3b4049bde1c09bfa69d31a8856993bb9f4fbdc71cfb49078b8f9b5"
+    },
+    {
+      "bytes": 1378,
+      "path": "selection_prefix_attestation.json",
+      "sha256": "f3de091c26ca77d0c908e58951ee9d5f2337862d6e0fa7bb7bfcef9e5667fcca"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "frozen_holdout_rows_excluded",
+    "l2_queue_execution_funding_mark_index_liquidation_not_in_dataset"
+  ],
+  "producer_commit": "bcc31f0b9bfb1ffa97a7f91dc14debb1c05683c7",
+  "producer_role": "data_steward",
+  "published_at": "2026-08-27T05:21:44Z",
+  "quality_status": "pass_with_research_only_warnings",
+  "readiness_class": "research_ready",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/btc-5m-qcv2r1-selection-prefix/btc-5m-qcv2r1-selection-prefix-248270-parent76e8654c-mainbcc31f0b-corr01",
+  "total_bytes": 89832824
+}

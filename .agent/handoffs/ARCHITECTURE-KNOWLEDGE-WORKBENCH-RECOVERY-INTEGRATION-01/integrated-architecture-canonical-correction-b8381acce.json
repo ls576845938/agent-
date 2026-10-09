@@ -1,0 +1,133 @@
+{
+  "base_commit": "166d2c21806b1ebaba4df6c507399ee4ac17e211",
+  "blockers": [
+    "owner_root_registered_main_merge_official_restart_and_38_canonical_playwright_tests_pending",
+    "research_registry_dirty_data_remains_fail_closed_409_json_decode_error",
+    "btc_runtime_artifact_missing_remains_fail_closed_503",
+    "current_head_promotion_artifacts_not_rebuilt_and_missing_trading_artifacts_remain_blocked",
+    "M1_M4_unstarted_and_research_does_not_unlock_promotion_paper_private_order_broker_or_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T04:42:18Z",
+  "deliverable_commit": "b8381acce048c6ac6f07f3c70c6a660d0ddfbd72",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/architecture-knowledge.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "0aaa711480951d1d5ed891ec90faad938d4fd61e519d5455afd8aad6fa0e878c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "92c53de81322d04bb80614fe72791b672f9fcb12ad5658bb62b513a05085f52d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "685f6972a84f856e373bb8b327c86c3bcba0a02f75ad03027a4405cf28458d5c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "3fc0a011f79c18d25259cd9a8bb6d9ac4b9fc8db063cf99098591cf39c94a438",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchPortfolioWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "ab582c7d8c009baef6b03e467213b9f19c5b059c798371a7aba80badc66e277a",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/architecture-knowledge.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "37a110e2845178da80fa8c0310117a4c53932dafe3ac6740f8dbed7191787887",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "cdbe06267da15b001cba675af09122c203f350f3535fd944565f2a6451df8929",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-architecture-knowledge-workbench-recovery-integration-01-e8fa998fc",
+    "published-architecture-canonical-correction-347c67964",
+    "published-readability-selector-correction-2888617df"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-canonical-correction-b8381acce",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/arch-knowledge-workbench-recovery-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate committed published-architecture-canonical-correction-347c67964 and published-readability-selector-correction-2888617df",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs frontend/scripts/test-architecture-map.mjs frontend/scripts/test-architecture-mindmap.mjs; 19 passed",
+      "evidence_path": "frontend/scripts/test-architecture-knowledge.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build; 5257 modules transformed",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/architecture-review.mjs --ref=HEAD; expected exit 1; catalog_errors=[]; knowledge_errors=[]; changed card source remains review_invalidated",
+      "evidence_path": "frontend/src/workspaces/architecture/knowledge.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff 166d2c218..HEAD -- approved backend paths; backend_blob_delta_count=0",
+      "evidence_path": "backend/app/core/backend_access_policy.py",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs; node --test frontend/scripts/test-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "registered-main merge, official restart, 29 canonical workbench and 9 research-navigation Playwright tests",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-INTEGRATION-01",
+  "transition_for": "published-readability-selector-correction-2888617df"
+}

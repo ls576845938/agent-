@@ -1,0 +1,158 @@
+{
+  "schema_version": "btc_real_data_evidence_publication_attestation_v1",
+  "ticket_id": "BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01",
+  "producer_role": "data_steward",
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "source_head": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "generated_at": "2026-07-26T15:42:00Z",
+  "catalog_hash": "568cf9c4f4d96d1cff4d331f29b69ec40ad28b6c13156d542c586ef5d8314a11",
+  "status": "quality_checked_with_l2_blocked",
+  "kline": {
+    "dataset_id": "btc-market-data-sqlite-snapshot",
+    "dataset_version": "btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b",
+    "manifest_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b.json",
+    "manifest_sha256": "1fdac7d8ad027650dde5319114c1f3d832ed35643472aaf80d17ffa0c1d18fe6",
+    "manifest_hash_semantics": "sha256_of_git_blob_bytes",
+    "shared_data_storage_relative_path": "datasets/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b",
+    "shared_data_aggregate_sha256": "ed1ab63fe48c8034dd2b6d431616d0d0219b8c4206887dfe54b117f5be9142aa",
+    "table_aggregate_sha256": "c304d4a553005ef5e130a58fa5b111452e0b031f8e44a58eedb1b546f35f7226",
+    "file_count": 5,
+    "total_bytes": 598104918,
+    "source_sqlite": {
+      "resolver_kind": "hardlink",
+      "authoritative_repo_relative_path": "data/market_data.sqlite",
+      "shared_runtime_relative_path": ".staging/runtime/btc-market-data/market_data.sqlite",
+      "bytes": 575434752,
+      "sha256": "11278c46327f8ba7259c877200090d3591c7786aed484f6189b022d4f95d22ed",
+      "last_write_time_utc": "2026-07-26T07:41:44.2612291Z",
+      "wal_present_before": false,
+      "shm_present_before": false,
+      "wal_present_after": false,
+      "shm_present_after": false,
+      "integrity_check": "ok",
+      "journal_mode": "delete",
+      "stable_before_after_export_and_publication": true,
+      "mutated_by_task": false
+    },
+    "partition_policy_id": "btc_v3_current_main_binance_spot_required_v1",
+    "included_partitions": [
+      {
+        "venue": "binance_spot",
+        "instrument_id": "BTCUSDT",
+        "interval": "1m",
+        "row_count": 1349280,
+        "coverage_start": "2024-01-01T00:00:59.999000Z",
+        "coverage_end": "2026-07-25T23:59:59.999000Z",
+        "missing_count": 0,
+        "duplicate_count": 0,
+        "invalid_ohlc_count": 0,
+        "invalid_quantity_count": 0,
+        "invalid_inclusive_close_count": 0
+      },
+      {
+        "venue": "binance_spot",
+        "instrument_id": "BTCUSDT",
+        "interval": "5m",
+        "row_count": 269856,
+        "coverage_start": "2024-01-01T00:04:59.999000Z",
+        "coverage_end": "2026-07-25T23:59:59.999000Z",
+        "missing_count": 0,
+        "duplicate_count": 0,
+        "invalid_ohlc_count": 0,
+        "invalid_quantity_count": 0,
+        "invalid_inclusive_close_count": 0
+      },
+      {
+        "venue": "binance_spot",
+        "instrument_id": "BTCUSDT",
+        "interval": "15m",
+        "row_count": 89952,
+        "coverage_start": "2024-01-01T00:14:59.999000Z",
+        "coverage_end": "2026-07-25T23:59:59.999000Z",
+        "missing_count": 0,
+        "duplicate_count": 0,
+        "invalid_ohlc_count": 0,
+        "invalid_quantity_count": 0,
+        "invalid_inclusive_close_count": 0
+      },
+      {
+        "venue": "binance_spot",
+        "instrument_id": "BTCUSDT",
+        "interval": "1h",
+        "row_count": 22488,
+        "coverage_start": "2024-01-01T00:59:59.999000Z",
+        "coverage_end": "2026-07-25T23:59:59.999000Z",
+        "missing_count": 0,
+        "duplicate_count": 0,
+        "invalid_ohlc_count": 0,
+        "invalid_quantity_count": 0,
+        "invalid_inclusive_close_count": 0
+      }
+    ],
+    "excluded_partitions": [
+      "binance_spot:BTCUSDT:4h",
+      "binance_spot:BTCUSDT:1d",
+      "coinbase_spot:BTCUSD:1m"
+    ],
+    "readiness": {
+      "quality_checked": true,
+      "research_ready": false,
+      "backtest_ready": false,
+      "promotion_evidence_ready": false
+    }
+  },
+  "l2": {
+    "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+    "dataset_version": "btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+    "manifest_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b.json",
+    "manifest_sha256": "8ea79488adf391698622caab03fe1eec4cc8151f796c68b4313ecd94d4015de1",
+    "manifest_hash_semantics": "sha256_of_git_blob_bytes",
+    "shared_data_storage_relative_path": "datasets/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+    "shared_data_aggregate_sha256": "62b85f26153f21c42452a44d39bc469be305d0322c097a3f6a42be8b3d7e51f5",
+    "quality_status": "blocked",
+    "history_window_days": 0.0,
+    "observed_history_seconds": 0.0,
+    "readiness": {
+      "quality_checked": false,
+      "research_ready": false,
+      "backtest_ready": false,
+      "promotion_evidence_ready": false
+    },
+    "blockers": [
+      "real_timestamp_aligned_l2_missing",
+      "l2_lt_30_natural_days",
+      "btc_okx_selected_bundle_dir_missing",
+      "btc_okx_ws_collector_dependency_missing:websocket",
+      "btc_okx_l2_natural_execution_observation_missing",
+      "btc_okx_l2_sequence_continuity_unverified",
+      "btc_okx_l2_two_sided_coverage_unverified",
+      "l2_artifact_source_head_mismatch"
+    ]
+  },
+  "validation": {
+    "shared_data_kline_resolve": "passed_full_hash",
+    "shared_data_l2_blocked_resolve": "passed_full_hash",
+    "kline_attestation_json_schema": "passed",
+    "pytest_command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py -q",
+    "pytest_result": "135 passed in 7.03s"
+  },
+  "protected_state": {
+    "main_worktree_btc_backtest_identity_blob": "a4031dfbcf5bf20e36b992ecde10156766a9e61d",
+    "main_worktree_btc_backtest_identity_unchanged": true,
+    "main_branch_moved_by_task": false,
+    "push_performed": false
+  },
+  "guardrails": {
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false,
+    "secret_read": false
+  }
+}

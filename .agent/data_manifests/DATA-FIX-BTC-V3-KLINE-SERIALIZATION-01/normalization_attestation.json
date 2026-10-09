@@ -1,0 +1,207 @@
+{
+  "schema_version": "btc_kline_decimal_serialization_successor_attestation_v1",
+  "ticket_id": "DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01",
+  "producer_role": "data_steward",
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "source_head": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "generated_at": "2026-07-26T16:22:56.358Z",
+  "timezone": "UTC",
+  "status": "quality_checked",
+  "decision": "publish_immutable_decimal18_successor_without_changing_consumer_contract",
+  "responsibility_finding": {
+    "owner_layer": "data_export_and_publication",
+    "exporter_path": "quant_crypto/data/immutable_kline_export.py",
+    "exporter_git_blob_sha256": "6e6d386bdc8127f5f8a94747b6bc93924da9b7a6bc4087ff6d3e47273a1c445e",
+    "cause": "SQLite REAL values are forced through Python float and standard JSON float serialization, exposing binary floating-point residue beyond the governed 18 decimal-place payload boundary",
+    "consumer_path": "quant_crypto/data/dataready_consumer.py",
+    "consumer_git_blob_sha256": "c9a8c4748e242663887b84a6a431a151a059bcb907c2840ab055fe733f741dc3",
+    "consumer_contract_status": "unchanged_and_correctly_fail_closed",
+    "schema_path": "schemas/btc_kline_dataready_attestation.schema.json",
+    "schema_git_blob_sha256": "9d30bde8739e02f315cea9b18dba386302f0b2a1ace43c7a63fd1adc102eae6f",
+    "business_or_consumer_code_modified": false
+  },
+  "predecessor": {
+    "dataset_id": "btc-market-data-sqlite-snapshot",
+    "dataset_version": "btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b",
+    "manifest_git_spec": "agent/data_steward/btc-v3-real-data-evidence-publication-01:.agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b.json",
+    "manifest_git_blob_sha256": "1fdac7d8ad027650dde5319114c1f3d832ed35643472aaf80d17ffa0c1d18fe6",
+    "manifest_canonical_json_sha256": "75810bf8bfab2ec6684de79b70bdf71a9a5954562ae5549e3ab6413aaef8332a",
+    "shared_data_aggregate_sha256": "ed1ab63fe48c8034dd2b6d431616d0d0219b8c4206887dfe54b117f5be9142aa",
+    "table_aggregate_sha256": "c304d4a553005ef5e130a58fa5b111452e0b031f8e44a58eedb1b546f35f7226",
+    "total_bytes": 598104918,
+    "retained_immutable": true,
+    "overwritten_or_deleted": false
+  },
+  "failure_reproduction": {
+    "blockers": [
+      "kline_payload_ohlcv_range_invalid",
+      "kline_payload_ohlcv_invalid"
+    ],
+    "governed_max_decimal_places": 18,
+    "violating_value_count": 16538,
+    "violations_by_field": {
+      "volume": 16538
+    },
+    "violations_by_interval": {
+      "1m": 0,
+      "5m": 14261,
+      "15m": 2259,
+      "1h": 18
+    },
+    "maximum_observed_decimal_places": 21,
+    "first_deterministic_failure": {
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=15m/part-00000.jsonl",
+      "line": 2548,
+      "field": "volume",
+      "value": "0.0032300000000000002",
+      "decimal_places": 19,
+      "event_time": "2024-01-27T12:59:59.999000Z"
+    }
+  },
+  "normalization": {
+    "policy_id": "btc_kline_decimal18_round_half_even_v1",
+    "input_numeric_parser": "JSON numeric lexeme to arbitrary-precision Decimal",
+    "rule": "Only finite OHLCV numeric values with more than 18 decimal places are quantized to 1e-18 using ROUND_HALF_EVEN and emitted as JSON numbers",
+    "canonical_output": "decimal numeric lexeme without binary float conversion",
+    "nonzero_rounded_to_zero_is_blocking": true,
+    "nonzero_rounded_to_zero_count": 0,
+    "changed_value_count": 16538,
+    "changed_fields": [
+      "volume"
+    ],
+    "maximum_absolute_delta": "5E-19",
+    "maximum_relative_delta": "2.040816326530611828404831320E-16",
+    "first_change": {
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=15m/part-00000.jsonl",
+      "line": 2548,
+      "before": "0.0032300000000000002",
+      "after": "0.00323",
+      "absolute_delta": "2E-19"
+    },
+    "row_order_preserved": true,
+    "row_count_preserved": true,
+    "event_and_available_time_preserved": true,
+    "partition_identity_preserved": true,
+    "ohlc_values_preserved": true,
+    "unexpected_field_value_change_count": 0,
+    "dataset_version_rebound_on_every_row": true
+  },
+  "successor": {
+    "dataset_id": "btc-market-data-sqlite-snapshot",
+    "dataset_version": "btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b",
+    "manifest_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b.json",
+    "manifest_hash_semantics": "canonical_json_utf8_sorted_compact",
+    "manifest_sha256": "8828156bdc045d271fa8920a7aa9a93c44b6b22054f2c8f14094009e268c01f1",
+    "shared_data_storage_relative_path": "datasets/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b",
+    "shared_data_aggregate_sha256": "e000f25f293c688a14f1cbe43d1eb0e4ef182f25c264e8dea8d90578cc9cd8a4",
+    "table_aggregate_sha256": "9c439446b677544381ce8c6573e7ad02c746fa29f76632f45420d2cdb53f63fc",
+    "file_count": 5,
+    "total_bytes": 620600523,
+    "coverage_start": "2024-01-01T00:00:59.999000Z",
+    "coverage_end": "2026-07-25T23:59:59.999000Z",
+    "total_row_count": 1731576,
+    "maximum_output_decimal_places": 18,
+    "files": [
+      {
+        "path": "exchange=binance_spot/symbol=BTCUSDT/interval=15m/part-00000.jsonl",
+        "row_count": 89952,
+        "changed_volume_count": 2259,
+        "sha256": "5ba7735c50cb6e4563e1bea8808db39f3a580bde79587899cbe67e87ccb9722f",
+        "bytes": 32581440
+      },
+      {
+        "path": "exchange=binance_spot/symbol=BTCUSDT/interval=1h/part-00000.jsonl",
+        "row_count": 22488,
+        "changed_volume_count": 18,
+        "sha256": "6e2f572e282ec7f004148cb988e44fd48a83146dfffbdd93261e8b48fa7dc261",
+        "bytes": 8103772
+      },
+      {
+        "path": "exchange=binance_spot/symbol=BTCUSDT/interval=1m/part-00000.jsonl",
+        "row_count": 1349280,
+        "changed_volume_count": 0,
+        "sha256": "ecee4c3d2d8eb13d6686eea82fa3776cff5687d21f3f431b2918f44ee26aaf3f",
+        "bytes": 482623049
+      },
+      {
+        "path": "exchange=binance_spot/symbol=BTCUSDT/interval=5m/part-00000.jsonl",
+        "row_count": 269856,
+        "changed_volume_count": 14261,
+        "sha256": "d1c6b3da7c051d39906090189f09cbbf1d22fefa55d2c9dc01c15a33c69dd261",
+        "bytes": 97280364
+      }
+    ]
+  },
+  "physical_validation": {
+    "shared_data_full_hash_resolve": "passed",
+    "kline_attestation_schema": "passed",
+    "current_consumer_physical_validator": "passed",
+    "current_consumer_blockers": [],
+    "pairwise_total_rows": 1731576,
+    "pairwise_changed_volume_rows": 16538,
+    "pairwise_maximum_absolute_delta": "5E-19",
+    "pairwise_unexpected_field_change_count": 0,
+    "maximum_output_decimal_places": 18
+  },
+  "l2_discovery_candidates_for_architect": {
+    "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+    "candidate_count": 2,
+    "discovery_code_modified": false,
+    "candidates": [
+      {
+        "classification": "shared_dataset_manifest",
+        "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b.json",
+        "schema_version": "shared_dataset_manifest_v1",
+        "dataset_version": "btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+        "git_blob": "9d1e392f166c6f19845c6a34b022d03956d6579b",
+        "sha256": "8ea79488adf391698622caab03fe1eec4cc8151f796c68b4313ecd94d4015de1",
+        "quality_status": "blocked",
+        "candidate_for_manifest_discovery": true
+      },
+      {
+        "classification": "evidence_attestation_not_shared_dataset_manifest",
+        "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b/btc_okx_l2_blocked_attestation.json",
+        "schema_version": "btc_okx_l2_blocked_attestation_v1",
+        "dataset_version": "btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+        "git_blob": "51482af9a308fc4a2b42a422685e0daf51607bce",
+        "sha256": "94a21f5cdaa4fa41a894bb0c8ec8ad63b80fb0d1b06823adfbaa055fa162af0f",
+        "quality_status": null,
+        "candidate_for_manifest_discovery": false
+      }
+    ],
+    "architect_decision_needed": "Manifest discovery should distinguish schema_version=shared_dataset_manifest_v1 from evidence attestations instead of treating every same-dataset_id JSON file as a manifest; no file deletion or consumer change is authorized in this ticket."
+  },
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false
+  },
+  "remaining_blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "current_head_gate_artifacts_not_rebuilt_at_successor_commit"
+  ],
+  "guardrails": {
+    "predecessor_overwritten": false,
+    "predecessor_deleted": false,
+    "consumer_code_modified": false,
+    "business_code_modified": false,
+    "discovery_code_modified": false,
+    "network_used": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false,
+    "secret_read": false
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-v3-current-head-gate-rebuild-01-goal10-batch-01",
+  "ticket_id": "US-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "researcher",
+    "data_steward"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-goal10-batch-01",
+  "base_commit": "04e5647dbddd62a0e2b1676096b20ee8396a647e",
+  "deliverable_commit": "a6eec26c54a0eb03787148fade299ee6454b4db6",
+  "created_at": "2026-07-24T15:20:45Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-v3-current-head-gate-rebuild-01-487b76fe"
+  ],
+  "supersedes": [],
+  "transition_for": "published-us-v3-current-head-gate-rebuild-01-487b76fe",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "writer JSONL call_ktuXy3leRgGT4IVEnfjLmJPz: py -3 -m pytest tests/contracts/test_us_equity_current_head_gate_rebuild.py tests/contracts/test_us_equity_completion_dependency_report.py tests/contracts/test_us_equity_next_action_queue_report.py tests/contracts/test_us_equity_operator_unblock_packet.py tests/contracts/test_us_equity_completion_audit_report.py tests/contracts/test_us_equity_strategy_production_line_report.py tests/contracts/test_us_equity_portfolio_promotion_evidence_report.py tests/contracts/test_us_equity_paper_simulation_roll.py tests/contracts/test_us_equity_paper_simulation_evaluation_report.py tests/contracts/test_us_equity_live_readiness_risk_constitution.py tests/contracts/test_us_equity_domain_read_model.py tests/contracts/test_us_equity_artifact_schema_coverage.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 83 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "published event core selector reproduced verbatim [exit 4, 0 tests: several non-_report pathspecs do not exist]; exact writer JSONL selector above is the authoritative 83-test command",
+      "result": "failed",
+      "evidence_path": ".agent/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/published-us-v3-current-head-gate-rebuild-01-487b76fe.json"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_current_head_gate_rebuild.py tests/contracts/test_us_equity_artifact_schema_coverage.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 7 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_artifact_schema_coverage.py"
+    },
+    {
+      "command": "writer JSONL call_qUQUL6SjrgJkVsVVIms1puGw: py -3 -m pytest tests/contracts/test_us_equity_current_head_gate_rebuild.py tests/contracts/test_us_equity_broker_credentials_operator_handoff.py tests/contracts/test_us_equity_broker_credentials_review_report.py tests/contracts/test_us_equity_data_source_reconciliation_report.py tests/contracts/test_us_equity_execution_drill_evidence_report.py tests/contracts/test_us_equity_live_readiness_risk_constitution.py tests/contracts/test_us_equity_manual_paper_monitoring_reports.py tests/contracts/test_us_equity_order_reconciliation_drill_report.py tests/contracts/test_us_equity_paper_ledger_uow.py tests/contracts/test_us_equity_paper_simulation_evaluation_report.py tests/contracts/test_us_equity_paper_simulation_roll.py tests/contracts/test_us_equity_portfolio_ledger_required.py tests/contracts/test_us_v3_paper_oms_reconciliation.py backend/tests/test_paper_runtime.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 135 passed, 1 failed]",
+      "result": "failed",
+      "evidence_path": "backend/tests/test_paper_runtime.py"
+    },
+    {
+      "command": "backend/tests/test_paper_runtime.py::TestPaperRuntimeBootstrap::test_bootstrap_persists_session_manifest_history on frozen base 04e5647dbddd62a0e2b1676096b20ee8396a647e and integration HEAD a6eec26c54a0eb03787148fade299ee6454b4db6 [same AssertionError: relative durable path treated as current-CWD path]",
+      "result": "failed",
+      "evidence_path": "backend/tests/test_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_us/application/us_equity_current_head_gate_rebuild.py scripts/build_us_equity_current_head_gate_rebuild.py",
+      "result": "passed",
+      "evidence_path": "scripts/build_us_equity_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "final integration-HEAD US transactional rebuild deferred until BTC, US, CN and approved App.tsx wiring are committed; must execute before main ff-only",
+      "result": "not_run",
+      "evidence_path": "scripts/build_us_equity_current_head_gate_rebuild.py"
+    }
+  ],
+  "blockers": [
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:researcher forward_observation_incomplete",
+    "owner:architect manual_approval_unavailable",
+    "owner:paper_operations paper_runtime_evidence_unavailable",
+    "owner:execution_engineering execution_control_evidence_unavailable",
+    "owner:super_developer current_head_artifact_evidence_unavailable",
+    "owner:super_developer promotion_evidence_incomplete",
+    "owner:architect unclassified_fail_closed_evidence",
+    "owner:paper_runtime pre_existing_durable_path_assertion_drift",
+    "owner:execution_engineering pre_existing_default_template_import_drift",
+    "classification:goal10_code_integration_blocker=false",
+    "classification:published_core_selector_path_drift_recovered_from_writer_jsonl",
+    "classification:pre_existing_durable_path_assertion_drift_confirmed_on_frozen_base_and_us_final",
+    "classification:overall_status=quality_checked_fail_closed"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

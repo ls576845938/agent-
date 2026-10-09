@@ -1,0 +1,120 @@
+{
+  "base_commit": "fae35990efce910d5f286741bb45855f223c0e89",
+  "blockers": [
+    "independent_integrator_required",
+    "canonical_main_playwright_pending_after_integration",
+    "backend_restart_required_after_integration",
+    "demo_not_started",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-16T13:21:53Z",
+  "deliverable_commit": "6e5a8dc51ce778fe1d7b641d6bb9d395cf424f99",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_v1",
+      "sha256": "676c63ae4519dec04ae21730c6b5e1d03f8df8b21726e9fc991b079a73a9a9fb",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_service_v1",
+      "sha256": "57062eb054e9670e3dd933c8e866563b650ccb1cb1e280e5dfa2edb403718aa3",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_workspace_v1",
+      "sha256": "520c142f102af9d221337de60019835bfcb8e1d1421a5eb8e1e21dcbd61767bd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_styles_v1",
+      "sha256": "dfdcec63f5331642ce719a638ef45e8d354d5f03f851bcbea7577fbb3b6dfdb6",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "f0c65ff1235ad3cc4a704812de49411dc3e3dcefc65cbbf428481a7ec486f86d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "5d3290c45c7529fa503e128e87d865449a0504358d60647eab7c5d974df30a24",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_v1",
+      "sha256": "d509265e4af54a00981fdaea2f4df6a4b6705ddd315b9fe624152d3106b070ec",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-liveness-chart-runtime-visibility-01-6e5a8dc51",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-liveness-chart-runtime-visibility-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npx playwright test e2e/btc-demo-console.spec.ts --grep \"running status refreshes confirmed OKX chart\" --reporter=line",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check -- <ticket touch set>",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01",
+  "transition_for": ""
+}

@@ -1,0 +1,113 @@
+{
+  "base_commit": "b9039a2f2cc5b0270bc7f75cf436887e6d6c79c3",
+  "blockers": [
+    "owner:integrator independent integration required for unclassified frontend change_risk",
+    "owner:integrator rerun the full 12-test mocked strategy-modules suite on integrated current main; producer did not start or restart Vite and the existing canonical 3000 served b9039a2f2 rather than this candidate",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; consumer must independently verify ancestry, blobs, touch set and this append-only envelope",
+    "backend restart and promotion artifact/read-model rebuild remain policy requirements after integration and are outside this frontend-only correction",
+    "not_promotion_evidence_ready; promotion=false; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-20T00:00:00Z",
+  "deliverable_commit": "8daa7173b3f67fd94c5fed90cf1986c12a511efe",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_catalog_filter_v1",
+      "sha256": "f572e768511f14ab688cf0b5a29f98de0ea1aee849f9a603d55742f6d80ef3e5",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_catalog_filter_playwright_v1",
+      "sha256": "198bd6d3c7c80a4dfd93d1f337a623addf5a61ce813d987999106169bd30d024",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "e8b98d1bcb3cb952af7b776ebb98d418b6ce597f2a9192b25743a54a4fb2edb5",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "integrated-qs-strategy-modules-real-catalog-binding-04-86173efb9"
+  ],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-real-catalog-binding-04-correction-01-8daa7173b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-real-catalog-corr-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/strategy-modules.spec.ts --grep \"filters unified history candidates by market\" --reporter=line --workers=1 (before source fix, existing canonical 3000)",
+      "evidence_path": "frontend/e2e/strategy-modules.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/strategy-modules.spec.ts --reporter=line --workers=1 (existing canonical 3000 at b9039a2f2, 12 tests)",
+      "evidence_path": "frontend/e2e/strategy-modules.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/strategy-modules.spec.ts --list",
+      "evidence_path": "frontend/e2e/strategy-modules.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "rg historyRecordMatchesMarket/filter and empty-catalog assertions in StrategyModulesWorkspace.tsx and strategy-modules.spec.ts",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/update-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04",
+  "transition_for": ""
+}

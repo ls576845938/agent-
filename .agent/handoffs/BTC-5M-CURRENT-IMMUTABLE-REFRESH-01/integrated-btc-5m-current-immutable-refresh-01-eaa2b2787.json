@@ -1,0 +1,159 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-5m-current-immutable-refresh-01-eaa2b2787",
+  "event_type": "integrated",
+  "ticket_id": "BTC-5M-CURRENT-IMMUTABLE-REFRESH-01",
+  "domain": "btc",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/btc-5m-current-int-01",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "integrator",
+    "researcher"
+  ],
+  "base_commit": "64e20af8867370d29cfbdb0d8798a78d9c3c5a95",
+  "deliverable_commit": "eaa2b2787015827cc4fca8c0e8c99079fe08dc62",
+  "created_at": "2026-08-26T14:30:02Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-5m-current-immutable-refresh-01-correction-04-8297034305"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-5m-current-immutable-refresh-01-correction-04-8297034305",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc1.json",
+      "type": "data_manifest",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "2dbda9e7c7e97365652161dd3d0b3514cbf1d237511af0df32a7cb26a1802f63"
+    },
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1.json",
+      "type": "data_manifest",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "ad6981dc7c8d5124b594ff4212192e5e94ff87c965bd3e3470f247da56efa9ee"
+    },
+    {
+      "path": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "type": "data_manifest",
+      "schema_version": "mutable_runtime_storage_pointer_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "b934de48d233c1f813494825c82b89ed1cd128a0ccf2e48bb28908f6967b0590"
+    },
+    {
+      "path": "docs/research/BTC_5M_CURRENT_IMMUTABLE_REFRESH_01.md",
+      "type": "document",
+      "schema_version": "btc_5m_current_immutable_refresh_report_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "8186a04af02e1db418ec94c1bc768e63ae0d15d6175dbc6311fa294852f2fb82"
+    },
+    {
+      "path": "quant_crypto/data/immutable_kline_export.py",
+      "type": "code",
+      "schema_version": "btc_kline_immutable_export_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "2fc550a899d6451c3076368bcb0cb8a21bba49ceab895c2c429e2d191d3f042b"
+    },
+    {
+      "path": "tests/contracts/test_btc_kline_immutable_export.py",
+      "type": "test_evidence",
+      "schema_version": "btc_kline_immutable_export_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "8a64c51cb7ca522f225b02bd55790efd3050a8728e7795f931cd1e3559a671b3"
+    },
+    {
+      "path": "tests/contracts/test_btc_market_data_runtime_pointer.py",
+      "type": "test_evidence",
+      "schema_version": "btc_market_data_runtime_pointer_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "e44345144e60cf728ddc7c775310b03fe69d59ac27ed693f7598829f6635e2f4"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate --input all five BTC-5M-CURRENT-IMMUTABLE-REFRESH-01 published envelopes",
+      "evidence_path": ".agent/handoffs/BTC-5M-CURRENT-IMMUTABLE-REFRESH-01/*.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1.json --shared-root D:/vibe coding/Obsidian/量化系统/shared-data",
+      "evidence_path": "shared-data/datasets/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1",
+      "result": "passed"
+    },
+    {
+      "command": "Git manifest/physical _dataset_manifest SHA-256 and qcv2r1 pointer binding",
+      "evidence_path": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "result": "passed"
+    },
+    {
+      "command": "direct _validate_kline_attestation with full immutable JSONL payload scan after generated_at",
+      "evidence_path": "status=pass; blockers=[]; common_end=2026-08-26T11:59:59.999000Z; freshness_age_hours=2.424871",
+      "result": "passed"
+    },
+    {
+      "command": "independent 5m payload scan for decimal18/range and cadence",
+      "evidence_path": "rows=278928; decimal18_bad=0; gaps=0; duplicate_event_time=0; first=2024-01-01T00:04:59.999000Z; last=2026-08-26T11:59:59.999000Z",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/tmp/qs5m-int01-20260826 tests/contracts/test_btc_market_data_runtime_pointer.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_short_interval_data_refresh.py tests/agent_governance/test_shared_data.py",
+      "evidence_path": "79 passed in 6.30s",
+      "result": "passed"
+    },
+    {
+      "command": "tests/contracts/test_btc_kline_immutable_export.py::test_export_rejects_nextafter_above_decimal18_boundary_but_accepts_exact_limit",
+      "evidence_path": "1 passed in 0.45s; exact 1e18 accepted and nextafter upper bound rejected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/data/immutable_kline_export.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_market_data_runtime_pointer.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_short_interval_data_refresh.py tests/agent_governance/test_shared_data.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "canonical CPython 3.11 py_compile for changed Python files",
+      "evidence_path": "exit=0; interpreter=C:/Users/LOCAL_USER/AppData/Roaming/uv/python/cpython-3.11.15-windows-x86_64-none/python.exe",
+      "result": "passed"
+    },
+    {
+      "command": "canonical CPython 3.11 pytest/import smoke",
+      "evidence_path": "not run: pytest/jsonschema unavailable in the standalone 3.11 interpreter; full contracts ran with py -3",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check 64e20af8867370d29cfbdb0d8798a78d9c3c5a95..HEAD",
+      "evidence_path": "no output",
+      "result": "passed"
+    },
+    {
+      "command": "scoped safe_status for all 12 producer paths",
+      "evidence_path": "status=clean; dirty_count=0",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "immutable_manifest_consumer_readiness_blocked",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "okx_timestamp_aligned_l2_manifest_not_published",
+    "backend_restart_required_after_main_integration",
+    "promotion_artifact_rebuild_required_after_main_integration",
+    "qc2_invalid_source_head_orphaned",
+    "canonical_main_merge_required_before_any_backend_restart_or_promotion_claim"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

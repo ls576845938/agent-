@@ -1,0 +1,94 @@
+{
+  "base_commit": "c47ec1370984393314ca4d0fa8f7e5b43187f0b0",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator current_head_canonical_btc_runtime_artifact_not_published",
+    "baseline_main_test_failure:backend/tests/test_btc_runtime_artifact_wiring.py::test_valid_external_root_returns_only_logical_paths_and_remains_read_only",
+    "not_promotion_evidence_demo_runtime_not_started_no_orders_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-07-30T00:09:30Z",
+  "deliverable_commit": "fa7d27059e2eae491e1b8f1b611386e1761d3afc",
+  "deliverables": [
+    {
+      "path": "backend/app/core/config.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_settings_btc_demo_risk_profile_v1",
+      "sha256": "07f7ce4ecbcba3432c333ff49052863c9efaf77b0f84f6a8e29b193dd8761c2e",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_risk_profile_composition_v1",
+      "sha256": "70836e8791a6c9556e563ef813e47a4c7c840a1ba247bf1c3010ced18f2ad87a",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_profile_settings_contract_v1",
+      "sha256": "779e9cdf2f9d2e7c9a51eb0285a44baef8f7a51749101243d675aad920e32f9d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_profile_composition_contract_v1",
+      "sha256": "2aa1d8367a01a737d8f8dace4446c12c42a0b8c2af1a827eef20fb8b0fc41111",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-stress-profile-01-fa7d27059",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-stress-profile-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_api.py backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-system-temp> [observed: 23 passed in 3.56s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "extended seven-file backend/runtime/artifact regression [observed: 88 passed, 1 failed]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "base-main reproduction of test_valid_external_root_returns_only_logical_paths_and_remains_read_only [observed: identical required_blockers_not_preserved failure]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile <4 changed Python files>",
+      "evidence_path": "backend/app/core/config.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <4 changed Python files>",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-STRESS-PROFILE-01",
+  "transition_for": ""
+}

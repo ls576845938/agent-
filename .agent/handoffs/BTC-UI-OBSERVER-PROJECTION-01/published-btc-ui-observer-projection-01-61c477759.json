@@ -1,0 +1,142 @@
+{
+  "base_commit": "85a33b4c3335e9ba6407fb630ba0f06c76a63f80",
+  "blockers": [
+    "independent_integrator_required",
+    "canonical_backend_frontend_restart_required",
+    "canonical_main_browser_e2e_required",
+    "current_head_promotion_artifact_rebuild_required",
+    "private_readonly_25h_observation_incomplete"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-02T05:23:14.5729244Z",
+  "deliverable_commit": "61c4777595f377897c2195d257ff7e3f44250d08",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_observation_projection_v1",
+      "sha256": "1739f309ef6a870e7de71c71f4b2b0b7221cc3db9d863b2145ed9f1dd03fe74d",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "57ff3bef2a288b28ead0b41077433b20aa00b9820d0d6e85230f354dd325fdcd",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "3037259b5d34823db57cafd7c9d5ebd719274496ec84efcc686fb3ea53b5f852",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "74f96ab9ca4a552b9e63f7b18aecad2c0db97630307a2aa14b33514fc8dfd081",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_private_readonly_observation_projection.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "d609111b50a3b14f85c3e1e8a53bd327b661058ffd008b870520c7d998119edb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "55c6a2180c50a276584d2eaec94c70d6f33c7e8a6f0a8e7b19493c58e01e9f89",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "7558658d731761cad328962a118a5d6449f82f1e3dcf18bf469045e3bc69e618",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "0df6b1fbf296883c66f7684f0fbed5d640c56809f739ed1aa772bef025a38bfc",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "7ea0512f15476e1ed792b2f52261019824360dbe3b8f40a9c7bef6faa4550a5d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_fixture_source_v1",
+      "sha256": "b89ecdf784c1388d102df77ec9a7b167ad6a22100941e40751c9c59b3e598d5d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_source_v1",
+      "sha256": "cf147a1ccc4e816578a0455b2777a1f1e16a4785afa307ce31251415e7a8299f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-ui-observer-projection-01-61c477759",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-ui-observer-projection-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_private_readonly_observation_projection.py -q (5 passed in 8.65s)",
+      "evidence_path": "backend/tests/test_btc_private_readonly_observation_projection.py",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build (built in 2m 30s)",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/check-btc-tradingview-entry.mjs",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright responsive/fullscreen verification",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-UI-OBSERVER-PROJECTION-01",
+  "transition_for": ""
+}

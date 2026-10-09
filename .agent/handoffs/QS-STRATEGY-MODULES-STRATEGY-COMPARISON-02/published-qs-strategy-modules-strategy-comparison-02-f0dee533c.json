@@ -1,0 +1,102 @@
+{
+  "base_commit": "00e2953383be46909b740ed6cae619640498a2a7",
+  "blockers": [
+    "owner:integrator independent integration required for unclassified frontend change_risk",
+    "owner:integrator canonical registered-main mocked Playwright and visual acceptance deferred_to_integrated_current_main",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, or service/Demo execution performed",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-19T00:00:00Z",
+  "deliverable_commit": "f0dee533c92373d2433c861e2fd14bea2c935225",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_v2",
+      "sha256": "74aba6d2c193f5adb7ecbe93325d5eb23a14a32172acfd2fe6fcadaf0eeb7ddd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_css_v1",
+      "sha256": "2e95051c07646bdb677155607643ee714e56993a2c83819eec9809724a6a1898",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "57445702d47f55cc977b4532934e16841b030f1894f16480d523264616a1d376",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "822bd72ba527ec7caa3c79cade369468593090eb80e4bb8983c9d4b6a16031ff",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-strategy-comparison-02-f0dee533c",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-modules-strategy-comparison-02",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build (Vite; chunk-size warning only)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/strategy-modules.spec.ts --list --config playwright.config.ts (8 tests collected)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check (manifest_match=true; baseline_ancestor=true)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:test (object_targets=4)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical mocked Playwright run on registered main (deferred_to_integrated_current_main)",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-STRATEGY-COMPARISON-02",
+  "transition_for": ""
+}

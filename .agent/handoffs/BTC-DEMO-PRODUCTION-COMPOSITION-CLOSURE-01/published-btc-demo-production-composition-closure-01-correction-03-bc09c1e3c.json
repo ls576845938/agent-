@@ -1,0 +1,117 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-production-composition-closure-01-correction-03-bc09c1e3c",
+  "ticket_id": "BTC-DEMO-PRODUCTION-COMPOSITION-CLOSURE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-production-composition-closure-01",
+  "base_commit": "bbcf59810e51d109a68e7e6c046f9fb35b8c98b3",
+  "deliverable_commit": "bc09c1e3cef89dc0cdba7af6c4afcbfe2daea1fe",
+  "created_at": "2026-08-24T09:40:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99",
+    "integrated-btc-shared-platform-v3-t4-659b3bd4c",
+    "integrated-btc-shared-platform-v3-t5-3ed37d0fa",
+    "integrated-btc-shared-platform-v3-t6-9b7df3417",
+    "integrated-btc-demo-operator-v2-restart-recovery-01-8948ae713"
+  ],
+  "supersedes": [
+    "published-btc-demo-production-composition-closure-01-correction-02-8cc0e0932"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_demo_production_composition.py",
+      "sha256": "c44c2b07d3a1985740a38fa154132f1b5fd7e3e439079b0b7dae9388629f89ab",
+      "schema_version": "btc_demo_production_composition_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_demo_production_composition.py",
+      "sha256": "9733299579f3625a275321ad2100127077798f420be3d848da5e6f85c353de1a",
+      "schema_version": "btc_demo_production_composition_tests_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "19fbc7a0fff5bf201eadd6a56fa3879b4b48af181eaa0a715fa35b91700990da",
+      "schema_version": "btc_demo_runtime_service_tests_v3",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-prodcomp-corr05 tests/contracts/test_btc_demo_production_composition.py",
+      "result": "failed",
+      "evidence_path": "failure-first RED: 2 failures exposed opening guardian daily-pnl projection and raw-PnL blocker propagation"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-prodcomp-target05 tests/contracts/test_btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "53 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-prodcomp-layer03 tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "540 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-prodcomp-operator04 tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed",
+      "evidence_path": "40 passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_demo_production_composition.py",
+      "result": "passed",
+      "evidence_path": "py_compile passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "diff check passed before deliverable commit"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-backend-api-corr03 backend/tests/test_btc_demo_runtime_api.py",
+      "result": "not_run",
+      "evidence_path": "sparse baseline collection blocker: ModuleNotFoundError: quant_cn"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp C:\\tmp\\qsx-v3-boundary-corr03 tests/contracts/test_btc_application_service_boundary.py",
+      "result": "not_run",
+      "evidence_path": "sparse baseline collection blocker: ModuleNotFoundError: quant_us"
+    },
+    {
+      "command": "npm exec -- playwright test frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run",
+      "evidence_path": "deferred_to_integrated_current_main; producer did not start a service"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "backend_api_contract_blocked_by_sparse_quant_cn_baseline",
+    "application_service_boundary_blocked_by_sparse_quant_us_baseline",
+    "producer_playwright_deferred_to_integrated_current_main",
+    "frontend_identity_refresh_reserved_to_integrator",
+    "promotion_artifact_rebuild_not_run_by_scope",
+    "initial_dirty_only_parent_correction_paths_before_commit",
+    "safety_flags_false_promotion_paper_live_private_order_real_order_transfer_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

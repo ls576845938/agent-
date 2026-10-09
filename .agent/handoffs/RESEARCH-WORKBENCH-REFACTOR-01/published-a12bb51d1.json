@@ -1,0 +1,131 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-workbench-refactor-01-a12bb51d1",
+  "ticket_id": "RESEARCH-WORKBENCH-REFACTOR-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/research-workbench-refactor-01",
+  "base_commit": "4096453b344e777e99f4272b43582d60cf1251f9",
+  "deliverable_commit": "a12bb51d113e031ffba6ed75267ea0a35b5b2e34",
+  "created_at": "2026-09-08T13:33:46Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-research-workbench-refactor-01-f19be2c04"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/research-workbench-refactor-01.md",
+      "sha256": "ec6d0d4e664b21ba407cbe51788cf8b514bec607d8b80e05d9c271e21b7dced6",
+      "type": "report",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/research-workbench.spec.ts",
+      "sha256": "3e7d10334d1eabc33936e77acb9630b9e32c27042a43ee31b6357fc9a35b029e",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/research.spec.ts",
+      "sha256": "804734200051082330529112cafeab65129813328ce76f87fafea469a87cd8a5",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-research-rollback.mjs",
+      "sha256": "9890f39ba46694f3928fcc234a14b2dd7105b9a89acca94bba9185bfb984735b",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchDashboard.tsx",
+      "sha256": "11eb43423423ccd0e95513d0b541ff6d353419d7c15accc7bd1391b5457cf119",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/LegacyResearchDashboard.tsx",
+      "sha256": "d05fa9d6337207b9ee68ceaee7e1fc816e80ee51421c9ebc3a9a5118749e50ad",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchDashboard.css",
+      "sha256": "fc41dedcfddd488a4a672a476793b261c12438c3c8e169808a7cf47f238037ed",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "sha256": "72398d154063209ce73a9047d7e11dbf88228f3600178460d72498a2533c689c",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "scripts/verify_research_workbench.py",
+      "sha256": "6fb33c433e8123c9cfd9acd50e425a7f631e5038a0ea86f1bd00b0eb2e0a3702",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-research-rollback.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "frontend: tsc --noEmit and npm.cmd run build",
+      "result": "passed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "pytest seven research/adapter/factor suites: 72 passed, 2 Windows separator assertion failures; backend sources unchanged",
+      "result": "failed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "canonical Playwright execution and real Qlib/portfolio workflow",
+      "result": "not_run",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "private .venv: import qlib/lightgbm/pypfopt; LightGBM 40-row fit/predict; EfficientFrontier 3-asset min_volatility; pip check",
+      "result": "passed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:architect review corrected P1/defaults/refresh/root guards; independent integrator and current-main UI acceptance pending",
+    "owner:root Qlib real dataset completed but first training failed on non-ASCII joblib temp path; scoped environment retry underway",
+    "owner:root backend fix scope awaits user authorization for existing factor time-key and regime-sidecar contract defects",
+    "owner:root other task still owns canonical dependency/main/service restart window",
+    "owner:existing_backend two Windows path separator assertion failures; actual gate remains BLOCKED"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

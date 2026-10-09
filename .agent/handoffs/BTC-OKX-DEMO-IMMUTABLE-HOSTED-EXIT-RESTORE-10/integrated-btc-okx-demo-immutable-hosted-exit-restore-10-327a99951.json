@@ -1,0 +1,85 @@
+{
+  "base_commit": "a238c27bdadc9092dcfe8b7809dc02784053aaad",
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "fresh_private_rest_private_ws_funding_and_ledger_reconciliation_required_before_runtime_can_clear_frozen_state",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-11T04:40:00Z",
+  "deliverable_commit": "327a99951681fa04dfe86f7f1f96fd6c10940145",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_immutable_hosted_exit_restore_v1",
+      "sha256": "6bd36c0b43db93dff6a552560dcbc95f76f30dbca973a51e273462ee9d7e5433",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_immutable_hosted_exit_restore_contract_v1",
+      "sha256": "59ac7403f0b0650bbbca322a42993f1634d8117e77afc7a95d1989fb14bd6440",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-immutable-hosted-exit-restore-10-f9d7e22da"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-immutable-hosted-exit-restore-10-327a99951",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-immutable-hosted-exit-rest10-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "immutable/hosted focused: 9 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py: 295 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py: 103 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py: 23 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check a238c27bdadc9092dcfe8b7809dc02784053aaad HEAD",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-IMMUTABLE-HOSTED-EXIT-RESTORE-10",
+  "transition_for": "published-btc-okx-demo-immutable-hosted-exit-restore-10-f9d7e22da"
+}

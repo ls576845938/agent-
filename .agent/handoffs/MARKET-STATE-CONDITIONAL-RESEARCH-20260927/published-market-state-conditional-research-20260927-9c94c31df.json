@@ -1,0 +1,120 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_integrator_required",
+    "diagnostic_builder_hardening_pending_independent_integration",
+    "btc_runtime_consumer_pending",
+    "policy_trial_not_started",
+    "policy_effect_not_evaluated",
+    "28_roundtrips_exploratory_only",
+    "not_runtime_or_promotion_evidence",
+    "demo_paper_live_not_authorized"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-09-27T05:05:00Z",
+  "deliverable_commit": "9c94c31df43221baee043f900ea02f121fbb8c0e",
+  "deliverables": [
+    {
+      "path": "quant_shared/trend_environment/state_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_descriptive_v2",
+      "sha256": "29b920725ed2600bd8ec751ecf38638847f4bc8e0206f84267e3b9a224318131",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/trend_environment/entry_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "entry_path_efficiency_72h_v1",
+      "sha256": "34cc48e6c785b23e57a0aef2b30a6f248dee55a5352e2216f7d443bf1cf38a15",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/strategy_delivery/market_policy_attachment.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_entry_policy_attachment_v1",
+      "sha256": "9bbb3e8880a2c7ffb9505ebf48b756d9c2458a3c94ce984ed5f3ce01f376b2de",
+      "type": "code"
+    },
+    {
+      "path": ".agent/market_state_evidence/donchian-stage-market-state-v2-20260927.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_stage_diagnostic_v1",
+      "sha256": "2a4345a7d9a867cd1888addad00659583ea744911aa0b5b8486ad8c282c9c00b",
+      "type": "artifact"
+    },
+    {
+      "path": "docs/research/market-state-conditional-policy-protocol-20260927.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_conditional_policy_protocol_v1",
+      "sha256": "7eca70e55aa40d1f2db6e4c72b79a326bf73bd54d583a50347d7f34364e8d85e",
+      "type": "document"
+    },
+    {
+      "path": "backend/app/services/donchian_stage_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "donchian_stage_read_model_with_market_state_v1",
+      "sha256": "1882b1a1c6e3670865caf9866ddd67fafc24e9c02ce899dc509a56fdda85db6b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/MarketStateEvidence.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_evidence_view_v1",
+      "sha256": "6a2e5f3cb6d1f478cef097d568b987bc3e8b2fb587894a87a00091545d4e5ba0",
+      "type": "code"
+    },
+    {
+      "path": "docs/architecture/shared-market-state-v2.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_market_state_architecture_v1",
+      "sha256": "4b0603960268b3433a2bf4fad2f168119632e5d16230db0415bd8589253ab44c",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-market-state-conditional-research-20260927-9c94c31df",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/market-state-conditional-research-20260927",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-market-state-shared-contracts-20260927-b22baf73f",
+    "published-market-state-stage-evidence-20260927-211e5e286"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/research/test_market_state_v2.py tests/research/test_market_state_entry_policy.py tests/research/test_market_state_diagnostics.py tests/contracts/test_market_policy_attachment.py tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py backend/tests/test_donchian_stage_views.py -q",
+      "evidence_path": "73 passed in 59.76s",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-market-state-evidence.mjs frontend/scripts/test-donchian-stage-evidence.mjs frontend/scripts/test-trend-environment.mjs",
+      "evidence_path": "7 passed in 917.2498ms",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "tsc --noEmit completed with exit code 0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "transition_for": ""
+}

@@ -1,0 +1,51 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "producer source must identify the original ledger transition instead of counting cumulative client-order snapshots"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "architect"
+  ],
+  "created_at": "2026-10-04T12:46:24Z",
+  "deliverable_commit": "79e42a5cbd54ab343ea1a376fd9353170a3c941d",
+  "deliverables": [
+    {
+      "path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_independent_acceptance_v2",
+      "sha256": "e4b2e2c1c72c6eb581f1b25109ae018f7b2379a2aafeee31720f3f065debf730",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "rejected-btc-cohort-final-independent-20261004-a020fd0de"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-cohort-independent-cumulative-ledger-test-20261004-79e42a5cb",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-entry-recovery-closeout-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/integrations/test_btc_cohort_entry_independent_acceptance.py::test_projection_repair_selects_original_uow_from_cumulative_ledger_snapshots -q --tb=short",
+      "evidence_path": "1 failed in 2.88s; valid decision-time fill still raises cohort_committed_ledger_authority_missing_or_ambiguous",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "transition_for": ""
+}

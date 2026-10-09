@@ -1,0 +1,51 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-workbench-version-backtest-flow-05-31605dbbe",
+  "ticket_id": "STRATEGY-WORKBENCH-VERSION-BACKTEST-FLOW-05",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-workbench-version-backtest-flow-05",
+  "base_commit": "32dc959cc8e49b48aa4410398656fd66096c5e19",
+  "deliverable_commit": "31605dbbee18f3fdec509885275ee003c3e2f1e4",
+  "created_at": "2026-08-14T06:29:41Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"path": "backend/app/api/btc_strategy_history.py", "type": "code", "sha256": "7c48d12415a96af13b0beab8c027cf1a7843a44a1273954b6038336f7a641060", "schema_version": "strategy_workbench_version_api_v1", "readiness_class": "quality_checked"},
+    {"path": "backend/app/api/app_factory.py", "type": "code", "sha256": "fefe88da6d91b9a8998bb51b2aec1aad17b8858a0290f1c636bb4cc4d06f8005", "schema_version": "strategy_workbench_version_factory_wiring_v1", "readiness_class": "quality_checked"},
+    {"path": "backend/app/services/strategy_workbench_versions.py", "type": "code", "sha256": "2377808e472726acea947f2a8d77e9eb8cdd820af30d8dde2a9884a1a2e64182", "schema_version": "strategy_workbench_version_journal_v1", "readiness_class": "quality_checked"},
+    {"path": "backend/tests/test_btc_strategy_history_api.py", "type": "test_evidence", "sha256": "2e34c875b762a9f6c64d429c1233c45f38398a26d109b0fa5f75942ac2b95449", "schema_version": "strategy_workbench_version_contract_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/StrategyExplorer.tsx", "type": "code", "sha256": "495974ea9c52783aa2e8d61c3783744a5724d67b86e15184b1b39cb11cc351ce", "schema_version": "strategy_workbench_version_flow_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/strategy-workbench.css", "type": "code", "sha256": "9ff8fa6eaac3b1ac9e51dd1d22a7e201d4302c73536775e83cfa144f36b14364", "schema_version": "strategy_workbench_version_styles_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/e2e/strategy-workbench.spec.ts", "type": "test_evidence", "sha256": "0169f0cf2c0535e3c9f7cb121bcf8c4d9407053c1b15e5f42dbee3f26c7bd627", "schema_version": "strategy_workbench_version_e2e_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "PYTHONPATH=<worktree>;<registered-main> py -3 -m pytest backend/tests/test_btc_strategy_history_api.py -q", "result": "passed", "evidence_path": "14 passed in 13.07s"},
+    {"command": "py -3 -m py_compile backend/app/services/strategy_workbench_versions.py backend/app/api/btc_strategy_history.py backend/app/api/app_factory.py", "result": "passed", "evidence_path": "local offline compilation"},
+    {"command": "node <registered-main-frontend-node_modules>/typescript/bin/tsc --noEmit --project frontend/tsconfig.json --typeRoots <registered-main-frontend-node_modules>/@types --baseUrl <registered-main-frontend-node_modules>", "result": "passed", "evidence_path": "frontend TypeScript compile"},
+    {"command": "node <registered-main-frontend-node_modules>/@playwright/test/cli.js test frontend/e2e/strategy-workbench.spec.ts --list --config frontend/playwright.config.ts", "result": "passed", "evidence_path": "4 tests discovered; no frontend server started"},
+    {"command": "node <registered-main-frontend-node_modules>/vite/bin/vite.js build --config frontend/vite.config.ts", "result": "not_run", "evidence_path": "bounded attempt blocked: sparse worktree Vite ESM config cannot resolve package vite from sibling registered-main node_modules"},
+    {"command": "git diff --cached --check -- <declared touch set>", "result": "passed", "evidence_path": "no whitespace errors"}
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_change_risk",
+    "owner:integrator canonical_registered_main_frontend_build_and_strategy_workbench_e2e_pending",
+    "owner:environment sparse_worktree_vite_esm_package_resolution_unavailable",
+    "future_demo_reader_requires_separate_runtime_admission; selection does not start or authorize Demo",
+    "promotion_artifact_and_read_model_not_built_by_user_scope"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

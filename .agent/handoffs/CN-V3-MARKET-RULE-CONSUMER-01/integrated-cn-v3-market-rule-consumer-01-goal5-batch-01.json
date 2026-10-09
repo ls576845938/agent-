@@ -1,0 +1,111 @@
+{
+  "base_commit": "9629a075774255e48490574d4f24cbb6196b8ec5",
+  "blockers": [
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "cn_market_rule_old_two_security_pilot_not_accepted",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "classification:goal5_code_integration_blocker=false",
+    "classification:cn_market_rule_state=rejected_and_blocked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T08:03:59Z",
+  "deliverable_commit": "66020a60f25f67cff1c5bd5c5da03304b98071be",
+  "deliverables": [
+    {
+      "path": "quant_cn/data/market_rule_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_rule_bundle_consumer_v1",
+      "sha256": "7c7d7fe236d58ee144b2b7fb7721887f60f61e81a032908b6c61a5e3ef6be9ac",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/application/market_semantics_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_semantics_preflight_v1",
+      "sha256": "93886dea0f91f9da9f24938e7301098a2c426480b057e9b4a8136496d2cc23a9",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_market_rule_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_rule_consumer_tests_v1",
+      "sha256": "41acd335215e97da643f803915b9793aaab86c4bc9bf7f9592ce0196ec0ddc78",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/cn_equity/test_market_semantics.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_semantics_tests_v1",
+      "sha256": "85553f3604e80890ca7a35d0513eeb07027b9e32f55c3816fea575b2a68f2772",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "rejected-cn-v3-market-rule-consumer-01-3cb566c7"
+  ],
+  "domain": "cn_equity",
+  "event_id": "integrated-cn-v3-market-rule-consumer-01-goal5-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal5-batch-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/cn_equity/test_market_rule_consumer.py tests/cn_equity/test_market_semantics.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 16 passed]",
+      "evidence_path": "tests/cn_equity/test_market_rule_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 70 passed]",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 13 passed]",
+      "evidence_path": "tests/shared_platform",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/cn-equity-market-rule-bundle/current-main.json --fast [observed exit 2: shared_data_manifest_missing]",
+      "evidence_path": ".agent/data_manifests",
+      "result": "failed"
+    },
+    {
+      "command": "producer rejected handoff validate; source business commit 3cb566c741db0269ae11084990a64873d6cdd8f3; source final dde677694eb6d11b320da899aa3d9a3ca3ff1ea8; actual integration commits 04014780a97967ba6fe312082471e8d972d38020 and 66020a60f25f67cff1c5bd5c5da03304b98071be; committed-byte SHA-256 and exact touch-set precheck",
+      "evidence_path": ".agent/handoffs/CN-V3-MARKET-RULE-CONSUMER-01/rejected-cn-v3-market-rule-consumer-01-3cb566c7.json",
+      "result": "passed"
+    },
+    {
+      "command": "exact approved touch-set plus tracked data/artifact/ledger side-effect verification after CN suites",
+      "evidence_path": "tests/cn_equity/test_market_rule_consumer.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "CN-V3-MARKET-RULE-CONSUMER-01",
+  "transition_for": "rejected-cn-v3-market-rule-consumer-01-3cb566c7"
+}

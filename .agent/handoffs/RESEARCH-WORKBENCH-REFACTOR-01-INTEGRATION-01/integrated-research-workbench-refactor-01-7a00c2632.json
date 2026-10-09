@@ -1,0 +1,185 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-research-workbench-refactor-01-integration-01-7a00c2632",
+  "event_type": "integrated",
+  "ticket_id": "RESEARCH-WORKBENCH-REFACTOR-01-INTEGRATION-01",
+  "domain": "research",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/research-workbench-refactor-01-integration-01",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "base_commit": "bbc39bec1449c5ea6947c200be1541988d34db2c",
+  "deliverable_commit": "7a00c263230edc1481735e1d3f75f343b04edf3f",
+  "depends_on": [
+    "published-research-workbench-refactor-01-85f669ccd",
+    "published-research-workbench-refactor-01-2b3ca63e0"
+  ],
+  "supersedes": [],
+  "transition_for": "published-research-workbench-refactor-01-2b3ca63e0",
+  "created_at": "2026-09-08T14:48:31Z",
+  "expires_at": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "docs/reports/research-workbench-refactor-01.md",
+      "type": "report",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "d4790d242d9572b7db5c0087f592602c0a953620feb068d4e1b358a6a451ac54"
+    },
+    {
+      "path": "docs/reports/research-workbench-refactor-01-integration.md",
+      "type": "report",
+      "schema_version": "research_workbench_integration_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "cb0b8604454674178e06dd5213a35d9ee47a55658ff339071d4cbbbbafd65972"
+    },
+    {
+      "path": "frontend/e2e/research-workbench.spec.ts",
+      "type": "test_evidence",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "2d140c45d41206d475ecd3e4323f1dbf98dacd957ab3a355c44922cc233bf2e0"
+    },
+    {
+      "path": "frontend/e2e/research.spec.ts",
+      "type": "test_evidence",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "804734200051082330529112cafeab65129813328ce76f87fafea469a87cd8a5"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "artifact",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "eaa1415471e1a7413503a3faaa6a6972660c67e6603c8602e9d41149e9a2ca46"
+    },
+    {
+      "path": "frontend/scripts/test-research-rollback.mjs",
+      "type": "test_evidence",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "9890f39ba46694f3928fcc234a14b2dd7105b9a89acca94bba9185bfb984735b"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchDashboard.tsx",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "76644b45998af345e938b7597d6ce4b154377f3d7ee0a67cb62324a4d47e8954"
+    },
+    {
+      "path": "frontend/src/workspaces/research/LegacyResearchDashboard.tsx",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "d05fa9d6337207b9ee68ceaee7e1fc816e80ee51421c9ebc3a9a5118749e50ad"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchDashboard.css",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "fc41dedcfddd488a4a672a476793b261c12438c3c8e169808a7cf47f238037ed"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "72398d154063209ce73a9047d7e11dbf88228f3600178460d72498a2533c689c"
+    },
+    {
+      "path": "scripts/verify_research_workbench.py",
+      "type": "code",
+      "schema_version": "research_workbench_verification_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "6fb33c433e8123c9cfd9acd50e425a7f631e5038a0ea86f1bd00b0eb2e0a3702"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate both published producer envelopes; committed blob identity, ancestry, nine deliverable SHA-256 values, and no main overlap checked before no-ff merges",
+      "evidence_path": ".agent/handoffs/RESEARCH-WORKBENCH-REFACTOR-01/published-2b3ca63e0.json",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "evidence_path": "docs/reports/research-workbench-refactor-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build; 5227 modules in 52.08 seconds; existing bundle-size warning retained",
+      "evidence_path": "docs/reports/research-workbench-refactor-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-research-rollback.mjs; exact baseline 4096453b",
+      "evidence_path": "frontend/scripts/test-research-rollback.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Playwright first run on 87e737b; 8 passed, 2 test-contract failures in 1.0 minute",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-workbench-refactor-01/canonical-e2e-first-run-failure.json",
+      "result": "failed"
+    },
+    {
+      "command": "canonical Playwright corrected run on 09675ec2; research.spec.ts plus research-workbench.spec.ts, workers=1; 10 passed in 33.4 seconds",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-workbench-refactor-01/integration-acceptance-09675ec2.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent in-app browser new layout, dependencies, legacy rollback/return, compact 1130px overflow and visual overlap acceptance",
+      "evidence_path": "C:/Users/LOCAL_USER/.codex/visualizations/2026/09/08/01a080f1-4630-7253-bcda-f37ffa68c539/research-refactor/04-after-final.png",
+      "result": "passed"
+    },
+    {
+      "command": "canonical health, backend/frontend identity, qlib/lightgbm/pypfopt dependency reads; no private endpoint",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-workbench-refactor-01/integration-acceptance-09675ec2.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python seven research regression suites after dependency install; 72 passed, 2 Windows blocker-text path separator assertions failed while decisions remained BLOCKED",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-workbench-refactor-01/preintegration-acceptance.json",
+      "result": "failed"
+    },
+    {
+      "command": "real historical Qlib provider/training/metric import completed; native portfolio analysis and portfolio/risk pipeline failed",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-workbench-refactor-01/qlib-002/receipt.json",
+      "result": "failed"
+    },
+    {
+      "command": "promotion artifact rebuild, evidence-registry rebuild, backend repair, model retuning, paper/live/private/order validation and real execution",
+      "evidence_path": "outside approved UI-only integration scope; all related permissions remain false",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "full_research_flow_not_passed",
+    "research_evidence_registry_conflict_or_server_error",
+    "factor_time_key_timezone_merge_produces_no_observations",
+    "regime_filter_parameter_not_accepted_by_registered_strategy_contract",
+    "qlib_native_portfolio_analysis_last_calendar_index_out_of_bounds",
+    "qlib_predictions_constant_rank_ic_nan",
+    "portfolio_optimizer_fallback_used",
+    "pending_order_intents_3",
+    "walk_forward_produced_no_windows",
+    "windows_blocker_text_separator_assertions_2_failed_decisions_blocked",
+    "canonical_research_run_registries_empty",
+    "promotion_artifact_unavailable_and_not_rebuilt",
+    "future_backend_restart_must_preserve_ascii_joblib_temp_until_separate_launcher_change",
+    "final_metadata_commit_requires_current_main_service_identity_refresh"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "base_commit": "21aa697ed36dc442c10fb07c4720845c1da2e899",
+  "blockers": [
+    "services_not_started",
+    "demo_not_started",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-16T13:57:46Z",
+  "deliverable_commit": "0dfa95b223c72e7708d70802ec4ec155e7436c90",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "f7a20f5e3b1b7728f2b0345f28fa12d2d3dd271aa4b7d134d65cab6549a2bf3e",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-b7cd98bef"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-0dfa95b22",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-identity-correction-01-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published correction envelope>",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01-CORRECTION-01/published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-b7cd98bef.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --ff-only 0dfa95b223c72e7708d70802ec4ec155e7436c90",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01-CORRECTION-01/published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-b7cd98bef.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check -- --canonical",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01-CORRECTION-01",
+  "transition_for": "published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-b7cd98bef"
+}

@@ -7,6 +7,70 @@ const waitForBaselineLayout = async (page: Page) => {
   await expect(page.getByRole('button', {name: '重新整理布局'})).toBeEnabled();
 };
 
+const installPanoramaFitFrameGate = async (page: Page) => {
+  await page.evaluate(() => {
+    type FitFrameGateWindow = Window & {
+      __btcPanoramaFitFrameGate?: {
+        heldCount: () => number;
+        sources: () => string[];
+        release: () => void;
+      };
+    };
+    const target = window as FitFrameGateWindow;
+    if (target.__btcPanoramaFitFrameGate) throw new Error('BTC panorama fit frame gate already installed');
+    const originalRequest = window.requestAnimationFrame;
+    const originalCancel = window.cancelAnimationFrame;
+    const held = new Map<number, FrameRequestCallback>();
+    const sources: string[] = [];
+    let nextHeldId = -1;
+    window.requestAnimationFrame = callback => {
+      const source = new Error('BTC panorama fit frame source').stack ?? '';
+      if (source.includes('fitPanoramaAfterRender')) {
+        const id = nextHeldId--;
+        held.set(id, callback);
+        sources.push(source);
+        return id;
+      }
+      return originalRequest.call(window, callback);
+    };
+    window.cancelAnimationFrame = id => {
+      if (!held.delete(id)) originalCancel.call(window, id);
+    };
+    target.__btcPanoramaFitFrameGate = {
+      heldCount: () => held.size,
+      sources: () => [...sources],
+      release: () => {
+        window.requestAnimationFrame = originalRequest;
+        window.cancelAnimationFrame = originalCancel;
+        const callbacks = [...held.values()];
+        held.clear();
+        callbacks.forEach(callback => originalRequest.call(window, callback));
+      },
+    };
+  });
+};
+
+const waitForPanoramaFitFrame = async (page: Page) => {
+  await expect.poll(() => page.evaluate(() => {
+    const target = window as Window & {__btcPanoramaFitFrameGate?: {heldCount: () => number}};
+    return target.__btcPanoramaFitFrameGate?.heldCount() ?? 0;
+  })).toBeGreaterThan(0);
+  const sources = await page.evaluate(() => {
+    const target = window as Window & {__btcPanoramaFitFrameGate?: {sources: () => string[]}};
+    return target.__btcPanoramaFitFrameGate?.sources() ?? [];
+  });
+  expect(sources.length).toBeGreaterThan(0);
+  expect(sources.every(source => source.includes('fitPanoramaAfterRender'))).toBe(true);
+};
+
+const releasePanoramaFitFrameGate = async (page: Page) => {
+  await page.evaluate(() => {
+    const target = window as Window & {__btcPanoramaFitFrameGate?: {release: () => void}};
+    target.__btcPanoramaFitFrameGate?.release();
+    delete target.__btcPanoramaFitFrameGate;
+  });
+};
+
 test('deep link opens the complete BTC panorama and browser back restores overview', async ({page}) => {
   await page.goto('/architecture?view=btc-panorama');
   await waitForBaselineLayout(page);
@@ -103,17 +167,27 @@ test('a loaded personal draft keeps its positions until explicit reversible rear
   await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('位置保持原样');
   expect(await page.evaluate(() => localStorage.getItem('quantstation:architecture:btc-panorama-draft:v1'))).toBe(saved);
 
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', {name: '重新整理布局'}).click();
-  await expect(page.getByRole('button', {name: '在当前分区新增节点'})).toBeDisabled();
-  await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('点击“保存本机草稿”后刷新才生效');
-  await expect(page.getByRole('button', {name: '在当前分区新增节点'})).toBeEnabled();
-  expect(await page.evaluate(() => localStorage.getItem('quantstation:architecture:btc-panorama-draft:v1'))).toBe(saved);
-  await expect(page.getByRole('button', {name: '撤销'})).toBeEnabled();
-  await page.getByRole('button', {name: '撤销'}).click();
-  await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('已撤销');
-
   const historyNode = panorama.locator('[data-panorama-node]').filter({hasText: 'OKX 历史行情、资金费'});
+  const addNodeButton = page.getByRole('button', {name: '在当前分区新增节点'});
+  const flowNode = historyNode.locator('xpath=ancestor::div[contains(@class, "react-flow__node")][1]');
+  const arrangedLayoutTargets = panorama.locator(
+    '.react-flow__node[data-id="okx-history"], .react-flow__node[data-id="group-data"]',
+  );
+  const readArrangedLayoutSignature = async () => arrangedLayoutTargets.evaluateAll(elements => {
+    if (elements.length !== 2) throw new Error(`expected two arranged layout targets, received ${elements.length}`);
+    return elements.map(element => {
+      if (!(element instanceof HTMLElement)) throw new Error('arranged layout target is not an HTMLElement');
+      const id = element.dataset.id;
+      const transform = element.style.transform;
+      const computed = getComputedStyle(element);
+      const width = Number.parseFloat(computed.width);
+      const height = Number.parseFloat(computed.height);
+      if (!id || !transform || !Number.isFinite(width) || !Number.isFinite(height)) {
+        throw new Error(`arranged layout signature is incomplete for ${id ?? 'unknown target'}`);
+      }
+      return {id, transform, width, height};
+    }).sort((left, right) => left.id.localeCompare(right.id));
+  });
   const expectHistoryNodeAt = async (box: {x: number; y: number; width: number; height: number}) => {
     const hit = await page.evaluate(({x, y}) => {
       const node = document.elementFromPoint(x, y)?.closest('[data-panorama-node]');
@@ -124,21 +198,51 @@ test('a loaded personal draft keeps its positions until explicit reversible rear
     }, {x: box.x + box.width / 2, y: box.y + box.height / 2});
     expect(hit).toEqual({title: 'OKX 历史行情、资金费', id: 'okx-history'});
   };
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', {name: '重新整理布局'}).click();
-  const addNodeButton = page.getByRole('button', {name: '在当前分区新增节点'});
-  await expect(addNodeButton).toBeDisabled();
-  await historyNode.scrollIntoViewIfNeeded();
-  const beforeBusyBox = await historyNode.boundingBox();
-  if (!beforeBusyBox) throw new Error('history node has no bounding box before layout busy check');
-  await expectHistoryNodeAt(beforeBusyBox);
-  await page.mouse.move(beforeBusyBox.x + beforeBusyBox.width / 2, beforeBusyBox.y + beforeBusyBox.height / 2);
-  await expect(addNodeButton).toBeDisabled();
-  await page.mouse.down();
-  await page.mouse.move(beforeBusyBox.x + beforeBusyBox.width / 2 + 45, beforeBusyBox.y + beforeBusyBox.height / 2 + 25, {steps: 4});
-  await page.mouse.up();
+
+  await installPanoramaFitFrameGate(page);
+  try {
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', {name: '重新整理布局'}).click();
+    await waitForPanoramaFitFrame(page);
+    await expect(addNodeButton).toBeDisabled();
+    await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('正在重新整理分层布局');
+  } finally {
+    await releasePanoramaFitFrameGate(page);
+  }
+  await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('点击“保存本机草稿”后刷新才生效');
+  await expect(addNodeButton).toBeEnabled();
+  const firstArrangedLayoutSignature = await readArrangedLayoutSignature();
+  expect(await page.evaluate(() => localStorage.getItem('quantstation:architecture:btc-panorama-draft:v1'))).toBe(saved);
+  await expect(page.getByRole('button', {name: '撤销'})).toBeEnabled();
+  await page.getByRole('button', {name: '撤销'}).click();
+  await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('已撤销');
+
+  await installPanoramaFitFrameGate(page);
+  try {
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', {name: '重新整理布局'}).click();
+    await waitForPanoramaFitFrame(page);
+    await expect(addNodeButton).toBeDisabled();
+    await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('正在重新整理分层布局');
+    await expect(flowNode).not.toHaveClass(/draggable/);
+    await expect.poll(readArrangedLayoutSignature).toEqual(firstArrangedLayoutSignature);
+    await historyNode.scrollIntoViewIfNeeded();
+    const beforeBusyBox = await historyNode.boundingBox();
+    if (!beforeBusyBox) throw new Error('history node has no bounding box before layout busy check');
+    await expectHistoryNodeAt(beforeBusyBox);
+    await page.mouse.move(beforeBusyBox.x + beforeBusyBox.width / 2, beforeBusyBox.y + beforeBusyBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(beforeBusyBox.x + beforeBusyBox.width / 2 + 45, beforeBusyBox.y + beforeBusyBox.height / 2 + 25, {steps: 4});
+    await page.mouse.up();
+    const afterBusyBox = await historyNode.boundingBox();
+    if (!afterBusyBox) throw new Error('history node has no bounding box after layout busy check');
+    expect(Math.abs(afterBusyBox.x - beforeBusyBox.x) + Math.abs(afterBusyBox.y - beforeBusyBox.y)).toBeLessThan(2);
+  } finally {
+    await releasePanoramaFitFrameGate(page);
+  }
   await expect(panorama.locator('p.btc-panorama-status[role="status"]')).toContainText('已重新整理画布');
   await expect(addNodeButton).toBeEnabled();
+  await expect(flowNode).toHaveClass(/draggable/);
 
   await historyNode.scrollIntoViewIfNeeded();
   const readyBox = await historyNode.boundingBox();

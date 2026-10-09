@@ -1,0 +1,149 @@
+{
+  "base_commit": "8e120f7d4de92bcbde97edb9c5d34b34cce0a911",
+  "blockers": [
+    "one-time research_readonly release governance must independently bind the final cumulative source before main merge or service restart",
+    "formal current-main 8765 concurrent registry Qlib and Alpha reads plus canonical browser acceptance remain pending after release",
+    "the existing saved evidence registry still reports its real conflict state; this performance change does not repair or reclassify it",
+    "two governance hook regressions observed handoff_discovery_timeout and therefore lacked injected Team Context text; 72 other governance tests passed and no governance source was changed",
+    "Demo paper live promotion private order real_order transfer withdraw and execution permissions remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T03:41:03Z",
+  "deliverable_commit": "9ad0277b3095ac58aeffbf13078bb01eca8469e3",
+  "deliverables": [
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "dcb90bf849275e825656f37f32d1aa0c85708ed29a4f7a5ae92ae05610b89093",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "711f370960d16328175e5f3fa953e18589f27abd641469761872a5f2fcd7f317",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/research_archive_discovery.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "2833dea36fb9df0b03a3452b9e603e6b0db84fcc69ee17e011a05d1abb207175",
+      "type": "code"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "c6e9244e646d41ed6d3eb313012674b55403037a4f54ce6066518e84a14e65c7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/lib/research-api.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "3aa8225f0eef01de4dd7a2c684ba42233ad8abc3281fb8ae3118af2d8c95d09c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-research-portfolio-contract.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_with_ui_closeout_v1",
+      "sha256": "9b31d68b7715a4d9af76de45d3669432cfe165404ebf94ebdde940ba6cb4c177",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "080a26abf4d037fab1a073b98c0c5afc1936ed07bf041a3ea31646256094c722",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "53765032e35eeb24ce912eefe9505ce132e73140e0619d498af6e92d79adf5f2",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_m1_research_readonly_archive.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "589b9c1197ccae1eec0a8d4c180350c48f137f8660d89cb27770de1cc3ffa3b3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_research_registry_summary_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_read_performance_v1",
+      "sha256": "9deac33e13b8bdc7e87fc551c61ad75dbf3fae42330b29a9ef806a8c70265311",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-readonly-release-ui-20260928-833dec6f1",
+    "published-research-registry-read-performance-20260928-correction-01-4eb3e0f32"
+  ],
+  "domain": "research",
+  "event_id": "integrated-research-registry-read-performance-20260928-9ad0277b3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "full Git validation of correction-01 handoff, ancestry and 10 deliverable hashes",
+      "evidence_path": "correction event valid; deliverable source descends stated base; handoff descends source; zero hash mismatches; superseded initial event not consumed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python API suites: qlib pipeline, M1 readonly archive, registry summary API, research-only boundaries",
+      "evidence_path": "38 passed, 1 dependency warning in 73.52s",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python tests/research/test_evidence_registry.py",
+      "evidence_path": "10 passed in 5.52s",
+      "result": "passed"
+    },
+    {
+      "command": "combined frontend frozen research/portfolio contract",
+      "evidence_path": "passed; preserves UI inert-control removals, reviewed cancellable GET source, summary query and original 20-second timeout",
+      "result": "passed"
+    },
+    {
+      "command": "readonly UI, candidate delivery and candidate handoff focused scripts",
+      "evidence_path": "26 passed; candidate-local-auth 6 passed plus one environment-only missing local vite failure in sparse integrator; same source passed 7/7 in producer",
+      "result": "passed"
+    },
+    {
+      "command": "research release, delivery policy, context packet, team context, hooks and governance contract suites",
+      "evidence_path": "72 passed; 2 hook tests failed only because subprocess Team Context discovery timed out and omitted context text; no governance file changed",
+      "result": "failed"
+    },
+    {
+      "command": "formal current-main concurrent API and browser acceptance",
+      "evidence_path": "pending one-time release contract, main integration, canonical restart and current-page 12-second measurement; producer offline 5.418s cold and 8.854s warm are not substituted",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "transition_for": "published-research-registry-read-performance-20260928-correction-01-4eb3e0f32"
+}

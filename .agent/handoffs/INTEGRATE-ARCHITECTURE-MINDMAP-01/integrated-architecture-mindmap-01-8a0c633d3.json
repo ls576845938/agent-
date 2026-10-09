@@ -1,0 +1,151 @@
+{
+  "base_commit": "30205e4462a5dde71e29482e2fc05a5d8c63d6bc",
+  "blockers": [
+    "owner:root publish this integrated commit to main, restart the official frontend, verify canonical identity and run the 24-test architecture/browser acceptance set",
+    "existing backend process remains on f3a78afe/demo_quasi_live and public identity returns 409 backend_runtime_main_drift; integration did not stop, restart, enable control, read secrets or access private/action endpoints",
+    "the architecture mind map is source responsibility navigation, not runtime, promotion, paper or live evidence",
+    "rollback ref codex/architecture-before-mindmap-20260911 points to 30205e4462a5dde71e29482e2fc05a5d8c63d6bc; codex/architecture-before-fullread-20260911 remains at f3a78afe0b59d432820dc8f50510038df6c00754",
+    "M1 remains paused in this ticket; M2-M4 are not started"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T00:19:49Z",
+  "deliverable_commit": "8a0c633d3eea76928a7d912f68bf534aeddade40",
+  "deliverables": [
+    {
+      "path": "docs/architecture/system-code-map/MINDMAP.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "ed4b244c71706e165887264ca3c715263109f33c2b2f3c4c5b56d219bebd351e",
+      "type": "document"
+    },
+    {
+      "path": "frontend/e2e/architecture-map.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_e2e_v1",
+      "sha256": "bc07bc0bb9782419c7bc7ac9b7916ae326602744a7f7b9a9b662a87d5acc36d7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "9d7da8dc6b45a1614fc921dfb2d948912c1da86371bdbe281fbb9765416f7ceb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-architecture-mindmap.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "7a6175f3cdd5ede836dc236d99e4f25a10026d0aa9647d47ec02f6cd5271b349",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "6c1beb225a016f0fef37dd9b2a05f0e94a77769200781c00a18298781b9f963c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/ArchitectureMindMap.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "0334acd4b60c38e2035fd3523731dd8fddc85a9400397d9825834cd67845d095",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/architecture-mindmap.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "4c263ca63faa69e26197ff68086a8bd279402b87699bb42960b4d731170887bf",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "767720685779937ea0ed114f75e35c441b157237ed8a719369d4b7c557e7375d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "a9f88c9a05ecc3e8f7d1cc8cdfbf585efaf48ab66a29a9bfe2573f1a64747741",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-architecture-mindmap-01-4eafcaa05",
+    "integrated-architecture-fullread-json-import-9e10e727d"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-mindmap-01-8a0c633d3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-architecture-fullread-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-architecture-mindmap-01-4eafcaa05.json",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-MINDMAP-01/published-architecture-mindmap-01-4eafcaa05.json",
+      "result": "passed"
+    },
+    {
+      "command": "D:/New Folder/node.exe --test frontend/scripts/test-architecture-map.mjs; 9/9",
+      "evidence_path": "frontend/scripts/test-architecture-map.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "D:/New Folder/node.exe --test frontend/scripts/test-architecture-mindmap.mjs; 5/5",
+      "evidence_path": "frontend/scripts/test-architecture-mindmap.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "typescript --noEmit -p frontend/tsconfig.json using temporary read-only dependency Junction; exit 0 and Junction removed",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright --list for architecture-map.spec.ts, architecture-mindmap.spec.ts and system-workbench.spec.ts; 24 tests collected",
+      "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build; 5253 modules transformed, build succeeded with existing large-chunk warning",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs; manifest_match=true and baseline_ancestor=true",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs under platform-approved execution; passed without ExecutionPolicy change or Bypass",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main Playwright execution and visual browser validation after publication",
+      "evidence_path": "owner:root; worktree preview is prohibited",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-ARCHITECTURE-MINDMAP-01",
+  "transition_for": "published-architecture-mindmap-01-4eafcaa05"
+}

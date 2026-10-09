@@ -1,0 +1,55 @@
+{
+  "base_commit": "83cb1335d68cd9ba8a08d6c1be65686e92dd027a",
+  "blockers": [],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-15T00:10:05Z",
+  "deliverable_commit": "c38134b879d71189bfb97108af7595b34fbec1b8",
+  "deliverables": [
+    {
+      "path": "quant_crypto/runtime/control_plane.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "018dc5b842acee4f1ee557c481b3d219a391c36266053e520590ede3c900f062",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_shared_runtime_live_canary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "0369a6a4ec4a09b4f0b58b5bafe5fd4426815ba5219e7655bea287dd492140a6",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "PUBLISH-BTC-OKX-DEMO-RISK-EVIDENCE-RENEWAL-CLOCK-01-51DB0AFB"
+  ],
+  "domain": "btc",
+  "event_id": "INTEGRATE-BTC-OKX-DEMO-RISK-EVIDENCE-RENEWAL-CLOCK-01-C38134B8",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-risk-proof-clock-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q --basetemp=C:\\tmp\\pytest-btc-risk-proof-clock-integrator-20260815",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-RISK-EVIDENCE-RENEWAL-CLOCK-01",
+  "transition_for": "PUBLISH-BTC-OKX-DEMO-RISK-EVIDENCE-RENEWAL-CLOCK-01-51DB0AFB"
+}

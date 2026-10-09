@@ -1,0 +1,101 @@
+{
+  "base_commit": "e2cdf51bd353f5a281b19e0e059177bc2d3995c6",
+  "blockers": [
+    "backend_not_restarted_by_scope:ticket_requires_frontend_only_restart_and_backend_was_not_touched",
+    "artifact_read_model_not_rebuilt:frontend_demo_admission_correction_only",
+    "promotion_paper_live_private_order_remain_false"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-16T18:10:30Z",
+  "deliverable_commit": "969a26ddef5bd133feb6e3348f1eb62c314eaae5",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_demo_recovery_admission_v1",
+      "sha256": "e57f0f385cd31523e0bc3a5010b9ae1a7bbbc763ba74e30c9b9b9932b80f2613",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_btc_demo_recovery_e2e_contract_v1",
+      "sha256": "78cddde686b9953bf924f7dba0e7e0671dd8d475a15f017e3d0a7474af5e327c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "1ec100cfe8f7e07df8baf6444ac5bb9fbea1ec1b9e94337530b11b5a337ff6be",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-recovery-button-admission-correction-05-1913330026"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-recovery-button-admission-correction-05-969a26dde",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-recovery-button-c5-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "producer handoff.py validate and base/ancestry/touch/blob verification",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-BUTTON-ADMISSION-CORRECTION-05/published-btc-okx-demo-recovery-button-admission-correction-05-1913330026.json",
+      "result": "passed"
+    },
+    {
+      "command": "integrator esbuild DemoTradingConsole.tsx and btc-demo-console.spec.ts with external main node_modules",
+      "evidence_path": "C:/tmp/btc-recovery-button-c5-esbuild",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs --canonical; node frontend/scripts/test-frontend-identity.mjs; node frontend/scripts/start-current-main.mjs --check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node @playwright/test/cli.js test e2e/btc-demo-console.spec.ts --config playwright.config.ts --reporter=json (cwd=frontend)",
+      "evidence_path": "C:/tmp/playwright-btc-recovery-button-admission-c5-20260817-cwd/full.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-BUTTON-ADMISSION-CORRECTION-05",
+      "result": "passed"
+    },
+    {
+      "command": "backend restart, Demo start, private/order/live/transfer/withdraw access, artifact/read-model rebuild",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-RECOVERY-BUTTON-ADMISSION-CORRECTION-05-INTEGRATION",
+  "transition_for": "published-btc-okx-demo-recovery-button-admission-correction-05-1913330026"
+}

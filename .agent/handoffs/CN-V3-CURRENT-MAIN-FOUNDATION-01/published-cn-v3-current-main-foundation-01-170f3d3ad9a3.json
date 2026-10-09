@@ -1,0 +1,124 @@
+{
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "blockers": [
+    "board_lot_rule_missing",
+    "cn_broker_capability_unproven",
+    "cn_data_coverage_incomplete",
+    "cn_data_freshness_not_pass",
+    "cn_data_source_routing_successor_approval_missing",
+    "cn_dataready_missing",
+    "cn_license_scope_unverified",
+    "domain_read_model_missing",
+    "quant_cn_package_registration_missing"
+  ],
+  "consumer_roles": [
+    "data_steward",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-07-23T22:43:05.9077793+08:00",
+  "deliverable_commit": "170f3d3ad9a3cdfbcb2f4b303716ac971aefd88b",
+  "deliverables": [
+    {
+      "path": "docs/cn_equity/foundation_contract.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_contract_v1",
+      "sha256": "89a35f2c2da1b23286e3f40dc53489d4c8163be1d298aade63e45c6650ebdd7c",
+      "type": "document"
+    },
+    {
+      "path": "docs/cn_equity/shared_contract_change_request.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_contract_change_request_v1",
+      "sha256": "a931d5ce1700ab022e62ce37ddca72e054982600eafd2bccd409b594379a4d72",
+      "type": "document"
+    },
+    {
+      "path": "quant_cn/application/foundation_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_v1",
+      "sha256": "431133e126a7ccb8949486fa249a7cb9525426c903ef7b7d2137246855af61f6",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/data/contracts.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_v1",
+      "sha256": "b2d40dcfa1183bec0cf272c5cb2ecd7d4d47e6acca7f9366c27b84fa7948c169",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/calendar.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_v1",
+      "sha256": "e8fa8a2eef73de68a6cb0139cafbcf8e4c28447b0c510de3b192d9242c08140f",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/eligibility.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_v1",
+      "sha256": "12777ee27dd4ce539ce612e11ac549272b6316b77350014d938e42446d196b56",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/market/rules.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_foundation_v1",
+      "sha256": "5175d07f051303364dbbfa74707e74f0f4bd67414a461acefde3298da6fc619e",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_boundaries.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "3ce1b9487890e35abad3d682c42a0669931073426638b81c66cbf9bca075711f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/cn_equity/test_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "53ec5b3b209f3d39d6dc0649101603898f2549179695a58748ef8619fcec3ce6",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "cn_equity",
+  "event_id": "published-cn-v3-current-main-foundation-01-170f3d3ad9a3",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-current-main-foundation-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; py -3 -m pytest tests\\cn_equity --basetemp C:\\tmp\\cn-v3-foundation-20260723-r2 -p no:cacheprovider -q",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check -- quant_cn/data/contracts.py quant_cn/market/calendar.py quant_cn/market/eligibility.py quant_cn/market/rules.py quant_cn/application/foundation_preflight.py tests/cn_equity docs/cn_equity",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check quant_cn tests/cn_equity",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CN-V3-CURRENT-MAIN-FOUNDATION-01",
+  "transition_for": ""
+}

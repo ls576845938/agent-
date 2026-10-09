@@ -1,0 +1,133 @@
+{
+  "base_commit": "516e4bd89ee80e1c4ee34b0d9b51f8ec5f271a51",
+  "blockers": [
+    "registered_main_fast_forward_is_post_handoff_action",
+    "current_head_promotion_artifact_and_read_model_rebuild_required_by_live_execution_delivery_policy",
+    "backend_frontend_restart_and_browser_acceptance_not_run_by_scope",
+    "no_real_demo_private_ws_network_or_secret_evidence_by_scope",
+    "not_promotion_evidence_ready_no_paper_no_live",
+    "full_tests_contracts_collection_not_run_in_sparse_scope_due_unrelated_quant_us_quant_cn_dependencies"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-08-08T20:56:00Z",
+  "deliverable_commit": "ee3d15233968da4d0790e96a5368c985ed4bc419",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_private_ws_strict_diagnostic_redaction_v2",
+      "sha256": "8d9d96ce90a86a590bf9cbef9aad0257c881b9f5fd0f07b5cbec28bc96fe3cae",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_strict_probe_projection_v2",
+      "sha256": "cdb3e65e2110a78d97a2fdc5943792e838bbae001c9d120caff338d8dd7d91c0",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_private_ws_diagnostic_contract_v1",
+      "sha256": "a967b9a42d962bc589c2f86d37f0b6213a4c777100a2706d2d6d5a5267aaf0b5",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_strict_diagnostic_contract_v2",
+      "sha256": "c1c299f10e1ece36f44309b9e1be1a595ce63838f878b138e05199c0c5a5b505",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-DIAGNOSTIC-PRESERVATION-01/published-btc-okx-demo-private-ws-diagnostic-preservation-01-aa8241969.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "3800fde51ee4beb9c697b968995a9006a72594205fe96ce7cb16cae104ad45f5",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-DIAGNOSTIC-PRESERVATION-01-CORRECTION-01/published-btc-okx-demo-private-ws-diagnostic-preservation-01-correction-01-a50f1e0b3.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "42bba24081e8c244595d6aaf522f53c61583ee217715ba97777999cbdaf217f5",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-private-ws-diagnostic-preservation-01-aa8241969",
+    "published-btc-okx-demo-private-ws-diagnostic-preservation-01-correction-01-a50f1e0b3"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-private-ws-diagnostic-preservation-01-int-ee3d15233",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-demo-private-ws-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/context_packet.py --role integrator --scope btc-okx-demo-private-ws-diagnostic-preservation-01-integration --change-risk live_execution --format markdown [catalog_hash 127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c; active pitfalls recorded]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "producer handoff.py validate for original and correction; exact four-commit ancestry 516e4bd -> aa824196 -> edda914 -> a50f1e -> 01d871; producer scoped safe_status clean; declared raw SHA-256 and Git blob closure passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-DIAGNOSTIC-PRESERVATION-01-CORRECTION-01/published-btc-okx-demo-private-ws-diagnostic-preservation-01-correction-01-a50f1e0b3.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick aa82419693e7599094dc0d59ff81f016dc7e7a92 edda91433dc26ee62cb4c551707942102aacdbd2 a50f1e0b3c1263adc3249e200dce4d716402b1d2 01d871d275435c75732739e07981f486177bc3d6 in exact order [no conflict]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/agent9-btc-okx-private-ws-230-20260809 tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py [230 passed in 54.04s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/agent9-btc-okx-private-ws-371-20260809 tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_execution_watchdog.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_remote_supervisor.py tests/contracts/test_btc_okx_demo_runtime_hardening.py [371 passed in 55.38s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_private_ws.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py [passed; external PYTHONPYCACHEPREFIX]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 516e4bd89ee80e1c4ee34b0d9b51f8ec5f271a51 HEAD; exact changed-path inventory is the four approved source/test files plus two published handoffs; candidate safe_status clean",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "protected manifest and paper_runtime_audit.jsonl Git blobs equal base 516e4bd; raw SHA-256 preserved; test basetemp and pycache roots resolve outside integration worktree",
+      "evidence_path": "data/paper_ledger/paper_runtime_audit.jsonl",
+      "result": "passed"
+    },
+    {
+      "command": "registered main fast-forward, current-HEAD artifact/read-model rebuild, backend/frontend restart/browser acceptance, real Demo/private/order/live/transfer/withdraw/network/secret actions",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-DIAGNOSTIC-PRESERVATION-01-INTEGRATION",
+  "transition_for": "published-btc-okx-demo-private-ws-diagnostic-preservation-01-correction-01-a50f1e0b3"
+}

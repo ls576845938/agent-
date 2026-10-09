@@ -1,0 +1,100 @@
+{
+  "base_commit": "2289d5d55cdb008a0b33a44b051c54a51f3597a2",
+  "blockers": [
+    "no_5m_or_15m_candidate_passed_all_frozen_research_gates",
+    "tail_holdout_was_viewed_during_engine_refinement_and_is_diagnostic_only",
+    "future_unseen_post_2026_05_12_immutable_holdout_required",
+    "perpetual_mark_index_funding_data_parity_not_proven",
+    "l2_spread_depth_market_impact_and_latency_queue_fill_models_not_proven",
+    "paper_fill_position_cash_ledger_not_observed",
+    "runtime_strategy_adapter_not_implemented",
+    "manual_promotion_review_not_started",
+    "independent_integrator_required",
+    "current_head_promotion_artifact_rebuild_required_if_future_gate_scope_is_opened"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T03:04:03Z",
+  "deliverable_commit": "d9fd4c46d46ec5b538a277624d3e93ae4d479491",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/intraday_ga_strategy_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_intraday_ga_strategy_mining_v1",
+      "sha256": "7625109d56c3324a3997c62e16a5970adb19ef29227bfce0a3869f423a6a1d69",
+      "type": "code"
+    },
+    {
+      "path": "scripts/research/run_btc_intraday_ga_strategy_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_intraday_ga_strategy_mining_cli_v1",
+      "sha256": "2a6698f147f739c111845d411a5b8e6c1a52b52ceb240e763e8a1900ba789b54",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_intraday_ga_strategy_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_intraday_ga_strategy_mining_contract_tests_v1",
+      "sha256": "528ac3c74f7dfa50fa01100ab5f71ad4eb3b431d8f760020d0bf7f8da3cdb5f9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_intraday_ga_strategy_mining_report_v1",
+      "sha256": "b82c1ba628994497a133c3d5ea7a5af3a6d88771ce1ae7e8722a7886c68603b9",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "published-btc-intraday-ga-strategy-mining-01-d9fd4c46d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-intraday-ga-strategy-mining-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pytest tests/contracts/test_btc_intraday_ga_strategy_mining.py -q (failure-first before correction)",
+      "evidence_path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "result": "failed"
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_intraday_ga_strategy_mining.py -q",
+      "evidence_path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_intraday_ga_strategy_mining.py tests/contracts/test_btc_ga_factor_mining.py tests/contracts/test_btc_ga_rule_component_mining.py tests/contracts/test_btc_short_interval_data_refresh.py tests/contracts/test_btc_strategy_registry.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q",
+      "evidence_path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/research/intraday_ga_strategy_mining.py scripts/research/run_btc_intraday_ga_strategy_mining.py tests/contracts/test_btc_intraday_ga_strategy_mining.py",
+      "evidence_path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "result": "passed"
+    },
+    {
+      "command": "official fixed-seed 5m+15m offline GA run against pinned manifests",
+      "evidence_path": "docs/research/BTC_INTRADAY_GA_STRATEGY_MINING_01.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-INTRADAY-GA-STRATEGY-MINING-01",
+  "transition_for": ""
+}

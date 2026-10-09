@@ -1,0 +1,150 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-10s-microstructure-data-contract-01-57d130d3d",
+  "event_type": "integrated",
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01",
+  "domain": "research",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/btc-10s-micro-contract-01-int-01",
+  "consumer_roles": [
+    "architect",
+    "researcher",
+    "btc_developer"
+  ],
+  "base_commit": "4f3139431bb801f71f0bca9bbb0f69e4febdb8a4",
+  "deliverable_commit": "57d130d3dbb78982f0ca59701821e2b0ca621c6d",
+  "depends_on": [
+    "published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d",
+  "created_at": "2026-08-27T09:31:32Z",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "type": "code",
+      "schema_version": "btc_10s_microstructure_data_contract_api_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "f1f1acfe51896eb327d673186371d3f022b958e1391c0ddbddbf3297221ccbb1"
+    },
+    {
+      "path": "scripts/build_btc_10s_microstructure_data_contract_report.py",
+      "type": "code",
+      "schema_version": "btc_10s_microstructure_data_contract_builder_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "7a45d4ea1c8e9f0262c6359689505ea73f33c3399268f6a6657e09a68f89cd28"
+    },
+    {
+      "path": "schemas/btc_10s_microstructure_data_contract_report.schema.json",
+      "type": "schema",
+      "schema_version": "btc_10s_microstructure_data_contract_report_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "141013457ae532080e955b6dadb69d6ddedc24116f5031e7345883d5162990ae"
+    },
+    {
+      "path": "tests/contracts/test_btc_10s_microstructure_data_contract_report.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "9feb5279d478d79984b0cf6995f8c79c11e8edd86be2a22c92ab6f1ea4822e4a"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_DATA_CONTRACT_01_PREREG.json",
+      "type": "document",
+      "schema_version": "btc_10s_microstructure_data_contract_prereg_v1",
+      "readiness_class": "research_ready",
+      "sha256": "f32980b2514145a1feab4e40713b072b7a2317e6b83353f50e0f42dcbc2fbb7b"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_DATA_CONTRACT_01.md",
+      "type": "report",
+      "schema_version": "btc_10s_microstructure_data_contract_report_summary_v1",
+      "readiness_class": "research_ready",
+      "sha256": "7116a2c777783157d4a1ad51e0adbc2c61eabae7ba701abd176c034e679bd7c4"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate latest correction event and superseded initial event; both status=valid",
+      "evidence_path": ".agent/handoffs/BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01",
+      "result": "passed"
+    },
+    {
+      "command": "verify ancestry 4f313943 -> 81024c156d -> af2d905e0 -> 06228ef8b -> e5cfd5a4d -> 50c21e44b; verify exact six-file business touch set and committed Git blob SHA-256 values",
+      "evidence_path": ".agent/handoffs/BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01/published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d.json",
+      "result": "passed"
+    },
+    {
+      "command": "verify correction diff removes only one EOF blank line from btc_10s_microstructure_data_contract.py",
+      "evidence_path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "verify immutable official artifact: report file dd92225a/semantic 8b05a33f, lock file 9bc45ca3/semantic a59082db, artifact manifest file f98deca3, aggregate 4fb37192; JSON schema valid",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research_artifacts/btc-10s-microstructure-data-contract-01/official-81024c156dd6",
+      "result": "passed"
+    },
+    {
+      "command": "independent machine assertions: no natural-day research gate; 10/30/60s non-overlap>=1000 and ESS>=500; six UTC buckets; 3x3 regimes; join/label>=99%; sequence and lag fail-closed; taker-only; liquidation OI/events; maker not_applicable; safety false",
+      "evidence_path": "docs/research/BTC_10S_MICROSTRUCTURE_DATA_CONTRACT_01_PREREG.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_10s_microstructure_data_contract_report.py -q --basetemp <unique-temp>; 5 passed in 0.63s",
+      "evidence_path": "tests/contracts/test_btc_10s_microstructure_data_contract_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "jsonschema.validate(official report, schemas/btc_10s_microstructure_data_contract_report.schema.json); decision=blocked_insufficient_information; all guardrails false",
+      "evidence_path": "schemas/btc_10s_microstructure_data_contract_report.schema.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile evaluator builder; builder --help; git diff --check 4f313943..57d130d3",
+      "evidence_path": "scripts/build_btc_10s_microstructure_data_contract_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression",
+      "evidence_path": "integration scope limited to ticket-directed contracts",
+      "result": "not_run"
+    },
+    {
+      "command": "current-main promotion artifact rebuild, backend/frontend restart and browser validation",
+      "evidence_path": "offline research contract integration; registered main merge pending",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "btc_10s_all_applicable_family_horizon_rows_blocked_insufficient_information",
+    "btc_okx_timestamp_aligned_l2_exact_physical_version_missing",
+    "btc_10s_eligible_labeled_windows_and_effective_sample_size_zero",
+    "btc_10s_trade_ordered_l2_join_missing",
+    "btc_10s_receive_and_alignment_latency_gate_failed",
+    "btc_10s_utc_bucket_and_regime_coverage_missing",
+    "btc_10s_fee_and_cost_stratified_stability_missing",
+    "btc_10s_time_aligned_open_interest_and_liquidation_events_missing_for_liquidation_family",
+    "maker_queue_not_applicable_taker_only_baseline",
+    "venue_hosted_protective_stop_unproven",
+    "mark_index_funding_runtime_parity_unproven",
+    "queue_partial_fill_execution_unproven",
+    "fill_position_cash_ledger_unproven",
+    "adverse_selection_unproven",
+    "current_head_promotion_artifact_missing",
+    "official_research_artifact_bound_to_implementation_commit_81024c156_not_correction_or_integration_commit",
+    "promotion_artifact_rebuild_required_by_policy_not_run",
+    "backend_restart_required_by_policy_not_run_for_offline_research_contract",
+    "registered_main_merge_pending"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

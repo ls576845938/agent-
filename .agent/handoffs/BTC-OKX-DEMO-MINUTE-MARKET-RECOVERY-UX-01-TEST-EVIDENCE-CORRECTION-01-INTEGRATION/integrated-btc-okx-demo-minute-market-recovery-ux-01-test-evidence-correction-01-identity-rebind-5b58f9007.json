@@ -1,0 +1,55 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-identity-rebind-5b58f9007",
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01-INTEGRATION",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-mm-evidence-c1",
+  "base_commit": "377b293baf6118b3ff59d686886e8b52b1b675fb",
+  "deliverable_commit": "5b58f9007b4ab3d5fa0e1556db4852818e6e7f59",
+  "created_at": "2026-08-17T04:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-6c63a9873",
+    "integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-113a859a0"
+  ],
+  "supersedes": ["integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-113a859a0"],
+  "transition_for": "integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-113a859a0",
+  "deliverables": [
+    {"type":"test_evidence","path":"frontend/e2e/btc-demo-console.spec.ts","sha256":"18e27c6b1364969d6521a130abc908067e800ed6f9cfba3fd0f4eb2ddd841b33","schema_version":"btc_demo_market_recovery_ux_e2e_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/crypto/TradingViewChart.tsx","sha256":"114372fba3e2fadb780fe7d7b08957d47d5e73d2c4cf4740ca49dac9328a7699","schema_version":"btc_trading_chart_marker_accessibility_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/public/frontend-identity.json","sha256":"971b55728ad89c45be8843e6fbf2c10088bc9f87c78c430030a5d72a27e1f298","schema_version":"frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"preflight: integrator worktree HEAD=29f758997c072e1814c6e9a2ae5fcfe8c0881773; registered main matched; exact frontend touch paths clean before refresh","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"npm.cmd --prefix frontend run identity:refresh (integrator worktree only; baseline rebound from non-ancestor 4cecf828 to 29f758997)","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"identity packaging commit 5b58f9007b4ab3d5fa0e1556db4852818e6e7f59 changed only frontend/public/frontend-identity.json","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"npm.cmd --prefix frontend run lint (candidate; tsc --noEmit)","result":"passed","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"npm.cmd --prefix frontend run build (candidate; Vite 6.4.2; chunk warning only)","result":"passed","evidence_path":"frontend/dist/index.html"},
+    {"command":"npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config playwright.config.ts --list (candidate)","result":"passed","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"registered-main identity:check --canonical before rebind: baseline_not_ancestor=4cecf828ed34eaed7ddc2b3d6de095928f788630; this is the cherry-pick object-identity cause authorized by correction","result":"failed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"registered-main identity:test and canonical launcher before rebind","result":"not_run","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"backend GET-only identity/health/status/market-view after current-main restart: canonical current head, health 200, runtime fail-closed, 1m public-only 120 candles","result":"passed","evidence_path":"backend/app/services/btc_demo_runtime.py"},
+    {"command":"canonical frontend restart and full 16-test mocked Playwright before identity rebind","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"handoff.py validate integrated superseding envelope; git diff --check; scoped safe_status","result":"passed","evidence_path":".agent/handoffs/BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01-INTEGRATION"}
+  ],
+  "blockers": [
+    "registered-main must fast-forward to this superseding handoff commit before post-rebind identity checks and canonical frontend restart",
+    "full 16-test mocked Playwright remains pending until post-ff canonical frontend restart",
+    "promotion artifact/read-model unavailable and not rebuilt",
+    "Demo remains inactive/fail-closed; no key/private/order/live/transfer/withdraw actions",
+    "promotion_paper_live_private_order_real_order flags remain false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

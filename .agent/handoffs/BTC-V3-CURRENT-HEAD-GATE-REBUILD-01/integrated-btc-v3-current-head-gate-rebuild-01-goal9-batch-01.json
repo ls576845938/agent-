@@ -1,0 +1,67 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-current-head-gate-rebuild-01-goal9-batch-01",
+  "ticket_id": "BTC-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal9-batch-01",
+  "base_commit": "40f6515131799db27ec06b9b82832a4a3ff4c980",
+  "deliverable_commit": "db649104b4e30193d8951e5dabd780f09aa2d2ee",
+  "created_at": "2026-07-24T13:58:43Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-current-head-gate-rebuild-01-15a3313c"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-current-head-gate-rebuild-01-15a3313c",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_gate_snapshot.py -p no:cacheprovider --basetemp <unique-system-temp> -q",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_domain_read_model.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_btc_gate_dashboard.py tests/contracts/test_btc_gate_report_consistency.py tests/contracts/test_btc_gate_aggregation_chain.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/agent_governance/test_team_context.py -p no:cacheprovider --basetemp <unique-system-temp> -q",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_gate_report_consistency.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_gate_snapshot.py quant_crypto/application/btc_current_head_gate_rebuild.py scripts/build_btc_current_head_gate_rebuild.py",
+      "result": "passed",
+      "evidence_path": "scripts/build_btc_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "py -3 scripts/build_btc_current_head_gate_rebuild.py --repo-root . --run-id btc_v3_g09_integrator_db649104b4e3; source_head=db649104b4e30193d8951e5dabd780f09aa2d2ee; decision=blocked_fail_closed_no_paper_no_live; read_model_sha256=08125edf35e8c5657c0a264c62126dcfd5d97db65bf92c179a8f46403b91a0a4; rebuild_report_sha256=b5bad99093e4919e35f45447beb94f69aebee5d02db5b2e359bbf59a1cad5421",
+      "result": "passed",
+      "evidence_path": "artifacts/btc_current_head_gate_rebuild/latest/btc_current_head_gate_rebuild_report.json"
+    }
+  ],
+  "blockers": [
+    "owner:btc_research btc_okx_native:promotion_evidence_current_head_rebuild_required",
+    "owner:data_steward btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "owner:btc_observation btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_operations btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_operations btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_observation btc_okx_native:30_60_day_observation_window_incomplete",
+    "owner:architect/manual_reviewer btc_okx_native:manual_promotion_approval_missing",
+    "classification:goal9_code_integration_blocker=false",
+    "classification:btc_current_head_gate_state=blocked_fail_closed_no_paper_no_live"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "base_commit": "00e2953383be46909b740ed6cae619640498a2a7",
+  "blockers": [
+    "owner:root current-main operator must rerun canonical mocked Playwright and visual acceptance after this frontend-only fast-forward/restart",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, service/Demo execution, or trading endpoint access performed",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-19T12:52:29.8334780Z",
+  "deliverable_commit": "b3ea21167c4e6457a894dd528783252beba09c0f",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_v2",
+      "sha256": "74aba6d2c193f5adb7ecbe93325d5eb23a14a32172acfd2fe6fcadaf0eeb7ddd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_css_v1",
+      "sha256": "2e95051c07646bdb677155607643ee714e56993a2c83819eec9809724a6a1898",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "57445702d47f55cc977b4532934e16841b030f1894f16480d523264616a1d376",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "6dd5e2d96be81895d8a51ff46ff4681e8f620fa2a1bf5ad74ea06f2fb17dba9c",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "published-qs-strategy-modules-strategy-comparison-02-f0dee533c"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-qs-strategy-modules-strategy-comparison-02-b3ea21167",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/qs-strategy-modules-strategy-comparison-02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build (Vite; existing chunk-size warning only)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list (8 tests collected)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check (manifest_match=true; baseline_ancestor=true)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test (object_targets=4)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published producer envelope",
+      "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-STRATEGY-COMPARISON-02/published-qs-strategy-modules-strategy-comparison-02-f0dee533c.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical mocked Playwright run on registered main (deferred until this candidate is integrated and canonical frontend is restarted)",
+      "evidence_path": "http://127.0.0.1:3000/__frontend_identity (GET-only; current main 00e295..., runtime_stale=false before integration)",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-STRATEGY-COMPARISON-02",
+  "transition_for": "published-qs-strategy-modules-strategy-comparison-02-f0dee533c"
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-fresh-state-emergency-exit-01-132393217",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-EMERGENCY-EXIT-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-fresh-state-emergency-exit-01",
+  "base_commit": "f6af8020aa3f3917398810b256c9d16dec8415a0",
+  "deliverable_commit": "13239321793756d49afe7360433b7af9cd843e52",
+  "created_at": "2026-08-09T11:38:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "b050081f64388310aadd770435bf674974403ee63837c73d1a2b433bc940282c",
+      "schema_version": "okx_demo_paper_runtime_fresh_state_emergency_exit_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "b8b7af477ee95b106a338375fc78257087c57ef020502a6856c2b4467d4a34c4",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --disable-warnings --maxfail=1 -k fresh_state_emergency_exit [9 passed, 228 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --disable-warnings --maxfail=1 [237 passed in 39.97s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py -q --disable-warnings --maxfail=1 [32 passed in 1.19s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py; tests/contracts/test_btc_okx_demo_execution_watchdog.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py; tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "current_main_not_integrated: producer commit is on the dedicated worktree branch only",
+    "initial_registered_main_dirty_preserved: .githooks/post-checkout; artifact/data/docs paths; .githooks/post-commit; .githooks/post-merge; BTC-DEMO-ACCUMULATION-RECOVERY-01/; automation_run_20260709_100829/; downloads/; output/",
+    "real_demo_not_run: no secret, private WS, private GET, order POST, service, or endpoint access",
+    "artifact_manifest_ledger_report_not_produced: this ticket is code/test only and does not rebuild artifacts or read models",
+    "promotion_paper_live_unlock_remain_blocked_and_false: integration, Demo admission, and operator gates are still required"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

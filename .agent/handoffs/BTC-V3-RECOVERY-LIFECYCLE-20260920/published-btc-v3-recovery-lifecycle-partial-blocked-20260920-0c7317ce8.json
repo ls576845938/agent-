@@ -1,0 +1,46 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-recovery-lifecycle-partial-blocked-20260920-0c7317ce8",
+  "ticket_id": "BTC-V3-RECOVERY-LIFECYCLE-20260920",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-recovery-lifecycle-20260920",
+  "base_commit": "d5ccd75f510a0205a657054f6bee9ebe87131679",
+  "deliverable_commit": "0c7317ce879667f1ebbc15e8afb5f14a6ee99125",
+  "created_at": "2026-09-20T04:40:34Z",
+  "expires_at": "",
+  "depends_on": ["rejected-btc-v3-unified-closeout-independent-review-20260920-1bffdae0b"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "quant_crypto/application/qlib_offline_replay.py", "sha256": "a7856cc9e438195f79b4e0cbde9bc6a376f2bcab3442900ec1d1df0eb0bbde8d", "schema_version": "strategy_v3_recovery_lifecycle_blocked_candidate_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_strategy_v3_unified_closeout.py", "sha256": "fd53ffcce8e4137382adbd685b2b46b7eb4b9f8cb4243905c5dbaf8bca2db8a4", "schema_version": "strategy_v3_recovery_lifecycle_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "report", "path": "docs/operations/strategy-v3-recovery-lifecycle-20260920.md", "sha256": "db901c09c022332686191cccec4620f240655e7514683363aee8afc85f1dc6c2", "schema_version": "strategy_v3_recovery_lifecycle_partial_blocked_report_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "python -B -m py_compile quant_crypto/application/qlib_offline_replay.py tests/contracts/test_strategy_v3_unified_closeout.py", "result": "passed", "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-20260920.md"},
+    {"command": "pytest -q -p no:cacheprovider --tb=short full frozen V3/V2/V1/no-live matrix --junitxml system-temp/btc-v3-recovery-b68338694-matrix.xml", "result": "failed", "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-20260920.md"},
+    {"command": "pytest repeated full matrix at intermediate 0699b6d52", "result": "not_run", "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-20260920.md"},
+    {"command": "fixed V3 offline CLI first run and same-state-dir resume", "result": "not_run", "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-20260920.md"}
+  ],
+  "blockers": [
+    "owner:architect V3 same-timestamp delayed fill and next decision at 2026-07-01T02:00:00.001Z carry different mark/equity; existing account fact returns status=unknown blocker=observation_timestamp_conflict; frozen time/order and shared fact contract are outside this ticket",
+    "owner:integrator independently review this partial_blocked source candidate only; do not integrate, publish, or label V3 passed",
+    "owner:btc_developer initial V3 recovery clock and Guardian lease defects have limited targeted fixes, but one frozen full-matrix short hard-exit test remains failed; CLI and end-to-end acceptance not complete",
+    "owner:release main merge, service restart, UI, Demo/paper/live publication not performed",
+    "safety: intermediate require_risk_eligible=false bypass at 0699b6d52 was explicitly reverted; final business/test blobs equal strict b68338694; no private, exchange, broker, network, real order or secret access; runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all remain false",
+    "governance: initial scoped dirty paths empty; no overlapping writer changes overwritten; final scoped dirty paths clean before handoff; catalog sha256 6ea783731473604875c962acc6338fd868f95b13e2230d62254ef79c0a67f3af"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

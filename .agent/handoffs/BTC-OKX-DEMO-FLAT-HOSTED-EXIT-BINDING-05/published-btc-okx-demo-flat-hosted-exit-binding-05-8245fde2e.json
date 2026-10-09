@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-flat-hosted-exit-binding-05-8245fde2e",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-DEMO-FLAT-HOSTED-EXIT-BINDING-05",
+  "domain": "btc",
+  "producer_role": "btc_developer",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-flat-hosted-exit-binding-05",
+  "base_commit": "76ecbf8b6afe2af5a0e11d804c80c226cd526d1a",
+  "deliverable_commit": "8245fde2e98b056af46805d2ed866f5a91807a79",
+  "created_at": "2026-08-11T00:00:00Z",
+  "expires_at": "",
+  "consumer_roles": ["architect", "integrator"],
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "type": "code",
+      "schema_version": "btc_okx_demo_flat_hosted_exit_binding_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "b2cff5adf806c495e88419fb42082240e358cf8c8181b61cd10bd3646cf1f0d5"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "schema_version": "okx_demo_hosted_oco_terminal_exit_ownership_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "a5653e5a0ba5419889d9f41e78e1dda1b3dd8fc7ab87d0b77e739ac182f1e474"
+    },
+    {
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "type": "code",
+      "schema_version": "btc_okx_demo_flat_hosted_exit_cli_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "621b7824f3a4e7b6a9571bdf217483e824aded8ecb62298165acd7209245bacf"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "type": "test_evidence",
+      "schema_version": "btc_okx_demo_flat_hosted_exit_binding_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "16668cc302bab07fbe193e000b23f18bce188524db9304a439e7e9b9eb32e157"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "schema_version": "okx_demo_hosted_oco_terminal_exit_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "dcbe5434c25d27280b17e24fb94b6e72d19ae769f68acf905b0a8a7116d60e17"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k 'flat_hosted_exit_bundle or canonical_binding_rejects_real_mixed_runtime_root'",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py scripts/run_btc_okx_demo_fault_drill.py && git diff --check",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "fresh_private_rest_private_ws_funding_and_ledger_reconciliation_required_before_runtime_can_clear_frozen_state",
+    "no_real_endpoint_or_demo_execution_was_performed_in_producer_validation",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "all_promotion_paper_live_private_order_real_order_transfer_withdraw_flags_remain_false"
+  ]
+}

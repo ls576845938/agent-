@@ -1,0 +1,28 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-unified-offline-readonly-governance-correction-01-validated-91b725a8b",
+  "ticket_id": "INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-GOVERNANCE-20261004",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/btc-unified-ro-gov-review-c01-valid-handoff",
+  "base_commit": "6a8e422421d9e5c35df322df04b865caca9f68a2",
+  "deliverable_commit": "91b725a8bbdf7d813aa707964ff7bf128b869d7f",
+  "created_at": "2026-10-04T09:32:24.4189701Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-unified-offline-readonly-governance-20261004-correction-01-4278777dd"],
+  "supersedes": ["integrated-btc-unified-offline-readonly-governance-review-20261004-420171d76"],
+  "transition_for": "published-btc-unified-offline-readonly-governance-20261004-correction-01-4278777dd",
+  "deliverables": [{"path":"docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md","type":"report","schema_version":"btc_unified_offline_readonly_evidence_v1","sha256":"c0649803ec74fb6d4ee76a867f6617344390ac30bd975491be1d8e74d67f90a9","readiness_class":"quality_checked"}],
+  "tests": [
+    {"command":"py -3 -m pytest -q tests/agent_governance/test_btc_unified_offline_readonly_delivery_20261004.py -k 'existing_backend_identity_without_paths or backend_optional_identity_path or backend_mismatching_second_path or pathless_backend_identity or frontend_requires_worktree' --basetemp OS-TEMP/btc-unified-ro-gov-compat-review-c01-20261004-c68a7","result":"passed","evidence_path":"docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md"},
+    {"command":"py -3 tools/agent_governance/btc_unified_offline_readonly_delivery_20261004.py --verify-source","result":"passed","evidence_path":"docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md"},
+    {"command":"git diff --exit-code 2920ca044772f561d21b9550cfb9afbeaffbd672 4278777dd06ce8f1bffe570887c8d4abb6654d75 -- docs/agent_playbooks/btc_unified_offline_readonly_delivery_20261004.json","result":"passed","evidence_path":"docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md"},
+    {"command":"unchanged business matrices, research, worker, annual replay, service and formal current-main deployment","result":"not_run","evidence_path":"docs/acceptance/btc-unified-offline-readonly-governance-review-20261004.md"}
+  ],
+  "blockers": ["correction_01_requires_distinct_source_integrator_and_new_current_main_readonly_deployment_evidence", "real_R2_R3_models_calibration_research_and_all_execution_gates_remain_blocked"],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {"handoff_only":true,"promotion_unlock_allowed":false,"paper_or_live_unlock_allowed":false,"private_endpoint_allowed":false,"order_endpoint_allowed":false,"real_order_submitted":false}
+}

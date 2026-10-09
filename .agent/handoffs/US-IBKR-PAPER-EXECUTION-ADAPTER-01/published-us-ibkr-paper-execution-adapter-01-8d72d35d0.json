@@ -1,0 +1,76 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-paper-execution-adapter-01-8d72d35d0",
+  "ticket_id": "US-IBKR-PAPER-EXECUTION-ADAPTER-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-paper-execution-adapter-01",
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "deliverable_commit": "8d72d35d0a0da987261697d8431c02fa5a97b223",
+  "created_at": "2026-08-06T14:11:19Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/execution/ibkr_paper_execution_adapter.py",
+      "sha256": "ee2cfb6e90380dbeb60d2b8491386bcfd20f5a978a042887c29ce00e88500183",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_execution_adapter.py",
+      "sha256": "653bbc644931b18f313ceefc293e6a2e759a831d2d75cc278d9f78d9f6b28315",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -B -m py_compile quant_us/execution/ibkr_paper_execution_adapter.py tests/live/test_ibkr_paper_execution_adapter.py",
+      "result": "passed",
+      "evidence_path": "quant_us/execution/ibkr_paper_execution_adapter.py"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/live/test_ibkr_paper_execution_adapter.py -p no:cacheprovider -q --basetemp <unique-system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_execution_adapter.py"
+    },
+    {
+      "command": "git diff --cached --check -- quant_us/execution/ibkr_paper_execution_adapter.py tests/live/test_ibkr_paper_execution_adapter.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "static import/network/runtime/strategy-risk boundary scan for the two deliverable files",
+      "result": "passed",
+      "evidence_path": "quant_us/execution/ibkr_paper_execution_adapter.py"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_by_unclassified_delivery_policy",
+    "owner:runtime adapter_not_wired_into_paper_runtime_by_ticket_scope",
+    "owner:operator no_gateway_connection_or_paper_order_authorized",
+    "owner:gate current_head_artifact_read_model_and_promotion_gate_rebuild_not_performed",
+    "no_real_gateway_session_or_paper_order_fill_position_cash_ledger_evidence",
+    "forward_paper_observation_and_manual_promotion_approval_missing",
+    "all_trading_safety_permissions_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "blockers": [
+    "clean_integrator_and_architect_approval_required_before_local_main_fast_forward",
+    "canonical_runtime_on_port_3000_must_be_restarted_after_final_main_is_stable",
+    "historical_pre_guard_worktrees_remain_unsupported_launch_surfaces",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-07-26T16:12:47Z",
+  "deliverable_commit": "2af6ea4189c212b026ca67bf135988c5318ef1b6",
+  "deliverables": [
+    {
+      "path": "scripts/start_frontend_current_main.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_current_main_utf8_launch_v1",
+      "sha256": "d926c2533b4a0792078d4aab69b1c8957e3723eef68011b5df4e7176bb6a707d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-frontend-identity.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_contract_v3",
+      "sha256": "6c070a02631ea4311c1eb5893bcb6e591afa5fc49b97ae8ed15c95d738da4eca",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "22379bf73c02832eaa7409cf9313b79ec1eddff09ac17c2c0d78b07f9caa96d8",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-quant-frontend-current-main-hard-lock-02"
+  ],
+  "domain": "shared",
+  "event_id": "published-quant-frontend-current-main-utf8-launch-01-2af6ea418",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/quant-frontend-current-main-utf8-launch-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first canonical background launch on main before fix [observed: exit nonzero, FRONTEND_CANONICAL_GUARD_MISSING with mojibake path D:\\\\vibe coding\\\\Obsidian\\\\閲忓寲绯荤粺\\\\agent-]",
+      "evidence_path": "scripts/start_frontend_current_main.ps1",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:test (cwd=frontend) [observed: Windows powershell.exe windowsHide child decoded D:\\\\vibe coding\\\\Obsidian\\\\量化系统\\\\agent- correctly; 8 object targets; fingerprint ee9aa3077f9841690d22818a9992e7308bbf2edc47b73b6de6ebe2ab19147768]",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check (cwd=frontend) [observed: manifest_match=true; baseline_ancestor=true; dirty_paths=[]]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "powershell.exe -NoProfile -File ..\\\\scripts\\\\start_frontend_current_main.ps1 -Check (cwd=frontend) [observed: canonical main worktree and frontend path preserve Chinese characters; main identity passed]",
+      "evidence_path": "scripts/start_frontend_current_main.ps1",
+      "result": "passed"
+    },
+    {
+      "command": "node .\\\\scripts\\\\start-current-main.mjs --check (cwd=frontend, producer worktree) [observed: expected fail-closed exit 2 with branch/head/worktree mismatch; no listener started]",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- scripts/start_frontend_current_main.ps1 frontend/scripts/test-frontend-identity.mjs frontend/public/frontend-identity.json",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QUANT-FRONTEND-CURRENT-MAIN-UTF8-LAUNCH-01",
+  "transition_for": ""
+}

@@ -1,0 +1,146 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-shared-platform-v3-01-fe68263da",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/btc-shared-platform-v3-int",
+  "base_commit": "cae56554cd4288239b1bd4c20bff02c89d21df29",
+  "deliverable_commit": "fe68263da67685cb8ac93cb47309e24f8744bbde",
+  "created_at": "2026-08-22T12:57:40Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-shared-platform-v3-01-e0761bd16",
+    "superseded-btc-shared-platform-v3-01-correction-01-bbf289beb"
+  ],
+  "supersedes": [],
+  "transition_for": "superseded-btc-shared-platform-v3-01-correction-01-bbf289beb",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "docs/knowledge/05_architecture/shared_platform_v3_contract.md",
+      "sha256": "383f9af26b461e82811339aa9b8569487ddc79c365d97877a9067e3a4fd2e73f",
+      "schema_version": "shared_platform_v3_adr_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/shared_platform_v3_compatibility_matrix.md",
+      "sha256": "15fe3357ba32436709d71821d00889673916c971ec94e4bce8d94e00e12b391c",
+      "schema_version": "shared_platform_v3_matrix_mirror_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "configs/governance/shared_platform_v3_compatibility_v1.json",
+      "sha256": "9b59f7722c49fa8f732cd50bdb8382a841518be14495cc17dbcc33c4766bb549",
+      "schema_version": "shared_platform_v3_compatibility_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/shared_platform_v3_compatibility.schema.json",
+      "sha256": "4f8868d8759c48306dce8088bb570b0c900ba99aab77e37d56550c65dc013416",
+      "schema_version": "json_schema_2020_12",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/__init__.py",
+      "sha256": "e58694d8e72a79e09552351fed7ad452237efeffdf2480b8aed28789ce048ea7",
+      "schema_version": "shared_platform_discovery_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/__init__.py",
+      "sha256": "2cff277fe037ce2aa80cd4b60fbd4c6df84252bc839c880ff5829bc7445a74ff",
+      "schema_version": "shared_platform_runtime_exports_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/contracts.py",
+      "sha256": "c62403ebb966fca82cad036c81266e4b0dec2148d9d5943cf425708b2b57a37d",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_core_and_boundary.py",
+      "sha256": "4debf0a44156e90019f4f4b5f923dd9ffb33501c35c301ae44b9af0ee1c79353",
+      "schema_version": "shared_platform_boundary_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_runtime_v3_contract.py",
+      "sha256": "455f82a83ed649ad40e9e7931d4b492266ff0d8584cee7cb44894ba8e86b8782",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-01/published-btc-shared-platform-v3-01-e0761bd16.json",
+      "sha256": "0fe126348c420d9af9240d17fd3d49642989f2e6f56389d9c8d74268e7985631",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-01/superseded-btc-shared-platform-v3-01-correction-01-bbf289beb.json",
+      "sha256": "4ed4ce16b380082f5acaae5a1726e9a6d090256fabf2cdc1c0b43032b5477a15",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-shared-v3-int tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py",
+      "result": "passed",
+      "evidence_path": "33 passed in 6.35s; external basetemp; PYTHONDONTWRITEBYTECODE=1"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=C:\\tmp\\qsx-shared-v3-pyc py -3 -m py_compile quant_shared/__init__.py quant_shared/runtime/__init__.py quant_shared/runtime/contracts.py tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py",
+      "result": "passed",
+      "evidence_path": "candidate integrator worktree"
+    },
+    {
+      "command": "git diff --check cae56554cd4288239b1bd4c20bff02c89d21df29..fe68263da67685cb8ac93cb47309e24f8744bbde",
+      "result": "passed",
+      "evidence_path": "candidate integrator worktree"
+    },
+    {
+      "command": "handoff.py validate for original published and correction superseding envelopes; exact ancestry/blob/touch-set precheck",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-01/"
+    },
+    {
+      "command": "safe_status.py for exact T0 source, schema, documentation, test, and handoff paths",
+      "result": "passed",
+      "evidence_path": "candidate integrator worktree; all scoped paths clean"
+    },
+    {
+      "command": "current-HEAD promotion artifact/read-model build and service restart",
+      "result": "not_run",
+      "evidence_path": "T0 contract-only scope; explicitly deferred"
+    }
+  ],
+  "blockers": [
+    "t0_contract_only_artifact_read_model_not_built",
+    "services_and_endpoints_not_started_or_accessed",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

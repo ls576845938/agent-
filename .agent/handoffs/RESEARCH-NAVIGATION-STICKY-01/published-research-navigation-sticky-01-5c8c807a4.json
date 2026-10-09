@@ -1,0 +1,89 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-navigation-sticky-01-5c8c807a4",
+  "event_type": "published",
+  "ticket_id": "RESEARCH-NAVIGATION-STICKY-01",
+  "producer_role": "super_developer",
+  "producer_branch": "agent/super_developer/research-navigation-sticky-01",
+  "base_commit": "196066dfa46437c07b1af327251f4ad033c3d342",
+  "deliverable_commit": "5c8c807a476c225f4b34a885016770e8ed474e5d",
+  "domain": "research",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-10T08:39:48.991Z",
+  "expires_at": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/research-navigation-sticky-01.md",
+      "sha256": "f981d5fbc951f6ed3746238ce6735c1f8b55eabeaf6c911244dbcc3acb25c094",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "report"
+    },
+    {
+      "path": "frontend/e2e/research-navigation.spec.ts",
+      "sha256": "7f3ce4778c21229c7162cf3f23ed5c298b4bb04ecd287d0b09a84067195834c4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchDashboard.css",
+      "sha256": "1172bf3afe04d09d5533d7df2bc976472e1907a00a5ffd927583086abfa73681",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "sha256": "ffd537e8c4fb4c8972ef0c175c6814cba0e146018490ba5166aac531a535e5ec",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "supersedes": [
+    "published-research-navigation-sticky-01-847b899bc"
+  ],
+  "transition_for": "",
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "blockers": [
+    "owner:architect committed-source bounded focus-intent correction review pending",
+    "owner:integrator canonical nine-case navigation green regression, screenshots and official service restart pending",
+    "btc_runtime_artifact_root_env_missing; UI ticket does not authorize training, promotion rebuild or runtime bootstrap"
+  ],
+  "tests": [
+    {
+      "command": "Failure-first against unchanged canonical main196066df port3000: one records navigation test failed (nav y=-1488.0625, canvas top119; required >=118), identity verified; not new-source green evidence",
+      "evidence_path": "docs/reports/research-navigation-sticky-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "After P2: node node_modules/typescript/bin/tsc --noEmit passed; node node_modules/vite/bin/vite.js build passed5245modules17.73s existing bundle warning",
+      "evidence_path": "docs/reports/research-navigation-sticky-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and Playwright --list passed, nine tests including loaded sentinels, delayed remount/secondary intent, cancellation and viewport clamp",
+      "evidence_path": "frontend/e2e/research-navigation.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "Final canonical navigation regression/screenshots and existing research regression suite, independent integration and official restart: not run by producer",
+      "evidence_path": "frontend/e2e/research-navigation.spec.ts",
+      "result": "not_run"
+    }
+  ]
+}

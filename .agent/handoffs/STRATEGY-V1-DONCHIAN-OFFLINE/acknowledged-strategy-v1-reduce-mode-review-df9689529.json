@@ -1,0 +1,65 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-strategy-v1-reduce-mode-review-df9689529",
+  "ticket_id": "STRATEGY-V1-DONCHIAN-OFFLINE",
+  "event_type": "acknowledged",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/strategy-v1-reduce-source-review-20260915",
+  "base_commit": "226ac2d524ac58d3b961e941df4376507937540b",
+  "deliverable_commit": "df9689529c902fe012831950188300252b10ec9f",
+  "created_at": "2026-09-15T05:43:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-strategy-v1-reduce-mode-final-20260915-7ec632f93"
+  ],
+  "supersedes": [],
+  "transition_for": "published-strategy-v1-reduce-mode-final-20260915-7ec632f93",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v1-reduce-source-independent-review-20260915.md",
+      "sha256": "0da2430624227b6cafbf68456671551fa790db8b4bcba3fa3e77f8a55f2eb29b",
+      "schema_version": "strategy_v1_reduce_mode_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <committed final reduce-mode handoff>; verify source ancestry and four deliverable hashes",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-V1-DONCHIAN-OFFLINE/published-strategy-v1-reduce-mode-final-20260915-7ec632f93.json"
+    },
+    {
+      "command": "isolated no-network pytest -q -p no:cacheprovider <seven dispatcher selectors> tests/contracts/test_strategy_v1_donchian_offline.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_demo_production_composition.py",
+      "result": "passed",
+      "evidence_path": "97 passed in 15.48s; docs/operations/strategy-v1-reduce-source-independent-review-20260915.md"
+    },
+    {
+      "command": "python -B -m py_compile quant_crypto/runtime/control_plane.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v1-reduce-source-independent-review-20260915.md"
+    }
+  ],
+  "blockers": [
+    "owner:architect_and_integrator main integration has not been performed",
+    "owner:future_v1 same-bar reverse opening remains fail-closed on drawdown and protective-order ownership fact inconsistencies; Guardian and shared permissions were not modified",
+    "owner:future_v1 runner package identity, canonical visible-frame digest, post-ledger evidence repair and close-restart-open phase recovery remain pending",
+    "owner:release M1 exact historical runtime blob, readonly frontend association, service publication and page acceptance remain pending"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

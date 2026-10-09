@@ -1,0 +1,101 @@
+{
+  "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator current_main_parity_regression_not_run_after_integration",
+    "quality_checked_research_only_routing_characterization_not_alpha_or_promotion_evidence",
+    "governed_data_manifest_missing_and_market_data_not_consumed_by_routing_diagnostic",
+    "funding_mark_index_liquidation_depth_fill_mapping_walk_forward_holdout_not_exercised",
+    "validation_not_run:ruff_dependency_missing",
+    "paper_live_private_order_broker_real_order_network_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-29T12:23:51Z",
+  "deliverable_commit": "6e9fdf1c8d1af51c8ad6d74a71657807c9739dd0",
+  "deliverables": [
+    {
+      "path": "backend/app/services/backtests.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_backtest_registry_execution_routing_v1",
+      "sha256": "06b3af373de0b1713de00737832da6710beff1c4d72bf7744f08ef8b4354c79f",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_execution_capability_v1",
+      "sha256": "8b0a4489fe5ae439414b74219df714a6b21a3c7698ee77e28607d20f96936c31",
+      "type": "code"
+    },
+    {
+      "path": "tests/backtest/test_crypto_event_backtest.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_event_routing_parity_tests_v1",
+      "sha256": "51b3fdc6f3b9edbf744e587286779fcf57c2793336de0477d163d3a8dc3e052a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_contract_tests_v2",
+      "sha256": "c3cd75ffe55450d4a5d6b816eaca8101cf75072dc38685ace66507975ecb9244",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-backtest-parity-producer-01-6e9fdf1c8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-backtest-parity-producer-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py::test_stable_and_okx_native_top5_expose_the_same_backtest_execution_capability tests/backtest/test_crypto_event_backtest.py::test_stable_and_okx_native_candidates_share_frozen_event_backtest_semantics --basetemp %TEMP%/btc-backtest-parity-red-<unique> -q",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py::test_stable_and_okx_native_top5_expose_the_same_backtest_execution_capability tests/backtest/test_crypto_event_backtest.py::test_stable_and_okx_native_candidates_share_frozen_event_backtest_semantics --basetemp %TEMP%/btc-backtest-parity-green-<unique> -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_backtests.py --basetemp %TEMP%/btc-backtest-parity-suite-<unique> -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- backend/app/services/backtests.py quant_crypto/application/btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py tests/contracts/test_btc_strategy_registry.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/services/backtests.py quant_crypto/application/btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py tests/contracts/test_btc_strategy_registry.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check backend/app/services/backtests.py quant_crypto/application/btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py tests/contracts/test_btc_strategy_registry.py",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-BACKTEST-PARITY-PRODUCER-01",
+  "transition_for": ""
+}

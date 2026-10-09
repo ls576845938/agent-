@@ -1,0 +1,85 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-strategy-v1-closeout-independent-review-20260915-f424873ac",
+  "ticket_id": "STRATEGY-V1-CLOSEOUT-20260915",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/strategy-v1-closeout-integration-20260915",
+  "base_commit": "527a9692e542e2ca8687b86b6588c11e483850cf",
+  "deliverable_commit": "f424873ac4adf895ea908d6a750bd9b8a7cbac03",
+  "created_at": "2026-09-15T07:45:06Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-strategy-v1-closeout-20260915-b0defd454"
+  ],
+  "supersedes": [],
+  "transition_for": "published-strategy-v1-closeout-20260915-b0defd454",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v1-closeout-independent-review-20260915.md",
+      "sha256": "508f21a65ca1817006c3bc3430e4cb9ca26fcf07d043a6105bf7e7681ede217d",
+      "schema_version": "strategy_v1_closeout_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "validate_handoff_against_git for published-strategy-v1-closeout-20260915-b0defd454 and verify exact five-path source diff",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v1-closeout-independent-review-20260915.md"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py -p no:cacheprovider --basetemp C:/tmp/v1-closeout-independent-20260915 -q",
+      "result": "passed",
+      "evidence_path": "6 passed in 77.92s"
+    },
+    {
+      "command": "independent fixed historical observation-clock replay diagnostic",
+      "result": "failed",
+      "evidence_path": "dispatcher wall-clock freshness rejected the fixed observation as stale; docs/operations/strategy-v1-closeout-independent-review-20260915.md"
+    },
+    {
+      "command": "independent persisted FROZEN_UNKNOWN and disconnected private-WS restart diagnostic",
+      "result": "failed",
+      "evidence_path": "recovery rewrote blocked facts to RUNNING/connected and opened -0.01 contracts; docs/operations/strategy-v1-closeout-independent-review-20260915.md"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_m1_btc_behavior_freeze.py::test_m1_history_stays_frozen_with_only_reviewed_post_m1_safety_fixes -p no:cacheprovider --basetemp C:/tmp/v1-closeout-m1-independent-20260915 -q",
+      "result": "failed",
+      "evidence_path": "1 failed in 5.09s; exact blob registration intentionally unchanged"
+    },
+    {
+      "command": "independent rerun of producer V0/BTC 219-test compatibility subset",
+      "result": "not_run",
+      "evidence_path": "stopped after direct frozen-acceptance blockers were independently reproduced"
+    },
+    {
+      "command": "readonly frontend association, service publication, Demo, paper, private, order and live acceptance",
+      "result": "not_run",
+      "evidence_path": "blocked by failed technical acceptance"
+    }
+  ],
+  "blockers": [
+    "owner:architect fixed-clock replay still depends on dispatcher utc_now freshness and does not meet the frozen explicit-clock acceptance",
+    "owner:architect offline recovery overwrites persisted FROZEN_UNKNOWN/private-WS blockers and can open new risk after restart",
+    "owner:architect M1 exact-blob registration is not approved because the complete V1 technical source did not pass",
+    "owner:release readonly page association and formal publication remain blocked; no automatic repair ticket is authorized"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

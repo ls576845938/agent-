@@ -1,0 +1,56 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-dataready-blocked-l2-schema-consumer-01-batch-03",
+  "ticket_id": "BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-dataready-fix-batch-03",
+  "base_commit": "57055c7a1161c3a96b9ab69525ff7709b4b2458c",
+  "deliverable_commit": "1434d3d456c56f56effa99b3a99af73d141a9a2e",
+  "created_at": "2026-07-26T17:16:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-dataready-blocked-l2-schema-consumer-01-aa69b8f1"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-dataready-blocked-l2-schema-consumer-01-aa69b8f1",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "producer envelope validation plus three committed deliverable SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01/published-btc-v3-dataready-blocked-l2-schema-consumer-01-aa69b8f1.json"
+    },
+    {
+      "command": "blocked L2 focused contracts 4 passed; full DataReady contracts 51 passed; extended collection 146 passed",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py"
+    },
+    {
+      "command": "exact selector report exit 2, status blocked, 13 unique truthful blockers, L2 resolved_path empty, all readiness and safety flags false",
+      "result": "passed",
+      "evidence_path": "scripts/build_btc_dataready_consumption_report.py"
+    }
+  ],
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "dataready_report_remains_fail_closed",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_demo_paper_queue_real_order_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

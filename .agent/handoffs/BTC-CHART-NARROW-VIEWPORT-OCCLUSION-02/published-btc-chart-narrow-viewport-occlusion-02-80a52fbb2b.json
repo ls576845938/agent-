@@ -1,0 +1,78 @@
+{
+  "base_commit": "4a0cb88804e6fd15a66b861842034f67ab32a5bf",
+  "blockers": [],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-02T07:56:46.6847430Z",
+  "deliverable_commit": "80a52fbb2ba3df471d7a5900e1934964d31b747f",
+  "deliverables": [
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "b1eef02ff6a57e64fbb445907cc8580912c63276f30074e8de82af8f01029a12",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "static_regression_v1",
+      "sha256": "6c4d196f92702e7b5a5556a82d664ab876394156bc237d1d9959f503ca347c35",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-chart-narrow-viewport-occlusion-02-80a52fbb2b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-chart-narrow-viewport-occlusion-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "node scripts/check-btc-tradingview-entry.mjs (failure-first: missing all three narrow-chart geometry markers before CSS fix)",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint (tsc --noEmit)",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (Vite built in 49.74s)",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright CLI 1066x1140 CSS probe: chartInsideBody=true, noChartFootOverlap=true, depthContained=true; normal and collapsed console",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright narrow/fullscreen verification after integration",
+      "evidence_path": "frontend/src/index.css",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CHART-NARROW-VIEWPORT-OCCLUSION-02",
+  "transition_for": ""
+}

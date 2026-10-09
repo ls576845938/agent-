@@ -1,0 +1,83 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-btc-tradingview-forwardport-01",
+  "ticket_id": "QUANT-FRONTEND-BTC-TRADINGVIEW-FORWARDPORT-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "btc_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/quant-frontend-btc-tradingview-forwardport-01",
+  "base_commit": "d95c3a11d42cc35a90e22c9e7c71167889093dbc",
+  "deliverable_commit": "746ce28af3d9669f0396f2bd53d4db85442c2cfb",
+  "created_at": "2026-07-26T01:11:59Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9"
+  ],
+  "supersedes": [],
+  "transition_for": "published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "npm.cmd install (cwd=frontend) [observed: 117 packages installed; package-lock remained clean]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend) [observed: 6 of 6 markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend) [observed: passed]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: passed; Vite 5200 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend) [observed: frontend smoke checks passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend) [observed: CN operations workspace smoke passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npx.cmd playwright test --reporter=line (cwd=frontend) [observed: 22 passed]",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/QUANT-FRONTEND-BTC-TRADINGVIEW-FORWARDPORT-01/published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9.json [observed: valid; 11 of 11 deliverable SHA-256 values matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-BTC-TRADINGVIEW-FORWARDPORT-01/published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9.json"
+    }
+  ],
+  "blockers": [
+    "current_head_btc_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "paper_live_order_private_network_permissions_remain_false",
+    "classification:goal_code_integration_blocker=false",
+    "classification:historical_main_frontend_dirty_requires_verified_archive_before_cutover",
+    "classification:frontend_is_read_only_demo_and_fail_closed"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

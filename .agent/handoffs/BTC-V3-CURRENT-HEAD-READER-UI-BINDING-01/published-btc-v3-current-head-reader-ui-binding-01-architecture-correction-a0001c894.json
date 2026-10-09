@@ -1,0 +1,149 @@
+{
+  "base_commit": "5a548d7454f7ae0372ff61e21dbb912fbe1a0ff9",
+  "blockers": [
+    "owner:integrator correction_deliverable_not_integrated_to_refs_heads_main",
+    "owner:separate_ticket registered_main_runtime_dependency_dirty:quant_crypto/application/btc_backtest_identity.py",
+    "owner:integrator playwright_current_main_route_validation_not_run_in_writer",
+    "owner:btc_operations accepted_external_runtime_root_not_live_verified_in_writer_environment",
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T15:26:30Z",
+  "deliverable_commit": "a0001c8943f8aba356b0d0d5fe5d0789071037a1",
+  "deliverables": [
+    {
+      "path": "scripts/start_backend_current_main.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_v1",
+      "sha256": "960597bebe6a8625346ffc7e39992c81bb9b189f824a17a9bd67bb3cb1c74b99",
+      "type": "code"
+    },
+    {
+      "path": "scripts/start_backend_current_main.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_powershell_v1",
+      "sha256": "aed145c608cdb764d8d48b556578b5be749d69796c0e478699eed5bf5e6a5136",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_contract_v1",
+      "sha256": "41f9b379034b0f6b4f18424db4de4a015395cc1153d5d218cd8ad2a211a33c84",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_v1",
+      "sha256": "082bfcba50d22e5f41526b40e9728c29001f1b03cf0b2d30b788d8a268e459ff",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_fixture_v1",
+      "sha256": "f1629231263e529a973b32f17ff17b13f7639f0ac6e0f992349b1fb84220fa80",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_e2e_v1",
+      "sha256": "76e30902651d741ef69ddbbea3c749ace9aadc241f44581fee6bfdca257c3b34",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-v3-next-stage-current-head-orchestrator-01"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-current-head-reader-ui-binding-01-architecture-correction-a0001c894",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-current-head-reader-ui-binding-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-v3-current-head-reader-ui-binding-01-9a1496f6f"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_backend_current_main_launcher.py -q [16 passed]",
+      "evidence_path": "backend/tests/test_backend_current_main_launcher.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_backend_current_main_launcher.py tests/agent_governance/test_team_context.py backend/tests/test_btc_outbound_path_redaction.py tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q [150 passed in 37.39s]",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_api_contract.py -k btc_domain_read_model -q [1 passed, 29 deselected]",
+      "evidence_path": "backend/tests/test_api_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -B -m py_compile <9 approved Python implementation/test files>",
+      "evidence_path": "scripts/start_backend_current_main.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint [tsc --noEmit passed]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build [5204 modules transformed; existing >500 kB chunk warning preserved]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright btc-current-head-reader-ui-binding.spec.ts on registered current main",
+      "evidence_path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "backend process start, Vite/Playwright server start, runtime artifact rebuild, public/network collection, private/order/live endpoint, paper queue, real order, secret action, or historical dirty inspection/modification",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path <each exact original approved business path>; git diff --check -- <six correction paths>; frontend identity diff check",
+      "evidence_path": "scripts/start_backend_current_main.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-CURRENT-HEAD-READER-UI-BINDING-01",
+  "transition_for": ""
+}

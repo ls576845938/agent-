@@ -1,0 +1,119 @@
+{
+  "base_commit": "2c7360619dd93594f78865c48825bb389a052e81",
+  "blockers": [
+    "owner:data_steward immutable_snapshot_not_published",
+    "owner:data_steward data_steward_attestation_required",
+    "owner:data_steward okx_timestamp_aligned_l2_manifest_not_published",
+    "owner:data_steward immutable_manifest_not_published",
+    "owner:artifact_builders btc_research_registry_artifact_missing_in_sparse_worktree",
+    "owner:artifact_builders global_research_registry_artifact_missing_in_sparse_worktree",
+    "owner:architect promotion_paper_live_gates_remain_fail_closed"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T06:39:41Z",
+  "deliverable_commit": "f6fe7cf911adfeb75271fd1381b02e17f6754223",
+  "deliverables": [
+    {
+      "path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01-consumption-report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumption_report_v1",
+      "sha256": "f7136e81c3602a3b8304ec5247bedc546934b635da1de9a0234d018a2e532f41",
+      "type": "artifact"
+    },
+    {
+      "path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumer_delivery_report_v1",
+      "sha256": "60d5cb2d244bc43b32ea6d3aa26a6cafe13466418908ed8c7a04925dec9b45a5",
+      "type": "report"
+    },
+    {
+      "path": "quant_crypto/data/dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_immutable_dataready_consumer_v1",
+      "sha256": "bfca6622e89c27b00da91d574d71d5bc3a87429c2e05fd1ae17f029a4e6de9e3",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_dataready_consumption_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumption_report_v1",
+      "sha256": "49674cdd27107096f2aad4ba86c461d0f186ec65cfb57cfcab94d50abcbb8cbd",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/build_btc_dataready_consumption_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumption_report_builder_v1",
+      "sha256": "c932e5be37988c92b4f5cf64ca2c99af630df788554a837b2f96309b880bf059",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumer_contract_v1",
+      "sha256": "709bf2b2ae7474b4e031eae0b956026268baaf9b5984d30ff9adac646c8cd5fd",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-v3-application-service-boundary-01-goal3-batch-01"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-dataready-consumer-01-f6fe7cf9",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-dataready-consumer-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py -q -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_shared_data.py tests/data/test_btc_pit_contract.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_public_data_landing_no_strategy_side_effect.py tests/contracts/test_btc_shared_boundary_adoption.py -q -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_shared_data.py tests/data/test_btc_pit_contract.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_shared_boundary_adoption.py -q -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/build_btc_dataready_consumption_report.py --repo-root . --output docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01-consumption-report.json",
+      "evidence_path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01-consumption-report.json",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/data/dataready_consumer.py scripts/build_btc_dataready_consumption_report.py tests/contracts/test_btc_dataready_consumer.py",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <touch-set>",
+      "evidence_path": "docs/handoffs/BTC-V3-DATAREADY-CONSUMER-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-DATAREADY-CONSUMER-01",
+  "transition_for": ""
+}

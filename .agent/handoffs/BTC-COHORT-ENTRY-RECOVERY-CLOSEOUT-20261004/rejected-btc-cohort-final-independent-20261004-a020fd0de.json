@@ -1,0 +1,85 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "projection recovery data_version differs from the initial adapter-keyed runtime identity",
+    "cumulative ledger snapshots make one original committed transition falsely ambiguous",
+    "backend start persists and dispatches a job before rejecting the known-incompatible member execution policy",
+    "existing proposed or approved bindings bypass the frontend compatibility disable on review and start",
+    "current Donchian and registered Qlib execution clocks, fill costs, and protection-policy hashes are structurally incompatible",
+    "no eligible real Qlib final package exists and independent effective sample remains below 30"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "architect"
+  ],
+  "created_at": "2026-10-04T12:44:25Z",
+  "deliverable_commit": "a020fd0de3dbd83a632802bc517994f39d867a83",
+  "deliverables": [
+    {
+      "path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_independent_acceptance_v2",
+      "sha256": "b2e968b22b4c3d4f64be4ed3a65b65f0420201ee860778a7c506abb6aff16dbe",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/btc-cohort-entry-recovery-independent-review-20261004.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cohort_independent_review_v1",
+      "sha256": "f26016b137a7b891c2a6c503026b403251fd018d0d85118c96affdc74f55a7bc",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-cohort-entry-recovery-final-doc-correction-20261004-3d4d88413"
+  ],
+  "domain": "btc",
+  "event_id": "rejected-btc-cohort-final-independent-20261004-a020fd0de",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-entry-recovery-closeout-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "rejected-btc-cohort-entry-recovery-independent-20261004-38112f213"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/integrations/test_btc_cohort_entry_independent_acceptance.py -q --tb=short",
+      "evidence_path": "1 failed, 4 passed in 25.54s; cumulative ledger snapshot recovery is ambiguous",
+      "result": "failed"
+    },
+    {
+      "command": "adapter-keyed initial data-version versus members-list recovery data-version digest comparison",
+      "evidence_path": "initial f1dcc345f24c2a110a7683471e5b9ca2830785f522d6ec50a22dd9a191d8787e != recovery 53dd6b55a5d4e4fa605e1469c60639113dd474c2f258e3d3270ec53ddd6d0573",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check a78e5e112f564c1ceaf47c57fc3035542cd12562 3d4d8841385c80cec12e9ae793232b4fad597528",
+      "evidence_path": "docs/architecture/btc-cohort-entry-recovery-closeout-20261004.md lines 3-4 trailing whitespace",
+      "result": "failed"
+    },
+    {
+      "command": "final fixed-version five long candidate-offline lifecycle nodes",
+      "evidence_path": "deterministic independent blockers require same-ticket correction first",
+      "result": "not_run"
+    },
+    {
+      "command": "actual two-real-member common-account execution and recovery",
+      "evidence_path": "current Donchian and registered Qlib pair is structurally blocked before economics",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "transition_for": "published-btc-cohort-entry-recovery-final-doc-correction-20261004-3d4d88413"
+}

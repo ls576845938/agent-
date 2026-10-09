@@ -1,0 +1,106 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-handoff-discovery-ref-cap-recovery-01-current-head-943bf8fa2",
+  "ticket_id": "HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/handoff-refcap-int01",
+  "base_commit": "40a18f37479fc81b5427c0414dd4763967f65e74",
+  "deliverable_commit": "943bf8fa289babc32ff3df5a842d8430257bb0ab",
+  "created_at": "2026-08-18T10:30:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-handoff-discovery-ref-cap-recovery-01-599d875fd",
+    "published-handoff-discovery-ref-cap-recovery-01-correction-01-4b81af61e",
+    "integrated-handoff-discovery-ref-cap-recovery-01-correction-01-a2169e01e"
+  ],
+  "supersedes": [
+    "integrated-handoff-discovery-ref-cap-recovery-01-correction-01-a2169e01e"
+  ],
+  "transition_for": "integrated-handoff-discovery-ref-cap-recovery-01-correction-01-a2169e01e",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "tools/agent_governance/handoff.py",
+      "sha256": "e064cbfa41e86741e7136d243df42ec6932095e421773b91e08d958edf14734f",
+      "schema_version": "bounded_handoff_discovery_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_handoff.py",
+      "sha256": "d4d7f60dd6b25775be490121d603221111fc6bcb7bb194aba9825e7f9894df83",
+      "schema_version": "bounded_handoff_discovery_contract_tests_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_hooks.py",
+      "sha256": "baa37d2e063b52a0d4a099d7ce9741ecc87f9cbfbecb7cce365858be9bb9a360",
+      "schema_version": "governance_hooks_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_handoff.py",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_handoff.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_context_scalability.py",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_context_scalability.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_hooks.py",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_hooks.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_context_packet.py tests/agent_governance/test_governance_contract.py tests/agent_governance/test_team_context.py",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py tests/agent_governance/test_hooks.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/handoff.py"
+    },
+    {
+      "command": "py -3 tools/agent_governance/team_context.py --repo-root . --role integrator --change-risk governance_control --format markdown",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/team_context.py"
+    },
+    {
+      "command": "full verify_git=True handoff scan",
+      "result": "not_run",
+      "evidence_path": "governance discovery timeboxed after the bounded deadline; no empty success manufactured"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance",
+      "result": "failed",
+      "evidence_path": "tests/agent_governance/test_disk_guard.py::test_post_checkout_hook_runs_sparse_backstop_before_lfs"
+    }
+  ],
+  "blockers": [
+    "full_governance_suite_single_registered_main_baseline_failure:post_checkout_hook_missing_worktree_storage_bootstrap",
+    "discovery_only_context_reports_13_existing_invalid_handoffs",
+    "full_verify_git_scan_timeboxed_without_empty_success"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

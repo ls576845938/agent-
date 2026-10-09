@@ -1,0 +1,114 @@
+{
+  "base_commit": "64e20af8867370d29cfbdb0d8798a78d9c3c5a95",
+  "blockers": [
+    "backend_restart_required_after_main_integration",
+    "btc_execution_latency_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "btc_queue_model_missing",
+    "immutable_manifest_consumer_readiness_blocked",
+    "kline_manifest_coverage_mismatch",
+    "kline_payload_ohlcv_invalid",
+    "kline_payload_ohlcv_range_invalid",
+    "okx_timestamp_aligned_l2_manifest_not_published",
+    "promotion_artifact_rebuild_required_after_main_integration"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T13:24:00Z",
+  "deliverable_commit": "22a3b3539b5a5ea99d6b9b9b5a26ab31289306c6",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "2dbda9e7c7e97365652161dd3d0b3514cbf1d237511af0df32a7cb26a1802f63",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "mutable_runtime_storage_pointer_v1",
+      "sha256": "571aabd7d634accd5bfbee35e687fe9d47cea94bf6d5e4eea85b14908f871292",
+      "type": "data_manifest"
+    },
+    {
+      "path": "docs/research/BTC_5M_CURRENT_IMMUTABLE_REFRESH_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_5m_current_immutable_refresh_report_v1",
+      "sha256": "8a23516d606c5afc3e3d9786d5637085b6dab9fcdc66de2ab720e6225ef738d2",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-5m-current-immutable-refresh-01-22a3b3539",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-5m-current-immutable-refresh-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_short_interval_data_refresh.py tests/contracts/test_btc_kline_immutable_export.py tests/agent_governance/test_shared_data.py tests/contracts/test_btc_dataready_consumer.py -q",
+      "evidence_path": "76 passed in 6.28s",
+      "result": "passed"
+    },
+    {
+      "command": "public 1h refresh with execute-network against the external runtime SQLite",
+      "evidence_path": "status=complete_research_only; rows_written=582; latest_complete=2026-08-26T11:59:59.999Z; blockers=[]",
+      "result": "passed"
+    },
+    {
+      "command": "public short-interval refresh with execute-network and finalized 1m resampling",
+      "evidence_path": "status=complete_research_only; rows_written=45360; resample=5m:9072,15m:3024; gaps=0; duplicates=0",
+      "result": "passed"
+    },
+    {
+      "command": "normal SQLite WAL checkpoint and close after all task connections were closed",
+      "evidence_path": "PRAGMA wal_checkpoint(TRUNCATE)=(0,0,0); WAL/SHM absent after close; no force deletion",
+      "result": "passed"
+    },
+    {
+      "command": "immutable export and shared_data publish for the canonical qcv1 version",
+      "evidence_path": "version=btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc1; aggregate=8c715b36be1c4631c7c13e0da46035b694cb680afc691b1805a80ad39f74aa1e; files=5; bytes=641518832",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest <canonical Git manifest> --shared-root <shared-data>",
+      "evidence_path": "status=resolved; full physical manifest/file hashes matched",
+      "result": "passed"
+    },
+    {
+      "command": "read-only consume_btc_dataready probe against canonical qcv1",
+      "evidence_path": "status=blocked; decision=block_dataready_consumption_fail_closed; blockers include kline_manifest_coverage_mismatch,kline_payload_ohlcv_range_invalid,kline_payload_ohlcv_invalid and missing public L2 evidence",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile refresh/export/shared_data/dataready modules",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": "staged deliverables only; no whitespace errors; scoped paths clean after commit",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-5M-CURRENT-IMMUTABLE-REFRESH-01",
+  "transition_for": ""
+}

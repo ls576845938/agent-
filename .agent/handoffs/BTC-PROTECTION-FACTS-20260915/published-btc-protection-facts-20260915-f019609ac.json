@@ -1,0 +1,45 @@
+{
+  "base_commit": "3c5a040a21109e8f4b7c25c29473049d3e53ab6d",
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics source review and integration have not been performed; this producer branch is not released or merged",
+    "owner:runtime_acceptance OS-level abrupt-process hard-crash recovery was not independently exercised; existing V1 ledger-before-evidence and intent-before-post hooks are in-process fault injections followed by explicit close before reconstruction",
+    "owner:architecture this first contract is intentionally limited to BTC-USDT-SWAP long_short_mode; net mode and any unproved account mode remain fail-closed",
+    "owner:release UI, API, service startup, Demo, paper, private endpoint, order endpoint, live execution, Qlib, M3-M4, promotion publication, and main integration were not run and remain disabled"
+  ],
+  "consumer_roles": ["integrator", "architect"],
+  "created_at": "2026-09-15T10:09:32Z",
+  "deliverable_commit": "f019609ac2b3c2acea6dc7e96a5d4b0bb53c8fa9",
+  "deliverables": [
+    {"path": "docs/architecture/btc-hosted-protection-facts.md", "readiness_class": "quality_checked", "schema_version": "btc_hosted_protection_facts_architecture_v1", "sha256": "6e73a8d08b9b751e5e4904a5745c94ef7cd99c775e409091f78838a656785be4", "type": "document"},
+    {"path": "quant_crypto/application/btc_demo_production_composition.py", "readiness_class": "quality_checked", "schema_version": "btc_demo_production_composition_hosted_protection_v1", "sha256": "b054873c024be2e4aec52897e77bb07bc96b90664907fa826dea0e3f6de70462", "type": "code"},
+    {"path": "quant_crypto/application/donchian_offline_replay.py", "readiness_class": "quality_checked", "schema_version": "strategy_v1_donchian_offline_replay_protection_receipt_v1", "sha256": "0590fb30c17ac2ec14c85bf57d8f38bcd2c55ef7743d7eb832cf861188405815", "type": "code"},
+    {"path": "quant_crypto/application/hosted_protection_facts.py", "readiness_class": "quality_checked", "schema_version": "btc_hosted_protection_facts_v1", "sha256": "ee0d525fc05d85a7ff44beaf9b1f577ef965b137e870213fbfdf6be3af86daea", "type": "code"},
+    {"path": "quant_crypto/oms/okx_demo_paper_runtime.py", "readiness_class": "quality_checked", "schema_version": "okx_demo_hosted_protection_provenance_v1", "sha256": "6a87d196e8c6eb5e20f2856d5d2b8c525e9d42180157d1f7786ccc8e25a93bc7", "type": "code"},
+    {"path": "tests/contracts/test_btc_demo_production_composition.py", "readiness_class": "quality_checked", "schema_version": "pytest_btc_demo_protection_composition_v1", "sha256": "44fa1717bdecb6d46cb43efd6bf63fc4a30282f50ba86b1a5f0daad29aac4521", "type": "test_evidence"},
+    {"path": "tests/contracts/test_btc_hosted_protection_facts.py", "readiness_class": "quality_checked", "schema_version": "pytest_btc_hosted_protection_facts_v1", "sha256": "0acc64e2c9e205b7e49227a4598ae1ee5e19f606d3360dbada2268265d696793", "type": "test_evidence"},
+    {"path": "tests/contracts/test_btc_okx_demo_paper_runtime.py", "readiness_class": "quality_checked", "schema_version": "pytest_okx_demo_protection_provenance_v1", "sha256": "000c8521e304d9c5e4178666dd7bcee493915e443fe01ff2dd2aea047c59691f", "type": "test_evidence"}
+  ],
+  "depends_on": ["published-strategy-v1-replay-boundary-20260915-7c0f9692a"],
+  "domain": "btc",
+  "event_id": "published-btc-protection-facts-20260915-f019609ac",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/btc_developer/btc-protection-facts-20260915",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "python -B -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_algo_sanitizer_preserves_close_side_and_reduce_only_tristate -p no:cacheprovider -q on base behavior (3 failed: sanitized side missing)", "evidence_path": "docs/architecture/btc-hosted-protection-facts.md", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_btc_hosted_protection_facts.py tests/contracts/test_btc_demo_production_composition.py::test_guardian_preclassification_and_evaluation_share_normalized_protection tests/contracts/test_btc_okx_demo_paper_runtime.py::test_algo_sanitizer_preserves_close_side_and_reduce_only_tristate tests/contracts/test_btc_okx_demo_paper_runtime.py::test_hosted_protection_projection_is_redacted_and_does_not_mutate_snapshot -p no:cacheprovider -q (15 passed)", "evidence_path": "tests/contracts/test_btc_hosted_protection_facts.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_btc_demo_production_composition.py plus four focused existing authoritative bundle and attached-protection receipt tests -p no:cacheprovider -q (39 passed)", "evidence_path": "tests/contracts/test_btc_demo_production_composition.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py -p no:cacheprovider -q (10 passed)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "passed"},
+    {"command": "AST parse of seven Python touch-set files and git diff --check", "evidence_path": "quant_crypto/application/hosted_protection_facts.py", "result": "passed"},
+    {"command": "git object identity check for quant_crypto/application/runtime_risk_guardian.py at base and worktree (both c8e2f74751803a3a466bf6881681011a1adf6d4a)", "evidence_path": "docs/architecture/btc-hosted-protection-facts.md", "result": "passed"},
+    {"command": "independent OS-level hard-crash subprocess, UI/API/service startup, Demo/paper/private/order/live execution, Qlib, M3-M4, promotion publication, and main integration", "evidence_path": "docs/architecture/btc-hosted-protection-facts.md", "result": "not_run"}
+  ],
+  "ticket_id": "BTC-PROTECTION-FACTS-20260915",
+  "transition_for": ""
+}

@@ -1,0 +1,41 @@
+{
+  "base_commit": "bcc63648fcb39e23b690bc860318b226fd106546",
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics source review and integration have not been performed; this producer branch is not released or merged",
+    "owner:runtime_acceptance OS-level abrupt-process hard-crash recovery was not independently exercised; the frozen V1 recovery checks remain in-process fault injections",
+    "owner:architecture this correction remains limited to BTC-USDT-SWAP long_short_mode and exact persisted algoId plus algoClOrdId parent joins; unproved modes and ambiguous identities remain fail-closed",
+    "owner:release UI, API, service startup, Demo, paper, private endpoint, order endpoint, live execution, Qlib, M3-M4, promotion publication, and main integration were not run and remain disabled"
+  ],
+  "consumer_roles": ["integrator", "architect"],
+  "created_at": "2026-09-15T12:00:21Z",
+  "deliverable_commit": "cd211003fe574bc3a643d32060a17bb245d6e8d0",
+  "deliverables": [
+    {"path": "docs/architecture/btc-hosted-protection-facts.md", "readiness_class": "quality_checked", "schema_version": "btc_hosted_protection_facts_architecture_v1", "sha256": "05342ee9245bc4eb164faa9eae553715ee6edfa58725011cb38ba7b848edf134", "type": "document"},
+    {"path": "quant_crypto/application/hosted_protection_facts.py", "readiness_class": "quality_checked", "schema_version": "btc_hosted_protection_facts_v1", "sha256": "807730a5eeb6fea2b967cde0a655a166b86acaec1849d5e0c2c2e530af16a866", "type": "code"},
+    {"path": "tests/contracts/test_btc_hosted_protection_facts.py", "readiness_class": "quality_checked", "schema_version": "pytest_btc_hosted_protection_parent_join_v1", "sha256": "c550e361e387d036bbf77c270d4f06338d7732ce131356c316fc7be6dc009f17", "type": "test_evidence"},
+    {"path": "tests/contracts/test_strategy_v1_donchian_offline.py", "readiness_class": "quality_checked", "schema_version": "pytest_strategy_v1_parentless_protection_readback_v1", "sha256": "12ee6517c6d82f8b48ceb58f419a8288dac8c775cb96576cefe2f574b55681a2", "type": "test_evidence"}
+  ],
+  "depends_on": ["rejected-btc-protection-facts-independent-review-20260915-48049d47a"],
+  "domain": "btc",
+  "event_id": "published-btc-protection-parent-join-20260915-cd211003f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/btc_developer/btc-protection-parent-join-20260915",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "pytest test_btc_hosted_protection_facts.py -k missing_raw_parent/nonempty_raw_parent/single_identifier_owner_conflict on base behavior (4 failed, 1 passed; missing raw parent rejected and single-identifier conflicts accepted)", "evidence_path": "docs/architecture/btc-hosted-protection-facts.md", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_btc_hosted_protection_facts.py -p no:cacheprovider -q (15 passed in 1.55s)", "evidence_path": "tests/contracts/test_btc_hosted_protection_facts.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py::test_continuous_closeout_accepts_parentless_exchange_algo_readback_only_via_local_join -p no:cacheprovider -q (1 passed in 81.43s)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py -p no:cacheprovider -q (11 passed in 212.27s)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_btc_hosted_protection_facts.py tests/contracts/test_btc_demo_production_composition.py::test_guardian_preclassification_and_evaluation_share_normalized_protection -p no:cacheprovider -q (16 passed in 3.50s)", "evidence_path": "tests/contracts/test_btc_hosted_protection_facts.py", "result": "passed"},
+    {"command": "AST parse of three Python touch-set files and git diff --check", "evidence_path": "quant_crypto/application/hosted_protection_facts.py", "result": "passed"},
+    {"command": "independent OS-level hard-crash subprocess, actual OKX Demo/private/order/live endpoints, UI/API/service startup, Qlib, M3-M4, promotion publication, and main integration", "evidence_path": "docs/architecture/btc-hosted-protection-facts.md", "result": "not_run"}
+  ],
+  "ticket_id": "BTC-PROTECTION-PARENT-JOIN-20260915",
+  "transition_for": ""
+}

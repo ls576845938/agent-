@@ -1,0 +1,66 @@
+{
+  "base_commit": "04244e1a6ab1589e8f4753d530503dedb1105670",
+  "blockers": [],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-14T14:40:34Z",
+  "deliverable_commit": "2d3547bd510ba9c8332d6c1429f98b88210dc685",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "c29ad332a5ce01c1e8e0e7809bbac62cbfb59630e92a824cb618ab1be6e8ba28",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/runtime/control_plane.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "75ee950a56f6861aa31bfae48bdaec5740db518f6dd612f5b190e1a56350e103",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "35453b0772594100f203930b43356a04734a446bdb2bd0ffef22055f6f610630",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-OKX-DEMO-STARTUP-PROJECTION-REFRESH-01-2D3547BD",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-startup-projection-refresh-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-STARTUP-PROJECTION-REFRESH-01",
+  "transition_for": ""
+}

@@ -1,0 +1,224 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-gov-demo-quasi-live-delivery-profile-01-int-01",
+  "ticket_id": "GOV-DEMO-QUASI-LIVE-DELIVERY-PROFILE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "btc_developer"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/integrate-gov-demo-quasi-live-delivery-profile-01",
+  "base_commit": "ea1ffd7e76d6cdb3a7edd7d2acb59ca045d300eb",
+  "deliverable_commit": "a3451e8134bfa29297d6e75bf6fde3005dbe4264",
+  "created_at": "2026-07-30T14:09:15Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-gov-demo-quasi-live-delivery-profile-01-9c03054b5"
+  ],
+  "supersedes": [],
+  "transition_for": "published-gov-demo-quasi-live-delivery-profile-01-9c03054b5",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "AGENTS.md",
+      "sha256": "7ae8776e370393cebdf7ef9bd462b6b2dd5109793e1770cc10f6b578ad5a49d0",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agents/skills/quant-agent-preflight/SKILL.md",
+      "sha256": "2a941787ca6c54773ea4ecfe0b533e8bba7284b7f820bd1d6ece70a290f571ce",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": ".codex/hooks/inject_agent_context.py",
+      "sha256": "22b73641ec633659894d0ff177c5425f1687403d3b406d9dad372309126cf891",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "sha256": "905dfbf8f728a147603d75a79537803a6441fe638d51620b9b8a9d8685d514b1",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/agent_playbooks/cross_agent_coordination.md",
+      "sha256": "505bc263186594e02404903d63f19d6c404a3edf7f9ff7c0a1101a5a94fda483",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "sha256": "e4953eb87650de7099c60a62fa48646610f1409bf8fa2973a5d9e9beff0377c7",
+      "schema_version": "delivery_change_risk_policy_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "docs/agent_playbooks/pitfall_catalog.json",
+      "sha256": "f744d737f2b38de50ae258d63404fb19ab3dcefbf193d7570769a763eb460937",
+      "schema_version": "pitfall_catalog_v1.1.0",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/agent_playbooks/shared_pitfalls.md",
+      "sha256": "b1e7722e467e537eaa936ee82b913585ed42daddfb702493e661b3a7366cf9df",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/start_backend_current_main.ps1",
+      "sha256": "49d134e116d78a306421a92fa523cac6dfefd9ea22cd687c1da614d8a6444599",
+      "schema_version": "backend_evidence_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/start_backend_current_main.py",
+      "sha256": "49f316450c64d6ac4b7583198288de4c90db4da7ae263b32db9019744760d686",
+      "schema_version": "backend_evidence_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/cases/agent_workflow_cases.json",
+      "sha256": "7a8610672899c98093b9180df0e4971683fae9d7bdfa407013b7e82c9549f554",
+      "schema_version": "agent_workflow_eval_cases_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_context_packet.py",
+      "sha256": "a170e9ce9b33b835e3d7fc34d26666b26fb8dac0c199cccc8b140a8d320e950e",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_delivery_policy.py",
+      "sha256": "a715d00d6bcf6055a0143781bd612c90afaea764377a63cb63cc99f781568f22",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_governance_contract.py",
+      "sha256": "331e44bb806d1d97a83aeaf28e69c25e156388de84312272d3480adeeecdbf11",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_hooks.py",
+      "sha256": "9149787eb3d5bd1f3fb75d5d277a7177486586eec48fdfcc8df7291f31f69932",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_team_context.py",
+      "sha256": "cee894934b52c141945299e8643fdd2ef11c330da1f1438e560d3bdfd605f36a",
+      "schema_version": "governance_delivery_profile_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/context_packet.py",
+      "sha256": "2cc67f2fe2659b783c050df6986187101f120af4187740bc08dc461e5f53657c",
+      "schema_version": "agent_context_packet_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/delivery_policy.py",
+      "sha256": "c02e4c76eb729c0baa4b5f02405e0fb15524f1495dcb6300033e8c4d4309c742",
+      "schema_version": "delivery_change_risk_policy_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/team_context.py",
+      "sha256": "e1f53431eb30a00b8bbc3624b5c7d509a5875dd7e8c8ad2e0b15ddc11707fbfe",
+      "schema_version": "agent_team_context_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <producer-published-event> [status=valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/GOV-DEMO-QUASI-LIVE-DELIVERY-PROFILE-01/published-gov-demo-quasi-live-delivery-profile-01-9c03054b5.json"
+    },
+    {
+      "command": "git cat-file blob 9c03054b:<each-declared-path> + SHA-256 comparison [19/19 raw blobs matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/GOV-DEMO-QUASI-LIVE-DELIVERY-PROFILE-01/published-gov-demo-quasi-live-delivery-profile-01-9c03054b5.json"
+    },
+    {
+      "command": "git cherry-pick 9c03054b5426400108b87ca8c6880c9b3fce484f; git cherry-pick 47ff5401e52c7a51ad54bd96e455df02d6c540e0 [zero conflicts]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/GOV-DEMO-QUASI-LIVE-DELIVERY-PROFILE-01/published-gov-demo-quasi-live-delivery-profile-01-9c03054b5.json"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_delivery_policy.py tests/agent_governance/test_context_packet.py tests/agent_governance/test_hooks.py tests/agent_governance/test_team_context.py backend/tests/test_backend_current_main_launcher.py backend/tests/test_btc_demo_runtime_api.py backend/tests/test_btc_demo_runtime_service.py -q -p no:cacheprovider --basetemp <unique-system-temp> [70 passed in 81.31s]",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_delivery_policy.py"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -m py_compile tools/agent_governance/delivery_policy.py tools/agent_governance/context_packet.py tools/agent_governance/team_context.py .codex/hooks/inject_agent_context.py scripts/start_backend_current_main.py",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/delivery_policy.py"
+    },
+    {
+      "command": "git diff --check ea1ffd7e76d6cdb3a7edd7d2acb59ca045d300eb HEAD -- <19-deliverable-paths> <published-event>",
+      "result": "passed",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json"
+    },
+    {
+      "command": "delivery policy and launcher assertions: default profile=promotion_strict; demo_transport_hotfix independent_integrator_required=false; promotion_artifact_rebuild_required=false; strategy/risk/order/private_ws/ledger/security/live_permissions remain forbidden",
+      "result": "passed",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json"
+    },
+    {
+      "command": "backend/tests/test_backend_current_main_launcher.py::test_demo_quasi_live_starts_without_promotion_artifact_repository",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_backend_current_main_launcher.py"
+    },
+    {
+      "command": "runtime artifact publication/rebuild; backend start/restart; network; private/order/live endpoint; paper queue; secret access; refs/heads/main update",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <this-integrated-event>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/GOV-DEMO-QUASI-LIVE-DELIVERY-PROFILE-01/integrated-gov-demo-quasi-live-delivery-profile-01-int-01.json"
+    }
+  ],
+  "blockers": [
+    "owner:main_sync integration_commit_not_integrated_to_refs_heads_main",
+    "quality_checked_only_not_promotion_evidence"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

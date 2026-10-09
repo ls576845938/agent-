@@ -1,0 +1,91 @@
+{
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "current_head_gate_artifacts_not_rebuilt_at_successor_commit",
+    "architect_decision_required_for_l2_manifest_discovery_schema_filter"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-26T16:24:11Z",
+  "deliverable_commit": "b7577b339ea52a09f057e7117142fe4f4c892b7f",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "7f09a7e171813cabf4f6cc9d7eab93db4903da6393f03d983b6be71324462666",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_decimal_serialization_successor_attestation_v1",
+      "sha256": "6b7191cc862a9e56875d52a86ae4903551a3dfcf52300b9fd72d6e0d0167f19e",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-real-data-evidence-publication-01-49811621d"
+  ],
+  "domain": "btc",
+  "event_id": "published-data-fix-btc-v3-kline-serialization-01-b7577b339",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-fix-btc-v3-kline-serialization-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "predecessor immutable JSONL full lexeme scan against governed maximum 18 decimal places",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "successor pairwise full-row comparison: 1731576 rows, 16538 expected volume changes, maximum absolute delta 5E-19, zero unexpected field changes",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "current quant_crypto.data.dataready_consumer._validate_kline_attestation with full physical payload and successor manifest",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest-git-spec agent/data_steward/data-fix-btc-v3-kline-serialization-01:<successor-manifest>",
+      "evidence_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py -q (63 passed in 5.49s)",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "full DataReady report discovery across Kline and L2 manifests",
+      "evidence_path": ".agent/data_manifests/DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01/normalization_attestation.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "DATA-FIX-BTC-V3-KLINE-SERIALIZATION-01",
+  "transition_for": ""
+}

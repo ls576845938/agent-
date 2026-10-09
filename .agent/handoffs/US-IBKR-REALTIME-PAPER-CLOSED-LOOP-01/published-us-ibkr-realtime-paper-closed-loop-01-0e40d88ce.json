@@ -1,0 +1,222 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-realtime-paper-closed-loop-01-0e40d88ce",
+  "ticket_id": "US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-realtime-paper-closed-loop-01",
+  "base_commit": "30b3613aa0d4774ba74cc0995e176b0ff02eee63",
+  "deliverable_commit": "eb8a0a8493c29bcf7b1f7387a095dc774c996d9e",
+  "created_at": "2026-08-07T03:01:40Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "schema",
+      "path": "configs/data/us_ibkr_yahoo_runtime_semantic_contract_v1.json",
+      "sha256": "832d26b41fd120cd8c89ec1d26bfd124512ba9c7949073fd3454d437bcad4f64",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/execution/ibkr_paper_execution_adapter.py",
+      "sha256": "13464898a48f7410fd035b84660f7e8785a78fa6f0f8ae33681807fc0a8f3af4",
+      "schema_version": "ibkr_paper_execution_adapter_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/ibkr_runtime_market_data.py",
+      "sha256": "449c4d0086c450171fe5af48677c00ddd716f9dd266bb34c4a4b6341585298ef",
+      "schema_version": "us_ibkr_runtime_market_data_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/market_data_loop.py",
+      "sha256": "c23c2264d65b0a3575493302c072aeb6964b09acc68568571b504e6ad2ad2039",
+      "schema_version": "market_data_status_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "821e44d5de517d9432ad9dcf91a9cdd0fbc8839c10f0274ae0f84bb69cf9b7f0",
+      "schema_version": "us_ibkr_paper_closed_loop_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_ibkr_paper_closed_loop_receipt.schema.json",
+      "sha256": "5061494922d6a3311ad22b94dfc783d7480ead1db84dead08907f67d26442dc2",
+      "schema_version": "us_ibkr_paper_closed_loop_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_ibkr_yahoo_runtime_semantic_contract.schema.json",
+      "sha256": "5453536bbb3cbbc1c264ea706399aed9f8e872e498f839ab1387cf58e7010698",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_us_equity_ibkr_paper.py",
+      "sha256": "3b2778e6896745ad087727e124768214b80f8a4cde6bd65d2e0b512cfdffc27e",
+      "schema_version": "us_ibkr_paper_composition_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_ibkr_yahoo_runtime_semantic_contract.py",
+      "sha256": "8f07a63944afc368ddc6bbd499a68bd9bd384eae024bb9c8e5ab0159b20aa294",
+      "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_adapter_foundation.py",
+      "sha256": "eabfcdf9d3957ea42a33753a77f3cfd3f6d4bb1dedc52527812babab16ab06bd",
+      "schema_version": "us_ibkr_paper_adapter_foundation_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_execution_adapter.py",
+      "sha256": "f09288895bc31ac23e709359a57af2290f07c41210195fa41d9adc39bcba6f07",
+      "schema_version": "us_ibkr_paper_execution_adapter_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_closed_loop.py",
+      "sha256": "6aca7ff22032e22391132e21ed48ee9cc70e38029f71feb33d6c30b8bb63fe81",
+      "schema_version": "us_ibkr_paper_closed_loop_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_runtime_market_data.py",
+      "sha256": "4f20811a0837170fe56aab275efb03901b2cd3c2612d20b0f2367cd555602b26",
+      "schema_version": "us_ibkr_runtime_market_data_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/live/test_ibkr_paper_execution_adapter.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_execution_adapter.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_ibkr_paper_adapter_foundation.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_adapter_foundation.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_ibkr_paper_reconciliation.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_reconciliation.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_us_etf_26_ibkr_no_submit_shadow.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_runtime_paper_worker_safety.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_runtime_paper_worker_safety.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_paper_runtime_reconciliation_hard_gate.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_paper_runtime_reconciliation_hard_gate.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_paper_runtime_multi_timeframe_scheduler.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_paper_runtime_multi_timeframe_scheduler.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_paper_runtime_multi_strategy_attribution.py",
+      "result": "passed",
+      "evidence_path": "tests/live/test_paper_runtime_multi_strategy_attribution.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_us_equity_paper_ledger_uow.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_paper_ledger_uow.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_us_ibkr_paper_observation.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_ibkr_paper_observation.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/live -q -p no:cacheprovider --basetemp <isolated-temp>",
+      "result": "passed",
+      "evidence_path": "tests/live"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_ibkr_yahoo_runtime_semantic_contract.py tests/contracts/test_us_equity_paper_ledger_uow.py tests/contracts/test_us_ibkr_paper_observation.py -q -p no:cacheprovider --basetemp <isolated-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_ibkr_yahoo_runtime_semantic_contract.py"
+    },
+    {
+      "command": "py -3 -m py_compile <changed-python-files>",
+      "result": "passed",
+      "evidence_path": "quant_us/live/ibkr_runtime_market_data.py"
+    },
+    {
+      "command": "py -3 scripts/run_us_equity_ibkr_paper.py describe-runtime",
+      "result": "passed",
+      "evidence_path": "scripts/run_us_equity_ibkr_paper.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/live tests/contracts -q -p no:cacheprovider --basetemp <isolated-temp>",
+      "result": "failed",
+      "evidence_path": "tests/contracts"
+    },
+    {
+      "command": "py -3 -m ruff format --check <changed-python-files>",
+      "result": "not_run",
+      "evidence_path": "quant_us/live/ibkr_runtime_market_data.py"
+    }
+  ],
+  "blockers": [
+    "change_risk=unclassified;strict_delivery_path_applied",
+    "initial_dirty_paths=[];producer_worktree_was_clean_for_all_declared_paths",
+    "semantic_contract_id=us-ibkr-yahoo-runtime-semantic-contract-v1;version=1.0.0;contract_sha256=9350ca1d5cbd9b8aaca68b26dc6643151f7da331c7a5da9c965a927bbb803dcb",
+    "runtime_receipt_template=ledger_root/audit/ibkr_paper_closed_loop_receipt.json;not_materialized_as_current_main_evidence_by_producer",
+    "corporate_action_entitlement_unverified_fail_closed",
+    "ibkr_market_data_entitlement_unverified_fail_closed",
+    "independent_integrator_and_current_main_gate_read_model_rebuild_required",
+    "manual_operator_paper_submit_authorization_required",
+    "30_natural_day_forward_observation_not_started;offline_fixture_never_counts",
+    "full_tests_live_plus_contracts_joint_collection_blocked_by_sparse_worktree_missing_quant_crypto;final_live_and_relevant_us_contract_tests_passed_separately",
+    "ruff_formatter_not_installed;py_compile_and_git_diff_check_passed",
+    "integrator_command_1=py -3 tools/agent_governance/worktree_plan.py --role integrator --task-id integrate-us-ibkr-realtime-paper-closed-loop-01 --base-ref refs/heads/main --apply",
+    "integrator_command_2=git cherry-pick eb8a0a8493c29bcf7b1f7387a095dc774c996d9e",
+    "integrator_command_3=rerun_all_recorded_tests_then_rebuild_current-head-receipt-and-gate-read-model-with-all-paper-live-promotion-flags-false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

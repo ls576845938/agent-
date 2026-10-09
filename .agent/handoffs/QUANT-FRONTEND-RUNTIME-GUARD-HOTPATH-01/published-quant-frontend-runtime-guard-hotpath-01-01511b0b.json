@@ -1,0 +1,101 @@
+{
+  "base_commit": "7b18550dbe9d41bd5fd610eba8a275b825e0d2be",
+  "blockers": [
+    "owner:integrator deliverable_not_integrated_to_registered_main_worktree",
+    "owner:integrator canonical_main_startup_smoke_requires_clean_main_after_integration",
+    "owner:frontend production_build_chunk_over_500_kb_warning_preserved",
+    "owner:architect frontend_quality_handoff_does_not_unlock_promotion_paper_or_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-27T03:22:14Z",
+  "deliverable_commit": "01511b0b4dfd69d59a6a265ad2df5e1bed8bd6ab",
+  "deliverables": [
+    {
+      "path": "frontend/scripts/frontend-identity-lib.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_guard_hotpath_v1",
+      "sha256": "eb10b5bd89efa57d660bbc0a53fb4ede629aa82697a378866c5845af7fd6604d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_guard_hotpath_contract_tests_v1",
+      "sha256": "880625e9f9be3c2b6b1458797321e8711a8c4b5cac35e60770a86925b0d6befb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "aa0554957be5c498ac572e2f9152a486a8129cb9857f6f5bac35d7ef513ee0c1",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-quant-frontend-runtime-guard-hotpath-01-01511b0b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/quant-frontend-runtime-guard-hotpath-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm run identity:test",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:runtime-test",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run smoke",
+      "evidence_path": "frontend/scripts/smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node ./scripts/start-current-main.mjs --check",
+      "evidence_path": "frontend/scripts/start-current-main.mjs",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01",
+  "transition_for": ""
+}

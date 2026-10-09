@@ -1,0 +1,80 @@
+{
+  "base_commit": "4b4e004875c8a1e1433c7130fab356ce5a186c54",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:backend_operator backend_restart_required_after_integration",
+    "owner:application partial_fill_disconnect_preflight_max_notional_remains_10_usdt",
+    "owner:application partial_fill_disconnect_service_still_returns_blocked_no_real_partial_fill_evidence",
+    "owner:cli partial_fill_disconnect_execute_demo_still_does_not_construct_runtime",
+    "not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-06T03:34:45Z",
+  "deliverable_commit": "54bf18f145a58b83914cff10a5fff923c6cdea97",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "72ad3ffc5e50d5203a64eac7e22c0fa27a027df0deedf1dfdd53d1978dcf58a8",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "967968ea688876299f603798c232262fa923a76f270fba1f54f57d9e5b569670",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-54bf18f14",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-incident-recovery-correction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"incident_recovery or partial_fill\" -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-INCIDENT-RECOVERY-AND-RECEIPT-05-CORRECTION-01",
+  "transition_for": ""
+}

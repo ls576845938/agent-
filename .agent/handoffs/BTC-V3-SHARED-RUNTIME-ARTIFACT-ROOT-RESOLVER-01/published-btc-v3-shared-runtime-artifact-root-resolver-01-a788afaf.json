@@ -1,0 +1,142 @@
+{
+  "base_commit": "9166b1b2bb97009b31d03c75ee68ef8674372e85",
+  "blockers": [
+    "owner:integrator QS_BTC_RUNTIME_ARTIFACT_ROOT_provisioning_and_owner_marker_required",
+    "owner:btc_research current_head_runtime_artifacts_not_rebuilt",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T18:05:26Z",
+  "deliverable_commit": "a788afafa769e59744fbd6dcc7fa27a13fc0b7a5",
+  "deliverables": [
+    {
+      "path": "quant_crypto/adapters/btc_runtime_artifact_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_store_v1",
+      "sha256": "30a908c63e42166bdc70879c82f3952d43cb3534358f7f9ed347f2f8f5d9f800",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_gate_snapshot.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_gate_run_snapshot_v1",
+      "sha256": "01c1d48bf21b6bce1919086939258a3e18e93629ba9359ec1141c889bb0184b1",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_rebuild_v1",
+      "sha256": "d15e89436f8839bd99c331060b5a3b4255627d9d5773eb7a864fe0c9e2da1a31",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_domain_runtime_artifact_reader_v1",
+      "sha256": "18f33bab3ca5ae0e800bef8e1bca8a02ac6e248e2f9b0eac7f75542768d037aa",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_dataready_consumption_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_external_artifact_writer_v1",
+      "sha256": "f8564a52795b1a23145c986a79f6a0ed389038570623902da7a84866cded9785",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_scalping_l2_external_artifact_store_v1",
+      "sha256": "c4191f010174a61e9696998d741e10cab102a9b463b783c5e450e1aff0ff6b9b",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_ws_order_book_replay_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_scalping_ws_replay_external_artifact_store_v1",
+      "sha256": "5560601cfe889bbe67f2bde60c88b683f5b829a0b357cb1d94f6fba4d9f461cb",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_scalping_ws_resync_external_artifact_store_v1",
+      "sha256": "b2e3a1afc91116a8772d6115887c7bae8dc134ea0eafe24f6ce447e0ded0c69a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_store_contract_v1",
+      "sha256": "69d9a18a6e1c96c5a462505c4ae8b0cb3661fb36e0049714576c516fb9c5547a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_shared_runtime_artifact_root_resolver_ticket_v1",
+      "sha256": "b1ed2089bf4f53c09bab3c73f720ba673ac6d132f52ef23ebd40ba117f8f4679",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-shared-runtime-artifact-root-resolver-01-a788afaf",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-shared-runtime-artifact-root-resolver-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first dedicated resolver collection [ModuleNotFoundError before implementation], then py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_runtime_artifact_store.py [9 passed]",
+      "evidence_path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider resolver, DataReady, domain read model, gate snapshot, current-HEAD rebuild and three scalping contract files [103 passed on business HEAD]",
+      "evidence_path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_no_broker_import_in_evidence_builders.py [3 passed]",
+      "evidence_path": "tests/contracts/test_no_broker_import_in_evidence_builders.py",
+      "result": "passed"
+    },
+    {
+      "command": "focused py -3 -m compileall -q; five affected builder CLI --help invocations; scoped staged git diff --check",
+      "evidence_path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "Ruff and Black checks",
+      "evidence_path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "result": "not_run"
+    },
+    {
+      "command": "production runtime-artifact provisioning or current-HEAD gate artifact rebuild",
+      "evidence_path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01",
+  "transition_for": ""
+}

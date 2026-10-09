@@ -1,0 +1,87 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-candidate-management-deploy-20260926-6c12bd93a",
+  "ticket_id": "INTEGRATE-CANDIDATE-MANAGEMENT-DEPLOY-20260926",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-candidate-management-deploy-20260926",
+  "base_commit": "8821b04e599812429d5034c126493379209c59b5",
+  "deliverable_commit": "6c12bd93aa15bac93d33e54ac4f7c06258523270",
+  "created_at": "2026-09-25T16:42:12.262Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-candidate-management-deploy-20260926-9dc28c7f5",
+    "integrated-btc-candidate-offline-entry-20260925-0e0a442ce"
+  ],
+  "supersedes": [],
+  "transition_for": "published-candidate-management-deploy-20260926-9dc28c7f5",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/integration_reviews/candidate-management-deployment-20260926.md",
+      "sha256": "4f270729da436074e0037205aafb4dd4141c8a2bdf883c0d03c6c2fe476cd273",
+      "schema_version": "candidate_management_deployment_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "official producer handoff schema/Git/hash validation, base-source-derived-handoff ancestry, approved touch-set review and scoped clean checks",
+      "result": "passed",
+      "evidence_path": "9 deliverable hashes valid, zero validation errors; docs/integration_reviews/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "canonical .venv pytest backend/tests/test_backend_current_main_launcher.py",
+      "result": "passed",
+      "evidence_path": "49 passed, 1 existing dependency warning, 18.37s; docs/integration_reviews/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "targeted candidate delivery/offline management-policy, no-Demo, default-off, local-auth and route-allowlist selectors",
+      "result": "passed",
+      "evidence_path": "10 passed, 69 deselected, 1 existing dependency warning, 44.40s; docs/integration_reviews/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-readonly-workspace.mjs and TypeScript noEmit",
+      "result": "passed",
+      "evidence_path": "both exit 0 using canonical installed dependencies read-only; docs/integration_reviews/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs in isolated integration branch",
+      "result": "passed",
+      "evidence_path": "manifest_match=true, baseline_ancestor=true, canonical=false as expected, fingerprint 70eb61d16d156eb36f2c33c4f42858c3c3483b7c96f2979df59347ae4ca7df1c"
+    },
+    {
+      "command": "compileall for launcher/helper/tests and source diff --check",
+      "result": "passed",
+      "evidence_path": "exit 0; docs/integration_reviews/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "full 214-case business matrix, long lifecycle, full frontend canonical identity test, production configuration, service/browser acceptance, candidate jobs and trading endpoints",
+      "result": "not_run",
+      "evidence_path": "outside bounded independent source review; canonical identity and deployment are root-session post-merge actions"
+    }
+  ],
+  "blockers": [
+    "owner:main_integration accepted candidate exists only on this integration branch; ordinary no-ff main merge and post-merge canonical frontend identity test remain pending",
+    "owner:operator local Web management authentication is not provisioned or inspected; no secret is part of this delivery",
+    "owner:operator external empty catalog/accounts deployment and owned listener restart/identity/health/page acceptance remain pending; already_running alone is not configuration-switch evidence",
+    "owner:evidence empty sealed metadata has no runnable candidate, source, input or account; no actual job/runtime evidence exists",
+    "owner:release real candidate quality, protection-trigger fills, registered partial opening and current promotion evidence remain blocked"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

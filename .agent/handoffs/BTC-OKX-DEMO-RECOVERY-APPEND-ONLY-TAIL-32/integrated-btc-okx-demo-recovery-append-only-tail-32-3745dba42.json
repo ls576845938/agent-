@@ -1,0 +1,108 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-recovery-append-only-tail-32-3745dba42",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-RECOVERY-APPEND-ONLY-TAIL-32",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-recovery-append-only-tail-32-int",
+  "base_commit": "4a7d6702dad4ae068abe122ded10fef2ce6c7711",
+  "deliverable_commit": "3745dba4290d1b94423e41f2aa8d876ec44c4a0f",
+  "created_at": "2026-08-12T06:21:16Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-recovery-append-only-tail-32-0b08ed44e"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-recovery-append-only-tail-32-0b08ed44e",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "e13bb87d85f6aa576c1bf0d85ba823236b4f61ecc70f605f9ce66a3fa27ac777",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "d3515049537a0de82cd04b6e90a6b09544e51edf068d87d8fade4d99e242fe51",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "24320505084270e8ed64b8db765451b72509c2622f1f8fc283b95b5e7e156734",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "8eb003de4c8844f6342accbba447bf1332fde1533a2100f4e70763d440d1e8f4",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-APPEND-ONLY-TAIL-32/published-btc-okx-demo-recovery-append-only-tail-32-0b08ed44e.json",
+      "sha256": "de0d0f85d674aec0b34af9df7ee3e3af57eb811850dcaab8fef9148a31b583ab",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_fault_drill.py::<four approved Ticket32 nodeids>",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 4 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py::<four corrected approved Ticket32 nodeids>",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 4 passed"
+    },
+    {
+      "command": "initial OMS nodeid invocation before one permitted harness correction",
+      "result": "not_run",
+      "evidence_path": "pytest rc=4 because supplied names were not collected; no test body ran; corrected nodeids were executed once below"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; PYCOMPILE_EXIT=0"
+    },
+    {
+      "command": "git diff 4a7d6702dad4ae068abe122ded10fef2ce6c7711..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; DIFF_CHECK_EXIT=0"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-RECOVERY-APPEND-ONLY-TAIL-32/published-btc-okx-demo-recovery-append-only-tail-32-0b08ed44e.json"
+    },
+    {
+      "command": "full application/OMS suites; artifact/read-model rebuild; backend/Demo restart; endpoint/secret access",
+      "result": "not_run",
+      "evidence_path": "Ticket32 timebox and explicit safety boundary"
+    }
+  ],
+  "blockers": [
+    "orders0_receipt_remains_rejected",
+    "backend_restart_deferred_after_five_exercises",
+    "promotion_artifact_and_read_model_rebuild_deferred",
+    "full_suite_not_run_by_integrator_per_timebox",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

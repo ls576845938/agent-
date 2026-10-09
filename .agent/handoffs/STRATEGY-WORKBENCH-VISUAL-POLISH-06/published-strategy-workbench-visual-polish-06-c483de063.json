@@ -1,0 +1,72 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-workbench-visual-polish-06-c483de063",
+  "ticket_id": "STRATEGY-WORKBENCH-VISUAL-POLISH-06",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-workbench-visual-polish-06",
+  "base_commit": "114c232b4016404fe32afb4bb99ebffa1b78abdb",
+  "deliverable_commit": "c483de063d14738af4eb73a332bdb1e8c420e9df",
+  "created_at": "2026-08-14T07:30:44Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "9b6f4b7137d41cfdbb05cbf09cf3ac581f26c1da8501980cad447edc4ac291b5",
+      "schema_version": "strategy_workbench_visual_polish_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/strategy-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "6f3d6f532a066a639e546481e7b8e4cc5843260a2513b3c37959743b5ef90e93",
+      "schema_version": "strategy_workbench_visual_polish_e2e_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node <registered-main-node_modules>/typescript/bin/tsc --noEmit --project frontend/tsconfig.json --baseUrl <registered-main-node_modules> --typeRoots <registered-main-node_modules>/@types",
+      "result": "passed",
+      "evidence_path": "frontend TypeScript compile (TSC_EXIT=0)"
+    },
+    {
+      "command": "node <registered-main-node_modules>/vite/bin/vite.js build --config frontend/vite.config.ts",
+      "result": "failed",
+      "evidence_path": "sparse worktree Vite ESM config cannot resolve package vite from sibling registered-main node_modules"
+    },
+    {
+      "command": "node <registered-main-node_modules>/@playwright/test/cli.js test frontend/e2e/strategy-workbench.spec.ts --list --config frontend/playwright.config.ts",
+      "result": "failed",
+      "evidence_path": "sparse worktree Playwright config cannot resolve package @playwright/test from sibling registered-main node_modules"
+    },
+    {
+      "command": "git diff --check -- <declared touch set>",
+      "result": "passed",
+      "evidence_path": "declared CSS and strategy-workbench E2E paths"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_change_risk",
+    "owner:integrator canonical_registered_main_frontend_build_and_strategy_workbench_playwright_pending",
+    "owner:environment sparse_worktree_frontend_package_resolution_unavailable_for_vite_and_playwright",
+    "promotion_artifact_and_backend_restart_not_applicable_to_user_scoped_visual_only_ticket",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

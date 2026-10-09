@@ -1,0 +1,70 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-state-dynamic-identity-38-54816892b",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-DYNAMIC-IDENTITY-38",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-fresh-state-id-38-int",
+  "base_commit": "79e247026d66b493ea48461a11189d0457a20eef",
+  "deliverable_commit": "54816892baa931e63c4f1e9fa45af7e0a206062f",
+  "created_at": "2026-08-12T13:29:08Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-fresh-state-dynamic-identity-38-1b07b7434"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fresh-state-dynamic-identity-38-1b07b7434",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "09a471b1889a619238b41b5945e18bc8fde69736ec29b9dc5b6890d5e172a078",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "7ec5150c79cff33a3592d813598fd2e682a5ed4c47941439b568e1a16f471a63",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k fresh_state_emergency -q -p no:cacheprovider --basetemp D:/vibe coding/Obsidian/quant-test-tmp/ticket38-integrator",
+      "result": "passed",
+      "evidence_path": "49 passed, 342 deselected in 23.95s; external basetemp"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integration worktree exit=0"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integration worktree exit=0"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-DYNAMIC-IDENTITY-38/published-btc-okx-demo-fresh-state-dynamic-identity-38-1b07b7434.json",
+      "result": "passed",
+      "evidence_path": "producer handoff valid; event_id published-btc-okx-demo-fresh-state-dynamic-identity-38-1b07b7434"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

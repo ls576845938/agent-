@@ -1,0 +1,59 @@
+{
+  "base_commit": "fb141016af051b9e25b9c63a2353c1e8d7c028ea",
+  "blockers": [],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-14T15:33:35Z",
+  "deliverable_commit": "6cee5fcb414cbc0a2db496df5f63ed6984996880",
+  "deliverables": [
+    {
+      "path": "quant_crypto/runtime/control_plane.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "829a756e89a0da5d1baad33a754bab909d2e13b2620e4a0f0b0b7ea25528d5d7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "a1200140cce0cabd51b99b9eb410f2756014e2f871b7cc5ad5eca5cc79a8d9f7",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-6CEE5FCB",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-lifecycle-namespace-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_composed_dispatcher_isolates_lifecycle_by_demo_namespace -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q --basetemp=C:\\tmp\\pytest-btc-lifecycle-namespace-20260814",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01",
+  "transition_for": ""
+}

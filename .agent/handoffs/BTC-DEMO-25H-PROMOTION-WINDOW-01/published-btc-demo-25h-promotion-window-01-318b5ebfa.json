@@ -1,0 +1,164 @@
+{
+  "base_commit": "6cea196b44511024912bc064cdd4c024d7ba60de",
+  "blockers": [
+    "btc_demo_25h:natural_25_consecutive_complete_utc_hours_not_yet_observed",
+    "btc_demo_25h:actual_demo_order_fill_funding_disconnect_reconnect_and_ledger_reconciliation_evidence_not_yet_collected",
+    "btc_demo_25h:full_contract_suite_did_not_complete_within_240_seconds",
+    "btc_demo_25h:current_head_integration_external_artifact_publication_backend_restart_and_runtime_start_pending",
+    "btc_demo_25h:promotion_package_rebuild_and_manual_approval_pending",
+    "btc_demo_25h:micro_live_canary_requires_separate_future_authorization",
+    "btc_demo_25h:remaining_independent_depth_funding_nonflat_private_ws_and_safety_gate_blockers_must_remain_fail_closed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-30T12:09:13Z",
+  "deliverable_commit": "318b5ebfa082acbaf8a754588d4dbcb7f17fb4fa",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "b3fbce7a2217699d3d15cc0061c68e273a6cc9d403d2866f72d1b25fc08d6f95",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "305687fd6394894e1575314349f1d8ac7557fae17484f6e0fb34ac57374d2138",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "46c345aa8fbc053ab0d5636adba8ce9c36a1599edb8986c75dd0bd1e94babb24",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "4ccb1bae656409cb48c71d39fd5685279985267f2f21d57f948a87825ef8f62f",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/research/btc_demo_observation_accumulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "9f7ac100027ca40aa2b1466279de44bf61522affc5444a8d30b45d60be8ee969",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/research/btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "6a19fc8a6978ebc0cd1617de4bf40bfec426526c233831d6d33dab8ced5d73cd",
+      "type": "code"
+    },
+    {
+      "path": "scripts/research/build_btc_demo_observation_accumulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "812458ccbe366f3d01be1e125708ea7c0ea62bd3aeec63bd9500d8dbb54df53b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b205ccbd7dbdea370382654cd437ed98363e1423fd8d0c68fe3bc5a98ade1d9d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_observation_accumulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "c705dec953742fe481a54c478c04af07b0a376d90b90da6be4616087cab418ff",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "440ea4d2503e8aaab81a8c012e918792a163c009de24e056138695ed97838146",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b74ceeda8040ff6ed7f1c0159778a29f9d5fda5dddafd675c6b23b8b179c347e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "38c9015a97e98404b5d2685ee7afdbf5c875c68d215c26fa4cd9a39f1b7d132f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "447007e6e865509b09e562990cbd9ff8662addd7ff517c627f7532e00e2d6311",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-25h-promotion-window-01-318b5ebfa",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-25h-promotion-window-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_current_head_gate_rebuild.py -q --basetemp <unique-temp>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py -q --basetemp <unique-temp>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_current_head_gate_rebuild.py quant_crypto/oms/okx_demo.py quant_crypto/oms/okx_demo_paper_runtime.py quant_crypto/oms/okx_demo_private_ws.py quant_crypto/research/btc_demo_observation_accumulator.py quant_crypto/research/btc_okx_native_promotion_gate.py scripts/research/build_btc_demo_observation_accumulator.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 6cea196b44511024912bc064cdd4c024d7ba60de 318b5ebfa082acbaf8a754588d4dbcb7f17fb4fa -- <ticket-owned-paths>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts -q --basetemp <unique-temp>",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m ruff check <ticket-owned-python-paths>",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-25H-PROMOTION-WINDOW-01",
+  "transition_for": ""
+}

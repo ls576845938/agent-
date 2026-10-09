@@ -1,0 +1,91 @@
+{
+  "base_commit": "4f774ac4e8e4b4621981f3e2ef3c085923533ff8",
+  "blockers": [
+    "independent_integrator_required:governance_control",
+    "registered_main_not_advanced_or_pushed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-09T16:47:47Z",
+  "deliverable_commit": "e1af42cfa98e88916b36dfff858802f46d6e2ebc",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "401e2de281f43a2caf08b82ee4638e2b6f83cdd80b22f3f21a835c65feee9c4b",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_context_scalability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "84ea988170ddfaf2784de09272a970c0ee94738757e6029e31a8f01658da0277",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "rejected-gov-codex-development-bounded-discovery-01-4a28460a47-20260810"
+  ],
+  "domain": "governance",
+  "event_id": "published-gov-codex-development-bounded-discovery-01-correction-e1af42cfa9",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/gov-codex-development-bounded-discovery-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-gov-codex-development-bounded-discovery-01-4a28460a47"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_context_scalability.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate rejection-gov-codex-development-bounded-discovery-01-4a28460a47-20260810",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "SessionStart/UserPromptSubmit/SubagentStart hooks once with JSON/timeout/orphan checks",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical tree/blob and 99999/120000/160000 mode probes",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "GOV-CODEX-DEVELOPMENT-BOUNDED-DISCOVERY-01",
+  "transition_for": ""
+}

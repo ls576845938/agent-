@@ -1,0 +1,107 @@
+{
+  "base_commit": "4157ac389104cfaf50f8a2f48551dbb63f291067",
+  "blockers": [
+    "owner:main_sync independent_integration_not_yet_merged_to_main",
+    "owner:formal_acceptance current_main_backend_restart_and_browser_lifecycle_pending",
+    "old_formal_job_coff_26063ef15012000eac4964f7695433c7_remains_blocked_and_unmodified",
+    "real_v3_candidate_and_48h_acceptance_remain_separate_unfinished_work",
+    "quality_checked_source_is_not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-10-01T12:25:00Z",
+  "deliverable_commit": "0fe46cc8dfe2a5e70346322bec4555e3239b0b6b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_registered_candidate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_registered_catalog_guard_fix_v1",
+      "sha256": "c31158aa4fcf68e14ae732b2a81b6398aa3d684400260121e0b534baf85a742b",
+      "type": "code"
+    },
+    {
+      "path": "tests/integrations/test_candidate_offline_lifecycle.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "88420ae82f6111ef148a2e13e3e4870de7e56d41331c62e7285e653bd4fcfb03",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/BTC-REGISTERED-CATALOG-GUARD-FIX-20261001.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "acceptance_report_v1",
+      "sha256": "752c4ea1e09139662d91dd89fb377ccc20e330420511152f30edfce46befa31d",
+      "type": "report"
+    },
+    {
+      "path": "docs/acceptance/INTEGRATE-BTC-REGISTERED-CATALOG-GUARD-FIX-20261001.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "d34dfc4c00796dddb4b41a25ebf03ddc78c02589d84ecccdfd2c1867ed925beb",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-registered-catalog-guard-fix-20261001-402415d50"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-registered-catalog-guard-fix-20261001-0fe46cc8d",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-registered-catalog-guard-fix-20261001",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical producer handoff validation, B->D->H ancestry, exact three-path touch set, normalized deliverable SHA-256",
+      "evidence_path": ".agent/handoffs/BTC-REGISTERED-CATALOG-GUARD-FIX-20261001/published-btc-registered-catalog-guard-fix-20261001-402415d50.json",
+      "result": "passed"
+    },
+    {
+      "command": "producer failure-first formal Guard + build_delivery_service + registered worker",
+      "evidence_path": "docs/acceptance/INTEGRATE-BTC-REGISTERED-CATALOG-GUARD-FIX-20261001.md; exact pre-fix blocker registered_trusted_source_required cursor=0; 1 failed in 146.66s",
+      "result": "failed"
+    },
+    {
+      "command": "producer formal guarded worker positive and existing bare catalog behavior",
+      "evidence_path": "docs/acceptance/INTEGRATE-BTC-REGISTERED-CATALOG-GUARD-FIX-20261001.md; nonzero fill and ledger reconciliation passed; bare catalog 1 passed in 337.03s",
+      "result": "passed"
+    },
+    {
+      "command": "pytest trust graph with repository-internal basetemp",
+      "evidence_path": ".tmp/pytest-trust-graph.xml; expected account_catalog_must_be_external environment rejection; 1 failed in 17.18s",
+      "result": "failed"
+    },
+    {
+      "command": "pytest tests/integrations/test_candidate_offline_lifecycle.py::test_external_catalog_guard_trust_graph_is_exact_and_bare_catalog_stays_compatible --basetemp C:/tmp/btc-catalog-guard-integrator-trust-20261001-b",
+      "evidence_path": ".tmp/pytest-trust-graph-external.xml; includes independent guard._validated override rejection",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check plus Python ast.parse for changed Python files",
+      "evidence_path": "docs/acceptance/INTEGRATE-BTC-REGISTERED-CATALOG-GUARD-FIX-20261001.md",
+      "result": "passed"
+    },
+    {
+      "command": "current-main backend restart and formal browser Guard-to-worker lifecycle",
+      "evidence_path": "pending architect merge of independent integration and new frozen main HEAD",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-REGISTERED-CATALOG-GUARD-FIX-20261001",
+  "transition_for": "published-btc-registered-catalog-guard-fix-20261001-402415d50"
+}

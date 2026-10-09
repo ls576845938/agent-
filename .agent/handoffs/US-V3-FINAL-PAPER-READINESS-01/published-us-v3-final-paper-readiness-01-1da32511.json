@@ -1,0 +1,147 @@
+{
+  "base_commit": "78f3e07bfb5f13431d91ce2526aed00fad70f9e3",
+  "blockers": [
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:natural_time forward_observation_30_natural_days_incomplete",
+    "owner:natural_time forward_observation_252_sessions_incomplete",
+    "owner:paper_operations broker_credential_review_not_valid",
+    "owner:architect manual_decision_record_not_valid",
+    "owner:paper_runtime paper_durable_path_assertion_drift",
+    "owner:live_runtime live_submission_gate_audit_path_not_injected",
+    "classification:goal12_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_blocked_fail_closed_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "data_steward"
+  ],
+  "created_at": "2026-07-25T01:30:00Z",
+  "deliverable_commit": "1da32511b4f4fd7e4daa16cc8f9b746c05503fb0",
+  "deliverables": [
+    {
+      "path": "quant_us/application/us_equity_final_paper_readiness.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_final_paper_readiness_service_v1",
+      "sha256": "aff65ff858d0fb30b316c40d178648a96b18c9a628a7cb2c64b8eabede7a7ad9",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_equity_final_paper_readiness.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_final_paper_readiness_cli_v1",
+      "sha256": "1829b0c8d398947a0622168a61cab159cccca182756acfdee36c53842ab1386a",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_final_paper_readiness.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_final_paper_readiness_v1",
+      "sha256": "6cc4b0a5b37579505e81a70b5470b5eb43d7e98b2415b66a47dd7c9da0b78d0d",
+      "type": "schema"
+    },
+    {
+      "path": "configs/governance/us_v3_final_paper_readiness_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_final_paper_readiness_config_v1",
+      "sha256": "6fa94fa4787770247c19aa1641f709a8b33b55a12144eed3b223ebf5c331ac44",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_final_paper_readiness.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "4aceadfaf043d9122cfa3cc02b030dceff323040f79288faa3930475d0bfd423",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_final_paper_readiness.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_final_paper_readiness_contract_v1",
+      "sha256": "6154303a2ff73f52b6dcb9795a35fa96eaa5c8582137e3d9603d7335ef65253c",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-FINAL-PAPER-READINESS-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_final_paper_readiness_integrator_contract_v1",
+      "sha256": "19b88cd41501717c4899e883500617aa266e3f1fcb1c21bec7abdd64385c0d7d",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/US-V3-PAPER-DURABLE-PATH-ASSERTION-DRIFT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_engineering_repair_ticket_v1",
+      "sha256": "be8c74b6de1835126d8ee9de999b14596dfff7e7cfdbea0b7fce2871700df1b0",
+      "type": "document"
+    },
+    {
+      "path": "docs/tickets/US-V3-LIVE-SUBMISSION-GATE-AUDIT-PATH-INJECTION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_engineering_repair_ticket_v1",
+      "sha256": "79f6f9c6c9d9417e69e1faa164626ad8b26c1d70cc32ff2273688d8867208e50",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-forward-observation-01-goal11-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-final-paper-readiness-01-1da32511",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-final-paper-readiness-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "python -m pytest tests/contracts/test_us_equity_final_paper_readiness.py --basetemp <unique-system-temp> -p no:cacheprovider -q [6 passed]",
+      "evidence_path": "tests/contracts/test_us_equity_final_paper_readiness.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest <G12+G10+G7+G8+G11+paper-safety contracts> --basetemp <unique-system-temp> -p no:cacheprovider -q [103 passed, 4 classified failures]",
+      "evidence_path": "docs/tickets/US-V3-LIVE-SUBMISSION-GATE-AUDIT-PATH-INJECTION-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "python -m pytest backend/tests/test_paper_runtime.py::TestPaperRuntimeBootstrap::test_bootstrap_persists_session_manifest_history --basetemp <unique-system-temp> -p no:cacheprovider -q [1 classified failure]",
+      "evidence_path": "docs/tickets/US-V3-PAPER-DURABLE-PATH-ASSERTION-DRIFT-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "python -m pytest tests/contracts/test_us_equity_broker_credentials_review_report.py --basetemp <unique-system-temp> -p no:cacheprovider -q [18 passed]",
+      "evidence_path": "tests/contracts/test_us_equity_broker_credentials_review_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "python scripts/build_us_equity_current_head_gate_rebuild.py --repo-root . --run-id us-g12-business-1da32511b4f4 [wrapper success; decision blocked; source HEAD 1da32511b4f4]",
+      "evidence_path": "artifacts/us_equity_gate_rebuild/runs/us-g12-business-1da32511b4f4/manifest.json",
+      "result": "passed"
+    },
+    {
+      "command": "python scripts/build_us_equity_final_paper_readiness.py --repo-root . --run-id us-g12-business-1da32511b4f4 [wrapper success; blocked; 7 roots; 0 unclassified; all safety false]",
+      "evidence_path": "artifacts/us_equity_final_paper_readiness/runs/us-g12-business-1da32511b4f4/manifest.json",
+      "result": "passed"
+    },
+    {
+      "command": "python tools/agent_governance/handoff.py validate <G01-G11 published/integrated handoffs> [22 valid]",
+      "evidence_path": "configs/governance/us_v3_final_paper_readiness_v1.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-FINAL-PAPER-READINESS-01",
+  "transition_for": ""
+}

@@ -1,0 +1,329 @@
+{
+  "base_commit": "07e32a043a3fd48e5b50f67dd90ed59679bf6af7",
+  "blockers": [
+    "production_pit_intake_blocked_external_data",
+    "immutable_dataset_publication_remains_data_steward_owned",
+    "independent_confirmation_window_not_complete",
+    "current_head_promotion_evidence_not_built",
+    "shared_entrypoint_wiring_requires_integrator_ticket",
+    "paper_and_live_gates_remain_locked",
+    "classification:goal2_integration_blocker=false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T04:18:12Z",
+  "deliverable_commit": "895cfe783dfb69eeaebe0171333cce274d89107b",
+  "deliverables": [
+    {
+      "path": "configs/backtest/us_etf_26_canonical_backtest_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "dacc63bdbe84a18c5a09d0894b1557213bed52099097e01c68b4cf4802de914e",
+      "type": "code"
+    },
+    {
+      "path": "configs/data/us_equity_provider_sources.yaml",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "899978c86280f499afe03159168f7c985d9fbc747cbec5d5ad1fcf9247100068",
+      "type": "code"
+    },
+    {
+      "path": "configs/execution/us_etf_26_candidate_execution_envelope_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "d2ee3c8f446b18f763fe9c820576096390802bd4e6611c5cfddbe02ce5563827",
+      "type": "code"
+    },
+    {
+      "path": "configs/portfolio/us_etf_26_candidate_portfolio_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "690701e747c6c0f79bbc75be0524e0b9af4c50af9d3f6170d03cef1baa826e9b",
+      "type": "code"
+    },
+    {
+      "path": "configs/strategies/us_etf_26_candidate_freeze_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "a4545b1729e8d1846d9700912d4536aac3da26a0bbcc4a48fd0bfe78731492b9",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/backtest/us_etf_26_canonical.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "08d4a290016beb64452f19c17f943339c94f8446faf8ce209f714cee91c3c463",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/data/hf_etf_research_dataset.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "6ca7b22d64d2d8685bf5caf50962f3348250cb2db2ed824662bdb34b553eba65",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/data/lineage/local_csv_provider.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "b746fa92f8d71bad951aee6ef50185e5834338ce7ef1076091c08f588de07eb4",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/data/production_pit_intake.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "50a914f4141b1d58d3abbb0a0dadbb7d518f44f6f48d0707bd1ac8b43767671b",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/data/shared_hf_etf26.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "e62f2dd78c6da6818c3d9fb445320c41ae34d03e568fd59bcc6e6391f638219b",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/us_etf_26_candidate_execution_envelope.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "df41285607d44531f23a6af96364ab109b7aa47ce31ac8a3c6eafc9e9a33e0fe",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/portfolio/us_etf_26_candidate_portfolio.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "ea46f218cadd159b3ac54e52f6c43259f1100c56055ccbb4f0b66c7b3cadea91",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/tqqq_multitimeframe_walk_forward.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "1a32786d7ce57cdda0c91f438352ffe5b3c02dc16f7df1fff9bb69a0ed986250",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/us_etf_26_candidate_freeze.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "4cafb7c145c0256b75b9caba0d6e2584c773e8c9d3f9bcdf7b84769d1c11e7b4",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/us_etf_26_complete_return_multitimeframe.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "e1bc5f42eb00d58bb0f9c2f44746f78920f4f53068276032f25d26befd17932c",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/us_etf_26_complete_return.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "23e1171a9bfaab6584fe3b83589d11707fea7b3db10292cb91db94cfd418170f",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_production_pit_intake_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_production_pit_intake_report.schema",
+      "sha256": "11589b721a27a3c60e1ea60059dbaf168ebf3cdf9118e8904f9453000023d731",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_etf_26_candidate_execution_envelope_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_etf_26_candidate_execution_envelope_report.schema",
+      "sha256": "93a3ecdb5622095c6450e581107efaa5c24f8f5ebd852bef8c9cb40790cada6b",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_etf_26_candidate_portfolio_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_etf_26_candidate_portfolio_report.schema",
+      "sha256": "1ad2c97f99fc41c8df189926c964057fa2a019fbca3974a264d6c27e46243b94",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_etf_26_candidate_strategy_card.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_etf_26_candidate_strategy_card.schema",
+      "sha256": "269bfd06848034f60ff15e70efba341fc6cdffae2c6f419774f2c20c1fd08d3e",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_etf_26_canonical_backtest_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_etf_26_canonical_backtest_report.schema",
+      "sha256": "2f2d974b0d3b81928575b068b6bb5a3f2ee4bfe780b8af896e4be3c04e14af55",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/us_etf_26_complete_return_multitimeframe_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_etf_26_complete_return_multitimeframe_report.schema",
+      "sha256": "66f361443981aedc6d514a1c7baa3f5216fc24381ec0dce4165cec4d26c357a0",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/build_us_equity_production_pit_intake_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "130a761321e04c8aeeb3d48414b0104af11c29a4d6d4a30e1537ff0490d540b0",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_etf_26_candidate_execution_envelope.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "abd5929e70c0e03dc512d2573b136a6b612a9ab1e808c4b5557d7e27a2f65a43",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_etf_26_candidate_portfolio.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "df1aaf9ec910c774d5386e8593eb89014d34891479a913117a620fcfc80aaef3",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_etf_26_candidate_strategy_card.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "1c5d26eb87e126a5aea3e6b4a351e486d9d25567438cd72c47506d5fc7787419",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_etf_26_canonical_backtest.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "9c28e33d1afeeccda37b4e0aec08037d414ac3c5d227e7ed5a0239a406baee78",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_etf_26_complete_return_multitimeframe_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_code_v1",
+      "sha256": "e6a59d3ba56d15b15763b82f16da4a9f2457be1aedd9ca509b2aaad8a7496916",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_production_pit_intake_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "9ab467353751074b26ae11534f2d072f1c55daff2d8e8185d9fa71d70e3ea79a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_us_etf_26_candidate_execution_envelope.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "582aac14d7513d1d1820b203af30c37810c66cc6cebccfd424e8fe3ffe6577cc",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_us_etf_26_candidate_portfolio.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "1446407e51e45a2e885d903d1b78f8cc23a21f860bf41aaeb9da4b3d043e938e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_us_etf_26_candidate_strategy_card.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "371e2cd5863ef42008f6d721aa74b59b99458f17ddd3dd38401bb2c54d33d8ac",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_us_etf_26_canonical_backtest.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "fe9260e5b590dff1e848a5d9620efaaab7d9da07a63d76a140e19829e4a4d41a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_us_etf_26_complete_return_multitimeframe.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "48f141b938b54925ad435d239a53e443d9bfa276195d81406f8f0c64088bc056",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/data/test_hf_etf_research_dataset.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "b50776f3054668bd42b28a0c5acdcf5a3f700d17eebdb9c0972822cec0b5d61c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/us-v3-current-main-successor-scope-manifest.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_manifest_v1",
+      "sha256": "42c854911f331da8c1f20c1f8253105a9e57fc3bc55a9af1185ed14f2345c12f",
+      "type": "report"
+    },
+    {
+      "path": "schemas/us_v3_current_main_successor_manifest.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_manifest.schema",
+      "sha256": "fdddfd2f61570d51cb322a0ebdb51d906766557cd56afc7f3842907d9f9fb223",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_us_v3_current_main_successor_manifest.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_contract_v1",
+      "sha256": "8c189bb556b36e6b3c2e5c1dea4b2b84afc3e2f589f6896de4314758036ba681",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/us-v3-current-main-successor.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_current_main_successor_architecture_v1",
+      "sha256": "b165845995eb52a828cf59825022e7170d537117f9ff6eb5b0414422e91ec9b9",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-us-v3-current-main-successor-01-220840dda825",
+    "integrated-btc-v3-shared-boundary-adoption-01-goal2-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "integrated-us-v3-current-main-successor-01-goal2-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal2-batch-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-temp> tests/data/test_hf_etf_research_dataset.py tests/contracts/test_us_etf_26_complete_return_multitimeframe.py tests/contracts/test_us_etf_26_candidate_strategy_card.py tests/contracts/test_us_equity_production_pit_intake_report.py tests/contracts/test_us_etf_26_canonical_backtest.py tests/contracts/test_us_etf_26_candidate_portfolio.py tests/contracts/test_us_etf_26_candidate_execution_envelope.py tests/contracts/test_us_v3_current_main_successor_manifest.py [observed: 48 passed]",
+      "evidence_path": "tests/contracts/test_us_v3_current_main_successor_manifest.py",
+      "result": "passed"
+    },
+    {
+      "command": "committed-object ancestry, deliverable SHA-256, touch-set and pairwise-intersection precheck",
+      "evidence_path": "docs/handoffs/us-v3-current-main-successor-scope-manifest.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-CURRENT-MAIN-SUCCESSOR-01",
+  "transition_for": "published-us-v3-current-main-successor-01-220840dda825"
+}

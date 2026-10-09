@@ -1,0 +1,131 @@
+{
+  "base_commit": "4f3139431bb801f71f0bca9bbb0f69e4febdb8a4",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "btc_10s_all_applicable_family_horizon_rows_blocked_insufficient_information",
+    "btc_okx_timestamp_aligned_l2_exact_physical_version_missing",
+    "btc_10s_eligible_labeled_windows_and_effective_sample_size_zero",
+    "btc_10s_trade_ordered_l2_join_missing",
+    "btc_10s_receive_and_alignment_latency_gate_failed",
+    "btc_10s_utc_weekday_regime_coverage_missing",
+    "btc_10s_fee_and_cost_stratified_stability_missing",
+    "btc_10s_time_aligned_open_interest_and_liquidation_events_missing_for_liquidation_family",
+    "venue_hosted_protective_stop_unproven",
+    "mark_index_funding_runtime_parity_unproven",
+    "queue_partial_fill_execution_unproven",
+    "fill_position_cash_ledger_unproven",
+    "adverse_selection_unproven",
+    "current_head_promotion_artifact_missing",
+    "official_research_artifact_bound_to_implementation_commit_81024c156_not_final_document_handoff_commit",
+    "promotion_artifact_rebuild_required_by_policy",
+    "backend_restart_required_by_policy_not_run_for_offline_research"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-27T05:40:00Z",
+  "deliverable_commit": "af2d905e0ea9e3b139f1e37af7626ab594e07b9b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_api_v1",
+      "sha256": "bc6cd8e5c4a96c6ff9a4ce806d868717a6162fe643c7b0008ae52c5e40925aff",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_10s_microstructure_data_contract_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_builder_v1",
+      "sha256": "7a45d4ea1c8e9f0262c6359689505ea73f33c3399268f6a6657e09a68f89cd28",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_10s_microstructure_data_contract_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_report_v1",
+      "sha256": "141013457ae532080e955b6dadb69d6ddedc24116f5031e7345883d5162990ae",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_10s_microstructure_data_contract_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "9feb5279d478d79984b0cf6995f8c79c11e8edd86be2a22c92ab6f1ea4822e4a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_DATA_CONTRACT_01_PREREG.json",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_10s_microstructure_data_contract_prereg_v1",
+      "sha256": "f32980b2514145a1feab4e40713b072b7a2317e6b83353f50e0f42dcbc2fbb7b",
+      "type": "document"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_DATA_CONTRACT_01.md",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_10s_microstructure_data_contract_report_summary_v1",
+      "sha256": "7116a2c777783157d4a1ad51e0adbc2c61eabae7ba701abd176c034e679bd7c4",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-public-data-closure-01-59bc18d92",
+    "published-data-btc-l2-immutable-restore-t8-01-965bfbca8"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-10s-microstructure-data-contract-01-af2d905e0",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-10s-microstructure-data-contract-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_10s_microstructure_data_contract_report.py -q",
+      "evidence_path": "5 passed in 0.53s",
+      "result": "passed"
+    },
+    {
+      "command": "jsonschema.validate(<official report>, btc_10s_microstructure_data_contract_report.schema.json)",
+      "evidence_path": "official_report_schema_valid",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile <evaluator> <builder>",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "offline immutable evaluation through four exact Git manifest specs and shared_data resolver",
+      "evidence_path": "three resolved_verified; btc-okx-l2-observer-1d-00000002-20260729t035023327336z=physical_version_missing; fallback_used=false",
+      "result": "passed"
+    },
+    {
+      "command": "build immutable research artifact official-81024c156dd6",
+      "evidence_path": "research_artifacts/btc-10s-microstructure-data-contract-01/official-81024c156dd6; decision=blocked_insufficient_information; aggregate_sha256=4fb37192e9e6cace9d78a7399e26e76f9a7489fdd28e981489afaa26eab5c515",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": "frozen six-file business touch set only; no overlap",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01",
+  "transition_for": ""
+}

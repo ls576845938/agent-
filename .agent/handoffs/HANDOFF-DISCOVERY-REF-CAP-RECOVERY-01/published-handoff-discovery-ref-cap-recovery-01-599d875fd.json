@@ -1,0 +1,82 @@
+{
+  "base_commit": "d1650f2237efb453a6fd09a1014f4d3f16f9b8f2",
+  "blockers": [
+    "independent_integrator_required",
+    "full_governance_suite_blocked_in_sparse_worktree_missing_quant_crypto"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-17T00:00:00Z",
+  "deliverable_commit": "599d875fd77ca3edd2496ddd33bb4a8068064a69",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "bounded_handoff_discovery_v2",
+      "sha256": "1b9ad220b8886f76b02fdf7601d24b7527813dc24382ef0d86ef3b0ebed07be2",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "bounded_handoff_discovery_contract_tests_v1",
+      "sha256": "e25cb1deaf7a242d769f5676627e27ce04e512fa4cf7f527f0aa6bdf446920c8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-handoff-discovery-ref-cap-recovery-01-599d875fd",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/handoff-discovery-ref-cap-recovery-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py -q",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py -q",
+      "evidence_path": "tests/agent_governance",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q",
+      "evidence_path": "tests/agent_governance",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py",
+      "evidence_path": "tools/agent_governance/handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "tools/agent_governance/handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -c \"from pathlib import Path; from tools.agent_governance.handoff import scan_handoffs; x=scan_handoffs(Path('.'), verify_git=False); assert len(x['events']) > 0\"",
+      "evidence_path": "tools/agent_governance/handoff.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01",
+  "transition_for": ""
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-chart-native-zoom-01-6e9367328",
+  "ticket_id": "BTC-CHART-NATIVE-ZOOM-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-chart-native-zoom-01",
+  "base_commit": "bfe66305fb95ae1e220548af95e1b4dcbd49fa6c",
+  "deliverable_commit": "6e936732818fe61ffadcd289b8201f420021a6c0",
+  "created_at": "2026-09-06T13:17:30.847Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md",
+      "sha256": "3686c2690e9d2ec6e645afbc132cf07f5697f38f04ec6080bba575cb7a382bd9",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "sha256": "f72b9cbb19c3e61293a7f4718111e3750131ecb799473d5076aeab36177be6bb",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "fd9e2260287ee048de3caab5e853d9f755a4207f4e3f47b820d76c70bc464247",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-chart-navigation.mjs",
+      "sha256": "a52db515f5c851f8d0cdd946bfe8d61e8ea9326d93abe2cbda7f83f2e494765d",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "sha256": "44dfabf78aefd35ea4d40360c0398e8000f7af5b9c164830bc5fe5e5e8610094",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "sha256": "fd691efafb4b45b755a9025cbbc06649ced0b7f6cccac7152db9ffeb01222ca7",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first component harness rejects original 3px floor; passes after native candle fix",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-chart-navigation.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "npm run build (36.40s)",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/crypto.spec.ts --grep 'native chart zoom' --list (1 discovered, browser not started)",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    },
+    {
+      "command": "Canonical-main browser wheel/pan test and service restart",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-CHART-NATIVE-ZOOM-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:operator old service termination/restart remains blocked by previous environment policy rejection; no bypass attempted",
+    "owner:root canonical-main browser verification after approved restart",
+    "change_risk=demo_transport_hotfix; source-only quality_checked; trading gates unchanged"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

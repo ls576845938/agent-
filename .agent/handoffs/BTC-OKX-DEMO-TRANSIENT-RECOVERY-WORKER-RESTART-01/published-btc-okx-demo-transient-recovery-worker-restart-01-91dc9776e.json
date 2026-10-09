@@ -1,0 +1,103 @@
+{
+  "base_commit": "4b155f4222d86e15b18714d9a285de3fbc8ca316",
+  "blockers": [
+    "owner:integrator independent integration required for demo_execution_semantics",
+    "owner:integrator backend restart required after integration",
+    "promotion_artifact_rebuild_not_requested_and_promotion_remains_disabled",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-21T00:57:33Z",
+  "deliverable_commit": "91dc9776e1e1ef41e21c9900d41118ff249b3599",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_transient_worker_recovery_v1",
+      "sha256": "a57ba21c1f1919db121eb02529267298e3dd544f04ed39cdf79ed6ba797024ef",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_transient_recovery_contract_tests_v1",
+      "sha256": "6d841a77b87eaf51cd222ca9c8d4882eefbbabbedf6c22f6c54b576674ba2770",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_control_runtime_recovery_projection_v1",
+      "sha256": "42653d34a20cf6d5df90702e3e4f69b50e745230535c274a9c936f8dbf62468c",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_service_transient_recovery_contract_tests_v1",
+      "sha256": "781aa0f07f0790052a5e9277f4cb7eb373d148d3641a1d305b5639059941e6a0",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-transient-recovery-worker-restart-01-91dc9776e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-transient-recovery-worker-restart-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k transient_recovery_restarts_exactly_one_worker_after_authority_recovers or dead_man_50011_uses_bounded_recovery --basetemp C:\\tmp\\qsx_btc_transient_ff",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k transient_recovery_restarts_exactly_one_worker_after_authority_recovers or dead_man_50011_uses_bounded_recovery or transient_recovery_keeps_cancel_only --basetemp C:\\tmp\\qsx_btc_transient_targeted",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py -k runtime_recovery or network_transport --basetemp C:\\tmp\\qsx_btc_service_ff",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\qsx_btc_runtime_final",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp C:\\tmp\\qsx_btc_service_finaltarget",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-TRANSIENT-RECOVERY-WORKER-RESTART-01",
+  "transition_for": ""
+}

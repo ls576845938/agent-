@@ -1,0 +1,77 @@
+{
+  "base_commit": "4050925626dfe319082a35e49c075ea951a2f24b",
+  "blockers": [
+    "owner:operator backend_restart_required_after_integration",
+    "owner:operator demo_runtime_recovery_and_new_25h_observation_segment_not_started",
+    "current_head_promotion_artifact_not_rebuilt_by_demo_execution_semantics_policy",
+    "not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-08-03T00:21:26Z",
+  "deliverable_commit": "c081f1b16e5e7b555dd49fdefea8275ace000dc9",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "83278eb635c7a94d6fde2cec5a9f8193073fd41ca69fbf9261b9682d891e1c9d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "751b74977a0671cd7f8eb4ee3af539ac1ce3be3dfe0f7e9e60236a1e46960543",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-private-ws-recovery-retry-01-c081f1b16"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-private-ws-recovery-retry-01-4c9a040de",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-demo-private-ws-recovery-retry-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "committed-object validation for deliverable c081f1b16e5e7b555dd49fdefea8275ace000dc9 and handoff 4c9a040de3badfc10713a6e9c1fbd0c7ec17b0cd: base ancestry, exact 2-path touch set, and 2/2 raw Git blob SHA-256 closure",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-RECOVERY-RETRY-01/published-btc-okx-demo-private-ws-recovery-retry-01-c081f1b16.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-RECOVERY-RETRY-01/published-btc-okx-demo-private-ws-recovery-retry-01-c081f1b16.json",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-RECOVERY-RETRY-01/published-btc-okx-demo-private-ws-recovery-retry-01-c081f1b16.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <unique-temp> [39 passed in 13.22s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 4050925626dfe319082a35e49c075ea951a2f24b..4c9a040de3badfc10713a6e9c1fbd0c7ec17b0cd -- <approved touch set>",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-RECOVERY-RETRY-01",
+  "transition_for": "published-btc-okx-demo-private-ws-recovery-retry-01-c081f1b16"
+}

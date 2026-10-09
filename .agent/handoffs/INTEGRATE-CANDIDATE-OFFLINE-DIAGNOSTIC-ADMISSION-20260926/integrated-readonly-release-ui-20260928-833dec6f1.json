@@ -1,0 +1,137 @@
+{
+  "base_commit": "8ea90775bc250ad4cfcab7592fbdc720b3df4edc",
+  "blockers": [
+    "the complete source candidate still lacks an effective one-time research_readonly release contract; this integration does not authorize main merge or service restart",
+    "current-main evidence-registry reads have timed out and Alpha Factory reads have also timed out; performance remediation and canonical-page acceptance remain separate pending work",
+    "frontend/scripts/test-research-portfolio-contract.mjs remains blocked by a pre-existing frozen research-api baseline mismatch already present at base 8ea90775; this UI ticket did not modify research-api.ts or weaken that invariant",
+    "canonical-main Playwright and browser acceptance were not run because worktree pages are forbidden and the source is not published",
+    "Demo paper live promotion private order real_order transfer withdraw and execution permissions remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T03:20:10Z",
+  "deliverable_commit": "833dec6f141af6aaf5cee26efa03919822c53e9c",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/readonly-release-ui-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "b77a2319d3c224b350029c86d402ec15c4b5c10ca4e08a4b525bf57cdf03b610",
+      "type": "report"
+    },
+    {
+      "path": "frontend/src/lib/research-workspace-access.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_workspace_access_v1",
+      "sha256": "b7af3ec7d9692918865ebedce79d6eb19a196910b98007fc2d3af0651aa8b074",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchPortfolioWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "261690add962de5454225531646daeed1ef5f5c780ee297313ac54259151c9a3",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/AlphaFactoryConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "27f5098e78046f03af0f678e2d5ae86aab07b27bf7ff8924900eeb57343dd4ff",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "9f3b2f1814d38c50ce16858c7df784a4bdab53618e4111b4db2e2320b09d6e79",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateHandoff.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "dcf2cc713b05984871109429903bf0ab5becd82652ce1e36f183ae1883c6903b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "00a628d9614b04612ce14b784fd81a7bd1eaaaf6dfdd0056429ba1b6126a37a7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/portfolio/PortfolioAllocation.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_v1",
+      "sha256": "e30e6cb47c53b502a7675fb461ee49a44f8df6ce7c6b3ff0857f7d4038f77cb2",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-readonly-release-ui.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_release_ui_contract_tests_v1",
+      "sha256": "fc89fcffadd55ce25415f521c4de71bb88e219089e474daede2cf0af6cea064e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-candidate-offline-diagnostic-market-policy-closeout-20260927-deace3f2b",
+    "published-readonly-release-ui-20260927-9067176fc"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-readonly-release-ui-20260928-833dec6f1",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate published-readonly-release-ui-20260927-9067176fc.json and independent Git ancestry/hash review",
+      "evidence_path": "published event valid; source descends exactly from 8ea90775; producer touch set clean; upstream 8ea integrated event independently reachable and valid",
+      "result": "passed"
+    },
+    {
+      "command": "NODE_PATH=canonical frontend/node_modules node test-readonly-release-ui + test-candidate-delivery + test-candidate-handoff + test-candidate-local-auth on producer source",
+      "evidence_path": "33 passed, 0 failed",
+      "result": "passed"
+    },
+    {
+      "command": "same four scripts after cherry-pick in integration worktree",
+      "evidence_path": "32 passed; one environment-only failure because sparse integration worktree has no local vite package; identical source test passed in producer worktree",
+      "result": "passed"
+    },
+    {
+      "command": "canonical TypeScript compiler --noEmit -p frontend/tsconfig.json on producer source",
+      "evidence_path": "exit code 0",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-research-portfolio-contract.mjs at base 8ea90775 and producer source",
+      "evidence_path": "pre-existing first failure is frozen frontend/src/lib/research-api.ts drift from hard-coded 13486 baseline; ticket did not modify that source or delete the invariant",
+      "result": "failed"
+    },
+    {
+      "command": "canonical-main browser acceptance after research_readonly release",
+      "evidence_path": "not authorized until one-time release contract becomes effective and read-timeout remediation is integrated",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "transition_for": "published-readonly-release-ui-20260927-9067176fc"
+}

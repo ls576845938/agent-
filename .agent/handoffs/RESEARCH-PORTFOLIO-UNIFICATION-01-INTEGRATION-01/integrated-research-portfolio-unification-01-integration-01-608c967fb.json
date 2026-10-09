@@ -1,0 +1,171 @@
+{
+  "base_commit": "13486a7802628e93dd624213ba6c317c5deb4ddf",
+  "blockers": [
+    "full_real_research_workflow_not_run_or_passed",
+    "research_evidence_registry_unreadable_conflict_http_409",
+    "research_integration_run_registries_empty",
+    "system_data_coverage_missing",
+    "paper_validation_blocked_and_review_entry_conflict",
+    "promotion_artifact_unavailable_and_not_rebuilt",
+    "shared_legacy_shell_crowded_at_820px_not_expanded",
+    "unrelated_invalid_historical_handoffs_14_not_remediated",
+    "final_metadata_commit_requires_current_main_service_identity_refresh"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-09T08:02:11Z",
+  "deliverable_commit": "608c967fb569b9106268a11cadf6e5b066d2a767",
+  "deliverables": [
+    {
+      "path": "docs/reports/research-portfolio-unification-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "a936ab87fc546732706d85f8d1bdf18b18c10363437823425af39f409a9aa25a",
+      "type": "report"
+    },
+    {
+      "path": "docs/reports/research-portfolio-unification-01-integration.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_integration_v1",
+      "sha256": "ae490f6741e060cfcf03db87edece37eaafcee1c200a41ab8c13c3fdf9f524c9",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "ca001c56dcb963fbaf8dc6b12a3409d04e20a0855847ea25f36613e9ebfbe6b4",
+      "type": "artifact"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "f2fd9379f674b1510dc172f60f10f3fc33bedeb60f1892e6a054eac16c3393e2",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_research_registry_readonly_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "11fb173d6e9b88331d41ca2e98294cc940dcdeeeb6c0d848026f6d22dd8331c7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/research-portfolio-workflow.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "66ca9507ec1d85321a06101eae9199524d44b67c9a78f5f2aa066fae990a3aed",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/research-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "e8f6d1ee521c7361eb4d607d7a6b653f3e87ad689b69d6034abebb7c1d29d5ca",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/research.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "6a1ded1c89307225df7c8da9bcb72eac02072ee1bddd9ed3a9c23d0de46813ac",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-research-portfolio-contract.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "04d9f2a041960463f03bafa8e72370fe8a19358c3a1eea4367017f202ca3bc3a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchPortfolioWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_portfolio_workspaces_v1",
+      "sha256": "9bc0af180e81799474483cfcda67eee7cad4695493e7e6cafb868c02ebd1c5aa",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-research-portfolio-unification-01-64a3cdef7",
+    "published-research-portfolio-unification-01-a36fba0cd",
+    "published-research-portfolio-unification-01-686a83406",
+    "published-research-portfolio-unification-01-a4678952d",
+    "published-research-portfolio-unification-01-3a799a0aa"
+  ],
+  "domain": "research",
+  "event_id": "integrated-research-portfolio-unification-01-integration-01-608c967fb",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/research-portfolio-unification-01-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "all five superseding producer envelopes validated; ancestry, scoped dirty state and final 22 SHA-256 values independently checked before no-ff merges",
+      "evidence_path": ".agent/handoffs/RESEARCH-PORTFOLIO-UNIFICATION-01/published-3a799a0aa.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical .venv python -m pytest -q backend/tests/test_research_registry_readonly_api.py tests/api/test_research_only_boundaries.py; 15 passed, one warning, 33.04 seconds",
+      "evidence_path": "docs/reports/research-portfolio-unification-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "research portfolio static contract, frozen rollback, TypeScript noEmit and Vite build; 5238 modules / 50.62 seconds / existing bundle warning",
+      "evidence_path": "docs/reports/research-portfolio-unification-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "first canonical Playwright run on 7fd07dde2; 32 passed / 6 failed / 5.8 minutes; original contexts preserved",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-portfolio-unification-01/integration-evidence/playwright-first-32pass-6fail",
+      "result": "failed"
+    },
+    {
+      "command": "first corrected targeted rerun on 2a64237f; 5 passed / 1 failed / 1.1 minutes; cross-document timing context preserved",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-portfolio-unification-01/integration-evidence/playwright-targeted-5pass-1fail",
+      "result": "failed"
+    },
+    {
+      "command": "final targeted keyboard and rollback rerun on 97e948b84; 2 passed / 54.6 seconds",
+      "evidence_path": "docs/reports/research-portfolio-unification-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Playwright three requested specs, workers=1, current application commit 97e948b84; 38 passed / 0 failed / 4.6 minutes; all API POST mocked",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-portfolio-unification-01/integration-evidence/playwright-final-38pass/.last-run.json",
+      "result": "passed"
+    },
+    {
+      "command": "read-only visual QA for research, portfolio, review, previous, legacy and 820px pages; no non-GET request, page exception or main-document horizontal overflow",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research-verification/research-portfolio-unification-01/integration-visual-final/visual-summary.json",
+      "result": "passed"
+    },
+    {
+      "command": "public health, backend/frontend identity, dependency, evidence-registry, overview, review-entry and global-registry GETs; no private/order/live endpoint",
+      "evidence_path": "docs/reports/research-portfolio-unification-01-integration.md",
+      "result": "passed"
+    },
+    {
+      "command": "real Qlib training/backtest/metric/portfolio workflow, evidence repair/rebuild, promotion artifact rebuild, paper/private/order/live/broker/real execution",
+      "evidence_path": "outside this integration validation; current data, evidence and gates remain blocked",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-PORTFOLIO-UNIFICATION-01-INTEGRATION-01",
+  "transition_for": "published-research-portfolio-unification-01-3a799a0aa"
+}

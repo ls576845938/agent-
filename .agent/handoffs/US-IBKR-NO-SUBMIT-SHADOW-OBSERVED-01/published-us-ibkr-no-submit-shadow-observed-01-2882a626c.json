@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-no-submit-shadow-observed-01-2882a626c",
+  "ticket_id": "US-IBKR-NO-SUBMIT-SHADOW-OBSERVED-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-no-submit-shadow-observed-01",
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "deliverable_commit": "2882a626cc93987a23ee304ad5a844c2082560cf",
+  "created_at": "2026-08-06T14:15:19Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-ibkr-paper-adapter-foundation-01-4b6f20eb25",
+    "integrated-us-successor-into-current-main-01-0cddfb5b05"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/live/us_etf_26_ibkr_no_submit_shadow.py",
+      "sha256": "b23d72be14a2ba4a4efb35e2bcd8a7395fe59d926a9b327d61197e1a16cc3b2d",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_us_equity_ibkr_paper.py",
+      "sha256": "01b4d7bbed909bb9eb0f7059141dc8f86765ba5cd0b6c5721689bfcb2d72efaf",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_etf_26_ibkr_no_submit_shadow.schema.json",
+      "sha256": "6ed6daa886a72dc197d5bf1df4798548fe02b403e6ad31826c32eab7847b29b4",
+      "schema_version": "us_etf_26_ibkr_no_submit_shadow_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py",
+      "sha256": "270eb5be717d46f2eba6066fe685fc22f912289bcc4a23aca336667c5eec1bb0",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "registered-main virtualenv python -B -m pytest tests/live/test_us_etf_26_ibkr_no_submit_shadow.py tests/live/test_ibkr_paper_adapter_foundation.py tests/live/test_runtime_paper_worker_safety.py tests/contracts/test_no_broker_import_in_evidence_builders.py backend/tests/test_order_routing.py -p no:cacheprovider -q --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "submitted-head REAL-06 immutable resolve plus injected-fake build and schema/replay readback validation",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1.json"
+    },
+    {
+      "command": "python -B -m py_compile three Python touch files; schema JSON parse; staged git diff --check",
+      "result": "passed",
+      "evidence_path": "schemas/us_etf_26_ibkr_no_submit_shadow.schema.json"
+    },
+    {
+      "command": "combined API boundary regression including tests/api/test_research_only_boundaries.py",
+      "result": "failed",
+      "evidence_path": "tests/api/test_research_only_boundaries.py"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_deliverable_2882a626cc93987a23ee304ad5a844c2082560cf",
+    "owner:repository registered_main_ref_not_advanced_by_producer",
+    "owner:environment quant_crypto_module_missing_blocks_three_preexisting_api_boundary_tests",
+    "injected_fake_client_only_no_real_gateway_connection_or_private_sync_evidence",
+    "temporary_submitted_head_shadow_artifact_is_validation_evidence_not_durable_promotion_artifact",
+    "yahoo_survivorship_bias_and_current_adjustment_vintage",
+    "fred_latest_vintage_non_pit_without_realtime_bounds",
+    "no_real_ibkr_paper_order_fill_position_cash_ledger_evidence",
+    "forward_paper_observation_not_started",
+    "current_head_gate_read_model_and_final_readiness_rebuild_not_performed",
+    "all_trading_safety_permissions_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

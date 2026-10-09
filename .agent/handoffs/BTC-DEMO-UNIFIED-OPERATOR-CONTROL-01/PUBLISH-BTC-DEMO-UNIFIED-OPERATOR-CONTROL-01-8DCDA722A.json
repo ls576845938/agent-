@@ -1,0 +1,138 @@
+{
+  "base_commit": "fed0c3c6c3fd2c990d02fecfc1d34632a0f412b3",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_registered_main",
+    "current_main_canonical_backend_and_frontend_not_restarted_or_browser_accepted",
+    "mocked_playwright_29_test_execution_deferred_to_integrated_current_main",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded",
+    "current_head_promotion_artifact_and_read_model_not_rebuilt;promotion_remains_false_and_does_not_block_demo_start",
+    "no_private_order_live_transfer_withdraw_endpoint_or_secret_access_performed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-20T01:25:31Z",
+  "deliverable_commit": "8dcda722abb51f41041756f56cf9ddf4e57fd196",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "771c817b0d241d72cdf369335bdec397e0dd321353e3ab725cac35cffd869bb3",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b2a0de951aa37764c510791816bc3f432d5751a8bfd08cd6afd11c7932901d67",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_react_source_v1",
+      "sha256": "f1750de6335e0805e152bdcc6597850c9d9aad0ea5d5cac3ad51c32ca8b526ef",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_contract_v1",
+      "sha256": "dc301b9ad4a7fbb1c71d8dc9085432858a6713a7b053daf4d66e003167131522",
+      "type": "schema"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "typescript_react_source_v1",
+      "sha256": "db72eef993fd6ef2b1a81971b3df447154f4543477fc1dc53eaed4de03918e6e",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "d3bbd3dec7ba8da6c2ffec2e80d868951469f2dbc2360826c61825d1cac210ff",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "css_source_v1",
+      "sha256": "4455cb3080e561452de8e5c5ed08958fb40e167cf43e99b3540832dfb1d08160",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "c6997061f03e5a684df216bdcf2a63f49c7fe124f4c93b4a968053a6da3783dd",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01-8DCDA722A",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-operator-control-v1",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first: backend operator-control regressions on base fed0c3c6 failed 3 tests with KeyError operator_control before implementation; the same targeted scenarios passed after implementation",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q [observed: 33 passed in 3.97s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "$env:PYTHONPATH=(Get-Location).Path + ';D:\\vibe coding\\Obsidian\\量化系统\\agent-'; py -3 -m pytest backend/tests/test_btc_demo_runtime_api.py -q [observed: 13 passed in 4.58s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build [observed: 5217 modules; only existing chunk-size warning]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npx playwright test e2e/btc-demo-console.spec.ts --list [observed: 29 tests discovered]; actual mocked browser execution deferred to integrated current-main canonical service",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check [manifest_match=true; baseline_ancestor=true; fingerprint=0c17500009fe26d7be1297227a0de73a96548e29e79b455257ff6d9a9abfc650]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check fed0c3c6c3fd2c990d02fecfc1d34632a0f412b3..8dcda722abb51f41041756f56cf9ddf4e57fd196 -- authorized touch set",
+      "evidence_path": "backend/app/services/btc_demo_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01",
+  "transition_for": ""
+}

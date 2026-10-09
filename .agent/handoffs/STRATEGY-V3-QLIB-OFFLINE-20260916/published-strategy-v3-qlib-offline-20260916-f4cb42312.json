@@ -1,0 +1,124 @@
+{
+  "base_commit": "b6b4b14c37bd6ae3d201b56f64eba439ec428399",
+  "blockers": [
+    "owner:integration demo_execution_semantics requires the one planned independent integrator review before any merge",
+    "owner:research m1-okx-qlib remains negative test IC with zero simulated fills and no_simulated_fills; V3 is engineering evidence only",
+    "owner:release candidate is isolated and not merged or published; services and UI were not started",
+    "owner:safety Demo paper private order live transfer withdraw promotion and execution permission remain false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-09-16T00:12:24Z",
+  "deliverable_commit": "f4cb423121e54c0259fdd110b9115fd39669c0a8",
+  "deliverables": [
+    {
+      "path": "docs/architecture/strategy-admission-v3.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v3_qlib_offline_architecture_v1",
+      "sha256": "001a9825d94ee67b6e7a92bfa7a2c9fbc7ea1f78b643b3140a60ba130fc1d51f",
+      "type": "document"
+    },
+    {
+      "path": "integrations/qlib_adapter/candidate_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qlib_candidate_policy_v1",
+      "sha256": "6ef20378f130f5c3aeb619e62e2b18af95277a894b03ce475fd779f1674dbcc9",
+      "type": "code"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_trace.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qlib_research_trace_policy_reuse_v1",
+      "sha256": "1b61e6583ae4be5433cd9faa19980316a8757e7cf1b6de8def0bf681a09a3418",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/qlib_offline_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v3_qlib_offline_replay_v1",
+      "sha256": "e7d97dde44b219991263c6d2ff9ad93519b6a42d9222ad425c0be3e81cb86dac",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_sealed_strategy_objects_offline_seam_v1",
+      "sha256": "6628312c0acb9be35c388f68bc32e83a3ca3f8d45e0a8c2fac0ac5562372acbe",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_strategy_v3_qlib_offline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v3_qlib_offline_contract_tests_v1",
+      "sha256": "7a2b29b0103a1ce28fc85a8a3acb320379f6bf02ea28ab1618d0ca7bc39fafdb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/fixtures/strategy_v3/offline_contract.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v3_qlib_offline_contract_v1",
+      "sha256": "4b8e25153fe843241e2295c6c459fffb575a4a7400f390465c5ef458aff7fbe3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/integrations/test_qlib_candidate_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qlib_candidate_policy_tests_v1",
+      "sha256": "b719e83f2603012fcaac31082d97a20e40520e6872a8ea91be1915b4759c0e14",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-strategy-v2-frozen-qlib-independent-review-20260915-b7335c272"
+  ],
+  "domain": "btc",
+  "event_id": "published-strategy-v3-qlib-offline-20260916-f4cb42312",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/strategy-v3-qlib-offline-20260916",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first: py -3 -m pytest -q tests/integrations/test_qlib_candidate_policy.py tests/contracts/test_strategy_v3_qlib_offline.py",
+      "evidence_path": "expected ModuleNotFoundError for candidate_policy and qlib_offline_replay before implementation",
+      "result": "failed"
+    },
+    {
+      "command": "<venv-python> -B -m pytest -q -p no:cacheprovider tests/integrations/test_qlib_candidate_policy.py tests/contracts/test_strategy_v3_qlib_offline.py tests/contracts/test_strategy_v1_donchian_offline.py tests/integrations/test_qlib_frozen_inference.py tests/integrations/test_no_live_side_effects.py::test_qlib_adapter_sources_never_emit_paper_or_live_ready_states",
+      "evidence_path": "54 passed in 120.15s; includes 1392 frozen predictions, five-phase existing-OMS fixture, restart object reconstruction, independent fee/funding/cash/equity recomputation, V1 evidence recovery and unknown-intent no-retry",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q integrations/qlib_adapter/candidate_policy.py integrations/qlib_adapter/research_trace.py quant_crypto/application/qlib_offline_replay.py quant_crypto/oms/okx_demo_paper_runtime.py",
+      "evidence_path": "four V3-owned or narrowly modified Python modules compiled",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "no whitespace errors; Windows line-ending conversion warnings only",
+      "result": "passed"
+    },
+    {
+      "command": "training/search, synthetic Qlib training tests, OS-process crash, services/API/UI, account/exchange/network/private/order/live, main merge/release and M3-M4",
+      "evidence_path": "outside frozen V3 offline source-candidate scope",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "STRATEGY-V3-QLIB-OFFLINE-20260916",
+  "transition_for": ""
+}

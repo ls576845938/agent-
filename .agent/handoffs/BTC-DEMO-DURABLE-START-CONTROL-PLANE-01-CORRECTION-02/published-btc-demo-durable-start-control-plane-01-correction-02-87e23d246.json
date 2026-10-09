@@ -1,0 +1,86 @@
+{
+  "base_commit": "8d6fcb21bb682229a011f4d08f4012ea2ded63cb",
+  "blockers": [
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_by_contract",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T17:58:58Z",
+  "deliverable_commit": "87e23d2467a1d93d16771a0784f100e2f0a1c4f5",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "a89859bc5044c6ed5ed5e7ca83f3605266822f669e1b9513c12e930652415b5d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "4d50920657881baaa5d77b67eaa5b826d6dc30bf378b2c17ce4bb14ab865e6a8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-durable-start-control-plane-01-correction-01-035e916e8"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-durable-start-cp-01-corr-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "PYTHONPATH=<registered-main> py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-start-corr02-ff tests/contracts/test_btc_okx_demo_paper_runtime.py -k windows_vault_backend_identity or null_or_non_windows_backend",
+      "evidence_path": "C:/tmp/qsx-durable-start-corr02-ff (pre-fix: 1 failed, 2 passed)",
+      "result": "failed"
+    },
+    {
+      "command": "PYTHONPATH=<registered-main> py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-start-corr02-focused2 tests/contracts/test_btc_okx_demo_paper_runtime.py -k windows_vault_backend_identity or null_or_non_windows_backend or keyring_backend_failure or missing_local_keyring_capability",
+      "evidence_path": "C:/tmp/qsx-durable-start-corr02-focused2 (5 passed)",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPATH=<registered-main> py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-start-corr02-full2 tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "C:/tmp/qsx-durable-start-corr02-full2 (425 passed)",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "touched Python source and contract test",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "service/Demo runtime, private/order/live/transfer/withdraw endpoints, key/secret access, frontend tests, artifact rebuild",
+      "evidence_path": "deferred_by_ticket_scope_and_security_boundary",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-02",
+  "transition_for": ""
+}

@@ -1,0 +1,88 @@
+{
+  "base_commit": "8ccc2b3d3377eadcf14afc21414432ccff372083",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "historical_immutable_receipt_remains_unchanged",
+    "promotion_artifact_not_rebuilt",
+    "private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-11T23:10:07Z",
+  "deliverable_commit": "a5865cfb7b54d40a0654f298ad2e67f4a6adcd90",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_incident_recovery_result_v1",
+      "sha256": "3bc2165b222d508f6e56d0fad5b26edc60d305faf4c55589a647638548cc545d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "686549175376559694aa24c19d10e1e45bc4335674c380d1773de3b14199e052",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "6aa1c3e2bc1e2c803f2322abed2147747fee9447d9f5e5f4dbc2598512d5f871",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-okx-demo-canonical-recovery-binding-consumer-multihop-25-bb03f88c3"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-held-recovery-final-projection-26-a5865cfb7",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-held-recovery-final-projection-26",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'incident_recovery_already_flat_is_read_only_and_clears_freeze or incident_recovery_posts_only_one_ioc_then_exact_oco_cancel' -q",
+      "evidence_path": "failure-first: before implementation 1 failed, 1 passed, 322 deselected; final 2 passed, 322 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k 'incident_recovery_receipt_preserves_runtime_final_projection' -q",
+      "evidence_path": "2 passed, 129 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "324-contract full run completed; no live pytest process and lastfailed cache empty",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q",
+      "evidence_path": "131-contract full run completed; no live pytest process and lastfailed cache empty",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile <touch-set>; git diff --check -- <touch-set>",
+      "evidence_path": "offline sparse producer worktree",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-HELD-RECOVERY-FINAL-PROJECTION-26",
+  "transition_for": ""
+}

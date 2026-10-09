@@ -1,0 +1,92 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cohort-offline-readonly-governance-20261004-ef5271fdd",
+  "ticket_id": "BTC-COHORT-OFFLINE-READONLY-DELIVERY-20261004",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/btc-cohort-offline-readonly-delivery-20261004",
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "deliverable_commit": "ef5271fdd06639a170bf5e7c0c28c5e265ca5475",
+  "created_at": "2026-10-04T14:24:22Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-cohort-entry-recovery-limited-readonly-20261004-aa9905ee3"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/agent_playbooks/btc_cohort_offline_readonly_delivery_20261004.json",
+      "type": "schema",
+      "schema_version": "btc_cohort_offline_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "4f3534e85f13b22f493fdb1e98198a9f9158a423e1819e8963f8785d639dfd04"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_cohort_offline_readonly_delivery_20261004.md",
+      "type": "document",
+      "schema_version": "btc_cohort_offline_readonly_delivery_readme_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "45953c04f64cd84cceec521b9e8b02bbbb35a4ca27fa3fcdbda1638eb3f1754c"
+    },
+    {
+      "path": "tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py",
+      "type": "code",
+      "schema_version": "btc_cohort_offline_readonly_validator_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "cdc74db2a369610ba7e50d7b66baa5f38e1aebaba2ff77f6483e555be010c375"
+    },
+    {
+      "path": "tests/agent_governance/test_btc_cohort_offline_readonly_delivery_20261004.py",
+      "type": "test_evidence",
+      "schema_version": "btc_cohort_offline_readonly_governance_regression_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "d029ea9105b7b2cc0ec2991caec58fa2d2047e85d25fa054a801992eae2fd2b5"
+    },
+    {
+      "path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md",
+      "type": "report",
+      "schema_version": "btc_cohort_offline_readonly_producer_report_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "58c649692f1c8a6cfc2e32ea171316bf54cfb74810c19306e3437971852a0897"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/agent_governance/test_btc_cohort_offline_readonly_delivery_20261004.py (71 passed in 103.85s)",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    },
+    {
+      "command": "py -3 tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py --verify-source (valid/errors=[]/blocks_gate/permissions_granted=false)",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    },
+    {
+      "command": "git diff --cached --check -- exact five declared paths",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    }
+  ],
+  "blockers": [
+    "actual_root_governance_review_of_exact_ef5271fdd_deliverable_pending",
+    "independent_source_plus_governance_integration_and_current_main_readonly_browser_acceptance_pending",
+    "real_Donchian_Qlib_execution_clock_cost_and_protection_policy_incompatible",
+    "real_common_nonzero_execution_protection_attribution_and_economic_recovery_not_run_blocked",
+    "real_Qlib_final_positive_calibration_missing_effective_independent_sample_below_30"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

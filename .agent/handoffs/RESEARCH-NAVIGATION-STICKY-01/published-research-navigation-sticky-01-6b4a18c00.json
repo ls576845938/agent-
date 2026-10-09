@@ -1,0 +1,94 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-navigation-sticky-01-6b4a18c00",
+  "event_type": "published",
+  "ticket_id": "RESEARCH-NAVIGATION-STICKY-01",
+  "producer_role": "super_developer",
+  "producer_branch": "agent/super_developer/research-navigation-sticky-01",
+  "base_commit": "196066dfa46437c07b1af327251f4ad033c3d342",
+  "deliverable_commit": "6b4a18c002b8d04242f4ef712499bb3aac45a8d5",
+  "domain": "research",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-10T09:30:41.483Z",
+  "expires_at": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/research-navigation-sticky-01.md",
+      "sha256": "598b947f48924e4695b991339863391eddb6faf7da13b5cf806798802f647a6a",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "report"
+    },
+    {
+      "path": "frontend/e2e/research-navigation.spec.ts",
+      "sha256": "5af4cbd3083a947a825029bf41791867f2e8630a30cd7985b40794714bd9d4e4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchDashboard.css",
+      "sha256": "0559a8600d3cd4748b4bb7bbe0acdc4b5180c65b9a58b720460f70d565f756c6",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "sha256": "ffd537e8c4fb4c8972ef0c175c6814cba0e146018490ba5166aac531a535e5ec",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "supersedes": [
+    "published-research-navigation-sticky-01-44b4fc2bd"
+  ],
+  "transition_for": "",
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "blockers": [
+    "owner:architect committed-source research-only mobile scroll-container delta review pending",
+    "owner:integrator corrected-source canonical navigation and research regressions, screenshots and official restart pending",
+    "btc_runtime_artifact_root_env_missing; UI ticket does not authorize training, promotion rebuild or runtime bootstrap"
+  ],
+  "tests": [
+    {
+      "command": "Original canonical main196066df records sticky failure and main27f7545e 6 passed / 3 failed retained as historical red evidence; not corrected-source acceptance",
+      "evidence_path": "docs/reports/research-navigation-sticky-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "Parent-reported canonical main07d 390px diagnosis: canvas scrollHeight=clientHeight6257, max0; document scroll600 moves nav418 to -181; previous zero/zero scroll check did not prove mobile sticky",
+      "evidence_path": "docs/reports/research-navigation-sticky-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "After mobile CSS correction: node node_modules/typescript/bin/tsc --noEmit passed; node node_modules/vite/bin/vite.js build passed 5245 modules in 19.61s, existing bundle warning",
+      "evidence_path": "docs/reports/research-navigation-sticky-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and Playwright --list passed: nine cases. Original390 case now proves positive canvas max/scroll, strict sticky bounds and hit-test before End, then canvas and document natural-clamp-only focus behavior",
+      "evidence_path": "frontend/e2e/research-navigation.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "Final corrected-source canonical browser navigation and existing research regression suite/screenshots: not run by producer; independent integration and official restart pending",
+      "evidence_path": "frontend/e2e/research-navigation.spec.ts",
+      "result": "not_run"
+    }
+  ]
+}

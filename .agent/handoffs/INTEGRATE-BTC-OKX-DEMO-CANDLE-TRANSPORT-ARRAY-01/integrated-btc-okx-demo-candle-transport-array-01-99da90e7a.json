@@ -1,0 +1,79 @@
+{
+  "base_commit": "8bc965b0c1f2d99f576f0206f27e5448e2e3ef92",
+  "blockers": [
+    "owner:main integration_branch_not_fast_forwarded_to_refs_heads_main",
+    "owner:operator current_head_runtime_artifact_rebuild_and_backend_restart_pending",
+    "owner:operator same_okx_demo_runtime_start_and_evidence_collection_pending",
+    "not_promotion_evidence_no_runtime_started_no_orders_no_fills_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-07-30T13:11:11Z",
+  "deliverable_commit": "99da90e7ac71ff73f9b77e5f5a2718b1a92f5d9d",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_transport_public_sequence_v1",
+      "sha256": "964c0d43cec6ac9e8ba85f424086220a5e8d17724948d873477a193dbd1db0bf",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "6b52504416cf33c2f3fa3ed1390c1ba2c1422df22b45e5e412b5b66936958bfa",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-DEMO-CANDLE-TRANSPORT-ARRAY-01/published-btc-okx-demo-candle-transport-array-01-b7ff44d9a.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "a07b0cce7b3ca13517c632fa3189d0be72620a593367c51a46b6535629020361",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-candle-transport-array-01-b7ff44d9a"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-candle-transport-array-01-99da90e7a",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-okx-demo-candle-transport-array-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/tests/test_btc_demo_runtime_api.py -q --basetemp <unique-system-temp> [observed: 33 passed in 9.83s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo.py tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "quant_crypto/oms/okx_demo.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 8bc965b0c1f2d99f576f0206f27e5448e2e3ef92 99da90e7ac71ff73f9b77e5f5a2718b1a92f5d9d -- quant_crypto/oms/okx_demo.py tests/contracts/test_btc_okx_demo_adapter.py .agent/handoffs/BTC-OKX-DEMO-CANDLE-TRANSPORT-ARRAY-01/published-btc-okx-demo-candle-transport-array-01-b7ff44d9a.json",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-CANDLE-TRANSPORT-ARRAY-01",
+  "transition_for": "published-btc-okx-demo-candle-transport-array-01-b7ff44d9a"
+}

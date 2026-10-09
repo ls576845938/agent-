@@ -1,0 +1,102 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-ptrade-redesign-01-correction-02-fbe903d1",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-REDESIGN-01-INTEGRATE",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-workbench-ptrade-redesign-01-integrate",
+  "base_commit": "03efec6b8c0c4b7f9c9b7afd8e62fac22b8ca83a",
+  "deliverable_commit": "fbe903d139b725c93ec79b46f565edc6cb2147b6",
+  "created_at": "2026-08-13T11:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-ptrade-redesign-01-correction-02-70739d47c"],
+  "supersedes": [],
+  "transition_for": "published-strategy-workbench-ptrade-redesign-01-correction-02-70739d47c",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "type": "code",
+      "sha256": "be766231310beb4b7508d4aefe9fb5ab68db65a8056113851a55530b98c31e2c",
+      "schema_version": "strategy_workbench_presentation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx",
+      "type": "code",
+      "sha256": "91422dbd7e6ff8b1cee492c2921372cb7e2357ccfe6c59294bf090ba062199b6",
+      "schema_version": "strategy_discovery_catalog_tree_mode_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "8cfbc7c871855b962bca37781abacd093c9c91921ba32a4e52c511c8a09ccab6",
+      "schema_version": "strategy_workbench_styles_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/strategy-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "dab40be717826e38a15c6434e6b508f9d1620054e5d00e9a9c8d07bbdca0789c",
+      "schema_version": "strategy_workbench_playwright_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published-strategy-workbench-ptrade-redesign-01-correction-02-70739d47c",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-WORKBENCH-PTRADE-REDESIGN-01-CORRECTION-02/published-strategy-workbench-ptrade-redesign-01-correction-02-70739d47c.json"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx"
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build",
+      "result": "passed",
+      "evidence_path": "frontend/dist/index.html"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/strategy-workbench.spec.ts --list --reporter=list",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/strategy-workbench.spec.ts"
+    },
+    {
+      "command": "git diff --check 03efec6b8c0c4b7f9c9b7afd8e62fac22b8ca83a..fbe903d139b725c93ec79b46f565edc6cb2147b6",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-WORKBENCH-PTRADE-REDESIGN-01-INTEGRATE/integrated-strategy-workbench-ptrade-redesign-01-correction-02-fbe903d1.json"
+    },
+    {
+      "command": "canonical registered-main Playwright execution and visual acceptance",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "frontend service start, backend restart, artifact/read-model rebuild, Demo or private/order/live endpoint activity",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "registered_main_fast_forward_pending_single_authorized_sync",
+    "canonical_registered_main_playwright_and_visual_acceptance_pending",
+    "noncanonical_worktree_frontend_preview_prohibited",
+    "promotion_artifact_not_applicable_to_frontend_presentation_ticket",
+    "backend_restart_not_applicable_to_frontend_presentation_ticket",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

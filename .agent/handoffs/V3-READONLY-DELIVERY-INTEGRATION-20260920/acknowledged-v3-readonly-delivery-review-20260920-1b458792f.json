@@ -1,0 +1,59 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-v3-readonly-delivery-review-20260920-1b458792f",
+  "ticket_id": "V3-READONLY-DELIVERY-INTEGRATION-20260920",
+  "event_type": "acknowledged",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/v3-readonly-delivery-integration-20260920",
+  "base_commit": "b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+  "deliverable_commit": "1b458792fbd7d228976e9052c581395e2ca8d8a4",
+  "created_at": "2026-09-20T08:04:29Z",
+  "expires_at": "",
+  "depends_on": ["published-v3-readonly-delivery-20260920-0fbefe044"],
+  "supersedes": [],
+  "transition_for": "published-v3-readonly-delivery-20260920-0fbefe044",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-readonly-release-independent-review-20260920.md",
+      "sha256": "58feeddcad00096bf7ba73cc85fa9137dac5790ab5fe196a748051ebc99d1467",
+      "schema_version": "strategy_v3_readonly_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate governance published and upstream V3 acknowledged events; check frozen 88-path Git blob SHA-256 and exact ancestry",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-readonly-release-independent-review-20260920.md"
+    },
+    {
+      "command": "canonical .venv Python -B -m pytest -q -p no:cacheprovider --tb=short six governance test files",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-readonly-release-independent-review-20260920.md; 144 passed / 22.48s"
+    },
+    {
+      "command": "strategy_v3_readonly_delivery.blockers(source_review) with committed report hash and governance commit",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-readonly-release-independent-review-20260920.md; blockers=[]"
+    }
+  ],
+  "blockers": [
+    "owner:release registered-main fast-forward, non-overwriting rollback tag, fixed-HEAD offline CLI/resume and research_readonly formal services/browser acceptance pending",
+    "owner:verification upstream final 52-case batch remains 51 passed/1 HEAD-contaminated failure with fixed-HEAD independent five-case rerun, not a 52/52 batch",
+    "owner:research sealed Qlib candidate has zero approvals/fills; no effectiveness or trade-readiness claim",
+    "safety: Demo paper live private order promotion runtime observed and execution permissions remain false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

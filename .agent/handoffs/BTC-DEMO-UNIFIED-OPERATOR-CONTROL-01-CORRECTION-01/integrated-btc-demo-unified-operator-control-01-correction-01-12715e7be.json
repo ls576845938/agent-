@@ -1,0 +1,95 @@
+{
+  "base_commit": "22a4421737985a0b9a9c0c852522437c9d7440aa",
+  "blockers": [
+    "backend_current_head_artifact_blocker_preserved:btc_runtime_artifact_root_env_missing",
+    "backend_restart_and_promotion_artifact_rebuild_out_of_scope_for_frontend_test_correction",
+    "promotion_paper_live_private_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-20T03:05:03Z",
+  "deliverable_commit": "12715e7bef1fdb886914f5b331501197dddae328",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "23a3aeb85bf16a4cbcdadc4c57e42aab5b96f1e24a317338ee5ab8812a043097",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "73e5366dbc37a7b7b58661e5a9752e760c9a042c1877577a68b457952750ac93",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-unified-operator-control-01-correction-01-6b2ec9eeb"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-unified-operator-control-01-correction-01-12715e7be",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-unified-operator-control-correction-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate producer published correction-01 event",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01-CORRECTION-01/published-btc-demo-unified-operator-control-01-correction-01-6b2ec9eeb.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/tsconfig.json; tsc --noEmit passed",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json; baseline_commit=12715e7bef1fdb886914f5b331501197dddae328",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check -- --canonical",
+      "evidence_path": "manifest_match=true; baseline_ancestor=true; canonical=true",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "fingerprint=331bf767f92258216aacb0d580bf330fa1044f0c3434feb79b635a8ff8758eeb; object_targets=4",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts",
+      "evidence_path": "29 passed; all API routes mocked; no backend/Demo endpoint",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 22a4421737985a0b9a9c0c852522437c9d7440aa..12715e7bef1fdb886914f5b331501197dddae328 -- correction touch set",
+      "evidence_path": "E2E, frontend identity, published handoff only",
+      "result": "passed"
+    },
+    {
+      "command": "GET http://127.0.0.1:3000/__frontend_identity",
+      "evidence_path": "HTTP 200; canonical=true; runtime_stale=false; source_head=12715e7bef1fdb886914f5b331501197dddae328",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01-CORRECTION-01",
+  "transition_for": "published-btc-demo-unified-operator-control-01-correction-01-6b2ec9eeb"
+}

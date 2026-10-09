@@ -1,0 +1,44 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-afad334e3",
+  "ticket_id": "BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-v2-frontend-attempt-state-01",
+  "base_commit": "c232f66057450e3acdbebc12008a719909acdb67",
+  "deliverable_commit": "afad334e3ee38f2b24c92db64afbb293039a7ca0",
+  "created_at": "2026-08-24T13:59:30Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-operator-v2-frontend-attempt-state-01-a9f87c92b"],
+  "supersedes": ["published-btc-demo-operator-v2-frontend-attempt-state-01-a9f87c92b"],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/workspaces/crypto/operator-attempt-state.ts", "sha256": "8c6cf6db0256f340e34c42aedfe4ea402a4b94dec0064f4e9f320632c6334166", "schema_version": "btc_demo_operator_attempt_state_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "git diff --check c232f66057450e3acdbebc12008a719909acdb67..HEAD", "result": "passed", "evidence_path": "frontend/src/workspaces/crypto/operator-attempt-state.ts"},
+    {"command": "node frontend/scripts/test-btc-operator-attempt-state.mjs", "result": "passed", "evidence_path": "frontend/scripts/test-btc-operator-attempt-state.mjs"},
+    {"command": "node frontend/scripts/test-btc-operator-v2-contract.mjs", "result": "passed", "evidence_path": "frontend/scripts/test-btc-operator-v2-contract.mjs"},
+    {"command": "npm --prefix frontend run lint", "result": "passed", "evidence_path": "frontend/tsconfig.json"},
+    {"command": "npm --prefix frontend run build", "result": "passed", "evidence_path": "frontend/vite.config.ts"},
+    {"command": "frontend/e2e/btc-demo-console.spec.ts mocked Playwright", "result": "not_run", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "frontend_playwright_deferred_to_integrated_current_main",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

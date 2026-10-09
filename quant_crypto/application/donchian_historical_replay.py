@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import pandas as pd
 
@@ -536,14 +536,21 @@ class DonchianHistoricalReplay:
         market_policy_protocol_git: str | None = None,
         market_policy_evidence_git: str | None = None,
         market_policy_arm: str | None = None,
+        spec: HistorySpec | None = None,
+        historical_input: HistoricalInput | None = None,
+        coordination_projection_enabled: bool = False,
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
         self.output_root, self.run_root = _resolve_run_root(output_root, run_id)
         if self.repo_root == self.output_root or self.repo_root in self.output_root.parents:
             raise ValueError("historical_output_root_must_be_outside_git")
         self.run_id = run_id
-        self.spec = HistorySpec.from_git(self.repo_root, spec_git) if spec_git else legacy_spec()
-        self.input = load_historical_input(self.repo_root, shared_root=shared_root, spec=self.spec)
+        self.coordination_projection_enabled = coordination_projection_enabled
+        if spec is not None and spec_git is not None:
+            raise ValueError("historical_spec_authority_ambiguous")
+        self.spec = spec if spec is not None else (HistorySpec.from_git(self.repo_root, spec_git) if spec_git else legacy_spec())
+        self.input = historical_input if historical_input is not None else load_historical_input(
+            self.repo_root, shared_root=shared_root, spec=self.spec)
         self.source_head = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=self.repo_root, text=True
         ).strip()
@@ -633,6 +640,10 @@ class DonchianHistoricalReplay:
     @property
     def lock_path(self) -> Path:
         return _resolve_run_child(self.run_root, "writer.lock")
+
+    @property
+    def coordination_projection_path(self) -> Path:
+        return _resolve_run_child(self.run_root, "coordination_projection.json")
 
     def _decision_time(self, completed: datetime, ordinal: int, phase: str) -> datetime:
         del phase
@@ -812,18 +823,66 @@ class DonchianHistoricalReplay:
 
     def _acquire(self) -> int:
         self.run_root.mkdir(parents=True, exist_ok=True)
+        descriptor = os.open(self.lock_path, os.O_CREAT | os.O_RDWR)
         try:
-            descriptor = os.open(self.lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        except FileExistsError as exc:
+            if os.name == "nt":
+                import msvcrt
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            prior=os.read(descriptor,4096).decode("ascii",errors="strict")
+            if prior and not prior.startswith("schema=historical_replay_os_lease_v1\n"):
+                match=re.fullmatch(r"pid=([0-9]+)\n?",prior)
+                if match is None or self._process_alive_conservative(int(match.group(1))):
+                    raise RuntimeError("historical_replay_legacy_writer_lock_held_or_unknown")
+        except (OSError, IOError) as exc:
+            os.close(descriptor)
             raise RuntimeError("historical_replay_writer_lock_held") from exc
-        os.write(descriptor, f"pid={os.getpid()}\n".encode("ascii"))
+        except BaseException:
+            os.close(descriptor)
+            raise
+        os.ftruncate(descriptor, 0)
+        os.lseek(descriptor,0,os.SEEK_SET)
+        os.write(descriptor, f"schema=historical_replay_os_lease_v1\npid={os.getpid()}\n".encode("ascii"))
+        os.fsync(descriptor)
         return descriptor
 
-    def _release(self, descriptor: int) -> None:
-        os.close(descriptor)
-        self.lock_path.unlink(missing_ok=True)
+    @staticmethod
+    def _process_alive_conservative(pid: int) -> bool:
+        if pid <= 0: return True
+        if os.name == "nt":
+            import ctypes
+            kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+            kernel.OpenProcess.restype=ctypes.c_void_p
+            handle=kernel.OpenProcess(0x1000,False,pid)
+            if not handle: return ctypes.get_last_error()!=87
+            kernel.CloseHandle.argtypes=[ctypes.c_void_p]
+            kernel.CloseHandle(handle)
+            return True
+        try: os.kill(pid,0); return True
+        except ProcessLookupError: return False
+        except PermissionError: return True
 
-    def run(self, *, max_events: int | None = None) -> Mapping[str, Any]:
+    def _release(self, descriptor: int) -> None:
+        try:
+            if os.name == "nt":
+                import msvcrt
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
+
+    def run(self, *, max_events: int | None = None,
+            before_event: Callable[[int, Mapping[str, Any]], bool] | None = None,
+            after_event: Callable[[int, Mapping[str, Any]], None] | None = None) -> Mapping[str, Any]:
+        if after_event is not None and not self.coordination_projection_enabled:
+            raise ValueError("historical_coordination_projection_not_enabled")
         preexisting_material = self.run_root.exists()
         descriptor = self._acquire()
         try:
@@ -910,6 +969,9 @@ class DonchianHistoricalReplay:
             )
             try:
                 for row in remaining:
+                    next_cursor=len(artifact["events"])+1
+                    if before_event is not None and before_event(next_cursor,row._asdict()) is False:
+                        break
                     event = row.event_time.to_pydatetime()
                     decision = row.available_time.to_pydatetime()
                     next_row = evaluation_rows.loc[evaluation_rows["event_time"] == row.available_time]
@@ -976,6 +1038,19 @@ class DonchianHistoricalReplay:
                             )
                         previous_decision = decision
                         _atomic(self.artifact_path, artifact)
+                        if self.coordination_projection_enabled:
+                            committed={
+                                "schema_version":"btc_donchian_coordination_projection_v1",
+                                "cursor":len(artifact["events"]),
+                                "event":deepcopy(artifact["events"][-1]),
+                                "venue":deepcopy(runner.venue.state),
+                                "ledger":deepcopy(runner.controller._state.get("ledger_reconciliation",{}).get("account_ledger_replay")),
+                                "artifact_identity_digest":artifact["identity_digest"],
+                            }
+                            committed["sha256"]=_sha(committed)
+                            _atomic(self.coordination_projection_path,committed)
+                            if after_event is not None:
+                                after_event(len(artifact["events"]),committed)
                     except (OkxDemoPaperRuntimeError, ProtectionTriggerAmbiguous, ValueError) as exc:
                         blocker = f"{type(exc).__name__}:{exc}"
                         if blocker not in artifact["blockers"]:

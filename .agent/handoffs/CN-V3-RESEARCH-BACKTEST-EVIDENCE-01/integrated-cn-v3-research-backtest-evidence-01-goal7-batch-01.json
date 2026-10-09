@@ -1,0 +1,179 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-cn-v3-research-backtest-evidence-01-goal7-batch-01",
+  "ticket_id": "CN-V3-RESEARCH-BACKTEST-EVIDENCE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "a_share_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "domain": "cn_equity",
+  "producer_branch": "agent/integrator/integrate-goal7-batch-01",
+  "base_commit": "6ee6c4439f6bf6e8a8209ca6a919ccd48f896624",
+  "deliverable_commit": "13e300f78722e1baa12ee1403ad1bdfc467c54fe",
+  "created_at": "2026-07-24T12:10:46Z",
+  "expires_at": "",
+  "depends_on": [
+    "rejected-cn-v3-research-backtest-evidence-01-d1ac1451"
+  ],
+  "supersedes": [],
+  "transition_for": "rejected-cn-v3-research-backtest-evidence-01-d1ac1451",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_cn/application/closed_loop.py",
+      "sha256": "3deeda19dc5ffc1955635fc3692a9756af48e9a48a45f3eea48ec0c4dd771af6",
+      "schema_version": "cn_signal_forecast_target_closed_loop_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/application/research_pipeline.py",
+      "sha256": "86d59534f309fd15d4087b4d765955ef1df5e64f13e8e1d1738d959cce180580",
+      "schema_version": "cn_research_pipeline_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/backtest/__init__.py",
+      "sha256": "a0d0100aa7ab4fff42bcea960de8f32c9b2f06ac3975a840b79c0de0dfd4ae45",
+      "schema_version": "cn_backtest_package_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/backtest/costs.py",
+      "sha256": "b4313d4c6ff3775048465eda72fe740d99f7e8b6e2a17fbe09be2e6919ad7d3b",
+      "schema_version": "cn_cost_stress_scenarios_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/backtest/engine.py",
+      "sha256": "3c318e9568cc432f390c479a922338451ba9e1379ed6272801117beb82df96d8",
+      "schema_version": "cn_event_driven_backtest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/backtest/events.py",
+      "sha256": "cd6eb5d8a136c0d0d24ad39cb6553eb6416c81efdc886ae08826aa9070cdf56b",
+      "schema_version": "cn_pit_backtest_event_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/backtest/evidence.py",
+      "sha256": "4357d33d5576e53e85e5855547cfcc02eb3cbcc815581874237f384a445ca0aa",
+      "schema_version": "cn_backtest_evidence_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/research/__init__.py",
+      "sha256": "d0e080e6e4024deaa34a8b659acdf7ae565eec5765d79759fa538b7840e2201a",
+      "schema_version": "cn_research_package_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/research/validation.py",
+      "sha256": "8452637aa792796c8b1e801ef464d2ecd4daaf609a9d0ba7aea9ba298895d001",
+      "schema_version": "cn_research_validation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/strategy/__init__.py",
+      "sha256": "7a035f14555f5fd7e7e28f14c358075b276d8eb3f22b8d01ab97d6fa403c1912",
+      "schema_version": "cn_strategy_package_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/strategy/contracts.py",
+      "sha256": "2779fcd43bf69b7d610f2b47ccfe4077dcc4177d56aad502304b952e4f7827a5",
+      "schema_version": "cn_strategy_contracts_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cn_equity/test_research_backtest_evidence.py",
+      "sha256": "460655485d59f95893bb06a05d5965ebd768e19a98d416837842e7dd9fc64ef2",
+      "schema_version": "cn_research_backtest_evidence_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/cn_equity/test_research_backtest_evidence.py [integration HEAD from system TEMP CWD: 15 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity/test_research_backtest_evidence.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/cn_equity [system TEMP CWD attempt: 100 passed, 1 failed because pre-existing test_market_rule_consumer.py reads a repo-relative source path]",
+      "result": "failed",
+      "evidence_path": "tests/cn_equity/test_market_rule_consumer.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/cn_equity [repo-root rerun on integration HEAD: 101 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/shared_platform [integration HEAD from system TEMP CWD: 13 passed]",
+      "result": "passed",
+      "evidence_path": "tests/shared_platform"
+    },
+    {
+      "command": "py -3 -m py_compile <exact 12-path CN G07 Python touch set> [PYTHONPYCACHEPREFIX=<system-temp>]",
+      "result": "passed",
+      "evidence_path": "quant_cn"
+    },
+    {
+      "command": "producer rejected event validate; source business d1ac1451b684058c15e5673b17a90854f79c2782; source final 853105b81d06209e9f308350a5c1a2bbac61d03c; actual integration commits 1a45169a532da4b76e8852bc8a6eac2e892d0562 and 13e300f78722e1baa12ee1403ad1bdfc467c54fe; committed-byte SHA-256 exact",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/CN-V3-RESEARCH-BACKTEST-EVIDENCE-01/rejected-cn-v3-research-backtest-evidence-01-d1ac1451.json"
+    },
+    {
+      "command": "quant_cn/execution/__init__.py absent from final integration tree and base..integration history",
+      "result": "passed",
+      "evidence_path": "quant_cn/backtest/engine.py"
+    }
+  ],
+  "blockers": [
+    "cn_dataready_current_main_handoff_missing",
+    "cn_dataready_current_main_manifest_missing",
+    "cn_dataready_old_two_security_pilot_not_accepted",
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "cn_market_rule_old_two_security_pilot_not_accepted",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "domain_read_model_missing",
+    "real_data_backtest_evidence_not_produced",
+    "fixture_research_only_not_promotion_evidence",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "classification:goal7_code_integration_blocker=false",
+    "classification:fixture_evidence_contract=quality_checked",
+    "classification:current_verdict=blocked"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

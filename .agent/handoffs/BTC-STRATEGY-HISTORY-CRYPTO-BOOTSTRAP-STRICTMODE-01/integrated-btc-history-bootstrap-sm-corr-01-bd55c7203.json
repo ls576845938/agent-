@@ -1,0 +1,91 @@
+{
+  "base_commit": "7258fdd8da87639faab74ff8cefe7355ad79fb40",
+  "blockers": [
+    "owner:main_sync correction_integration_commit_not_integrated_into_registered_main",
+    "quality_checked_frontend_acceptance_correction_is_not_promotion_evidence",
+    "user_authorization_excludes_artifact_rebuild_backend_restart_runtime_start_or_stop_private_order_live_transfer_withdraw_actions",
+    "promotion_paper_live_private_order_broker_withdraw_real_order_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-07-31T02:48:22Z",
+  "deliverable_commit": "bd55c7203ab90a495d21d3851b8d511ae7e52ce3",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_crypto_bootstrap_e2e_v1",
+      "sha256": "f4e50eccec836a0de62a1338352196cf4a0c235b21b1155a3a7e9d3231eecb2d",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-history-bootstrap-sm-01-corr-4995e25f7"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-history-bootstrap-sm-corr-01-bd55c7203",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-history-boot-sm-corr-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "integrated-btc-history-crypto-bootstrap-sm-01-e6c996e0d"
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <original published, original integrated, corrected published events> [all status=valid; corrected supersedes/depends_on chain matched exactly]",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CRYPTO-BOOTSTRAP-STRICTMODE-01/published-btc-history-bootstrap-sm-01-corr-4995e25f7.json",
+      "result": "passed"
+    },
+    {
+      "command": "base/deliverable/handoff ancestry + sorted exact 1-path set + raw git cat-file blob SHA-256 audit [1/1 matched]",
+      "evidence_path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff a3e9c6aaa4b1965df84c9c7903ddf0f7ea915a2 [merge bd55c7203ab90a495d21d3851b8d511ae7e52ce3; zero conflicts]",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CRYPTO-BOOTSTRAP-STRICTMODE-01/published-btc-history-bootstrap-sm-01-corr-4995e25f7.json",
+      "result": "passed"
+    },
+    {
+      "command": "GET http://127.0.0.1:3000/frontend-identity.json [HTTP 200; served identity exactly matched base/current registered-main frontend identity; promotion/paper/live/private/order/network/secret flags all false; no process start or stop]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts --list [9 tests in 1 file; existing canonical main server reused]",
+      "evidence_path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts [9 passed in 38.5s; reuseExistingServer; no process start or stop]",
+      "evidence_path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check <approved base> HEAD -- <corrected frontend spec and append-only handoffs>; scoped safe_status.py",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CRYPTO-BOOTSTRAP-STRICTMODE-01/integrated-btc-history-bootstrap-sm-corr-01-bd55c7203.json",
+      "result": "passed"
+    },
+    {
+      "command": "backend or artifact rebuild/restart; runtime start/stop; private/order/live/broker/transfer/withdraw/secret actions",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-HISTORY-CRYPTO-BOOTSTRAP-STRICTMODE-01",
+  "transition_for": "published-btc-history-bootstrap-sm-01-corr-4995e25f7"
+}

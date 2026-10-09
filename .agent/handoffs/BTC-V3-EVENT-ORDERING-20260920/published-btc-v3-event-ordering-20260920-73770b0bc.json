@@ -1,0 +1,46 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-event-ordering-20260920-73770b0bc",
+  "ticket_id": "BTC-V3-EVENT-ORDERING-20260920",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-event-ordering-20260920",
+  "base_commit": "9dad24a4a9467a126a8692737409f776db4bd69f",
+  "deliverable_commit": "73770b0bcda24fecfaab435fe4d8af6de8c88e7d",
+  "created_at": "2026-09-20T06:28:18Z",
+  "expires_at": "",
+  "depends_on": ["rejected-btc-v3-recovery-lifecycle-independent-review-20260920-10d358ca4"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "quant_crypto/application/qlib_offline_replay.py", "sha256": "6379f317d4e238a592d821356cabd7613d8eab46ba4d69fb9d2c999a0357ddf6", "schema_version": "qlib_offline_event_order_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_strategy_v3_event_ordering.py", "sha256": "b6bfe2ba884f16decb89a642814210c76923ab8c1c14b96e8bdab386ca27e948", "schema_version": "qlib_offline_event_order_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "tests/fixtures/strategy_v3/offline_contract.json", "sha256": "2f63fc55a5284c1345aa5d80f91913a7827fe63f41f5cd0fdc0d6b63aadf323c", "schema_version": "strategy_v3_qlib_offline_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "report", "path": "docs/operations/strategy-v3-event-ordering-20260920.md", "sha256": "2fa91a339fcfaba6a4a0ad7b78130b1ec1415501b1f1f351960db59e4fd10ed3", "schema_version": "qlib_offline_event_order_report_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "python -B -m pytest -q -p no:cacheprovider --tb=short tests/contracts/test_strategy_v3_event_ordering.py (initial failure-first)", "result": "failed", "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"},
+    {"command": "python -B -m pytest -q -p no:cacheprovider --tb=short fixed V3/V2/V1/no-live matrix at 1b56263c8; exact selectors and basetemp in report", "result": "passed", "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"},
+    {"command": "python -B -m quant_crypto.application.qlib_offline_replay --state-dir C:/Users/LOCAL_USER/AppData/Local/Temp/qs-v3-order-cli-1b56263c8 (first and same-directory repeat)", "result": "passed", "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"}
+  ],
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics source review required; producer fixed matrix 51 passed, strict account risk_eligible retained, no production trading semantics changed",
+    "owner:release main merge, service restart, UI acceptance and deployment are outside this source-only authorization and not performed",
+    "owner:research frozen candidate still has 1392 decisions with zero approvals and zero simulated fills; software fixture acceptance does not prove candidate effectiveness",
+    "safety: runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all false; no secrets, network, accounts, exchange, broker or real orders accessed",
+    "freshness: source tests and isolated CLI ledger bound to committed source 1b56263c8a5a5e1503395812acf7c4b736fe2fa4, not current-main promotion evidence; no shared artifact publication",
+    "governance: planner sparse producer initial scoped dirty empty, no other writer files overwritten; catalog 6ea783731473604875c962acc6338fd868f95b13e2230d62254ef79c0a67f3af"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "base_commit": "6a780dc178206904734fbcf8cd8d2003c4396949",
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "fresh_private_rest_private_ws_funding_and_ledger_reconciliation_required_before_runtime_can_clear_frozen_state",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-11T03:55:00Z",
+  "deliverable_commit": "fc29a83e781cb0218932239b3a1cd8924c9cf812",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_flat_hosted_exit_ws_ownership_v1",
+      "sha256": "eab71add6b5e870d8dd2fa4ed546bca6f46a4ac060dfbc79452d883e15ceec9f",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_incident_recovery_attempt_count_v1",
+      "sha256": "8bf76ec0882088fe7d6177dacbfff23bbab4254aba79a227e9b3bad52bb602a2",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_flat_hosted_exit_ws_ownership_contract_v1",
+      "sha256": "2a335b61bcc6292a2044576f11facb77872534d4bdbadbb9060e3c24ff28730a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_incident_recovery_attempt_count_contract_v1",
+      "sha256": "16c96e0ce00e312e6107f392d7bdacd351d261cd9d85c768d3068363116ed9a9",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-flat-recovery-ws-ownership-and-count-08-48b7dbd1c-hashfix"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-flat-recovery-ws-ownership-and-count-08-fc29a83e7",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-flat-ws-ownership-count08-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "focused ownership/count regressions: 15 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py; tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py: 293 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py: 103 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py: 23 passed; producer single failure not reproduced",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 6a780dc178206904734fbcf8cd8d2003c4396949 HEAD",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FLAT-RECOVERY-WS-OWNERSHIP-AND-COUNT-08",
+  "transition_for": "published-btc-okx-demo-flat-recovery-ws-ownership-and-count-08-48b7dbd1c-hashfix"
+}

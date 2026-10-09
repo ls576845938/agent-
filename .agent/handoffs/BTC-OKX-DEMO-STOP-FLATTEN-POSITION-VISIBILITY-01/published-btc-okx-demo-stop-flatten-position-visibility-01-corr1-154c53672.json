@@ -1,0 +1,171 @@
+{
+  "base_commit": "15b0a11fce1e0c63b015cbaca529c74d2ecda6e9",
+  "blockers": [
+    "independent_integrator_required",
+    "canonical mocked Playwright deferred because port 3000 was serving another canonical identity (observed baseline c5ce3df4, not this ticket base)",
+    "services_not_started",
+    "demo_not_started",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_rebuild_required",
+    "all paper/live/private/order/real-order/transfer/withdraw permissions remain false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-19T01:08:34Z",
+  "deliverable_commit": "154c53672a97bd25ac3fdb444350f343abfac17b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_v1",
+      "sha256": "a330ab677dd0dab39c1c8be2fcb07445ce47a60fbb69c2e889f274735c4074d1",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_api_v1",
+      "sha256": "0344c8e7a66ef2a104423e4d36dd6bc03e7c4831327f392c80a82e5f4ff359c3",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_service_v1",
+      "sha256": "085ec7fff38f00041562eb107933913006577dec9d8e802501e02fa869629080",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_console_v1",
+      "sha256": "76f1c28a8a705de1c3c3395b56a537f89737785138c0920b7bc826aea33ce84d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_workspace_v1",
+      "sha256": "93cdceea8a8ded91ba0c97c60b8982205536f17dd3b1cd9de72221b39d39c7ce",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_css_v1",
+      "sha256": "1dc1f6edd52c678602125d2f58c1db7997829dbd4a6332b96324c54f6e75b964",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_runtime_contract_tests_v1",
+      "sha256": "f91f74a895498c6b79dae0c447af46abc0c216cb8809125a1268c4ea81aebb12",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_service_tests_v1",
+      "sha256": "79ec72bcc1a3ea49c65dc5df05249bce8ad86260f3ae078902376bc3c7ea8bf1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_api_tests_v1",
+      "sha256": "04a26415e16fdff318a9d788fd87f8121497ada8005ccbdec65efdcf7a0e2c8c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_console_e2e_v1",
+      "sha256": "b46f0401c674ae2d97556ecf8a796dc0760e5d75a8c06eb56552a84816494753",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "c654f4b4f04e16c5dc22a62c83cf34593851381424d279cc7d0e6ba43a24d893",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-stop-flatten-position-visibility-01-corr1-154c53672",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-stop-flatten-position-visibility-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-demo-stop-flatten-position-visibility-01-98c590760"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_paper_runtime.py -k stop_and_flatten",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPATH=registered-main py -3 -m pytest -q -p no:cacheprovider backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "canonical mocked Playwright btc-demo-console.spec.ts",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py backend/app/api/btc_demo_runtime.py backend/app/services/btc_demo_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 45e249f9bfb41ac65dcd14921c1a4e747fd93f0f 154c53672a97bd25ac3fdb444350f343abfac17b -- declared touch set",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check && npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-STOP-FLATTEN-POSITION-VISIBILITY-01",
+  "transition_for": ""
+}

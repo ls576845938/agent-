@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-delivery-currency-fixed-20260924-03",
+  "ticket_id": "candidate-delivery-backend-20260924",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-delivery-backend-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "891d79f316d3850a80578ae132a670a476d4e02b",
+  "created_at": "2026-09-24T15:08:35Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "candidate-delivery-source-20260924-01"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/candidate-delivery-currency-correction-20260924.md",
+      "sha256": "31c65d80368f6fbe0ae4d18744100cd16bbe42aeed679a91c5fdddf9d145867d",
+      "schema_version": "candidate_delivery_currency_correction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/models.py",
+      "sha256": "003008c5541ca068f73bdf5188c27c5ef84efb0809152feccf815bc921e38412",
+      "schema_version": "strategy_delivery_package_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "sha256": "188521688ffa44cb0f8b194b76d4bb75a10fe149d03742185ae04dc7bb0ac41d",
+      "schema_version": "candidate_delivery_ui_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest tests/contracts/test_strategy_delivery.py tests/contracts/test_candidate_delivery_api.py tests/api/test_btc_public_market_readonly.py tests/contracts/test_btc_strategy_registry.py: 72 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "node --test frontend/scripts/test-candidate-delivery.mjs frontend/scripts/test-candidate-handoff.mjs: 20 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "tsc --noEmit; vite build",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "independent re-review; integration and publication",
+      "result": "not_run",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    }
+  ],
+  "blockers": [
+    "independent_currency_and_wording_re_review_pending",
+    "unclassified_independent_integration_not_performed",
+    "user_scope_no_enablement_no_publication",
+    "runtime_entrypoints_do_not_consume_management_catalog",
+    "fixed_qlib_original_admission_blockers_preserved"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

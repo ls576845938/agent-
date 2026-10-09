@@ -1,0 +1,47 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-visual-polish-06-correction-01-51629354d",
+  "ticket_id": "STRATEGY-WORKBENCH-VISUAL-POLISH-06-INTEGRATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/visual-polish-06-int01",
+  "base_commit": "114c232b4016404fe32afb4bb99ebffa1b78abdb",
+  "deliverable_commit": "02f552c89211d560a02e7d14e4c0800b7204f67b",
+  "created_at": "2026-08-14T08:40:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-strategy-workbench-visual-polish-06-d7858164-correction-01",
+    "integrated-strategy-workbench-visual-polish-06-integration-01-043b5a99"
+  ],
+  "supersedes": ["integrated-strategy-workbench-visual-polish-06-integration-01-043b5a99"],
+  "transition_for": "published-strategy-workbench-visual-polish-06-d7858164-correction-01",
+  "deliverables": [
+    {"path": "frontend/src/workspaces/strategy-workbench.css", "type": "code", "sha256": "3893e2abdb4901cf2e76dd43d7316b7691c2e7ba5540bd8579aa2d87af4b1523", "schema_version": "strategy_workbench_visual_polish_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/e2e/strategy-workbench.spec.ts", "type": "test_evidence", "sha256": "6f3d6f532a066a639e546481e7b8e4cc5843260a2513b3c37959743b5ef90e93", "schema_version": "strategy_workbench_visual_polish_e2e_v1", "readiness_class": "quality_checked"},
+    {"path": "design-qa.md", "type": "test_evidence", "sha256": "e39ec7eea242e2f6ecff76a271b8dc4560c7d25f932a3be2fa6b007c0f7c141a", "schema_version": "strategy_workbench_visual_qa_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input published-strategy-workbench-visual-polish-06-d7858164-correction-01.json", "result": "passed", "evidence_path": "correction envelope status=valid"},
+    {"command": "node node_modules/@playwright/test/cli.js test e2e/strategy-workbench.spec.ts --config playwright.config.ts --reporter=line", "result": "passed", "evidence_path": "4 passed (49.3s); GET-only fixture; no non-GET requests"},
+    {"command": "node node_modules/@playwright/test/cli.js test e2e/strategy-workbench.spec.ts --config C:/tmp/strategy-workbench-visual-polish-06/visual-screenshot.config.ts --grep renders --reporter=line", "result": "passed", "evidence_path": "1 passed; screenshot=C:/tmp/strategy-workbench-visual-polish-06/strategy-workbench-visual-1440x960.png"},
+    {"command": "git diff --check -- declared touch set", "result": "passed", "evidence_path": "no whitespace errors"},
+    {"command": "npm.cmd run identity:check && npm.cmd run identity:test && node scripts/start-current-main.mjs --check", "result": "passed", "evidence_path": "identity checks pass before final identity refresh; final refresh remains last tracked change"}
+  ],
+  "blockers": [
+    "backend_runtime_main_drift_409_intentionally_fail_closed; backend restart prohibited by ticket",
+    "artifact_read_model_backend_restart_not_applicable_to_user_scoped_visual_only_ticket",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_demo_start_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

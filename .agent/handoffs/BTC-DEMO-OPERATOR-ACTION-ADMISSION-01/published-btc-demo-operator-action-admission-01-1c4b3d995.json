@@ -1,0 +1,126 @@
+{
+  "base_commit": "c8ffa7f3efe261edcf97a145fefab8878e6eea3b",
+  "blockers": [
+    "owner:integrator independent integration required for demo_execution_semantics",
+    "owner:integrator backend restart required after integration",
+    "owner:integrator canonical frontend mocked suite deferred_to_integrated_current_main:32_total_26_passed_6_failed_against_pre-deliverable_registered_server",
+    "frontend_identity_refresh_deferred:frontend/public/frontend-identity.json is outside the frozen producer touch set; post-deliverable identity check reports fingerprint mismatch",
+    "promotion_artifact_not_rebuilt_and_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-21T04:01:28Z",
+  "deliverable_commit": "1c4b3d9958ab67580a0cff67f3a663d26bf5a75b",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_control_service_v1",
+      "sha256": "e687105e8adef0212a22bfd6154e82b8c1e1b4633530248dff38fc327dc6de1c",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_control_service_contract_tests_v1",
+      "sha256": "2d2327650db6a5ec61e3f16896e820bc8f07077d71676ec03e9043780c61dd8f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_action_admission_ui_v1",
+      "sha256": "c6f6db165d59d1cb530656c2528f35d584756ed8530621f2a50c6d1976f8f398",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_control_types_v1",
+      "sha256": "1f4b8118187a2f07dfdac58cefb39228a6b3551af0eb568a0e01bf348e46e63a",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_action_admission_contract_tests_v1",
+      "sha256": "23904e3d7d71591f862311582f1590c7fbf6646ee192e738beee8955ff159e21",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-operator-action-admission-01-1c4b3d995",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-operator-action-admission-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py::test_status_keeps_historical_transport_error_out_of_current_incident_before_fresh_attempt --basetemp C:\\tmp\\qsx_operator_control_ff",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py::test_status_keeps_historical_transport_error_out_of_current_incident_before_fresh_attempt backend/tests/test_btc_demo_runtime_service.py::test_status_projects_network_transport_separately_from_account_risk backend/tests/test_btc_demo_runtime_service.py::test_status_keeps_current_private_ws_loss_as_network_transport_even_with_stopped_worker --basetemp C:\\tmp\\qsx_operator_control_fix",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp C:\\tmp\\qsx_operator_control_after",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/services/btc_demo_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line [32 total; 26 passed; 6 deferred_to_integrated_current_main because canonical port 3000 served the pre-deliverable registered main]",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check [pre-commit passed; post-deliverable check blocked by frozen identity touch-set exclusion and fingerprint mismatch]",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-OPERATOR-ACTION-ADMISSION-01",
+  "transition_for": ""
+}

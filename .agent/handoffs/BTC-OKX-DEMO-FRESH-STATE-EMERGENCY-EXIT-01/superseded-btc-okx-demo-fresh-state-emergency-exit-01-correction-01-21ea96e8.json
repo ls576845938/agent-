@@ -1,0 +1,83 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "superseded-btc-okx-demo-fresh-state-emergency-exit-01-correction-01-21ea96e8",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-EMERGENCY-EXIT-01",
+  "event_type": "superseded",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-fresh-state-emergency-exit-01",
+  "base_commit": "558ca1a79fe4e8915eb4445e3f2b54f164e576b8",
+  "deliverable_commit": "21ea96e89f91cb43300c25a44aef3c2cc7f73f34",
+  "created_at": "2026-08-09T12:00:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "superseded-btc-okx-demo-fresh-state-emergency-exit-01-82af4ce7",
+    "published-btc-okx-demo-fresh-state-emergency-exit-01-132393217"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "b050081f64388310aadd770435bf674974403ee63837c73d1a2b433bc940282c",
+      "schema_version": "okx_demo_paper_runtime_fresh_state_emergency_exit_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "55216b82967a52928c2b04a2c4cfdcbcf8752d4bcd50314b8850723a71ae666f",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first before correction: py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --disable-warnings --maxfail=6 -k fresh_state_emergency_exit [3 failed, 6 passed; fixed old-head fake WS receipt]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --disable-warnings --maxfail=1 -k fresh_state_emergency_exit [9 passed, 228 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --disable-warnings --maxfail=1 [237 passed in 40.94s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py -q --disable-warnings --maxfail=1 [32 passed in 0.99s]; py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check -- tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py; tests/contracts/test_btc_okx_demo_execution_watchdog.py; tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "final correction HEAD focused recheck after producer commit [9 passed, 228 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "current_main_not_integrated: correction remains on dedicated worktree branch",
+    "production_runtime_unchanged: only test fake WS source_head binding changed",
+    "handoff_final_head_recheck_pending_until_this_event_commit: rerun focused at final handoff HEAD is required and recorded in the delivery report",
+    "real_demo_not_run: no secret, private WS, private GET, order POST, service, or endpoint access",
+    "promotion_paper_live_unlock_remain_blocked_and_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

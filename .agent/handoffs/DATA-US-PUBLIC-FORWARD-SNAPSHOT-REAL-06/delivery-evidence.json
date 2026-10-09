@@ -1,0 +1,216 @@
+{
+  "schema_version": "data_us_public_forward_snapshot_real_06_delivery_evidence_v1",
+  "ticket_id": "DATA-US-PUBLIC-FORWARD-SNAPSHOT-REAL-06",
+  "change_risk": "unclassified",
+  "created_at_utc": "2026-08-06T03:50:40Z",
+  "status": "published_quality_checked_research_only",
+  "base_commit": "23723c7b05c5b7d651d0f979a64cb923894dc6a1",
+  "collection_source_commit": "23723c7b05c5b7d651d0f979a64cb923894dc6a1",
+  "producer_branch": "agent/data_steward/data-us-public-forward-snapshot-real-06",
+  "touch_set": {
+    "tracked": [
+      ".agent/data_manifests/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1.json",
+      ".agent/handoffs/DATA-US-PUBLIC-FORWARD-SNAPSHOT-REAL-06/**"
+    ],
+    "ignored_staging": ".tmp/data-us-public-forward-snapshot-real-06/**",
+    "external_version": "datasets/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1/**",
+    "initial_dirty_paths": [],
+    "overlapping_or_overwritten_paths": [],
+    "unmerged_other_agent_changes_consumed": []
+  },
+  "preflight": {
+    "sparse_checkout": true,
+    "catalog_hash": "127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+    "active_pitfall_ids": [
+      "GOV-CONCURRENCY-001",
+      "GOV-DIRTY-001",
+      "GOV-ENGINEERING-CIRCUIT-001",
+      "GOV-HANDOFF-001",
+      "GOV-OBJECTIVE-001",
+      "GOV-PITFALL-001",
+      "GOV-ROOT-001",
+      "GOV-STORAGE-001",
+      "GOV-WORKTREE-001",
+      "QSYS-GATE-001",
+      "QSYS-SECURITY-001",
+      "GOV-PROMPT-001",
+      "GOV-WINDOWS-001"
+    ],
+    "playbooks_read": [
+      "AGENTS.md",
+      "docs/knowledge/README.md",
+      "docs/knowledge/00_codex_rules/quant_system_non_negotiables.md",
+      "docs/agent_playbooks/shared_pitfalls.md",
+      "docs/agent_playbooks/data_steward_pitfalls.md",
+      "docs/agent_playbooks/delivery_risk_policy.json",
+      "docs/knowledge/01_data_layer/adjustment_and_survivorship_bias.md",
+      "docs/knowledge/01_data_layer/database_schema_rules.md",
+      "docs/knowledge/01_data_layer/data_quality_checks.md",
+      "docs/knowledge/01_data_layer/data_reliability_rules.md",
+      "docs/knowledge/01_data_layer/point_in_time_data.md",
+      "docs/knowledge/05_monitoring_replay/audit_trail.md"
+    ],
+    "raw_pitfall_logs_read": [],
+    "team_context": "discovery_only_exit_1_with_expected_real_06_dependency_and_integrated_ua_compat_visible"
+  },
+  "upstream": {
+    "handoff_path": ".agent/handoffs/INTEGRATE-US-FRED-PUBLIC-UA-COMPAT-01/integrated-us-fred-public-ua-compat-01-bbcf5b8165.json",
+    "event_id": "integrated-us-fred-public-ua-compat-01-bbcf5b8165",
+    "validation": "valid",
+    "committed_sha256": "d81e534e0606a495a4a3660595794f3d553fa575c95b5679621c356bb5dc7f91"
+  },
+  "external_root": {
+    "path": "D:/vibe coding/Obsidian/量化系统/shared-data-us-paper",
+    "owner_marker": ".qs_shared_data_root_owner.json",
+    "owner_marker_sha256_before": "7d7a28f8a2f46051a11f282805129d235147a11917462e00133e7fa49efc128c",
+    "owner_marker_sha256_after": "7d7a28f8a2f46051a11f282805129d235147a11917462e00133e7fa49efc128c",
+    "free_space_gb_before": 92.14,
+    "target_collision_before": false,
+    "owner_marker_modified": false
+  },
+  "collection": {
+    "session_id": "us-public-forward-real-06-20260806T034243Z",
+    "created_at_utc": "2026-08-06T03:42:43Z",
+    "collection_plan_sha256": "ad3b0a7bcf81269f5c6891b69d8e7fbcc1fa65d050acfcd243e20d5e7270b188",
+    "completion_marker_sha256": "a4352198f7074c1d99f3e6814c233181d49d222a8a764bd73bfc3a46837cbe97",
+    "completed_at_utc": "2026-08-06T03:46:41Z",
+    "last_completed_xnys_session": "2026-08-05",
+    "official_xnys_close_utc": "2026-08-05T20:00:00Z",
+    "xnys_provider": "exchange_calendars",
+    "exact7_verified": true,
+    "verified_request_count": 7,
+    "required_request_count": 7,
+    "reused_real_05_staging_or_receipts": false
+  },
+  "network_attempts": [
+    {
+      "provider": "fred_public_graph_csv",
+      "request_scope": "WALCL,WTREGEN,RRPONTSYD,BAMLC0A0CM,DGS10,DGS2",
+      "attempt": 1,
+      "timeout_seconds_per_request": 45,
+      "result": "pass",
+      "verified_receipts": 6,
+      "network_called": true
+    },
+    {
+      "provider": "yahoo_chart_v8",
+      "request_scope": "QQQ:2010-01-01:2026-08-05:1d",
+      "attempt": 1,
+      "timeout_seconds": 45,
+      "result": "TimeoutError",
+      "verified_receipt_created": false
+    },
+    {
+      "provider": "yahoo_chart_v8",
+      "request_scope": "QQQ:2010-01-01:2026-08-05:1d",
+      "attempt": 2,
+      "timeout_seconds": 45,
+      "result": "pass",
+      "verified_receipts": 1,
+      "network_called": true,
+      "response_sha256": "fc7d43b015c0bc4ab7d6da2525431743e7a836e71ec9c8e8e12b7739f08229ad"
+    }
+  ],
+  "source_inputs": {
+    "yahoo_market_sha256": "81c9e77f3601119c04ade9b0ede9416f8813df5e850aba828b4eced8e5e378b6",
+    "yahoo_report_sha256": "c7ce965ab33c71b5af4e6085df8344744c64a6a94d2c5a0a3db13848f474bd8d",
+    "fred_macro_sha256": "f29b49d1d80c4db783b7572048b6cefa26d7fe9d08a7158051fb0220b007e11e",
+    "fred_report_sha256": "2cdb7fb46cb35ac019d93e041a43d0a356d4ad62ff63efa92f77e24a90f3cb52"
+  },
+  "quality": {
+    "status": "quality_checked",
+    "market_rows": 4172,
+    "market_start": "2010-01-04T00:00:00Z",
+    "market_end": "2026-08-05T00:00:00Z",
+    "market_missing_count": 0,
+    "market_duplicate_count": 0,
+    "market_non_finite_count": 0,
+    "recent_xnys_sessions_checked": 5,
+    "macro_rows": 789,
+    "macro_start": "2023-08-07T00:00:00Z",
+    "macro_end": "2026-08-05T00:00:00Z",
+    "macro_duplicate_count": 0,
+    "macro_non_finite_count": 0,
+    "macro_source_missing_count_before_forward_fill": 20375,
+    "macro_fill_policy": "per_series_forward_fill_no_backfill_on_union_observation_grid",
+    "fred_latest_common_source_date": "2026-07-29"
+  },
+  "dataset": {
+    "dataset_id": "us-equity-public-forward-snapshot",
+    "dataset_version": "us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1",
+    "storage_relative_path": "datasets/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1",
+    "manifest_path": ".agent/data_manifests/us-equity-public-forward-snapshot/us-equity-public-forward-snapshot-qqq-fred-through-20260805-v1.json",
+    "manifest_sha256_before_commit": "89dfbc54001f33b76306537971a170085192a0cb50c6b4670ad17401800ffa41",
+    "publication_marker_sha256": "89dfbc54001f33b76306537971a170085192a0cb50c6b4670ad17401800ffa41",
+    "aggregate_sha256": "e47a8f850de68350b81a095020c2674ce6c1b5404164039aedd655b0b20f3e82",
+    "file_count": 8,
+    "total_bytes": 1163798,
+    "schema_name": "us_equity_public_forward_snapshot_lineage_v1",
+    "readiness_class": "quality_checked",
+    "quality_status": "pass_with_research_only_warnings",
+    "promotion_evidence_ready": false
+  },
+  "output_hashes": {
+    "market_qqq_1d.parquet": "54983b22493dd0aa718ad726306620d26f9bfb2444e4204b66fb48656b1ea045",
+    "fred_macro_latest_vintage.csv": "2794f824ef2a536a34018e8fc0a102ca8e4f68a5bc99f010e38387d9fa375e30",
+    "quality_report.json": "17bdd41f1428435715b96f3e232e6348e95fbc813baa859c1a37252975b12479",
+    "lineage.json": "49ccc4345b3581bb4f2d3b3511ef2369cc1f5c2948a90881018ba2f22b5f43c4",
+    "yahoo/QQQ_1D.csv": "fddbba0b8712811b2e8434a453208460325dac5adc1a57f248afa4fd5ec9e309",
+    "yahoo/lineage.json": "674c38155752aa3669d8ae4735c7f43e761c87f307e463f1ca7ecd793dd873ac"
+  },
+  "resolver": {
+    "worktree_manifest_full_hash_resolve": "passed",
+    "committed_git_spec_full_hash_resolve": "passed",
+    "committed_manifest_commit": "996374d89ea9aec4c3dfeac6d7a7728b20ed77ac",
+    "initial_mistyped_git_spec_result": "blocked_without_external_mutation"
+  },
+  "tests": [
+    {
+      "command": "initial full related pytest with missing basetemp parent",
+      "result": "environment_setup_failed",
+      "summary": "14 passed, 43 setup errors: WinError 3 basetemp parent missing"
+    },
+    {
+      "command": "full related pytest under worktree basetemp",
+      "result": "partial_environment_failure",
+      "summary": "56 passed, 1 failed: nested temporary Git repo Filename too long"
+    },
+    {
+      "command": "isolated shared-data cross-branch resolver test under short task basetemp",
+      "result": "passed",
+      "summary": "1 passed in 1.18s"
+    },
+    {
+      "command": "py -3 -m pytest tests/data/test_public_snapshot_collection.py tests/contracts/test_us_equity_yahoo_adjusted_eod_import.py tests/contracts/test_us_equity_fred_macro_import.py tests/contracts/test_us_equity_public_forward_snapshot.py tests/agent_governance/test_shared_data.py --basetemp <short-task-path> -p no:cacheprovider -q",
+      "result": "passed",
+      "summary": "57 passed in 17.31s"
+    }
+  ],
+  "known_gaps": [
+    "yahoo_survivorship_bias_and_current_adjustment_vintage",
+    "fred_latest_vintage_non_pit_without_realtime_bounds",
+    "historical_counterfactual_replay_not_supported"
+  ],
+  "gate_state": {
+    "promotion_eligible": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "backtest_unlock_allowed": false,
+    "independent_integration_pending": true,
+    "current_head_gate_rebuild_pending": true
+  },
+  "guardrails": {
+    "public_get_only": true,
+    "api_key_or_secret_read": false,
+    "broker_endpoint_used": false,
+    "ib_gateway_used": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "paper_submit_or_cancel_used": false,
+    "live_endpoint_used": false,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "leverage_allowed": false,
+    "real_order_submitted": false
+  }
+}

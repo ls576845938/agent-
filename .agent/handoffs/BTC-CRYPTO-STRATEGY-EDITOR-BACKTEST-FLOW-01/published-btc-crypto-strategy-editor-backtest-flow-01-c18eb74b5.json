@@ -1,0 +1,52 @@
+{
+  "base_commit": "fa406d3626cec0754efccfe6dfb39ad54b524b6c",
+  "blockers": [
+    "owner:integrator producer_deliverable_not_integrated_to_registered_main",
+    "canonical_playwright_deferred_to_integrated_current_main_registered_port_3000_is_not_this_producer_head",
+    "design_qa_implementation_screenshot_deferred_to_integrated_current_main_final_result_blocked",
+    "promotion_artifact_rebuild_required_by_unclassified_change_risk"
+  ],
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "created_at": "2026-08-18T00:00:00Z",
+  "deliverable_commit": "c18eb74b52671f1edf334e0e87d8ea892ec9ef11",
+  "deliverables": [
+    {"path": "frontend/src/workspaces/CryptoWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_parent_controlled_backtest_v1", "sha256": "6b5dec2a980f294879a9b9d7f4a7485ea84804796312978c07ba06d0bc33b692", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_report_projection_v1", "sha256": "5e106d155e84c6ae85249ec24268b0c12f73325ff4c1f707b1367f7c88e4a818", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_canonical_source_guard_v1", "sha256": "037c4c430ad068f11697fc53d489a4cf049ecc01c7fb21c1bf08b5f1d1105593", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/crypto-strategy-editor.css", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_visual_tokens_v1", "sha256": "34e78c658082a4d5a57dd73df92abe6327e9325f3477a2d53e80093786944ccf", "type": "code"},
+    {"path": "frontend/e2e/btc-backtest-workbench.spec.ts", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_controlled_backtest_e2e_v1", "sha256": "565d8e1a7b1bf0bfcc72d27a2264169875711b1b5b40abdbf69ae63ede878bc8", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "quant_frontend_identity_v1", "sha256": "a78dea2f8c9efc817cad9c12589158f09c5c72150c703633f6aeb733ba80bf59", "type": "document"},
+    {"path": "design-qa.md", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_design_qa_v1", "sha256": "951d034b2a55399bbbf94484af5a6087e2c29f7c4e5dcc64b30670255c61f8d1", "type": "document"}
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-btc-crypto-strategy-editor-backtest-flow-01-c18eb74b5",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-crypto-strategy-editor-backtest-flow-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "ticket_id": "BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01",
+  "tests": [
+    {"command": "npm --prefix frontend run lint", "evidence_path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "result": "passed"},
+    {"command": "npm --prefix frontend run build", "evidence_path": "frontend/dist", "result": "passed"},
+    {"command": "git diff --check fa406d3626cec0754efccfe6dfb39ad54b524b6c..c18eb74b52671f1edf334e0e87d8ea892ec9ef11", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:test", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --list", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "passed"},
+    {"command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "not_run"},
+    {"command": "canonical mocked Playwright and 1440x900 implementation screenshot", "evidence_path": "design-qa.md", "result": "not_run"}
+  ],
+  "transition_for": ""
+}

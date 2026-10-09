@@ -1,0 +1,62 @@
+{
+  "base_commit": "98bdec3112f5e314b3022da7e1c84e7d0259ba2e",
+  "blockers": [
+    "registered_main_not_advanced_candidate_only",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T10:00:59Z",
+  "deliverable_commit": "4ee7af94450534bf4864c9cf585e2d01817da328",
+  "deliverables": [
+    {
+      "path": "AGENTS.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_governance_v2",
+      "sha256": "d0a9415b44dc359af12ad095399d5f9ad0d1fb26d3fda1e79118da4853d238d9",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-main-session-optional-agent-routing-01-4d8a3aaa1"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-main-session-optional-agent-routing-01-4ee7af944",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-refresh-protocol-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff validation, producer ancestry, immutable SHA and exact AGENTS touch-set verification",
+      "evidence_path": ".agent/handoffs/MAIN-SESSION-OPTIONAL-AGENT-ROUTING-01/published-main-session-optional-agent-routing-01-4d8a3aaa1.json",
+      "result": "passed"
+    },
+    {
+      "command": "PowerShell governance contract regression: direct main-session execution and optional agent collaboration present; legacy mandatory routing absent",
+      "evidence_path": "AGENTS.md",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff 7b4ecba56e00c5d6a6e2b6505ffd04fe15178b5c; git diff --check on governance touch set",
+      "evidence_path": "AGENTS.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MAIN-SESSION-OPTIONAL-AGENT-ROUTING-01",
+  "transition_for": "published-main-session-optional-agent-routing-01-4d8a3aaa1"
+}

@@ -1,0 +1,90 @@
+{
+  "base_commit": "02babc8f4251b17435b0dfd2aed2bdba86ecb5f9",
+  "blockers": [
+    "producer_failure_first_red_not_observed_on_reused_canonical_bundle; integrated current-main restart required for authoritative browser evidence",
+    "existing_btc_strategy_report_spec_strict_locator_failure_at_line_31_unrelated_to_chart_lifecycle",
+    "canonical_frontend_identity_refresh_deferred_to_integrator",
+    "backend_restart_required_after_integration",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-23T23:41:34Z",
+  "deliverable_commit": "dbf5f3a5d8063c914ecf9e6788b91293d13e1407",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_tradingview_chart_loading_lifecycle_v1",
+      "sha256": "c993a0b298b76f9adc3046265a7194067e25bb9971474cf3d70cfc321b48fd57",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_chart_loading_lifecycle_playwright_v1",
+      "sha256": "92d05ef3498210ef907ec6561f3cd7063cb1b12127570e4d2c7ab585b26a0fbd",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-chart-loading-lifecycle-01-dbf5f3a5",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-chart-loading-lifecycle-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-strategy-report.spec.ts --config=playwright.config.ts --reporter=line -g \"mounts after market\"",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-strategy-report.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts:31",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run check:btc-tradingview",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "failure-first baseline on reused canonical 3000 bundle with gated market-view-before-klines sequence",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CHART-LOADING-LIFECYCLE-01",
+  "transition_for": ""
+}

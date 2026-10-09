@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-ptrade-fidelity-03-99e608586",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-FIDELITY-03-INTEGRATE",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-ptrade-fidelity-03-int",
+  "base_commit": "e45ddae81b2a20bea44a24180fc937c696ea0c2d",
+  "deliverable_commit": "99e608586dbb78ccca9a8e5d854a8b087df09da0",
+  "created_at": "2026-08-13T15:21:07Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-ptrade-fidelity-03-99e608586"],
+  "supersedes": [],
+  "transition_for": "published-strategy-workbench-ptrade-fidelity-03-99e608586",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "type": "code",
+      "sha256": "a6d40a03de3296baf0b7d434f9d61da72ada8dd955ec199763cbc3191273275d",
+      "schema_version": "strategy_workbench_ptrade_fidelity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "e1e04267d8a06566ddd86aad191d0a2f9ae8c40e74c29c5cf7021cedb0bb4161",
+      "schema_version": "strategy_workbench_ptrade_fidelity_styles_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/strategy-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "3dc90bb7a95567ed46a2c2111404ffd648a97f08b3608d70a4f6109e2b71d421",
+      "schema_version": "strategy_workbench_ptrade_fidelity_playwright_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-strategy-workbench-ptrade-fidelity-03-99e608586.json",
+      "result": "passed",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/worktrees/super_developer-strategy-workbench-ptrade-fidelity-03/.agent/handoffs/STRATEGY-WORKBENCH-PTRADE-FIDELITY-03/published-strategy-workbench-ptrade-fidelity-03-99e608586.json"
+    },
+    {
+      "command": "node <registered-main-node_modules>/typescript/bin/tsc --noEmit --project <integrator>/frontend/tsconfig.json --baseUrl <registered-main-node_modules> --typeRoots <registered-main-node_modules>/@types",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx"
+    },
+    {
+      "command": "npm.cmd run lint (integrator sparse worktree)",
+      "result": "failed",
+      "evidence_path": "frontend/node_modules_unavailable_tsc_not_recognized"
+    },
+    {
+      "command": "npm.cmd run build (integrator sparse worktree)",
+      "result": "failed",
+      "evidence_path": "frontend/node_modules_unavailable_vite_not_recognized"
+    },
+    {
+      "command": "node <registered-main-node_modules>/@playwright/test/cli.js test --config=<integrator>/frontend/playwright.config.ts --list strategy-workbench.spec.ts btc-strategy-history-report.spec.ts btc-strategy-registry.spec.ts",
+      "result": "failed",
+      "evidence_path": "frontend/playwright.config.ts_noncanonical_sparse_package_resolution_unavailable"
+    },
+    {
+      "command": "git diff --check e45ddae81b2a20bea44a24180fc937c696ea0c2d..99e608586dbb78ccca9a8e5d854a8b087df09da0 -- <ticket touch set>",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx"
+    },
+    {
+      "command": "registered-main frontend build and targeted Playwright contracts after fast-forward",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "canonical frontend restart, backend restart, artifact/read-model rebuild, Demo or private/order/live/transfer/withdraw endpoint activity",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator canonical_registered_main_build_playwright_and_visual_acceptance_pending",
+    "owner:environment integrator_sparse_worktree_node_modules_unavailable_for_npm_wrappers_and_playwright_config",
+    "owner:main_agent canonical_frontend_restart_and_browser_visual_acceptance_pending",
+    "promotion_artifact_and_backend_restart_not_applicable_to_frontend_presentation_ticket",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

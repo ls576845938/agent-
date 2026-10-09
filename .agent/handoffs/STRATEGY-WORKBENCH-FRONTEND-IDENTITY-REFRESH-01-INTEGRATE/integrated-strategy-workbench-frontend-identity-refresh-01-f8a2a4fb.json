@@ -1,0 +1,80 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-frontend-identity-refresh-01-f8a2a4fb",
+  "ticket_id": "STRATEGY-WORKBENCH-FRONTEND-IDENTITY-REFRESH-01-INTEGRATE",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/strategy-frontend-id-refresh-01-int",
+  "base_commit": "dfa2856c019121f623de237cc9c66a0f9e7cbde1",
+  "deliverable_commit": "f8a2a4fb542eaf7143e7fb352ba0b0d98bd70ae0",
+  "created_at": "2026-08-13T14:09:59Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-frontend-identity-refresh-01-e5e89e269"],
+  "supersedes": [],
+  "transition_for": "published-strategy-workbench-frontend-identity-refresh-01-e5e89e269",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "code",
+      "sha256": "b1e2f9305613ebfc6d07d04cdd6d1fc577efe5b57de068ae63003ffe226681f6",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate .agent/handoffs/STRATEGY-WORKBENCH-FRONTEND-IDENTITY-REFRESH-01/published-strategy-workbench-frontend-identity-refresh-01-e5e89e269.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-WORKBENCH-FRONTEND-IDENTITY-REFRESH-01/published-strategy-workbench-frontend-identity-refresh-01-e5e89e269.json"
+    },
+    {
+      "command": "npm.cmd run identity:check (integration sparse worktree)",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:test (integration sparse worktree)",
+      "result": "failed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "node scripts/start-current-main.mjs --check (integration sparse worktree)",
+      "result": "failed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "git diff --check dfa2856c019121f623de237cc9c66a0f9e7cbde1..f8a2a4fb542eaf7143e7fb352ba0b0d98bd70ae0",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "registered-main identity:check, identity:test, and start-current-main.mjs --check after fast-forward",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "frontend service start, backend restart, artifact/read-model rebuild, Demo or private/order/live endpoint activity",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "registered_main_fast_forward_pending_single_authorized_sync",
+    "canonical_registered_main_identity_test_and_launcher_check_pending",
+    "canonical_frontend_restart_and_browser_acceptance_pending",
+    "promotion_artifact_and_backend_restart_not_applicable_to_frontend_identity_refresh",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

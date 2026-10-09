@@ -1,0 +1,92 @@
+{
+  "base_commit": "e45c018061ffb63d5724a664a72d162d166cf2de",
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "current_main_browser_verification_deferred_until_integration",
+    "backend_api_contract_blocked_by_sparse_quant_cn_baseline",
+    "application_service_boundary_blocked_by_sparse_quant_us_baseline",
+    "runtime_environment_remains_fail_closed_until_clock_liveness_private_ws_broker_truth_account_and_guardian_preflight_pass",
+    "safety_flags_false_promotion_paper_live_private_order_real_order_transfer_withdraw"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-24T15:32:05Z",
+  "deliverable_commit": "509706c11dd52f33224dcad0b08269104275b147",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_authoritative_start_composition_v1",
+      "sha256": "0d172a64bc5bc70bd4633b82c8e6533c3c879ea2ec77afe60067e43e5d519e18",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_authoritative_start_contract_tests_v1",
+      "sha256": "39213f146f661dd1a36f6e593eed2e610eb7b1054898ca3556c0aad719a7106d",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-authoritative-start-request-01-509706c11",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-authoritative-start-request-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -k authoritative_start_dispatch --basetemp .tmp/pytest-authoritative-start-red",
+      "evidence_path": "failure-first before implementation: 2 failed, 40 deselected",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py --basetemp .tmp/pytest-operator-v2-full-rerun3",
+      "evidence_path": "43 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp .tmp/pytest-authoritative-start-service",
+      "evidence_path": "43 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q <five OKX StartRequest and durable start operation selectors> --basetemp D:\\vibe coding\\Obsidian\\量化系统\\test-tmp\\btc-demo-authoritative-start-okx-20260824-b",
+      "evidence_path": "5 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "evidence_path": "py_compile passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_application_service_boundary.py --basetemp .tmp/pytest-authoritative-start-related",
+      "evidence_path": "collection blocked by sparse baseline ModuleNotFoundError: quant_cn and quant_us; no PYTHONPATH bypass",
+      "result": "not_run"
+    },
+    {
+      "command": "current-main backend restart and browser authoritative_preflight_start verification",
+      "evidence_path": "deferred until independent integration; producer did not start a worktree service or call private/order endpoints",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-AUTHORITATIVE-START-REQUEST-01",
+  "transition_for": ""
+}

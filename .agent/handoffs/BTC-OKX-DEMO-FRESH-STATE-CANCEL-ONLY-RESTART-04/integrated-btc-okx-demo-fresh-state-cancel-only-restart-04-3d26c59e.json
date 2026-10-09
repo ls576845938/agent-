@@ -1,0 +1,86 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-state-cancel-only-restart-04-3d26c59e",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-CANCEL-ONLY-RESTART-04",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-cancel-only-r04-integrate",
+  "base_commit": "269a3d0d9b5b78a9a3498b4faaabca5a8bc30d39",
+  "deliverable_commit": "3d26c59e15ac04eeaa955b2a277dad76639e659f",
+  "created_at": "2026-08-10T12:00:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-fresh-state-cancel-only-restart-04-correction-60052a223"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fresh-state-cancel-only-restart-04-correction-60052a223",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "d9ccdbd0a91c6f1b8e619e3d4fc590f6c6b059f346b606a677b77af68d87b5f7",
+      "schema_version": "btc_okx_demo_cancel_only_restart_strict_flags_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "81b8aa9250ab01393bd14d957651b1a7f80d43aa3d0dc3a35213dccfac8418ec",
+      "schema_version": "btc_okx_demo_cancel_only_restart_strict_flags_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp=<external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py -k restart_rejects_missing_or_non_boolean_runtime_flags_fail_closed or restart_restores_exact or normal_clean_stopped or incomplete_cancel_only",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=<external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py -k fresh_state_emergency_exit or restart or recover or cancel_only",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=<external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "start_backend_current_main.py --help plus sanitized import/source restart-shape check",
+      "result": "passed",
+      "evidence_path": "scripts/start_backend_current_main.py"
+    },
+    {
+      "command": "handoff.py validate corrected producer envelope",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-CANCEL-ONLY-RESTART-04/published-btc-okx-demo-fresh-state-cancel-only-restart-04-correction-60052a223.json"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt:ticket_forbids_artifact",
+    "no_real_demo_private_or_order_endpoint_validation_per_ticket",
+    "fresh_state_recovery_requires_current_exchange_and_private_ws_gates"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

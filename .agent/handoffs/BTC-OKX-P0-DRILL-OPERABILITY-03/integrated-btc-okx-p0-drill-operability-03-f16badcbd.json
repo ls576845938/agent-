@@ -1,0 +1,121 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-p0-drill-operability-03-f16badcbd",
+  "ticket_id": "BTC-OKX-P0-DRILL-OPERABILITY-03",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-p0-drill-operability-03",
+  "base_commit": "1914a2fec2bcda4e039a259a532ed4cfbae3059a",
+  "deliverable_commit": "f16badcbd98b533112bbcd17a0ca64a1b3d9d314",
+  "created_at": "2026-08-05T16:47:17Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-p0-drill-operability-03-4e6c91317",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "167ba04e88baf6b1c5d4ac267671a862a2d4717bf135b0173ae71a104f0cf65f",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "10a7c15cc739ed63436cf58ee3c9c824dfd95184ee5c00ff21b5e311f659178a",
+      "schema_version": "btc_okx_demo_fault_drill_service_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "5b307f3b5374b4f80b550ba9d7336759832c793983c68badd001a21b19ffc7cd",
+      "schema_version": "btc_okx_demo_paper_runtime_operability_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "sha256": "e058eec47fe1c3e31cb19467b54d650d8327af4e7962089520e39e1d0efce0a2",
+      "schema_version": "btc_okx_demo_private_ws_reconnect_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "7c6c427d3112553a38ada82e72435871c2c501d38ddda419f531f95afafe4c96",
+      "schema_version": "btc_okx_demo_fault_drill_contract_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "sha256": "aac96870aa268771e0fe30077e105d32138a213d18a3d53e19995a02d3c31d7a",
+      "schema_version": "btc_okx_demo_private_ws_contract_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "deab032826dfdc997b9ea3174d9c6a5387168595ce19397c62275677b2ee241d",
+      "schema_version": "btc_okx_demo_paper_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <published-envelope> [status=valid; committed raw Git blob hashes matched all 7 deliverables]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-OPERABILITY-03/published-btc-okx-p0-drill-operability-03-4e6c91317.json"
+    },
+    {
+      "command": "base 1914a2f source archive + producer test overlay; 12 newly added test instances [11 failed, 1 passed; mixed owned+unknown OCO was already fail-closed on base]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-external-temp> [179 passed in 19.94s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile scripts/run_btc_okx_demo_fault_drill.py quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py quant_crypto/oms/okx_demo_private_ws.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 1914a2fec2bcda4e039a259a532ed4cfbae3059a f16badcbd98b533112bbcd17a0ca64a1b3d9d314 -- <approved-touch-set>",
+      "result": "passed",
+      "evidence_path": "scripts/run_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "network, secret, Demo/private/order/live/transfer/withdraw endpoint, service start, artifact/manifest/ledger build, refs/heads/main fast-forward",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_sync integrated_commit_not_fast_forwarded_to_refs_heads_main",
+    "owner:backend_operator backend_restart_required_after_main_sync",
+    "owner:architect promotion_evidence_not_rebuilt_or_unlocked",
+    "owner:btc_operations private_order_live_endpoint_validation_not_authorized_or_run",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

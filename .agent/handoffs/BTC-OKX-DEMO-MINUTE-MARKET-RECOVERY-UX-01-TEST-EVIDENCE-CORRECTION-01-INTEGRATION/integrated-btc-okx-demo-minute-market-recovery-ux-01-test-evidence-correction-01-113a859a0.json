@@ -1,0 +1,47 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-113a859a0",
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01-INTEGRATION",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-mm-evidence-c1",
+  "base_commit": "377b293baf6118b3ff59d686886e8b52b1b675fb",
+  "deliverable_commit": "113a859a048dded29bc56787fc7cfcf35e939d1b",
+  "created_at": "2026-08-17T00:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-6c63a9873"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-6c63a9873",
+  "deliverables": [
+    {"type":"test_evidence","path":"frontend/e2e/btc-demo-console.spec.ts","sha256":"18e27c6b1364969d6521a130abc908067e800ed6f9cfba3fd0f4eb2ddd841b33","schema_version":"btc_demo_market_recovery_ux_e2e_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/crypto/TradingViewChart.tsx","sha256":"114372fba3e2fadb780fe7d7b08957d47d5e73d2c4cf4740ca49dac9328a7699","schema_version":"btc_trading_chart_marker_accessibility_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/public/frontend-identity.json","sha256":"f351220422739ef8098457c82edafd4de7f3d770da561d7fc84b36585a49a549","schema_version":"frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"npm.cmd --prefix frontend run lint (read-only existing main node_modules junction)","result":"passed","evidence_path":"frontend/src/workspaces/crypto/TradingViewChart.tsx"},
+    {"command":"npm.cmd --prefix frontend run build (Vite 6.4.2; 5211 modules; chunk warning only)","result":"passed","evidence_path":"frontend/dist/index.html"},
+    {"command":"npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config playwright.config.ts --list","result":"passed","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"handoff.py validate published correction-01 envelope","result":"passed","evidence_path":".agent/handoffs/BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01"},
+    {"command":"git diff --check 377b293baf6118b3ff59d686886e8b52b1b675fb HEAD","result":"passed","evidence_path":".agent/handoffs/BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01-INTEGRATION/integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-113a859a0.json"},
+    {"command":"registered-main identity:check --canonical, identity:test, backend/frontend GET probes, and full 16-test mocked Playwright","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "registered_main_not_advanced_until_integrated_handoff_commit",
+    "canonical_identity_checks_service_restart_and_full_16_test_mocked_playwright_deferred_to_post_ff_operator_phase",
+    "promotion_artifact_and_read_model_rebuild_not_authorized_and_remain_unavailable",
+    "no_demo_start_no_key_no_private_order_live_transfer_withdraw_endpoint_access",
+    "promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+  "blockers": [
+    "quality_checked_research_only_routing_characterization_not_alpha_or_promotion_evidence",
+    "governed_data_manifest_not_consumed_by_backtest_routing_characterization",
+    "funding_mark_index_liquidation_depth_fill_mapping_walk_forward_holdout_not_exercised",
+    "validation_not_run:ruff_dependency_missing",
+    "paper_live_private_order_broker_real_order_network_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-29T14:31:59Z",
+  "deliverable_commit": "7daed151a00d51b831909202683d07ff6a81c455",
+  "deliverables": [
+    {
+      "path": "backend/app/services/backtests.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_backtest_registry_execution_routing_v1",
+      "sha256": "06b3af373de0b1713de00737832da6710beff1c4d72bf7744f08ef8b4354c79f",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_execution_capability_v1",
+      "sha256": "8b0a4489fe5ae439414b74219df714a6b21a3c7698ee77e28607d20f96936c31",
+      "type": "code"
+    },
+    {
+      "path": "tests/backtest/test_crypto_event_backtest.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_event_routing_parity_tests_v1",
+      "sha256": "51b3fdc6f3b9edbf744e587286779fcf57c2793336de0477d163d3a8dc3e052a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_contract_tests_v2",
+      "sha256": "c3cd75ffe55450d4a5d6b816eaca8101cf75072dc38685ace66507975ecb9244",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "BTC-LEAN-MICROLIVE-PRODUCER-01-published-01",
+    "published-btc-backtest-parity-producer-01-6e9fdf1c8",
+    "published-data-btc-lean-canary-signal-01-9e328534",
+    "published-btc-lean-microlive-producer-01-correction-02-0842770e5"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-integrate-btc-demo-backtest-fastpath-01-backtest",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-backtest-fastpath-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "final backtest related suite: 40 passed; frozen long-short params timing target-weight cost and callable cross-checks: 3 passed",
+      "evidence_path": "tests/backtest/test_crypto_event_backtest.py",
+      "result": "passed"
+    },
+    {
+      "command": "compact integration receipt sha256=d897104817d84b0baee987df3e698f519ffd7c633be03108ba59c536cbcb8399",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/runtime-artifacts/integrator-integrate-btc-demo-backtest-fastpath-01-7daed151a/compact-integration-receipt.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-BACKTEST-FASTPATH-01",
+  "transition_for": "published-btc-backtest-parity-producer-01-6e9fdf1c8"
+}

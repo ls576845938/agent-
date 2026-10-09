@@ -1,0 +1,127 @@
+{
+  "base_commit": "fcb8f5b4479aa6ea6d4ee41ecd0f0b5796cfd8bc",
+  "blockers": [
+    "btc_legacy_agent_ops_runner_permanently_isolated",
+    "btc_legacy_agent_ops_task_permanently_isolated",
+    "btc_external_runtime_observe_scheduled_task_not_registered",
+    "btc_external_runtime_observe_scheduled_task_not_smoke_tested",
+    "btc_external_runtime_observe_scheduled_task_enable_not_approved",
+    "btc_micro_live_sqlite_input_missing",
+    "btc_derivatives_read_model_missing",
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "btc_30_natural_day_observation_incomplete",
+    "btc_current_head_runtime_artifacts_not_rebuilt",
+    "btc_current_head_gate_not_rebuilt",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T21:35:49Z",
+  "deliverable_commit": "32b43235a4e0254438d645671758b0d27092b12f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/adapters/btc_runtime_artifact_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_store_v1",
+      "sha256": "92965c9225f74732a67b10db895a715ee0c8c63bff1f69f7dae6b7a9f6ea3d9c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_shared_observation_inputs.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_observation_inputs_v1",
+      "sha256": "a6d48a0ddb0c3f4d8716d4c68ddfe3d1080bd4be08ae4833c5d521d783ccf796",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_external_runtime_observe_job.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_external_runtime_observe_job_v1",
+      "sha256": "8258f192b16101af4ccadd123f4e0ff13bb4dc927c38c7fdf0c558f20fbe5e87",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "b66d07de4922fb91a28fa5459f30b1e78abf8a493b84556e8f37f0a0fdfccd8b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "18cad920cf96a517ba9acd6ce17c2294b3ee9300efe03b3617a08b7406446758",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_observation_inputs.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "4f11cfb545fb6206f6160f73894f99ace65b07d0a7a6eb60f0e445d842179c9b",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-external-runtime-observe-consumer-migration-01-32b43235",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-ext-runtime-observe-consumer-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_external_runtime_observe_job.py tests/contracts/test_btc_shared_observation_inputs.py tests/contracts/test_btc_runtime_artifact_store.py -p no:cacheprovider --basetemp=<unique-system-temp>",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_external_runtime_observe_job.py tests/contracts/test_btc_shared_observation_inputs.py tests/contracts/test_btc_runtime_artifact_store.py tests/agent_governance/test_shared_data.py tests/contracts/test_btc_artifact_source_identity.py tests/contracts/test_btc_dataready_consumer.py tests/live/test_safety_boundary_regressions.py -p no:cacheprovider --basetemp=<unique-system-temp> (120 passed)",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/run_btc_external_runtime_observe_job.py --help (required absolute roots and pinned git specs; no fast mode)",
+      "evidence_path": "scripts/run_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "in-memory compile: run_btc_external_runtime_observe_job.py, btc_shared_observation_inputs.py, btc_runtime_artifact_store.py (3 passed)",
+      "evidence_path": "scripts/run_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "offline external-root smoke: expected exit=2; blocked receipt valid; receipt_sha256=1ab553c568dc272862c8df878cf8aec729d01b82667818aafe929e590994878d",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "closed_engineering_gaps=btc_repo_tracked_canonical_observe_consumer_missing,btc_observe_consumer_manifest_not_pinned_latest_discovery_risk,btc_observe_consumer_repo_local_artifact_write_risk,btc_observe_consumer_receipt_full_source_identity_missing,btc_blocked_manifest_external_fail_closed_receipt_missing,btc_runtime_artifact_read_reparse_chain_unchecked",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-EXTERNAL-RUNTIME-OBSERVE-CONSUMER-MIGRATION-01",
+  "transition_for": ""
+}

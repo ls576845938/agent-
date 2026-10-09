@@ -1,0 +1,94 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-m1-m2-status-archive-20260913-71e095d6b",
+  "ticket_id": "M1-M2-STATUS-ARCHIVE-20260913",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/m1-m2-status-archive-20260913",
+  "base_commit": "b02836ce1415693471c0bc263a164160b27736d9",
+  "deliverable_commit": "71e095d6b9f09e3248eb5145a8dbef59f9b6a915",
+  "created_at": "2026-09-13T11:49:57Z",
+  "expires_at": "",
+  "depends_on": ["superseded-result-digest-review-9263c4bc9"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/architecture/system-code-map/MILESTONE-STATUS-20260913.md",
+      "sha256": "cefdc929842e98400b175f0be8cfbe421215e897334005ff884f19090ae0d0df",
+      "schema_version": "m1_m2_milestone_status_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/m2-historical-environment-ab-20260913-results.md",
+      "sha256": "e29cf8f862dc425d5adfe880a761f9f3c20cd5c384bc87085067ad31a85d1092",
+      "schema_version": "m2_historical_environment_ab_archived_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/m1-m2-status-archive-20260913.md",
+      "sha256": "d2e289aa5a6b6ade928a13faf2e9a85b7c462d3767b3f4b9575f11e0a139afde",
+      "schema_version": "m1_m2_status_archive_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "sha256": "6a33ac78e53c3eb50d26085a9da810c97851654dda5bcfc66aca629508829c42",
+      "schema_version": "architecture_status_readonly_copy_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "sha256": "c1cd4ed6680ddee25d184d2a3e9c39def315856e54c2cc26d974ec3b14f196ba",
+      "schema_version": "architecture_mindmap_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs frontend/scripts/test-architecture-mindmap.mjs",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/m1-m2-status-archive-20260913.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/m1-m2-status-archive-20260913.md"
+    },
+    {
+      "command": "canonical current-main Playwright acceptance after integration",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts"
+    },
+    {
+      "command": "training, model search, backend startup, private/order/live calls",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_before_main_consumption",
+    "current_main_research_readonly_publication_and_canonical_browser_acceptance_pending",
+    "producer_sparse_frontend_dependencies_missing_tsc_not_completed",
+    "btc_real_account_readonly_acceptance_not_started_entry_incomplete",
+    "private_readonly_receipt_missing",
+    "m2_historical_exploratory_increment_not_stable_no_promotion_no_m3_m4"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

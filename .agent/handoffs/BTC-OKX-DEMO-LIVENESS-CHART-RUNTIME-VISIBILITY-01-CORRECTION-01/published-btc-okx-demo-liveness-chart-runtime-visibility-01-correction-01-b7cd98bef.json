@@ -1,0 +1,84 @@
+{
+  "base_commit": "21aa697ed36dc442c10fb07c4720845c1da2e899",
+  "blockers": [
+    "independent_integrator_required",
+    "canonical_identity_check_pending_after_main_integration",
+    "identity_test_launcher_check_pending_after_main_integration",
+    "services_not_started",
+    "demo_not_started",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-16T13:51:21Z",
+  "deliverable_commit": "b7cd98befad724e52a63b6b47157c3fc19fb0c57",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "f7a20f5e3b1b7728f2b0345f28fa12d2d3dd271aa4b7d134d65cab6549a2bf3e",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-01-b7cd98bef",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-liveness-chart-corr-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run identity:check (before refresh)",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "node --input-type=module -e <strict current-main baseline/object/fingerprint assertions>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check -- --canonical",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check -- frontend/public/frontend-identity.json",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01-CORRECTION-01",
+  "transition_for": ""
+}

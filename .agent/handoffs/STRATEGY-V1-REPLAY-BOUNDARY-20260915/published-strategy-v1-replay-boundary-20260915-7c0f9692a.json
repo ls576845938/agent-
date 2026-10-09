@@ -1,0 +1,42 @@
+{
+  "base_commit": "c2f9646e6a23dfc5d74a9a30b160ec60fa59f080",
+  "blockers": [
+    "owner:architecture the persisted Guardian latch correctly remains tripped after reversal close because the sanitized OCO evidence has no independently proven reduce_only or close_position fact; protective_order_owner_missing and protective_order_reduce_only_unknown remain fail-closed, and this ticket does not infer those facts from market_exit or change Guardian semantics",
+    "owner:integrator independent demo_execution_semantics review and integration have not been performed; this producer branch is not released",
+    "owner:runtime_acceptance unresolved intent remains fail-closed rather than automatically retried, and the five-stage open-hold-reverse-open-exit sequence remains incomplete at the post-close restart while the Guardian latch is tripped",
+    "owner:release UI, API, service startup, Demo, paper, private endpoint, order endpoint, live execution, Qlib, M3-M4, and promotion acceptance were not run and remain disabled"
+  ],
+  "consumer_roles": ["integrator", "architect"],
+  "created_at": "2026-09-15T08:57:35Z",
+  "deliverable_commit": "7c0f9692a216f019c4f1546bb00811662827e61e",
+  "deliverables": [
+    {"path": "quant_crypto/application/donchian_offline_replay.py", "readiness_class": "quality_checked", "schema_version": "strategy_v1_donchian_offline_replay_boundary_v1", "sha256": "f6ecbfa0bcd8d0ac3fb648722357819c0b57bb5a31a56730c83fc0eb389924b6", "type": "code"},
+    {"path": "quant_crypto/runtime/control_plane.py", "readiness_class": "quality_checked", "schema_version": "btc_demo_dispatcher_snapshot_clock_v1", "sha256": "8b183cf03662ed909d46cfa8402db4fab807a3a5f00b4b4143a3f0f1fe9bddeb", "type": "code"},
+    {"path": "tests/contracts/test_strategy_v1_donchian_offline.py", "readiness_class": "quality_checked", "schema_version": "pytest_strategy_v1_replay_boundary_v1", "sha256": "660912445ed877893e2a085d8fe56633f69fbf194d9e85ecc2ccaa877d1ab3be", "type": "test_evidence"},
+    {"path": "tests/contracts/test_btc_okx_demo_paper_runtime.py", "readiness_class": "quality_checked", "schema_version": "pytest_btc_dispatcher_clock_boundary_v1", "sha256": "e64c7a59373272fba3e4f369a973333e8ceaf172543bc484017d1fec5e65d6ca", "type": "test_evidence"},
+    {"path": "tests/fixtures/strategy_v1/offline_contract.json", "readiness_class": "quality_checked", "schema_version": "strategy_v1_offline_fixture_v3", "sha256": "9e91e86e9913047386b319ca7ae2859f6687ac06af84ff46f353ec5ab4de8605", "type": "test_evidence"},
+    {"path": "docs/architecture/strategy-admission-v1.md", "readiness_class": "quality_checked", "schema_version": "strategy_admission_v1_report_v5", "sha256": "4b831650a0289d5da0e3953ec035fa5953b8548c6fdb134def2d2e955663baf0", "type": "report"}
+  ],
+  "depends_on": ["published-strategy-v1-closeout-20260915-b0defd454"],
+  "domain": "btc",
+  "event_id": "published-strategy-v1-replay-boundary-20260915-7c0f9692a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/btc_developer/strategy-v1-replay-boundary-20260915",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "failure-first fixed historical observation replay before dispatcher clock injection (4 failed at btc_broker_truth_not_fresh)", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py -p no:cacheprovider -q (9 passed, 1 failed at post-close restart because Guardian latch remains tripped)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "failed"},
+    {"command": "python -B -m pytest tests/contracts/test_strategy_v1_donchian_offline.py::test_restart_preserves_each_persisted_opening_boundary tests/contracts/test_strategy_v1_donchian_offline.py::test_restart_preserves_persisted_tripped_guardian_latch -p no:cacheprovider -q (4 passed)", "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py", "result": "passed"},
+    {"command": "python -B -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_composed_dispatcher_executes_only_after_current_facts_and_permit tests/contracts/test_btc_okx_demo_paper_runtime.py::test_backend_dispatcher_projects_verified_reduce_only_without_unlocking_new_risk -p no:cacheprovider -q (2 passed)", "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py", "result": "passed"},
+    {"command": "git diff --check on the exact ticket touch set before deliverable commit", "evidence_path": "quant_crypto/application/donchian_offline_replay.py", "result": "passed"},
+    {"command": "wide compatibility regression, UI/API/service startup, Demo/paper/private/order/live execution, Qlib, M3-M4, and promotion acceptance", "evidence_path": "docs/architecture/strategy-admission-v1.md", "result": "not_run"}
+  ],
+  "ticket_id": "STRATEGY-V1-REPLAY-BOUNDARY-20260915",
+  "transition_for": ""
+}

@@ -1,0 +1,87 @@
+{
+  "base_commit": "0d669d58e8621e057b804d9bfc9dbfd5e34fe486",
+  "blockers": [
+    "owner_root_registered_main_merge_official_restart_and_final_38_canonical_playwright_tests_pending",
+    "research_registry_dirty_data_remains_fail_closed_409_json_decode_error",
+    "btc_runtime_artifact_missing_remains_fail_closed_503",
+    "current_head_promotion_artifacts_not_rebuilt_and_missing_trading_artifacts_remain_blocked",
+    "M1_paused_M2_M4_unstarted_and_research_does_not_unlock_promotion_paper_private_order_broker_or_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T05:31:25Z",
+  "deliverable_commit": "b37b7f2751401f49bc5430052a9dc7d77a38b66c",
+  "deliverables": [
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "9cd08f87b244a17f80cc93422f330dd187934e9c97d21dead9c9f3a01bd0dc17",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "c6d8bee4d918c854b8415321c2c3ed36471075e09bde49c84f0f5ecb0deeb5fb",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-final-workbench-contracts-447bed4db",
+    "published-final-interactive-font-floor-c1118120a"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-final-interactive-font-floor-b37b7f275",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/arch-knowledge-workbench-recovery-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate committed published-final-interactive-font-floor-c1118120a",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01/published-final-interactive-font-floor-c1118120a.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent committed delta review and git diff --check; four exact interactive selectors added to the existing 14px rule",
+      "evidence_path": "frontend/src/terminal-workbench.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build; 5257 modules transformed; existing chunk-size warning only",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs; node --test frontend/scripts/test-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "backend 83, architecture static 19, and TypeScript",
+      "evidence_path": "unchanged scopes; intentionally not repeated for this CSS-only delta",
+      "result": "not_run"
+    },
+    {
+      "command": "registered-main official restart and final 38 canonical Playwright tests",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-INTEGRATION-01",
+  "transition_for": "published-final-interactive-font-floor-c1118120a"
+}

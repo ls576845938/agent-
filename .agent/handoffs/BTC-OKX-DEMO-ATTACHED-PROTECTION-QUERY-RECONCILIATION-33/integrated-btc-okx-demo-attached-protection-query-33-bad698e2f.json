@@ -1,0 +1,94 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-attached-protection-query-33-bad698e2f",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-ATTACHED-PROTECTION-QUERY-RECONCILIATION-33",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-attach-prot-query-33-integrate",
+  "base_commit": "aa1c4261139083944e503aa6b1dcdfab6e854cf3",
+  "deliverable_commit": "bad698e2feb7dbfd0cf93eaacbd5123c7c11121a",
+  "created_at": "2026-08-12T10:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-attached-protection-query-33-227cd2393"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-attached-protection-query-33-227cd2393",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "68019c6fa4c798af4e95c63411887b78723f1913bff9a2289df74d7fb3c65c8e",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "a8d88baaa376d12c3b6deec65781805c15b09d75ea2b52565d24072d0df09bf9",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-ATTACHED-PROTECTION-QUERY-RECONCILIATION-33/published-btc-okx-demo-attached-protection-query-33-227cd2393.json",
+      "sha256": "44a62fee1ece03e5f159c9ede1622c21d077521a004148b50d099e53e210f558",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'attached_protection or protection_creation_failure or postflight'",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 30 passed, 315 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py::test_incident_recovery_binding_consumer_accepts_verified_multihop_marker_and_append_only_recovery_tail",
+      "result": "failed",
+      "evidence_path": "baseline_known_failure independently reproduced on registered main aa1c4261139083944e503aa6b1dcdfab6e854cf3 and candidate bad698e2feb7dbfd0cf93eaacbd5123c7c11121a; blocker=okx_demo_incident_recovery_runtime_source_mismatch; architecture review confirms runtime_authorization()/run_incident_recovery supplies runtime_source_head while old fixture authorization omits it; candidate diff does not touch source-chain"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed",
+      "evidence_path": "integrator candidate; 344 passed, 1 failed in 104.68s; the single failure is the baseline_known_failure above and is not claimed as a Ticket33 regression"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; exit=0"
+    },
+    {
+      "command": "git diff aa1c4261139083944e503aa6b1dcdfab6e854cf3..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; clean"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-ATTACHED-PROTECTION-QUERY-RECONCILIATION-33/published-btc-okx-demo-attached-protection-query-33-227cd2393.json"
+    },
+    {
+      "command": "artifact/read-model rebuild; backend/frontend restart; Demo; endpoint or secret access; fixture modification",
+      "result": "not_run",
+      "evidence_path": "ticket safety boundary and architecture engineering-circuit decision"
+    }
+  ],
+  "blockers": [
+    "baseline_known_failure: test_incident_recovery_binding_consumer_accepts_verified_multihop_marker_and_append_only_recovery_tail fails on registered main and candidate with okx_demo_incident_recovery_runtime_source_mismatch",
+    "baseline_fixture_drift: authorization fixture omits runtime_source_head while production BtcOkxDemoFailedReceiptBinding.runtime_authorization()/run_incident_recovery supplies it",
+    "candidate_diff_does_not_touch_source_chain; no Ticket33 regression or cross-head production defect observed",
+    "full_runtime_contract_not_green_only_due_architecture-accepted_baseline_known_failure",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

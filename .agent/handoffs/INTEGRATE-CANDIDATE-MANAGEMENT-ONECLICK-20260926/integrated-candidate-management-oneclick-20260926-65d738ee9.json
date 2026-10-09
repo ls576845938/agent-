@@ -1,0 +1,81 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-candidate-management-oneclick-20260926-65d738ee9",
+  "ticket_id": "INTEGRATE-CANDIDATE-MANAGEMENT-ONECLICK-20260926",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-candidate-management-oneclick-20260926",
+  "base_commit": "3631aa09dbbc0f3208d439c8539cbba718a08f51",
+  "deliverable_commit": "65d738ee93ed795bf898a80d8deb755541e1dfbf",
+  "created_at": "2026-09-25T17:19:32.779Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-candidate-management-oneclick-20260926-d83de5f00",
+    "integrated-candidate-management-deploy-20260926-6c12bd93a"
+  ],
+  "supersedes": [],
+  "transition_for": "published-candidate-management-oneclick-20260926-d83de5f00",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/integration_reviews/candidate-management-oneclick-20260926.md",
+      "sha256": "71cc72c264db26bcc23e884d1af32d677f74e79cb10c8d1f07b0f4ad93e1d04f",
+      "schema_version": "candidate_management_oneclick_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "official producer handoff schema/Git/hash validation, ancestry, approved four-file touch-set review and scoped clean checks",
+      "result": "passed",
+      "evidence_path": "producer handoff valid with 4 matching deliverables; docs/integration_reviews/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "canonical .venv Python -B -X utf8 pytest backend/tests/test_candidate_management_interactive_launcher.py with isolated basetemp",
+      "result": "passed",
+      "evidence_path": "31 passed in 61.46s; docs/integration_reviews/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "canonical .venv Python -B -X utf8 pytest backend/tests/test_backend_current_main_launcher.py -k candidate_management with isolated basetemp",
+      "result": "passed",
+      "evidence_path": "20 passed, 29 deselected, 1 existing Starlette/httpx deprecation warning in 36.30s; docs/integration_reviews/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "real Windows PowerShell 5 non-sensitive TTY probe using the source-equivalent native Python pipe to Out-Host",
+      "result": "passed",
+      "evidence_path": "stdin=True stdout=False stderr=True len=18, dummy input not echoed, exit 0; docs/integration_reviews/candidate-management-oneclick-20260926.md"
+    },
+    {
+      "command": "source and integration-report diff checks",
+      "result": "passed",
+      "evidence_path": "git diff --check exit 0"
+    },
+    {
+      "command": "214-case business matrix, long lifecycle, real GUI or credential input, User environment write, service start/stop, browser, candidate jobs and private/order/live endpoints",
+      "result": "not_run",
+      "evidence_path": "outside bounded source review; no secret, service or trading access was authorized or used"
+    }
+  ],
+  "blockers": [
+    "owner:main_integration accepted source remains on the integrator branch until the root session performs the authorized ordinary no-ff merge",
+    "owner:root post-merge canonical current-main identity and real occupied-listener rejection-without-stop acceptance remain pending",
+    "owner:operator management enablement still requires local Web authentication; no secret was inspected, stored or supplied",
+    "owner:release source integration does not create candidate jobs or unlock promotion, paper, private, order or live capabilities"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

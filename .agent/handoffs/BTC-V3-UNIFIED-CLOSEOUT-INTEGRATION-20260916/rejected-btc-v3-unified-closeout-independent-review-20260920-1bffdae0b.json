@@ -1,0 +1,66 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-v3-unified-closeout-independent-review-20260920-1bffdae0b",
+  "ticket_id": "BTC-V3-UNIFIED-CLOSEOUT-INTEGRATION-20260916",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "researcher"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-v3-unified-closeout-integration-20260916",
+  "base_commit": "95b0ab4c406f6d85e83d1bcb21b618d129015fd5",
+  "deliverable_commit": "1bffdae0b04057626f7ebaa95a342f8b9c62d0e3",
+  "created_at": "2026-09-20T03:18:28Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-v3-unified-closeout-blocked-20260916-16dd8b945"],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-unified-closeout-blocked-20260916-16dd8b945",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-unified-closeout-independent-review-20260920.md",
+      "sha256": "71f946bfb89632d9e7c7bcfca1c4d2e38b10e9f708c2baa625a70f7ca87049d5",
+      "schema_version": "strategy_v3_unified_closeout_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "<canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp-target> tests/contracts/test_strategy_v3_qlib_offline.py::test_explicit_nonzero_fixture_uses_existing_oms_ledger_and_survives_restart",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-v3-unified-closeout-independent-review-20260920.md; qlib_offline_maintenance_expired; 1 failed in 82.08s"
+    },
+    {
+      "command": "<canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp-safety> tests/contracts/test_strategy_v3_unified_closeout.py",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-v3-unified-closeout-independent-review-20260920.md; 3 passed, 2 failed in 158.60s; both batch-recovery tests stop at latch_concurrent_writer"
+    },
+    {
+      "command": "handoff validate; source ancestry, six changed paths and six deliverable SHA-256 values from Git object bytes; module-origin probe",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-unified-closeout-independent-review-20260920.md"
+    },
+    {
+      "command": "full V3/V2/V1 regression, OS hard crash, CLI workflow, services/API/UI, current-main release, network/account/private/order/live",
+      "result": "not_run",
+      "evidence_path": "bounded independent-review stopping rule and blocked source candidate"
+    }
+  ],
+  "blockers": [
+    "owner:btc_developer V3 cross-restart simulated maintenance facts expire before reversal close; test fails qlib_offline_maintenance_expired and enters cancel_only/FROZEN_UNKNOWN",
+    "owner:btc_developer both batch interruption recovery tests encounter Guardian latch_concurrent_writer on replay reconstruction before their recovery/truncated-tail assertions; resource lifecycle requires separate bounded repair decision",
+    "owner:architecture this source-only independent review rejects V3 completion; no new producer iteration or source repair was authorized in this ticket",
+    "owner:research sealed candidate remains zero-approved/zero-fill with negative IC; fixture fills are not candidate effectiveness",
+    "owner:release main merge, publication, service/UI and Demo/paper/live acceptance were not performed; current main remains b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+    "safety: runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all remain false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-strategy-v3-qlib-offline-final-review-20260916-934966cfb",
+  "ticket_id": "STRATEGY-V3-QLIB-OFFLINE-INTEGRATION-20260916",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "researcher", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/strategy-v3-qlib-offline-integration-20260916",
+  "base_commit": "b6b4b14c37bd6ae3d201b56f64eba439ec428399",
+  "deliverable_commit": "934966cfbd3af09242e21d9f9dbd0fe047d395ac",
+  "created_at": "2026-09-16T01:41:07Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-strategy-v3-qlib-offline-correction-20260916-6db3a285b",
+    "rejected-strategy-v3-qlib-offline-independent-review-20260916-cdd9526c9"
+  ],
+  "supersedes": ["rejected-strategy-v3-qlib-offline-independent-review-20260916-cdd9526c9"],
+  "transition_for": "published-strategy-v3-qlib-offline-correction-20260916-6db3a285b",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-qlib-offline-independent-review-20260916.md",
+      "sha256": "187c0835b6397a18b34f6bacdc8275f053c2419e9e2fca817157d144b4e871b2",
+      "schema_version": "strategy_v3_qlib_offline_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; $env:MLFLOW_DISABLE_AGENT_HINT='1'; <canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/integrations/test_qlib_candidate_policy.py tests/contracts/test_strategy_v3_qlib_offline.py",
+      "result": "passed",
+      "evidence_path": "26 passed in 29.03s; includes real 1392-row frozen archive replay"
+    },
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; $env:QS_V0_VERIFY_ARCHIVE='1'; $env:MLFLOW_DISABLE_AGENT_HINT='1'; <canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> <two V2 selectors> <three V1 selectors> tests/integrations/test_no_live_side_effects.py::test_qlib_adapter_sources_never_emit_paper_or_live_ready_states",
+      "result": "passed",
+      "evidence_path": "6 passed in 61.14s; exact selectors and command in the review report"
+    },
+    {
+      "command": "committed corrected handoff/schema/ancestry/eight deliverable SHA-256 verification and module-origin probe",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-qlib-offline-independent-review-20260916.md"
+    },
+    {
+      "command": "sealed-candidate Forecast to the same persistent Qlib authority entry used by the nonzero fixture",
+      "result": "failed",
+      "evidence_path": "sealed path persists no-trade JSONL only; authority entry requires fixture_only and real-candidate approval still raises"
+    },
+    {
+      "command": "arbitrary interruption-point and OS-process hard-crash recovery, service/UI/network/account/private/order/live/main release",
+      "result": "not_run",
+      "evidence_path": "outside the bounded final verification; no further correction cycle authorized"
+    }
+  ],
+  "blockers": [
+    "owner:architecture sealed candidate decisions and the persistent Risk Guardian OMS Ledger authority entry remain separate acceptance paths",
+    "owner:execution fixture-only authority entry rejects sealed candidate forecasts and reconstructs synthetic account/risk/policy facts",
+    "owner:recovery exact tested ledger-before-evidence case passed but arbitrary interruption points, exact fill-ID set and policy-state-after-ledger crash remain unproven",
+    "owner:research fixed m1-okx-qlib retains negative IC, zero approvals, zero fills and no_simulated_fills; fixture fills are not model evidence",
+    "owner:release main merge release service UI Demo account private order live and promotion remain not started or disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

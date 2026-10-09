@@ -1,0 +1,125 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-start-attempt-policy-binding-01-correction-03-bd99cd36c",
+  "ticket_id": "BTC-DEMO-START-ATTEMPT-POLICY-BINDING-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-start-attempt-policy-binding-01",
+  "base_commit": "ac557218f39f148577aa17af8699a9d733f31a7b",
+  "deliverable_commit": "bd99cd36c114866305317156fce0702fa2925735",
+  "created_at": "2026-08-25T06:41:50Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-02-b70ef2f32"
+  ],
+  "supersedes": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-02-b70ef2f32"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "efd964cf997b3d9d693e0476e2e3def8ab232c48b5f40aa0242d0f1ce0ad0d7c",
+      "schema_version": "btc_demo_start_attempt_fresh_snapshot_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "124e77646f7c3c96c97cf6b17fef5cb6197b2d14a95ddfcdb38a32868873cd10",
+      "schema_version": "btc_demo_start_attempt_account_drift_failure_first_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"fresh_account_changes or same_account_reaches_fake_private_ws_gate\" --basetemp D:\\tmp\\btc-corr03-failure-first",
+      "result": "failed",
+      "evidence_path": "Failure-first on correction-02: old implementation reached forbidden_private_ws; last_error=private_ws_must_not_start_after_account_change; same-account case passed."
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"fresh_account_changes or same_account_reaches_fake_private_ws_gate\" --basetemp D:\\tmp\\btc-corr03-after-fix",
+      "result": "passed",
+      "evidence_path": "2 passed; cross-account A->B stopped before Private WS/dead-man/worker/order/cancel, B identity absorbed, A attempt blocked+historical; same-account reached fake Private WS and completed."
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp D:\\tmp\\btc-corr03-runtime",
+      "result": "passed",
+      "evidence_path": "438 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py --basetemp D:\\tmp\\btc-corr03-shared",
+      "result": "passed",
+      "evidence_path": "56 passed; outer old-identity terminal/nonterminal rows remain historical/interrupted and absent from current discovery"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp D:\\tmp\\btc-corr03-backend",
+      "result": "passed",
+      "evidence_path": "43 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_demo_start_attempt.py --basetemp D:\\tmp\\btc-corr03-aggregate",
+      "result": "passed",
+      "evidence_path": "4 passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py quant_crypto/application/btc_demo_start_attempt.py backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "all touched Python modules and contract tests compiled"
+    },
+    {
+      "command": "npm.cmd run lint (frontend; temporary ignored junction to registered-main frontend/node_modules)",
+      "result": "passed",
+      "evidence_path": "tsc --noEmit exit 0; junction removed after run"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "actions=8; executable handler_harness executed=true; fenced_ack_posts=1; payload_asserted=true"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "btc_demo_operator_attempt_state_v1 contract passed"
+    },
+    {
+      "command": "node scripts/check-btc-tradingview-entry.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy all true"
+    },
+    {
+      "command": "node scripts/check-frontend-identity.mjs (cwd=frontend)",
+      "result": "failed",
+      "evidence_path": "expected producer-worktree governance block: canonical=false; source_head=bd99cd36c114866305317156fce0702fa2925735; main_head=61ac122bdba2efe954f1f22c0131a9b2b531ed3e; manifest_match=false; dirty_paths=[]"
+    },
+    {
+      "command": "git diff --check; scoped data/manifests, data/paper_ledger/paper_runtime_audit.jsonl, and artifacts status/diff check",
+      "result": "passed",
+      "evidence_path": "diff-check clean; no data/manifests, paper ledger, or artifact changes"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "real_demo_execution_not_run",
+    "producer_worktree_identity_not_canonical_until_integration",
+    "promotion_artifact_rebuild_not_run",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

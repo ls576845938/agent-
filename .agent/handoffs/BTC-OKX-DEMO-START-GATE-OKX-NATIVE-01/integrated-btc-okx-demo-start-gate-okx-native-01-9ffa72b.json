@@ -1,0 +1,89 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-start-gate-okx-native-01-9ffa72b",
+  "ticket_id": "BTC-OKX-DEMO-START-GATE-OKX-NATIVE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-start-gate-okx-native-01-integrate",
+  "base_commit": "87cbf6736a496fea121a72cd1ee4cc7660a8aec4",
+  "deliverable_commit": "9ffa72b9bbc398c2e6a3379ad3760db9cbf4aae7",
+  "created_at": "2026-08-10T04:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-start-gate-okx-native-01-4ff901532"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-start-gate-okx-native-01-4ff901532",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "type": "code",
+      "sha256": "ab72f0109baa05a7ca72057163e644b1ebd9eed4ba6dc091835914c77b61e52e",
+      "schema_version": "frontend_btc_demo_start_gate_okx_native_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "type": "code",
+      "sha256": "3089913f120a3b72595198c4bdf8704c476dc4d371dca22c915f369b278d69b7",
+      "schema_version": "frontend_btc_demo_start_gate_okx_native_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "type": "test_evidence",
+      "sha256": "c9e05f544c0b9da0f6c482527ceef7603b65334568ca3d4d7f24122918edd6c7",
+      "schema_version": "btc_demo_start_gate_okx_native_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate producer envelope",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- frontend/src/workspaces/CryptoWorkspace.tsx frontend/src/workspaces/crypto/DemoTradingConsole.tsx frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "TypeScript transpileModule syntax check for the three touch-set files",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "tsc --noEmit -p frontend/tsconfig.json with registered-main typeRoots",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run lint",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --grep stale chart|FROZEN_UNKNOWN --workers=1",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:environment frontend_sparse_worktree_dependencies_missing",
+    "owner:environment tsc_missing_frontend_modules_and_existing_selectedSpec_null_errors",
+    "owner:environment target_e2e_requires_registered_main_port_3000_and_was_deferred",
+    "owner:btc_runtime current_demo_status_FROZEN_UNKNOWN_nonflat_position_and_pending_OCO_remain_start_blocked",
+    "owner:main_agent registered_main_fast_forward_and_canonical_frontend_backend_acceptance_pending"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

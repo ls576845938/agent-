@@ -1,0 +1,126 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-ibkr-paper-adapter-foundation-01-4b6f20eb25",
+  "ticket_id": "INTEGRATE-US-IBKR-PAPER-ADAPTER-FOUNDATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "researcher",
+    "super_developer"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-us-ibkr-paper-adapter-foundation-01",
+  "base_commit": "95e78889755880652c34e0ea52366df508d88d03",
+  "deliverable_commit": "4b6f20eb254c54436710631b7fa894aec917b40f",
+  "created_at": "2026-08-06T10:25:22Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-ibkr-paper-adapter-foundation-01-ef2320b53"
+  ],
+  "supersedes": [],
+  "transition_for": "published-us-ibkr-paper-adapter-foundation-01-ef2320b53",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/execution/ibkr_broker.py",
+      "sha256": "d6cb78fa89ae9ac55a9185cd6b47388d14a2660e26a3b2afe7014ea47d64d13f",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_adapter_contract.py",
+      "sha256": "1a57a0aadc405e3f28073b846ad10792a2426e5a80ae6ce44719ecf1a63caba4",
+      "schema_version": "paper_adapter_contract_v4",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "5436b2a264c0ed0edfc9cfd2f72a769204a0125c18e56c554c5cea72f88142d0",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_adapter_foundation.py",
+      "sha256": "22a5e76885bdc9d7a51d24042d12fdbf839e3a56646fc2ac5b940fd33e52fa68",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/US-IBKR-PAPER-ADAPTER-FOUNDATION-01/published-us-ibkr-paper-adapter-foundation-01-ef2320b53.json",
+      "sha256": "eb744d1cc85719b3ff90ce62c430c835fdef388523da2efeb15bf4562c6e781e",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "full-git producer handoff validation, exact handoff SHA-256, direct ancestry, five-path and source-blob audit",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/US-IBKR-PAPER-ADAPTER-FOUNDATION-01/published-us-ibkr-paper-adapter-foundation-01-ef2320b53.json"
+    },
+    {
+      "command": "registered-main virtualenv python -B -m pytest tests/live/test_ibkr_paper_adapter_foundation.py -p no:cacheprovider -q --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_adapter_foundation.py"
+    },
+    {
+      "command": "registered-main virtualenv python -B -m pytest tests/live/test_runtime_paper_worker_safety.py -p no:cacheprovider -q --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/live/test_runtime_paper_worker_safety.py"
+    },
+    {
+      "command": "registered-main virtualenv python -B -m pytest tests/contracts/test_no_broker_import_in_evidence_builders.py -p no:cacheprovider -q --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_no_broker_import_in_evidence_builders.py"
+    },
+    {
+      "command": "registered-main virtualenv python -B -m pytest backend/tests/test_order_routing.py -k IBKRBroker -p no:cacheprovider -q --basetemp <system-temp>",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_order_routing.py"
+    },
+    {
+      "command": "producer environment combined API boundary run recorded three preexisting failures from missing quant_crypto module",
+      "result": "failed",
+      "evidence_path": ".agent/handoffs/US-IBKR-PAPER-ADAPTER-FOUNDATION-01/published-us-ibkr-paper-adapter-foundation-01-ef2320b53.json"
+    },
+    {
+      "command": "integrator current-main-base rerun: tests/api/test_research_only_boundaries.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/live/test_ibkr_paper_adapter_foundation.py",
+      "result": "passed",
+      "evidence_path": "tests/api/test_research_only_boundaries.py"
+    },
+    {
+      "command": "compile four ticket Python files; concrete Gateway/network implementation import and constructor scan; readonly injection and hard fail-closed assertions; git diff --check",
+      "result": "passed",
+      "evidence_path": "quant_us/execution/ibkr_broker.py"
+    },
+    {
+      "command": "post-test side-effect audit: restore data/paper_ledger/paper_runtime_audit.jsonl from test-generated three-line replacement to exact HEAD blob b3c39107d86d53bc465d1ce28346d9d4d86eb3ab and exclude it from commit",
+      "result": "passed",
+      "evidence_path": "data/paper_ledger/paper_runtime_audit.jsonl"
+    }
+  ],
+  "blockers": [
+    "registered_main_ref_not_advanced_by_short_lived_integrator",
+    "backend_restart_required_after_unclassified_integration_not_run",
+    "current_head_artifact_read_model_and_promotion_gate_rebuild_not_performed",
+    "ibkr_foundation_is_readonly_only_and_submit_cancel_remain_hard_fail_closed",
+    "no_real_gateway_session_or_paper_order_fill_position_cash_ledger_evidence",
+    "forward_paper_observation_and_manual_promotion_approval_missing",
+    "all_trading_safety_permissions_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

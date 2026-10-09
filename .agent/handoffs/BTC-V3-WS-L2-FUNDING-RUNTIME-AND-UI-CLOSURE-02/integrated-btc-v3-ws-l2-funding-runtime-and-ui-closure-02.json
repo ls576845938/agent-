@@ -1,0 +1,146 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-ws-l2-funding-runtime-and-ui-closure-02",
+  "ticket_id": "BTC-V3-WS-L2-FUNDING-RUNTIME-AND-UI-CLOSURE-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-ws-l2-funding-runtime-ui-02",
+  "base_commit": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "deliverable_commit": "b2ab457cadf53ed8810a3186a2c10965571e0302",
+  "created_at": "2026-07-28T13:14:55Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-ws-l2-funding-runtime-and-ui-closure-02-8dafc85b3",
+    "integrated-data-btc-public-ws-l2-funding-evidence-03-takeover"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-ws-l2-funding-runtime-and-ui-closure-02-8dafc85b3",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "pyproject.toml",
+      "sha256": "70ad0cd890506ac2a2d66534bd6ff4740a3fac4362369acb8185bca119fdb41b",
+      "schema_version": "python_project_dependency_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/adapters/okx_public_ws.py",
+      "sha256": "6502b23c66a41b6d171a92c057767822e7d078b7e62d339b17a009fa49f16ff6",
+      "schema_version": "okx_public_ws_l2_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_ws_l2_funding_reconciliation_closure.py",
+      "sha256": "c0fcbb3eb2201c2f7a7b3f2b782d78b9fd374fdb1df1826faddaaeddaec2f8eb",
+      "schema_version": "btc_ws_l2_funding_reconciliation_closure_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/backtest/funding_ledger.py",
+      "sha256": "8f2458496ac0dba1aaef3a746863787e6ab61ee9de5d76eb09c24febe92e8877",
+      "schema_version": "btc_perpetual_fill_position_cash_ledger_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/backtest/funding_cashflow_evidence.py",
+      "sha256": "f1e2418389f102ef794e672a7124be92906a26afe9021c4d9b9b1ca4ae45c1ae",
+      "schema_version": "btc_funding_cashflow_evidence_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/private_ws_reconciliation.py",
+      "sha256": "ded5b307f983d3d1d6efa9f0ef854f587b35e9e57eca5cc439235b128f28115c",
+      "schema_version": "btc_private_ws_offline_reconciliation_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py",
+      "sha256": "7080e757da0c96e43ee073d4f7387a6e2cf306c12abd54ac438668e38986755e",
+      "schema_version": "btc_ws_l2_funding_reconciliation_closure_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "18f798399adfca4c6b5d76df25fecb1cbcfc873d28c19b4bb4db0633e3113a28",
+      "schema_version": "btc_current_head_reader_ui_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "sha256": "3eb7e64022b6f0d5391d49d6f3ac522c64f0144304af9510db6a42685d2bff99",
+      "schema_version": "btc_current_head_reader_ui_binding_contract_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "project Python -m pytest tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py tests/contracts/test_btc_next_stage_engineering_closure.py tests/contracts/test_btc_paper_oms_lifecycle.py tests/contracts/test_btc_audit_dag.py tests/contracts/test_btc_paper_oms_session_reconciliation.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py --basetemp <unique-system-temp> -p no:cacheprovider -q [observed: 109 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_ws_l2_funding_reconciliation_closure.py"
+    },
+    {
+      "command": "project Python -m compileall <five approved Python modules> with PYTHONPYCACHEPREFIX=<unique-system-temp> [observed: passed]",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_ws_l2_funding_reconciliation_closure.py"
+    },
+    {
+      "command": "npm.cmd run lint [observed: passed]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run build [observed: default Vite build passed; 5204 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "standard canonical runtime Python -c \"import websocket\" [observed: dependency missing]",
+      "result": "failed",
+      "evidence_path": "pyproject.toml"
+    },
+    {
+      "command": "current-main Playwright six-contract validation",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:runtime_provisioning canonical_runtime_websocket_client_dependency_not_synced",
+    "btc_okx_websocket_client_dependency_missing",
+    "owner:data_steward real_timestamp_aligned_l2_and_sequence_continuity_unproven",
+    "btc_okx_public_ws_tls_or_runtime_path_connection_reset",
+    "btc_okx_public_ws_l2_no_messages_captured",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "owner:runtime_artifact_provisioning artifact_backed_funding_ledger_report_missing",
+    "owner:btc_operations current_runtime_funding_data_unavailable",
+    "owner:btc_operations real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation real_non_flat_fill_evidence_missing",
+    "owner:btc_operations real_funding_cashflow_evidence_missing",
+    "owner:btc_observation l2_natural_observation_window_30_day_incomplete",
+    "owner:architect/manual_reviewer manual_promotion_approval_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

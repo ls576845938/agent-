@@ -1,0 +1,53 @@
+{
+  "base_commit": "1dd1bcdb1094772f42176af1ac48c703cb73199c",
+  "blockers": [
+    "owner:integrator independent_integration_required_before_main_consumption",
+    "historical_invalid_handoffs_17_remain_visible_and_fail_closed",
+    "not_promotion_evidence_no_paper_no_live_no_private_no_order"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-09-29T15:35:50Z",
+  "deliverable_commit": "b5f4db99a9443d375033a76cc702aa22a7c2eebe",
+  "deliverables": [
+    {
+      "path": "tests/agent_governance/test_context_scalability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "handoff_discovery_scalability_tests_v1",
+      "sha256": "99e7cc9ef24ad0ac4011efdbdc2931a74c65b1efdc9cc63964ba32f923cf39ac",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-handoff-discovery-read-20260929-1814c2bec"
+  ],
+  "domain": "shared",
+  "event_id": "published-handoff-discovery-read-scalability-correction-20260929-b5f4db99a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/handoff-discovery-read-20260929",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -B -m pytest -p no:cacheprovider -q tests/agent_governance/test_context_scalability.py::test_discovery_400_refs_uses_fixed_git_batches_and_one_blob_materialization",
+      "evidence_path": "tests/agent_governance/test_context_scalability.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "HANDOFF-DISCOVERY-READ-20260929",
+  "transition_for": ""
+}

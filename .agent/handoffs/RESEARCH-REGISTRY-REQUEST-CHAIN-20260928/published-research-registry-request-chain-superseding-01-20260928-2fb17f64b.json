@@ -1,0 +1,124 @@
+{
+  "base_commit": "870ca75f5a2fad57fba1a73571020308b302328b",
+  "blockers": [
+    "independent_integrator_review_pending",
+    "current_main_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_twelve_request_and_browser_acceptance_pending",
+    "intermittent_team_context_handoff_discovery_timeout",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T15:59:45.229Z",
+  "deliverable_commit": "2fb17f64bb16512f39e400861b4a84ccd08a60c6",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "5b21c32aa146b078fd0333b08b38e7ef7f491125007f97a74a79e7bb6b9e18bc",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "61f8b35189c76e291fef3d5ddde27965886a769ef37811ee12fdbd8e89de762e",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "46fef3f2d9f84ba53ac4eb976f2a550ae6d6445b2dc7e94ba9c9dfe5766efd1a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_research_registry_summary_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "62c9587c2443f1eb72e3badcab061efcb0ffa70be696c688d3427091f6460600",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "f761c584c5f7516fc9c80d33cf876ba4543c9c002e63a5c8dabe57ba6e4ecc52",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "published-research-registry-request-chain-superseding-01-20260928-2fb17f64b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-registry-request-chain-20260928",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-research-registry-request-chain-20260928-ab9a5103e"
+  ],
+  "tests": [
+    {
+      "command": "failure-first cancellation across unrelated DirEntry values and normalized duplicate raw-key preservation",
+      "evidence_path": "producer console; pre-fix 2 failed, post-fix 2 passed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest tests/research/test_evidence_registry.py tests/api/test_research_registry_summary_api.py",
+      "evidence_path": "producer console; 29 passed, 1 existing Windows symlink-permission skip",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest evidence registry, actual summary route, and Qlib pipeline suites on initial deliverable",
+      "evidence_path": "superseded envelope; 45 passed, 1 existing Windows symlink-permission skip",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest M1 readonly archive and backend research-readonly suites",
+      "evidence_path": "superseded envelope; 51 passed; exact cold-import retry passed with PYTHONUTF8=1",
+      "result": "passed"
+    },
+    {
+      "command": "research-release governance regression",
+      "evidence_path": "producer console; test_builtin_explorer_hook_falls_back_to_shared_rules repeated handoff_discovery_timeout; other exact hook retry passed; no governance delta",
+      "result": "failed"
+    },
+    {
+      "command": "py_compile revised registry and git diff --check",
+      "evidence_path": "producer console",
+      "result": "passed"
+    },
+    {
+      "command": "same canonical data direct and TestClient registry before/after profile",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/producer-report-ab9a5103e.md; TestClient 9.620s to 3.464s; byte-identical CONFLICT/57-note response",
+      "result": "passed"
+    },
+    {
+      "command": "full-app TestClient concurrent 12 overview GETs plus Qlib detail on canonical data",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/producer-report-ab9a5103e.md; before 24.410s all over budget, after 8.847s all 13 HTTP 200 below 12s",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main 8765/3000 after-fix and canonical browser acceptance",
+      "evidence_path": "pending independent integration, canonical restart and fixed 12-second browser matrix",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": ""
+}

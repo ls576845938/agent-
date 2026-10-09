@@ -1,0 +1,123 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-quant-frontend-interaction-closure-01-87e37827",
+  "ticket_id": "QUANT-FRONTEND-INTERACTION-CLOSURE-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/quant-frontend-interaction-closure-01",
+  "base_commit": "be67ef70d9af4cf518a25e4a1933459f6b9d7a46",
+  "deliverable_commit": "87e3782781386c010f7f97178f7292f56017baff",
+  "created_at": "2026-07-26T06:52:54Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-full-tradingview-suite-forwardport-01-health-auth-correction-bcc28e91"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "sha256": "aa8c351ed3ed12b80a8bb11f134f108b1267035c6be8962941cca08741a9ab76",
+      "schema_version": "quant_frontend_interaction_feedback_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workbench.css",
+      "sha256": "87554b9590d51f5507a1cbd8f4ec7086814e05724d4a95434cd96ef0a87ef90f",
+      "schema_version": "quant_frontend_interaction_feedback_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/terminal-workbench.css",
+      "sha256": "228da7a151b7bdca78652a171063e155701c680f2e6c9a74f3e871fcff01f215",
+      "schema_version": "quant_frontend_interaction_feedback_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/ExperimentList.tsx",
+      "sha256": "19f3d28184bf475880aba7978d6995b131b6295d74361fc630a8eb54c9a32ead",
+      "schema_version": "quant_frontend_research_interaction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/ResearchDashboard.tsx",
+      "sha256": "e12960e22a870821c10189d783331cb301c92b4e004ec4875196fd4166de35c3",
+      "schema_version": "quant_frontend_research_interaction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "sha256": "38931d4de2c9f62671341edf5c77454b4f3677ba816fbc29a78ce46e347de0b0",
+      "schema_version": "quant_frontend_interaction_e2e_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/components/workbench/Workbench.tsx"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/system-workbench.spec.ts (cwd=frontend; 8/8 passed)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    },
+    {
+      "command": "npx.cmd playwright test (cwd=frontend; 30/30 passed)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/components/workbench/Workbench.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend; 6/6 markers passed)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "playwright-cli headed visual QA at 1440x1000 with /api/** routed to read-only 503; research form focus and inspector reopen feedback verified",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    }
+  ],
+  "blockers": [
+    "current_head_domain_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

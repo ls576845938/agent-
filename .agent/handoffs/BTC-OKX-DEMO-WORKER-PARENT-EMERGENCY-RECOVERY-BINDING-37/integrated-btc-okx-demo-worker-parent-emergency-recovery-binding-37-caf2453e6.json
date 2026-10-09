@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-worker-parent-emergency-recovery-binding-37-caf2453e6",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-worker-parent-37-int",
+  "base_commit": "b830fc862813fdcb965ad95b97208d3e7790ac9c",
+  "deliverable_commit": "caf2453e65ea903ea9201320d977c98f134d4c7c",
+  "created_at": "2026-08-12T12:55:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-01f92712c-corr1"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-01f92712c-corr1",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "a9b4fa54862277f2ba00c82deddea481b64fe8325ee1cca0a9cdb97d916627d1",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "fa070f19c564952dde64e14a1d99c7cc2d6f917e8ca3f2f7434a1ee71a599172",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "7b412e45134bb7894495911fbb156b55e9a096db146ea5d2bdf7089db3c99fbc",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37/published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-01f92712c-corr1.json",
+      "sha256": "9f3d1e709ce2df752ef17058be8863529c67b8eff0efddd7aecfc92a9097ace3",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_fault_drill.py -k worker_parent_emergency_binding",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 8 passed, 146 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp <external> tests/contracts/test_btc_okx_demo_fault_drill.py -k 'canonical_recovery_binding or worker_parent_emergency'",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 8 passed, 146 deselected"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py scripts/run_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; exit=0"
+    },
+    {
+      "command": "git diff b830fc862813fdcb965ad95b97208d3e7790ac9c..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; clean"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <corr1 producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37/published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-01f92712c-corr1.json; SHA-256 9f3d1e70..."
+    },
+    {
+      "command": "full fault-drill suite; artifact/read-model rebuild; backend restart; Demo; endpoint or secret access",
+      "result": "not_run",
+      "evidence_path": "ticket safety boundary and frozen focused matrix"
+    }
+  ],
+  "blockers": [
+    "superseded_original_handoff_retained_only_and_not_consumed; corr1 is the sole valid input",
+    "promotion_artifact_deferred",
+    "backend_restart_deferred_to_later_publication",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

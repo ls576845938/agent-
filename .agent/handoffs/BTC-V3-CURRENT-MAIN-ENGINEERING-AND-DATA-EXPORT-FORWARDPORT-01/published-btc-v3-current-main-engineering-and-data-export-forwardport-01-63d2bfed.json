@@ -1,0 +1,174 @@
+{
+  "base_commit": "8bc235e9f9c5a42bf852ef24a4f89b12b6a1a682",
+  "blockers": [
+    "current_head_gate_artifacts_not_rebuilt_at_deliverable_commit",
+    "data_steward_immutable_kline_publication_missing",
+    "data_steward_real_timestamp_aligned_okx_l2_history_missing",
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_funding_cashflow_and_private_ws_reconciliation_natural_observation_incomplete",
+    "btc_30_60_day_observation_window_incomplete",
+    "architect_manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T11:23:37Z",
+  "deliverable_commit": "63d2bfed4724d08bb914c1418dba6044ed622b79",
+  "deliverables": [
+    {
+      "path": "quant_crypto/trading_contracts.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_trading_contracts_v1",
+      "sha256": "14a204926b45a8a8f57b2ac2e5e280700f8d6de80a5946c29c420996967efe09",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/immutable_kline_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_v1",
+      "sha256": "9115afb059f3ff49dd98d7655490a9f3a387e9118b6c2bdb42c4a99f56078878",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/immutable_okx_l2_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_immutable_export_v1",
+      "sha256": "1d6948bb61da58153b3691cb25c643f10822ff958ea4d19af8c6ccfb52940022",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/data/dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumer_current_main_v1",
+      "sha256": "458b877f2098431791c09bc7234a455ee22abdff5baa31196fe76c395e6756a2",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_cli_v1",
+      "sha256": "56f02e6c4823c07d0f5572f4523c51cf64a2a1e2ad34842afd682faa5b4bd3d8",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_okx_l2_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_immutable_export_cli_v1",
+      "sha256": "bb3e4ddc391a796c748b1a269fe26710a0374fb1c41aa80ebcf545065caddef7",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_kline_dataready_attestation.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_dataready_attestation_v1",
+      "sha256": "14a6dc44778794eb59cd0680ecbe4c972beb366989293ea43d8a08ca642cb831",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_okx_l2_dataready_attestation.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_dataready_attestation_v1",
+      "sha256": "23850e468f87391f852ff0800ba69d2fdcdbd4c5e17f3e8d5cf79c0615dc5466",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_paper_readiness_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_paper_readiness_report_v1",
+      "sha256": "02bf658f492367128a5c68f64d04037d4af5566df1ab477f4cb4c814ff05aa01",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_contract_v1",
+      "sha256": "16ab0b464d254c3178b877389d3bbd3801aa9d4b6485f5ab60309877ca1581bc",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_immutable_export_contract_v1",
+      "sha256": "f5a9fbbbac6d98d09db73bf09c98cb46ba6b89feb4550831d7410d60b78d46fe",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumer_contract_v1",
+      "sha256": "0ca77a71a9d3f6299feb2be4ea2a5b7e25bcd98ddff5408d124bd01856d47d74",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_current_main_forwardport_ticket_v1",
+      "sha256": "32b05cd3a967ad14267f84d86dfbfbbcc1028bcd4e212040c150886efc0cdc4a",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-engineering-blocker-closure-01-6216788f",
+    "published-btc-v3-dataready-export-tool-and-shared-contract-cleanup-01-6337ac300"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-current-main-engineering-and-data-export-forwardport-01-63d2bfed",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-main-eng-data-export-forwardport-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-v3-engineering-blocker-closure-01-6216788f",
+    "published-btc-v3-dataready-export-tool-and-shared-contract-cleanup-01-6337ac300"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_l2_immutable_export.py -q",
+      "evidence_path": "tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "result": "passed"
+    },
+    {
+      "command": "expanded BTC lifecycle/data/gate/L2 successor regression",
+      "evidence_path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "existing L2 capture/replay/reconnect fixture builder tests",
+      "evidence_path": "tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "existing latest-artifact report-reader tests in sparse writer worktree",
+      "evidence_path": "artifacts/btc_scalping_readiness/latest",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m compileall -q ticket-owned Python files",
+      "evidence_path": "quant_crypto/data/immutable_okx_l2_export.py",
+      "result": "passed"
+    },
+    {
+      "command": "Windows concurrent gate snapshot and pointer-failure stress, five repetitions",
+      "evidence_path": "tests/contracts/test_btc_gate_snapshot.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01",
+  "transition_for": ""
+}

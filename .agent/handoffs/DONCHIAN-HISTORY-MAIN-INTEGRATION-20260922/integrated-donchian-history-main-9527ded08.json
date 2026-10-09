@@ -1,0 +1,307 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-donchian-history-main-9527ded08",
+  "ticket_id": "DONCHIAN-HISTORY-MAIN-INTEGRATION-20260922",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/donchian-history-main-integration-20260922",
+  "base_commit": "31e3e882e69e983aa88c01ccdf517236e0172e75",
+  "deliverable_commit": "9527ded0832df05c19ab505996a31a6ec88df3c7",
+  "created_at": "2026-09-22T04:05:59Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-effective-time-envelope-ccd2015d5",
+    "integrated-effective-time-588366c9e",
+    "published-session-reviewfix-09edb9b2d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-effective-time-envelope-ccd2015d5",
+  "deliverables": [
+    {
+      "type": "artifact",
+      "path": ".agent/data_manifests/donchian-long-input/donchian-long-input-20260921-v1.json",
+      "sha256": "a177f94a7e40f13b744db129528dca81221504760f882892e2ccf4d3e5b2c8c5",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": ".agent/data_manifests/donchian-long-input/donchian-long-input-20260921-v2.json",
+      "sha256": "349bd130a769796a71877f48ab7aa597338303ece8b124d4b9e23a3759e3993d",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/donchian-history-main-integration-20260922.md",
+      "sha256": "671378d9f567cbcc5ca2537396c6e6b131c75c8086cfb385b620db3e6584cee6",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/research/donchian-history-spec-20260920.json",
+      "sha256": "57426923027b2d37bc24db2cda0c80d1dbe4153061bb95d0a29c0650d8ac91b5",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/donchian-history-spec-20260920.md",
+      "sha256": "3dd6ceed7fed0a0cebc6b8545d3aaed13fe8299ac08b76edeb205e9a94719d00",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/research/donchian-long-50usdt-20260921.json",
+      "sha256": "2a7896f4b83926307609b25797b33056f97eb58747297db3467fd70dedfc37cf",
+      "schema_version": "btc_donchian_history_spec_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/donchian-long-50usdt-20260921.md",
+      "sha256": "c3e90b03568b1740fe04719f857a9a3479a84103ee89c7fc92d7ba7c626705f3",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/research/donchian-long-evaluation-20260921.json",
+      "sha256": "5d0f3fd6ba4dfed8cd45355d6134643df1a8d86dea408e1f0506a2abe5429dd1",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/donchian-long-evaluation-20260921.md",
+      "sha256": "3fb577f814a2f0f83701512190c56430841807532165fb7374d83215bd515c38",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/research/donchian-replay-performance-20260921.md",
+      "sha256": "d42d5abc1227269c8079f0a9537793f7629cb70d65be619c01ec112655a13a14",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_demo_production_composition.py",
+      "sha256": "0e3d9ed0be5209425fba9b89c89862f14b5136752559395fc212a98f58bbb03d",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_strategy_registry.py",
+      "sha256": "d975d7b5839d16760a593f85cb16817f6247910dcba4df3717a6e2707d6682d9",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/donchian_historical_replay.py",
+      "sha256": "3735a0425f12855debfd5f1a9e337f6551234bca67e3228211f9050bdc47e063",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/donchian_historical_venue.py",
+      "sha256": "8d97bfdf03bd2a2416c8787f3fbec9e1b48aeefa48cc297d4769cad3758d52bb",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/donchian_history_spec.py",
+      "sha256": "05a95466a879ebbc5c7743d9c48d5d488c8df69d732711f40c245a32e5f8f5f6",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/donchian_offline_history_cache.py",
+      "sha256": "8ac882672a52c555636648736e45156dae44c31a3cd4d34da993644ce45c986e",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/donchian_offline_replay.py",
+      "sha256": "530777c47dafbd2e9b82cc6cab7439720bdc48c3d70287954374f03063d525f4",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "7f455213b5016b032214cc1e87a916c93be14d73ca32d26b334de349c53e8933",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/runtime_store.py",
+      "sha256": "2ea96a13b44fdfde1d4a65bc5ed2a3cfd24b3bd8fee55fc6d685a07f4f5c70e0",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/research/long_short_trend_following_lab.py",
+      "sha256": "fd09306d5c55fac60e34c8224c6dc26334181c4b792f4645d26235c3108875be",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/research/multi_timeframe_rule_lab.py",
+      "sha256": "f2791127e81db495175a990c03da6e778daacf51833382ff4a360be909c28bf5",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/research/simple_trend_rule_lab.py",
+      "sha256": "2235f02df7f1363a32f8ed41c5ea0d51c9e742ede1dd97377357a0f6dbe8b923",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/benchmark_donchian_history_scaling.py",
+      "sha256": "bbb800494564186db97833f2c33b7989566adf50fea5a47920878979a1e23705",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/benchmark_donchian_replay.py",
+      "sha256": "d4edfb2001a8b9523dec68030d9378e3467eeeff08cc7e1dec4198e1df8e0749",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/prepare_donchian_long_input.py",
+      "sha256": "28c633da99620d94d0e6e6f5de6df6287f70d9679131ef46d55944b7eef7d214",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_donchian_history.py",
+      "sha256": "713abad190ddd34620aecae93442ffbe97639f47d427c778061cc439c61fec90",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_donchian_history.py",
+      "sha256": "d62bed7b15a89b80f71fdd0ee99a7f2489c192600ddad62d27ff224252e3f304",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_donchian_history_spec.py",
+      "sha256": "9450a10872791be34483fef4eb3fb533b694e2727665fc24a5283de570396d22",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_donchian_effective_time.py",
+      "sha256": "3ca2782753ae518ffc3ead4eb9515ea447e559d574beb1a84f194834c4da8109",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_donchian_history_scaling.py",
+      "sha256": "4256f4b7ec3473d7371eab2d94e452d9df9bbbc035a3b440570554ddb16a44c1",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_donchian_offline_liveness.py",
+      "sha256": "f5a460e4e6ebaaddc7ed8881caefa0915e1ef58b1f88d9a009f7771f7714c4dd",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_donchian_offline_notional.py",
+      "sha256": "e1caa3e28ab9cb8c9b7eb8c17694a66a22b554e932cd077f3b67292466ab3f2c",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_donchian_replay_performance.py",
+      "sha256": "c2e2eac96c827710a39766ed8fa7bcd46fb850ae0345bfc8c099cd8d5db4d167",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/test_donchian_long_input.py",
+      "sha256": "efcd9a283d57bd6ca15d2191587533a0668bc6fb7935b6dee4c78f1d696f1040",
+      "schema_version": "donchian_history_main_integration_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "15-file Donchian/history/V0/V1/OMS/recovery/read-only backend matrix: 308 passed, 1 pre-existing Qlib opt-in skipped",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-main-integration-20260922.md"
+    },
+    {
+      "command": "tests/test_donchian_long_input.py: 8 passed; immutable shared-data manifest full 7/7 hash verification",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-main-integration-20260922.md"
+    },
+    {
+      "command": "frozen historical CLI run --max-events 400 then resume --max-events 400; 800 checkpoint, 0 blockers, 3 fills",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-main-integration-20260922.md"
+    },
+    {
+      "command": "default BTCRuntimeStore full read-only recover twice; authoritative replay_account_ledger_uows from 802 committed UOWs; old closed 800-hour receipt parity",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-history-main-integration-20260922.md"
+    },
+    {
+      "command": "annual 8760-hour run, current-main deployment, canonical browser or promotion gate",
+      "result": "not_run",
+      "evidence_path": "docs/operations/donchian-history-main-integration-20260922.md"
+    }
+  ],
+  "blockers": [
+    "current_main_source_publication_not_approved_or_performed",
+    "demo_execution_semantics_readonly_delivery_rule_pending",
+    "annual_8760_hour_evaluation_not_complete",
+    "production_btc_runtime_evidence_unavailable",
+    "real_account_and_exchange_reconciliation_not_done"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

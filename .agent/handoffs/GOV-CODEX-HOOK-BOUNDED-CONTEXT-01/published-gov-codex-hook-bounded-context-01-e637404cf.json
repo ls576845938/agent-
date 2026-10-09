@@ -1,0 +1,81 @@
+{
+  "base_commit": "da874e38288779d2d0cd0ba177947fcf6d992373",
+  "blockers": [
+    "independent_integrator_required:governance_control",
+    "registered_main_not_advanced_or_pushed",
+    "existing_committed_invalid_handoffs_remain_visible:7",
+    "agent1_uncommitted_btc_worktree_not_consumed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-09T15:00:00Z",
+  "deliverable_commit": "e637404cf90dec0e811a2f01c1b3194e1999af14",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_handoff_scan_v2",
+      "sha256": "02917776c12bcfe36912cf5bc45497f4fa3128f5195a6d47c6ece7e3a9e76f38",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_handoff_contract_tests_v1",
+      "sha256": "42443f5e9428576bc79e8030ed455b264c5e5db0a74b5773e48e871f70000aaa",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_team_context_contract_tests_v1",
+      "sha256": "240a764402ec4ed540e0c64ce3233a3ea33a473d1760386eecb28fb9ef3db9e1",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-gov-codex-hook-bounded-context-01-e637404cf",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/gov-codex-hook-bounded-context-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py tests/agent_governance/test_team_context.py tests/agent_governance/test_hooks.py .codex/hooks/inject_agent_context.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py tests/agent_governance/test_team_context.py tests/agent_governance/test_hooks.py .codex/hooks/inject_agent_context.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 .codex/hooks/inject_agent_context.py (SessionStart/UserPromptSubmit/SubagentStart)",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "GOV-CODEX-HOOK-BOUNDED-CONTEXT-01",
+  "transition_for": ""
+}

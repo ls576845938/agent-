@@ -1,0 +1,123 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-workbench-refactor-01-f19be2c04",
+  "ticket_id": "RESEARCH-WORKBENCH-REFACTOR-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/research-workbench-refactor-01",
+  "base_commit": "4096453b344e777e99f4272b43582d60cf1251f9",
+  "deliverable_commit": "f19be2c049e48ed7d2526b89c31b91dcf2982d06",
+  "created_at": "2026-09-08T13:02:59Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/research-workbench-refactor-01.md",
+      "sha256": "f63504685eee6a303a6e8d35246631e782d3d9f4fcd85e6d2a6fb2d931b49c35",
+      "type": "report",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/research-workbench.spec.ts",
+      "sha256": "f6f607c0e714785ba4a9047a135dcbd35fe8af16f3dec400a1071dcc3f3ce08e",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/research.spec.ts",
+      "sha256": "804734200051082330529112cafeab65129813328ce76f87fafea469a87cd8a5",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-research-rollback.mjs",
+      "sha256": "9890f39ba46694f3928fcc234a14b2dd7105b9a89acca94bba9185bfb984735b",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchDashboard.tsx",
+      "sha256": "3723233b97773f60ede7429e6d8cc4ab9b813a62c18a9b9b7ae7b54b2a7f0f0b",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/LegacyResearchDashboard.tsx",
+      "sha256": "1cf1106a687f796568a04b78dcdefd60ea3ded9552078f64fbd11b0a227078bb",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchDashboard.css",
+      "sha256": "ec99f247dd8203a5c994d9da84ddbd47d048f15fb1bf512bb2cd1b51675505f4",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/ResearchWorkbench.tsx",
+      "sha256": "022eede422d8a15cbf7ba1f59679a093a72e1451c3dcf6f2273d601f775e6705",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "scripts/verify_research_workbench.py",
+      "sha256": "2135f8c8f8a1aa41f053860827dd2d9e9d4f71499f3a3a22d96e80a587e6523c",
+      "type": "code",
+      "schema_version": "research_workbench_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-research-rollback.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "frontend: tsc --noEmit and npm.cmd run build",
+      "result": "passed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "pytest seven research/adapter/factor suites: 72 passed, 2 Windows separator assertion failures; backend sources unchanged",
+      "result": "failed",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    },
+    {
+      "command": "canonical Playwright execution and real Qlib/portfolio workflow",
+      "result": "not_run",
+      "evidence_path": "docs/reports/research-workbench-refactor-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent architecture approval and current-main frontend integration/browser acceptance pending",
+    "owner:root dependencies installing; historical real workflow acceptance pending",
+    "owner:root other task owns canonical integration/restart window until release",
+    "owner:existing_backend two Windows path separator assertion failures; gate decision remains BLOCKED"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

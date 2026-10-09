@@ -1,0 +1,111 @@
+{
+  "base_commit": "3fc39879d14ecab2288368afe588385cc44c08e1",
+  "blockers": [
+    "owner:main_session refs_heads_main_merge_pending",
+    "owner:main_session canonical_research_readonly_restart_pending",
+    "owner:main_session canonical_3000_architecture_playwright_and_no_mock_browser_acceptance_pending",
+    "not_promotion_evidence_no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-29T07:11:31Z",
+  "deliverable_commit": "bb4122fa3adb84c88c8f7239d4380f66f31dfd36",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/architecture-map-status-independent-review-20260929.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_map_status_independent_review_v1",
+      "sha256": "90be9f85c3bf286a514097fa0dceb390378eaa13729ebe8b75f92d59c3d655a4",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "356a6dc1bcc278f98e6ec08b1d35f976370676a055bf39925ac4e4b2d0f05b35",
+      "type": "artifact"
+    },
+    {
+      "path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_e2e_v1",
+      "sha256": "50a7dcef2c4547eeea549d56d814aa657db61024b4d749b4f94e09b88be0cc76",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_map_workspace_current_status_v1",
+      "sha256": "2148725dc1e83d6266c50305a43678c071b50adee47995908b6a2283930810fb",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_map_current_status_data_v1",
+      "sha256": "6cdb6eeaa4a7b3a6adf58f7c6c0a2547dbb38d31cf9909210b0c6fbf1c78a945",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-architecture-map-status-20260929-ffc49aa32"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-map-status-independent-review-20260929-bb4122fa3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-architecture-map-status-20260929",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-architecture-map.mjs; node frontend/scripts/test-architecture-mindmap.mjs; node frontend/scripts/test-architecture-knowledge.mjs [observed: 9 + 6 + 5 passed]",
+      "evidence_path": "docs/acceptance/architecture-map-status-independent-review-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "tsc.cmd --noEmit -p frontend/tsconfig.json [observed: exit 0]",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check [observed: manifest_match=true baseline_ancestor=true]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/agent_governance/test_handoff.py tests/agent_governance/test_context_packet.py [observed: 32 passed]",
+      "evidence_path": "docs/acceptance/architecture-map-status-independent-review-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "producer handoff schema, ancestry, Git blob hashes, external evidence hashes and final scoped git diff --check",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-MAP-STATUS-20260929/published-architecture-map-status-20260929-ffc49aa32.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical 3000 architecture-map, architecture-mindmap and architecture-knowledge Playwright plus no-mock browser acceptance",
+      "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "registered-main research_readonly backend/frontend restart and canonical identity verification",
+      "evidence_path": "docs/acceptance/architecture-map-status-independent-review-20260929.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-ARCHITECTURE-MAP-STATUS-20260929",
+  "transition_for": "published-architecture-map-status-20260929-ffc49aa32"
+}

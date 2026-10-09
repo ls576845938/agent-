@@ -1,0 +1,91 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-v1-readonly-delivery-20260915-202379a65",
+  "ticket_id": "STRATEGY-V1-READONLY-DELIVERY-20260915",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/strategy-v1-readonly-delivery-20260915",
+  "base_commit": "b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+  "deliverable_commit": "202379a65d0956769a3c38df69db9658aa8f00e2",
+  "created_at": "2026-09-15T04:51:40.329Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-v1-readonly-delivery-20260915-6861a653b"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "sha256": "c9e1ec5b4f425faf4041bca225471e1e6b6f61dd32f0d3ea83d2c5193cf1a79d",
+      "type": "schema",
+      "schema_version": "strategy_v1_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tools/agent_governance/delivery_policy.py",
+      "sha256": "9bd9fd13d93f2eb56352a7b73ae076f9d457f2624cdc86a5d33af49001e32d1d",
+      "type": "code",
+      "schema_version": "strategy_v1_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/agent_playbooks/strategy_v1_readonly_delivery.md",
+      "sha256": "dd434f42c45a73cce693ca757ab41d57e1545241ba5b10e52fcce54c0da0e37d",
+      "type": "document",
+      "schema_version": "strategy_v1_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/agent_governance/test_strategy_v1_readonly_delivery.py",
+      "sha256": "6ac6dc48711e48a50163261b7d1058bd76108651f858342ca7963000415d3c94",
+      "type": "test_evidence",
+      "schema_version": "strategy_v1_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first exact portfolio decision path and reduce-source capability test",
+      "result": "failed",
+      "evidence_path": "expected source_capability_outside_scope and source_path_outside_fixed_boundary; 1 failed, 66 deselected"
+    },
+    {
+      "command": "pytest exact portfolio decision and adjacent portfolio/risk/permissions cases",
+      "result": "passed",
+      "evidence_path": "6 passed, 61 deselected / 0.10s"
+    },
+    {
+      "command": "python -m pytest -q -p no:cacheprovider test_strategy_v1_readonly_delivery.py test_research_release_policy.py test_delivery_policy.py test_context_packet.py test_team_context.py test_hooks.py test_governance_contract.py",
+      "result": "passed",
+      "evidence_path": "141 passed / 68.49s"
+    },
+    {
+      "command": "V1 source implementation, main integration, backend restart, canonical browser acceptance, Demo/paper/live/private/order",
+      "result": "not_run",
+      "evidence_path": "outside this governance producer ticket"
+    }
+  ],
+  "blockers": [
+    "independent_governance_review_pending",
+    "independent_integrator_integration_pending",
+    "fresh_successor_context_required_after_governance_activation",
+    "V1_Donchian_offline_source_review_and_integration_pending",
+    "current_main_research_readonly_publication_and_browser_acceptance_pending"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

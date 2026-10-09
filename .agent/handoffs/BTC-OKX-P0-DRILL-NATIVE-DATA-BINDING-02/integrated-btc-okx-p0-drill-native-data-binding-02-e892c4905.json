@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-p0-drill-native-data-binding-02-e892c4905",
+  "ticket_id": "BTC-OKX-P0-DRILL-NATIVE-DATA-BINDING-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-p0-drill-native-data-binding-02",
+  "base_commit": "466c495bc86c1c0121dba499b52193c798671ef4",
+  "deliverable_commit": "e892c4905becbaca0f8dfc49e48f9a3b2d7207b3",
+  "created_at": "2026-08-05T16:07:03Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-p0-drill-native-data-binding-02-753628cd4"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-p0-drill-native-data-binding-02-753628cd4",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "32fc703e941b8a91dba93fd119936a228e56ea6bc2d6ff9e615282365f5315b3",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "ff54881a46e7041976d307067ab3e04d22336fe0112ed7e3afaf7024c2829f72",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "committed-object validation for producer deliverable 753628cd4b0ce6594603bd4cc50a86c6c75d9606 and handoff 5974ce06f1d8c97bbd527eb75b7d28f5a48ca2f7: base ancestry, exact 2-path business touch set plus one append-only envelope, 2/2 raw Git blob SHA-256 closure, schema, blockers, guardrails, and producer test evidence",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-NATIVE-DATA-BINDING-02/published-btc-okx-p0-drill-native-data-binding-02-753628cd4.json"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <committed producer event> [valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-NATIVE-DATA-BINDING-02/published-btc-okx-p0-drill-native-data-binding-02-753628cd4.json"
+    },
+    {
+      "command": "git cherry-pick 753628cd4b0ce6594603bd4cc50a86c6c75d9606; git cherry-pick 5974ce06f1d8c97bbd527eb75b7d28f5a48ca2f7 [integration commits e892c4905becbaca0f8dfc49e48f9a3b2d7207b3 and 23a42477c6cc54b08cdb220be27c0d4c52a03b6e; no conflicts]",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -p no:cacheprovider -k 'shared_dataset_binding or native_binding_validation or worker_child_argv' --basetemp <unique> [6 passed, 24 deselected in 2.82s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_runtime_hardening.py -q -p no:cacheprovider --basetemp <unique> [165 passed in 25.61s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 466c495bc86c1c0121dba499b52193c798671ef4..23a42477c6cc54b08cdb220be27c0d4c52a03b6e -- <approved touch set> [exit 0; exact 3 paths]",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "service start, actual OKX Demo/private/order/live execution, network access, secret access, transfer/withdraw, artifact/manifest/ledger/replay/promotion build [not run: prohibited or outside ticket]",
+      "result": "not_run",
+      "evidence_path": "scripts/run_btc_okx_demo_fault_drill.py"
+    }
+  ],
+  "blockers": [
+    "owner:operator backend_restart_required_after_main_fast_forward",
+    "owner:operator actual_okx_demo_fault_drills_not_executed",
+    "no_artifact_no_manifest_no_ledger_no_replay_no_promotion_evidence_built",
+    "quality_checked_source_is_not_promotion_evidence",
+    "no_service_start_no_network_no_secret_no_demo_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

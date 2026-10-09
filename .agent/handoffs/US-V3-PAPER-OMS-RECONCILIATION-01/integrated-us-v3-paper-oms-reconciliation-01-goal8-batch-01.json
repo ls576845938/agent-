@@ -1,0 +1,134 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-v3-paper-oms-reconciliation-01-goal8-batch-01",
+  "ticket_id": "US-V3-PAPER-OMS-RECONCILIATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-goal8-batch-01",
+  "base_commit": "92cc60334a5ae21bae904a5c23c9e45ca39045f9",
+  "deliverable_commit": "66986fb04ecb4d158cda3721032f964e58405a4a",
+  "created_at": "2026-07-24T13:01:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-v3-paper-oms-reconciliation-01-193033cf"
+  ],
+  "supersedes": [],
+  "transition_for": "published-us-v3-paper-oms-reconciliation-01-193033cf",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_oms_reconciliation.py",
+      "sha256": "c1bd4b5353c6a6afd203fee07d839ab09cbcfcafa1658b02adbf6995dfbbcc90",
+      "schema_version": "us_v3_paper_oms_reconciliation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "configs/execution/us_v3_paper_oms_reconciliation_v1.json",
+      "sha256": "f1f6e811eabc6d61aacd82d635364d73fb373d84f243383171309c4800d8bb28",
+      "schema_version": "us_v3_paper_oms_reconciliation_config_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_v3_paper_oms_reconciliation_report.schema.json",
+      "sha256": "87e7e14ee744c34dd43df1f18fe4bbcddf71d82af582e20e20d370330b09810b",
+      "schema_version": "us_v3_paper_oms_reconciliation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/build_us_v3_paper_oms_reconciliation_evidence.py",
+      "sha256": "9bb797c0a33e4066dd36eba85e91a3e03cec394d03a89589c2bfa010d15396fa",
+      "schema_version": "us_v3_paper_oms_reconciliation_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_v3_paper_oms_reconciliation.py",
+      "sha256": "5b75a4ce6fbdbbd58668546e5b6002a051349da7706778156d23290d8c8de593",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/data_contracts/us_v3_paper_oms_reconciliation.md",
+      "sha256": "c4458ef1bbb03eb0dd5ae2f768ba263e56661500751d421eb9a3645e382f9917",
+      "schema_version": "us_v3_paper_oms_reconciliation_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/report.json",
+      "sha256": "eeabc3672c72910431c7535b47970411da9b98f932e64f7ffc84c2a338924ee3",
+      "schema_version": "us_v3_paper_oms_reconciliation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/manifest.json",
+      "sha256": "7144ba16441be95573be67d476ac5f9ae00f75f4ae7e1956e2eb00cfcd28fc87",
+      "schema_version": "us_v3_paper_oms_reconciliation_manifest_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_v3_paper_oms_reconciliation.py -q -p no:cacheprovider --basetemp <unique-system-temp> [integration HEAD: 9 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_v3_paper_oms_reconciliation.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_v3_paper_oms_reconciliation.py tests/contracts/test_us_equity_paper_ledger_uow.py tests/contracts/test_us_equity_order_reconciliation_drill_report.py tests/contracts/test_us_equity_execution_drill_evidence_report.py tests/contracts/test_us_equity_broker_credentials_review_report.py tests/contracts/test_paper_live_locked.py tests/live/test_paper_runtime_reconciliation_hard_gate.py tests/contracts/test_us_equity_paper_simulation_roll.py tests/contracts/test_us_equity_paper_simulation_evaluation_report.py -q -p no:cacheprovider --basetemp <unique-system-temp> [integration HEAD: 75 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_v3_paper_oms_reconciliation.py"
+    },
+    {
+      "command": "py -3 scripts/build_us_v3_paper_oms_reconciliation_evidence.py --repo-root <system-temp-sparse-clone> --output-root tmp-output/us-paper-oms [integration HEAD: complete_quality_checked_paper_blocked; fixture_execution_drill_complete_paper_not_started; artifact_identity_sha256=84db7dcb8198e6685ffabf828b402275536542ed365989d20c2e2f633cb2f236]",
+      "result": "passed",
+      "evidence_path": "scripts/build_us_v3_paper_oms_reconciliation_evidence.py"
+    },
+    {
+      "command": "validate committed report/manifest/schema from git cat-file bytes [schema valid; report_sha256=eeabc3672c72910431c7535b47970411da9b98f932e64f7ffc84c2a338924ee3; artifact_identity_sha256=e72739ecac3602788f0b9600e0e57ddca683f4bd9c5d170304d8cc19a3c0afbc]",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/manifest.json"
+    },
+    {
+      "command": "py -3 -m py_compile quant_us/live/paper_oms_reconciliation.py scripts/build_us_v3_paper_oms_reconciliation_evidence.py tests/contracts/test_us_v3_paper_oms_reconciliation.py [PYTHONPYCACHEPREFIX=<system-temp>]",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_oms_reconciliation.py"
+    },
+    {
+      "command": "producer handoff validate; source business chain d1efeb1ac6cdcbf4786bb59586f667b02aee43bb then f4af7adc57d2d68df2fa21f384f1a72d34a48716; source evidence deliverable 193033cf8aa2083c52ac233750175bb425dced1e; source final efa1281ef4b70e5f095902914d5bfe3374834edb; actual integration commit 66986fb04ecb4d158cda3721032f964e58405a4a; committed-byte SHA-256 and exact touch-set precheck",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/published-us-v3-paper-oms-reconciliation-01-193033cf.json"
+    }
+  ],
+  "blockers": [
+    "owner:paper_operations paper_start_not_authorized",
+    "owner:paper_operations real_paper_evidence_missing",
+    "owner:paper_operations production_event_ledger_missing",
+    "owner:architect manual_paper_start_approval_missing",
+    "classification:goal8_code_integration_blocker=false",
+    "classification:readiness=quality_checked_paper_blocked",
+    "classification:evidence=fixture_only_not_real_paper_evidence",
+    "classification:paper_runner_started=false",
+    "classification:paper_queue_write_allowed=false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

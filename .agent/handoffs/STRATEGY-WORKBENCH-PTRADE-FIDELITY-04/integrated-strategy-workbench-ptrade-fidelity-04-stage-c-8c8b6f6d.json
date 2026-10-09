@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-ptrade-fidelity-04-stage-c-8c8b6f6d",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-FIDELITY-04",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "integrator"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-workbench-ptrade-fidelity-04-stage-c",
+  "base_commit": "b7888cad787852a4098284c8ac25d8958d59b526",
+  "deliverable_commit": "8c8b6f6dfce2dfd61ae50a5d890067b2b4dcd2aa",
+  "created_at": "2026-08-14T02:54:47Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-ptrade-fidelity-04-afb4e910a-corr2"],
+  "supersedes": [],
+  "transition_for": "published-strategy-workbench-ptrade-fidelity-04-afb4e910a-corr2",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "type": "code",
+      "sha256": "48cb909126eec6ada2b31c07165928cc900c09e7e8ad815624284676912dcb22",
+      "schema_version": "strategy_workbench_ptrade_fidelity_v4",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx",
+      "type": "code",
+      "sha256": "a0da8de1f9926180a64acff0fb9baedd9317deddbbbace7590c25b205495b0c0",
+      "schema_version": "strategy_discovery_tree_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "e907d5a81995c5ea6865c40a37909dd961d4c9c707e53049487de31a9b83c0a5",
+      "schema_version": "strategy_workbench_ptrade_styles_v4",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/strategy-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "f3a3d75aa27424bc50dae222fc249a7b8ce45640214d53b2b58b0164dd78394d",
+      "schema_version": "strategy_workbench_ptrade_e2e_v4",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate --input .agent/handoffs/STRATEGY-WORKBENCH-PTRADE-FIDELITY-04/published-strategy-workbench-ptrade-fidelity-04-afb4e910a-corr2.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-WORKBENCH-PTRADE-FIDELITY-04/published-strategy-workbench-ptrade-fidelity-04-afb4e910a-corr2.json (SHA-256 d5abcba8a79a80be64c689c6510d9a5c96d54a90bf99a31d988791d91dd437ba; validator valid)"
+    },
+    {
+      "command": "node frontend/node_modules/@playwright/test/cli.js test frontend/e2e/strategy-workbench.spec.ts --reporter=line --workers=1",
+      "result": "passed",
+      "evidence_path": "C:/tmp/strategy-ptrade-fidelity-04-playwright-stageB-final2 (3 passed)"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit --project frontend/tsconfig.json --baseUrl frontend/node_modules --typeRoots frontend/node_modules/@types",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "npm.cmd run build",
+      "result": "passed",
+      "evidence_path": "frontend/dist (5211 modules; Vite built in 39.52s)"
+    },
+    {
+      "command": "external offline visual capture at 1440x960 and 1180x900 with all /api/** routes mocked",
+      "result": "passed",
+      "evidence_path": "C:/tmp/strategy-workbench-ptrade-fidelity-04/capture-evidence.json; sourceHeight=300, within=true for KPI/market/equity/dock/dockRow, canonical markers 2/2"
+    },
+    {
+      "command": "design-qa.md final result and independent Stage B visual reviewer",
+      "result": "passed",
+      "evidence_path": "design-qa.md (final result: passed; reviewer PASS)"
+    },
+    {
+      "command": "git diff --check and scoped safe_status for declared frontend touch set",
+      "result": "passed",
+      "evidence_path": "registered main 8c8b6f6dfce2dfd61ae50a5d890067b2b4dcd2aa; declared paths clean before handoff"
+    }
+  ],
+  "blockers": [
+    "immutable_history_artifact_stale_research_only_not_promotion_ready",
+    "artifact_rebuild_not_applicable_to_frontend_only_visual_ticket",
+    "promotion_paper_live_private_order_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

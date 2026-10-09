@@ -1,0 +1,78 @@
+{
+  "base_commit": "4f3139431bb801f71f0bca9bbb0f69e4febdb8a4",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "btc_10s_all_applicable_family_horizon_rows_blocked_insufficient_information",
+    "btc_okx_timestamp_aligned_l2_exact_physical_version_missing",
+    "btc_10s_eligible_labeled_windows_and_effective_sample_size_zero",
+    "btc_10s_trade_ordered_l2_join_missing",
+    "current_head_promotion_artifact_missing",
+    "official_research_artifact_bound_to_implementation_commit_81024c156_not_correction_commit",
+    "promotion_artifact_rebuild_required_by_policy"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-27T09:19:17Z",
+  "deliverable_commit": "e5cfd5a4d0d9774626e0854eb1c84754f2cb443d",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_api_v1",
+      "sha256": "f1f1acfe51896eb327d673186371d3f022b958e1391c0ddbddbf3297221ccbb1",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-public-data-closure-01-59bc18d92",
+    "published-data-btc-l2-immutable-restore-t8-01-965bfbca8"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-10s-microstructure-data-contract-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-10s-microstructure-data-contract-01-af2d905e0"
+  ],
+  "tests": [
+    {
+      "command": "git diff --check 4f3139431bb801f71f0bca9bbb0f69e4febdb8a4..e5cfd5a4d0d9774626e0854eb1c84754f2cb443d",
+      "evidence_path": "range_diff_check_valid",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_10s_microstructure_data_contract_report.py -q",
+      "evidence_path": "5 passed in 0.55s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/research/btc_10s_microstructure_data_contract.py scripts/build_btc_10s_microstructure_data_contract_report.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "jsonschema.validate(<official report>, btc_10s_microstructure_data_contract_report.schema.json)",
+      "evidence_path": "official_report_schema_valid",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01",
+  "transition_for": ""
+}

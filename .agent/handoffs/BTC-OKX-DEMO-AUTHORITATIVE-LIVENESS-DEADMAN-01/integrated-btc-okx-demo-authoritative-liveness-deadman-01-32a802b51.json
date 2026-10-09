@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-authoritative-liveness-deadman-01-32a802b51",
+  "ticket_id": "BTC-OKX-DEMO-AUTHORITATIVE-LIVENESS-DEADMAN-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-auth-liveness-deadman-01",
+  "base_commit": "0c10b253a974eca246e6705fd049975187e42ca7",
+  "deliverable_commit": "32a802b5115bfe13f7f118a78231b5db2f383999",
+  "created_at": "2026-08-11T11:25:54Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-authoritative-liveness-deadman-01-9e4916720"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-authoritative-liveness-deadman-01-9e4916720",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "019bca28a578fa63a7ac3f56e77955cb27d0ded74b4c93bd790828655618fd14",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "525399214c200c1c574e553d55be8536c8f315d76d6d6ed8467b868aec016d3b",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_runtime_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_execution_watchdog.py",
+      "sha256": "49b5e1385618ed033cf47af678c5e49d6c7c444b20e20303e9b661bd17fdefd2",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_watchdog_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "initial harness attempt with --faulthandler-timeout=30/45",
+      "result": "not_run",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-7b3868c9f2bf4a73a77a900f5e498a8d"
+    },
+    {
+      "command": "focused 39 with -o faulthandler_timeout=30, outer 90s",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-valid-9ca83a88f5ba47c8a73a9b2ce822269b/focused39/pytest.stdout.log"
+    },
+    {
+      "command": "test_btc_okx_demo_paper_runtime.py full with -o faulthandler_timeout=45 --durations=10, outer 300s",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-valid-9ca83a88f5ba47c8a73a9b2ce822269b/paper_runtime_full/pytest.stdout.log"
+    },
+    {
+      "command": "test_btc_okx_demo_execution_watchdog.py full, outer 60s",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-valid-9ca83a88f5ba47c8a73a9b2ce822269b/execution_watchdog_full/pytest.stdout.log"
+    },
+    {
+      "command": "test_btc_okx_demo_private_ws.py full, outer 120s",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-valid-9ca83a88f5ba47c8a73a9b2ce822269b/private_ws_full/pytest.stdout.log"
+    },
+    {
+      "command": "test_btc_okx_demo_fault_drill.py full, outer 180s",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-btc-authoritative-liveness-valid-9ca83a88f5ba47c8a73a9b2ce822269b/fault_drill_full/pytest.stdout.log"
+    },
+    {
+      "command": "py_compile producer sources; git diff --check; producer handoff validate",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_advanced_or_pushed",
+    "backend_identity_status_and_restart_not_run_before_main_sync",
+    "promotion_artifact_read_model_not_rebuilt",
+    "no_private_order_live_endpoint_or_secret_access_per_ticket",
+    "promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

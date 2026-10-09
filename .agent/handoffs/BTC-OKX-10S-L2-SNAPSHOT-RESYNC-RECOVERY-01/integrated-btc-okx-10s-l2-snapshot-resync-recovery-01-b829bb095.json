@@ -1,0 +1,108 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-10s-l2-snapshot-resync-recovery-01-b829bb095",
+  "event_type": "integrated",
+  "ticket_id": "BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01",
+  "domain": "btc",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/btc-l2-resync-integration-01",
+  "consumer_roles": [
+    "architect",
+    "data_steward"
+  ],
+  "base_commit": "dc95a75ce2afe5205fa20bc1c06246c8e6c2c50b",
+  "deliverable_commit": "b829bb095773cc81b6f29c790e2d309d561a2517",
+  "depends_on": [
+    "published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8",
+  "created_at": "2026-09-01T09:23:39Z",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "type": "code",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "727272053d2dfd770a5b8e9e40432c1ea99bca1def49a091c155cce92d32d446"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "type": "test_evidence",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1_contract_tests",
+      "readiness_class": "quality_checked",
+      "sha256": "cb655dbc32e81cf3918637a54f1bb18a32d058a41e92421585bbf0712253d1aa"
+    },
+    {
+      "path": "docs/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01.md",
+      "type": "document",
+      "schema_version": "btc_okx_10s_l2_snapshot_resync_recovery_ticket_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "9b668ac14c82c573ef9003f4948cc4578e0ccce22689c9a811805be597842d40"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8.json; status=valid",
+      "evidence_path": ".agent/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01/published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8.json",
+      "result": "passed"
+    },
+    {
+      "command": "verify direct ancestry dc95a75c -> a11a181f -> 94a94f0b, exact three-file touch set, and all deliverable Git blob SHA-256 values",
+      "evidence_path": ".agent/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01/published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff --no-edit 94a94f0b59e7fbf65b1748e35967e70cc92529cd; merge commit b829bb095773cc81b6f29c790e2d309d561a2517 without conflicts",
+      "evidence_path": "docs/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "semantic review: only exact l2_clock_lag_exceeds_limit plus l2_update_requires_new_snapshot is retryable with new slice/new connection; sequence, checksum, mixed and unknown blockers remain terminal",
+      "evidence_path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py; 107 passed in 11.78s",
+      "evidence_path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile scripts/run_btc_okx_10s_microstructure_immutable_feed.py tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py; git diff --check dc95a75c..b829bb095",
+      "evidence_path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "public network collection and immutable data publication",
+      "evidence_path": "prohibited by offline integration scope; run from registered current main after adoption",
+      "result": "not_run"
+    },
+    {
+      "command": "current-HEAD artifact/read-model rebuild, backend restart and browser validation",
+      "evidence_path": "pending registered-main adoption and new public data publication",
+      "result": "not_run"
+    },
+    {
+      "command": "private/account/order/paper/live endpoint validation, credential access or real execution",
+      "evidence_path": "prohibited by integration scope and every execution permission remains false",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "new_public_only_current_head_capture_and_immutable_publication_required_after_registered_main_adoption",
+    "current_head_artifact_and_read_model_rebuild_required_after_new_data_publication",
+    "l2_depth_fill_ess_regime_natural_non_flat_fill_funding_private_ws_25h_and_manual_approval_evidence_remain_incomplete",
+    "registered_main_adoption_pending"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-candidate-market-policy-readonly-governance-20260928-10d1e716b",
+  "ticket_id": "CANDIDATE-MARKET-POLICY-READONLY-DELIVERY-20260928",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/cand-policy-ro-20260928",
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "deliverable_commit": "10d1e716b052062a69bb8ccd6836306a879cd65e",
+  "created_at": "2026-09-28T04:00:09Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-candidate-offline-diagnostic-market-policy-closeout-20260927-deace3f2b",
+    "integrated-readonly-release-ui-20260928-833dec6f1",
+    "integrated-research-registry-read-performance-20260928-9ad0277b3"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "schema",
+      "path": "docs/agent_playbooks/candidate_market_policy_readonly_delivery_20260928.json",
+      "sha256": "ce4f05df8b649355a83620dd54d544f8075c5bc85664d83dc4705da417a5e321",
+      "schema_version": "candidate_market_policy_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/agent_playbooks/candidate_market_policy_readonly_delivery_20260928.md",
+      "sha256": "33d5b71c254d88b0aa247533f555ac30622d5d11e6f97913e464f1314c789cb0",
+      "schema_version": "candidate_market_policy_readonly_delivery_playbook_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tools/agent_governance/candidate_market_policy_readonly_delivery_20260928.py",
+      "sha256": "faf503254477c4f935e774635177bd961968b34da5cd42cdafbae5631aabccbb",
+      "schema_version": "candidate_market_policy_readonly_validator_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_candidate_market_policy_readonly_delivery_20260928.py",
+      "sha256": "e96820b95380c1f4f00dcd45316dcac80c8eef35c143bd2860828e40c81de642",
+      "schema_version": "candidate_market_policy_readonly_validator_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/candidate-market-policy-readonly-governance-20260928.md",
+      "sha256": "f78ece8e9a66e7420598877619f5081869954bc1e2be0596086edf18cf04d5b7",
+      "schema_version": "candidate_market_policy_readonly_governance_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -B -X utf8 tools/agent_governance/candidate_market_policy_readonly_delivery_20260928.py --repo-root . validate-source",
+      "result": "passed",
+      "evidence_path": "status=valid; source_sealed=true; blockers=[]; exact 86-file inventory and three named handoffs"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider --basetemp <unique-temp> tests/agent_governance/test_candidate_market_policy_readonly_delivery_20260928.py",
+      "result": "passed",
+      "evidence_path": "20 passed in 73.27s"
+    },
+    {
+      "command": "git diff --check -- <five ticket paths>",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "formal current-main 8765/3000 research_readonly identity and canonical browser acceptance",
+      "result": "not_run",
+      "evidence_path": "requires independent governance integration, main release, canonical restart and real page receipt"
+    }
+  ],
+  "blockers": [
+    "independent integrator must review and integrate this governance-only deliverable before it can govern release",
+    "current-main merge, research_readonly restart, registered 8765/3000 identity and canonical browser acceptance remain pending",
+    "source closeout blockers remain unchanged: A/B is blocked and conditioned terminal short -0.01 contracts is preserved",
+    "promotion paper live private order real_order transfer withdraw execution and management write permissions remain disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

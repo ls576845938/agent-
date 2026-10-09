@@ -1,0 +1,86 @@
+{
+  "base_commit": "ec1f098a6d827be6d45a903eb5bfc81aad079aab",
+  "blockers": [
+    "cold_direct_overview_17971ms_remains_close_to_the_unchanged_20000ms_budget",
+    "the_two_event_synthetic_fixture_did_not_cover_the_protection_trigger_branch_or_full_production_protection_semantics",
+    "real_v3_candidate_research_and_48_hour_business_acceptance_remain_separate_and_incomplete",
+    "research_readonly_intentionally_does_not_expose_candidate_management_or_dynamic_offline_job_result_reads_after_the_management_window_closes",
+    "quality_checked_system_intake_evidence_is_not_promotion_demo_paper_live_private_order_transfer_or_withdraw_authorization"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-10-01T19:27:10Z",
+  "deliverable_commit": "82cbee89bed7be3c799cb5982b93e4c0fd3c589b",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "66ff3a3ee65f95378f00dc982e87e0ff3b36b5680136aaf7524c9624128d5976",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-system-intake-formal-post-guard-20261001-7d994408f"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-system-intake-formal-acceptance-20261002-82cbee89b",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-system-intake-formal-acceptance-20261002",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-system-intake-formal-post-guard-20261001-7d994408f"
+  ],
+  "tests": [
+    {
+      "command": "official current-main restart and backend/frontend runtime identity verification on ec1f098a6d827be6d45a903eb5bfc81aad079aab",
+      "evidence_path": "docs/acceptance/BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002.md; canonical true; runtime_stale false; frontend fingerprint b7f5aa813eb44c45a3c96b61fc5f6c8c2381fa7382e115a7fda2c8cbf913164c",
+      "result": "passed"
+    },
+    {
+      "command": "formal Alpha factory overview and selected-detail browser read under the unchanged 20 second request budget",
+      "evidence_path": "overview HTTP 200 in 6571 ms; detail HTTP 200 in 4080 ms; total 10651 ms; no alert; cold direct overview 17971 ms remains a documented limit",
+      "result": "passed"
+    },
+    {
+      "command": "formal GUI synthetic package lifecycle: select, validate, bind fixture account, approve, register, start, duplicate replay, stop at boundary, resume same job, and inspect result",
+      "evidence_path": "delivery_807c67f46c584c699c5476532a624193 revision 4 registered; job coff_03a9756e8210947a92ee131a2ccb2354 stopped revision 7 cursor 1/2 then completed revision 13 cursor 2/2; D:/quantstation-runtime/btc-system-intake-formal-20261002-ec1f098a/gui-result-trace.json SHA-256 44c7c4d97674627ae3c38d7453e0628e1f8a13444cc6c62fa38211e532a11ece",
+      "result": "passed"
+    },
+    {
+      "command": "closed-writer authoritative ledger reconciliation for the same job",
+      "evidence_path": "result SHA-256 377593e520a009a94482db0054813cbc0b15e6f7a2afab7e4c4aced8b8c9e45d; 2 events, 2 orders, 2 unique fills, 0 final position; initial 43.95247225902749 + price PnL 0.000034872027142911137 - fees 0.0000101661024480764446115 - funding 0.0001 = final 43.9523969649521848346923885 exactly",
+      "result": "passed"
+    },
+    {
+      "command": "restore official research_readonly backend and verify current-main identity and capability closure",
+      "evidence_path": "source/main ec1f098a6d827be6d45a903eb5bfc81aad079aab; canonical true; runtime_stale false; read_only and controls_disabled true; paper live broker order private promotion transfer withdraw false",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status for the formal acceptance report and handoff",
+      "evidence_path": "docs/acceptance/BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002.md and .agent/handoffs/INTEGRATE-BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002",
+      "result": "passed"
+    },
+    {
+      "command": "real v3 candidate research and 48 hour business acceptance",
+      "evidence_path": "separate unfinished milestone; synthetic_fixture evidence is not a real research result",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-SYSTEM-INTAKE-FORMAL-ACCEPTANCE-20261002",
+  "transition_for": "published-btc-system-intake-formal-post-guard-20261001-7d994408f"
+}

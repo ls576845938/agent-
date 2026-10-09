@@ -1,0 +1,159 @@
+{
+  "schema_version": "data_ticket_delivery_receipt_v1",
+  "ticket_id": "DATA-BTC-LEAN-CANARY-SIGNAL-01",
+  "status": "quality_checked",
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "paper_ready": false,
+    "live_ready": false
+  },
+  "git": {
+    "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+    "window_decoupling_commit": "fe02238b1e818f6246efa718502a9685f0ada4b6",
+    "capture_timestamp_normalization_commit": "00abb040ea1685c089ba27c2077ac449b6f84d37",
+    "six_field_price_candle_fix_commit": "b98b3783d24837870e02f034bc59b0f3ab18a495",
+    "explicit_index_id_test_commit": "48f48dc045ff167fe336eb002f0511c6e6c5db50",
+    "quality_vs_promotion_semantics_commit": "211699644724f383a59b37ab5156f940a904263f"
+  },
+  "immutable_baseline": {
+    "dataset_id": "btc-okx-public-swap-research-bundle",
+    "dataset_version": "btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644",
+    "data_schema": "btc_okx_public_swap_research_bundle_v1",
+    "shared_manifest_logical_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+    "shared_manifest_sha256": "226d3d53b61d752f7797f75fa76fdc114bbd95804ed084709eb32b4fbca4960c",
+    "aggregate_sha256": "fad21ecd6c3d22c92b32f3c7fc7c8ba64f0071f55659e43764dcdc5206f4f25f",
+    "file_count": 15,
+    "total_bytes": 22047443,
+    "storage_format": "uncompressed_csv_and_json",
+    "compression": "none",
+    "coverage_start_utc": "2025-12-21T13:00:00Z",
+    "coverage_end_utc": "2026-07-29T13:00:00Z",
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false
+  },
+  "component_quality": {
+    "completed_1h": {
+      "row_count": 5280,
+      "duplicate_count": 0,
+      "gap_count": 0,
+      "sample_start_utc": "2025-12-21T13:00:00Z",
+      "latest_completed_close_utc": "2026-07-29T13:00:00Z",
+      "freshness_status": "pass",
+      "sha256": "a1f3159dd6f1a44f72e008ea6f08633b1b6206d19ac7c28c3c03df8262d5d27d"
+    },
+    "funding": {
+      "row_count": 273,
+      "duplicate_count": 0,
+      "sample_start_utc": "2026-04-29T16:00:00Z",
+      "sample_end_utc": "2026-07-29T08:00:00Z",
+      "quality_status": "limited_coverage_warning",
+      "sha256": "110037f709a7b432e3507267e121d162e66f7be495e6ad155ec71831eb680832"
+    },
+    "mark_1h": {
+      "row_count": 5280,
+      "duplicate_count": 0,
+      "gap_count": 0,
+      "sample_start_utc": "2025-12-21T13:00:00Z",
+      "latest_completed_close_utc": "2026-07-29T13:00:00Z",
+      "sha256": "213a0a447b40ad2f3782a9bb3788e3740d6e46b6289fc852c186c6992e4b5b82"
+    },
+    "index_1h": {
+      "row_count": 5280,
+      "duplicate_count": 0,
+      "gap_count": 0,
+      "sample_start_utc": "2025-12-21T13:00:00Z",
+      "latest_completed_close_utc": "2026-07-29T13:00:00Z",
+      "sha256": "06fe980a7413bf7962ec10cb9a3598e67b7c48ec92f6ad80939cc270e923ef51"
+    }
+  },
+  "targeted_recovery_lineage": {
+    "ordinary_candles_refetched": false,
+    "funding_refetched": false,
+    "source_candles_hash_verified_before_copy": true,
+    "source_funding_hash_verified_before_copy": true,
+    "mark_endpoint": "/api/v5/market/history-mark-price-candles",
+    "mark_inst_id": "BTC-USDT-SWAP",
+    "index_endpoint": "/api/v5/market/history-index-candles",
+    "index_inst_id": "BTC-USDT",
+    "negative_control_only": {
+      "inst_id": "BTC-USDT-SWAP",
+      "api_code": "51001",
+      "production_blocker": false
+    },
+    "three_probe_result": {
+      "mark_valid_route": "3_of_3_http_200_api_0_three_rows_six_fields",
+      "index_valid_route": "3_of_3_http_200_api_0_three_rows_six_fields",
+      "index_invalid_negative_control": "3_of_3_http_200_api_51001_zero_rows"
+    },
+    "deterministic_defect_fixed": "mark_and_index_rows_have_six_fields_and_terminal_confirm_flag"
+  },
+  "environment_observation": {
+    "scope": "current_host_current_capture_only",
+    "proxy_required_for_okx_public_rest": true,
+    "collector_transport": "urllib.request.urlopen",
+    "proxy_route": "http_and_https_via_127.0.0.1:12334",
+    "proxy_credentials_present": false,
+    "direct_ab_result": "0_of_5_connect_timeout",
+    "proxy_ab_result": "5_of_5_success"
+  },
+  "known_gaps": [
+    "funding_history_available_only_from_2026-04-29T16:00:00Z",
+    "open_interest_history_not_verified_diagnostic_partial",
+    "liquidation_snapshots_missing_diagnostic_only",
+    "consumer_reader_integration_and_independent_research_validation_are_separate_gates",
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "incremental_public_data_contract": {
+    "baseline_status": "accepted_immutable_quality_checked",
+    "future_append_components": [
+      "completed_1h",
+      "funding",
+      "mark_1h",
+      "index_1h"
+    ],
+    "capture_entrypoint": "scripts/fetch_btc_okx_swap_public_data.py",
+    "merge_entrypoint": "scripts/merge_btc_okx_swap_tail_bundle.py",
+    "publication_rule": "build_a_new_immutable_version_from_prior_version_plus_public_tail_then_publish_manifest",
+    "retention_rule": "retain_prior_immutable_versions_and_append_only_manifests_never_overwrite_a_published_version",
+    "full_refill_rule": "do_not_repeat_full_history_after_this_accepted_baseline",
+    "demo_key_boundary": "demo_or_private_credentials_and_data_must_never_enter_public_market_data_lineage"
+  },
+  "verification": {
+    "tests": [
+      {
+        "command": "py -3 -m pytest tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_tail_bundle_merge.py -q",
+        "result": "52 passed"
+      },
+      {
+        "command": "py -3 -m pytest tests/agent_governance/test_shared_data.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+        "result": "13 passed"
+      },
+      {
+        "command": "py -3 -m compileall -q scripts/fetch_btc_okx_swap_public_data.py scripts/build_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py",
+        "result": "passed"
+      },
+      {
+        "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest <shared-manifest>",
+        "result": "resolved_full_hash_consumer_read_only"
+      }
+    ]
+  },
+  "security_flags": {
+    "api_key_used": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_access": false,
+    "oms_access": false,
+    "paper_queue_write": false,
+    "paper_start": false,
+    "live_unlock": false,
+    "real_order": false,
+    "withdraw": false,
+    "secret_read_or_emitted": false
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-v3-remaining-display-20260920-6c6f70ffa",
+  "ticket_id": "V3-REMAINING-DISPLAY-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/v3-remaining-display-20260920",
+  "base_commit": "ea5d62324caf28fb8087f915ef35e08a2d411a30",
+  "deliverable_commit": "6c6f70ffa2ab1207b7c5bc16905f179a23d8a5a8",
+  "created_at": "2026-09-20T09:54:29.861Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/operations/v3-remaining-display-20260920.md",
+      "sha256": "1643cc9bf8be50f268d4b6e687e55074f6638fe952d46a84569694476624e95f",
+      "type": "report",
+      "schema_version": "v3_remaining_display_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "de163f39eaebce920bc508d38846a05df9632bae116b713d3ccaefbe5e529a7d",
+      "type": "code",
+      "schema_version": "v3_remaining_display_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-missing-evidence.mjs",
+      "sha256": "aecfffdf7c8a9bf051807bd168743c10a225fa2f3854925e90a8a6dad1d7f643",
+      "type": "code",
+      "schema_version": "v3_remaining_display_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "bf4278aaa7d0be1058c10b05cd98a11aab5d15907dc1e183c209f766e0f37457",
+      "type": "code",
+      "schema_version": "v3_remaining_display_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "sha256": "9b9139c08492ab56b45aeb53d66fe1966eb3afa20d0aa7dd485749a53a2d6920",
+      "type": "code",
+      "schema_version": "v3_remaining_display_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-btc-missing-evidence.mjs (base regression fails; candidate SSR passes)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-remaining-display-20260920.md"
+    },
+    {
+      "command": "BTC account facts, offline summary, start feedback, research read request and rollback Node suites; tsc --noEmit; npm run build",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-remaining-display-20260920.md"
+    }
+  ],
+  "blockers": [
+    "Independent integration and canonical browser acceptance pending",
+    "BTC domain evidence and account/trading readiness remain blocked; historical offline summary is not runtime evidence"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

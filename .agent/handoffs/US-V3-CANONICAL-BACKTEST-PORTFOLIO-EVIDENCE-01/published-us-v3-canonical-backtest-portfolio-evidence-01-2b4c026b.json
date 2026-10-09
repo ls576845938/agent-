@@ -1,0 +1,116 @@
+{
+  "base_commit": "6ee6c4439f6bf6e8a8209ca6a919ccd48f896624",
+  "blockers": [
+    "production_pit_bundle_missing_owner_data_steward",
+    "production_corporate_action_available_time_replay_missing",
+    "production_delisted_symbol_history_missing",
+    "production_survivorship_clean_universe_missing",
+    "fixture_simulated_ledger_not_production_event_ledger"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "researcher",
+    "data_steward"
+  ],
+  "created_at": "2026-07-24T09:49:08Z",
+  "deliverable_commit": "2b4c026ba691e42f9854d33b8172e7f2c9da037e",
+  "deliverables": [
+    {
+      "path": "quant_us/backtest/canonical_portfolio_evidence.py",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_v1",
+      "sha256": "20719f813f87cbfc89a575870dd9016ccd25c16d3ae97df335f0fee68ba84e56",
+      "type": "code"
+    },
+    {
+      "path": "configs/backtest/us_v3_canonical_backtest_portfolio_evidence_v1.json",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_config_v1",
+      "sha256": "5d51f9dbc7bd1cdc87d7f2c8e5145b6af8dd719fbc39334667bd75b6c21404f1",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_v3_canonical_backtest_portfolio_evidence.schema.json",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_v1",
+      "sha256": "89f29f59621e3aa9ecee84a2ed26160ac379c861a4c3e704beb4392a9e53f820",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/build_us_v3_canonical_backtest_portfolio_evidence.py",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_cli_v1",
+      "sha256": "e64f87c617d667d0ce242875da9f858c73c50e96fa531d7af155f1c62aae2cf7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py",
+      "readiness_class": "backtest_ready",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "e92a3a64ec1bc73063af080a1ff001fa3a3734adecb0d97807d92bb5a8d80dd6",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_canonical_backtest_portfolio_evidence.md",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_contract_v1",
+      "sha256": "4592d82fa776dd3f3a56c8dfaedb9aa9394fd1605739e71766be5cccceb903a6",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/report.json",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_v1",
+      "sha256": "67db58fdd826a3268f7945ea00793e69d335ec40b76d753340bae4cc84005223",
+      "type": "report"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/manifest.json",
+      "readiness_class": "backtest_ready",
+      "schema_version": "us_v3_canonical_backtest_portfolio_evidence_manifest_v1",
+      "sha256": "8cb1f04e96fdf599c452d0898c6145082a1a2705c670607f700964241cb51d71",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-pit-dataready-consumer-01-goal6-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-canonical-backtest-portfolio-evidence-01-2b4c026b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-canonical-backtest-portfolio-evidence-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-canonical-backtest-portfolio-evidence-01-newline-20260724-01",
+      "evidence_path": "tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py tests/contracts/test_us_etf_26_canonical_backtest.py tests/contracts/test_us_etf_26_candidate_portfolio.py tests/backtest/test_ledger_reconciliation_artifact.py tests/contracts/test_us_equity_portfolio_promotion_evidence_report.py -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-canonical-backtest-portfolio-evidence-01-final-20260724-02",
+      "evidence_path": "tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/build_us_v3_canonical_backtest_portfolio_evidence.py",
+      "evidence_path": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/report.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01",
+  "transition_for": ""
+}

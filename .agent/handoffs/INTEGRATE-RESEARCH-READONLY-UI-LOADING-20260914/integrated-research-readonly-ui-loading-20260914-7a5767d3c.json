@@ -1,0 +1,55 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-research-readonly-ui-loading-20260914-7a5767d3c",
+  "ticket_id": "INTEGRATE-RESEARCH-READONLY-UI-LOADING-20260914",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-research-readonly-ui-loading-20260914",
+  "base_commit": "9735b6e46e21c6818c99699bddccdb26bc383e3e",
+  "deliverable_commit": "7a5767d3c0126444fcabad50ce9a5b6e5429ee3c",
+  "created_at": "2026-09-14T09:38:47Z",
+  "expires_at": "",
+  "depends_on": ["published-research-readonly-ui-loading-20260914-f9f513dfc"],
+  "supersedes": [],
+  "transition_for": "published-research-readonly-ui-loading-20260914-f9f513dfc",
+  "deliverables": [
+    {"type":"code","path":"frontend/src/lib/api.ts","sha256":"87bd761af766d631b4d8200bf3a3141446649a5dba92f65fa61120200c466040","schema_version":"research_readonly_ui_loading_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/lib/research-api.ts","sha256":"eeb88a31162e91b176dceb4f6ab9d9f19a713e3b7c4a7549042cd47166db1092","schema_version":"research_readonly_ui_loading_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/lib/research-read-request.ts","sha256":"519fb6c9a9e489c5168d5de828fbb1e6c8c3631cf7834625199b692973d80222","schema_version":"research_readonly_ui_loading_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/ResearchPortfolioWorkspace.tsx","sha256":"667b9339b99bdcfb2e562fc408b7c81fdc747ba9135dbd0dae1cd10e66498b61","schema_version":"research_readonly_ui_loading_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/ResearchWorkbench.tsx","sha256":"e1a097f160ed3ac46c388748b01a18863762a3abc00013ce1093530edf61e567","schema_version":"research_readonly_ui_loading_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"frontend/scripts/test-research-read-request.mjs","sha256":"d6fadbcfe2c355dc877903d0725156c3942721be2df7f683a1bd43914f6dfafe","schema_version":"research_readonly_ui_loading_tests_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"frontend/e2e/research-readonly-loading.spec.ts","sha256":"9f5ca0ed9926357968ea129b1012f1c2ba4c8384ba07fa8ca632a559c17aa27f","schema_version":"research_readonly_ui_loading_tests_v1","readiness_class":"quality_checked"},
+    {"type":"report","path":"docs/acceptance/research-readonly-ui-loading-20260914.md","sha256":"2affe7e191b999b49c5bb550858f7faa428a5d4b5fcabe587ba408f0631c4d1c","schema_version":"research_readonly_ui_loading_acceptance_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/public/frontend-identity.json","sha256":"f3032d1a2bcef24bd3f6a0a86211add2ae27c07d521f3a6ba226733d2927d554","schema_version":"quant_frontend_identity_v1","readiness_class":"quality_checked"},
+    {"type":"report","path":"docs/acceptance/integrate-research-readonly-ui-loading-20260914.md","sha256":"aaa1e884cd8a1639fd8d863b97196ea85087fa22c21c0c96ea3741f9789dcb96","schema_version":"research_readonly_ui_loading_integration_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"handoff.py validate published event against registered repository object store","result":"passed","evidence_path":".agent/handoffs/RESEARCH-READONLY-UI-LOADING-20260914/published-research-readonly-ui-loading-20260914-f9f513dfc.json"},
+    {"command":"independent committed diff review for GET compatibility, singleflight, source isolation, deadline body cancellation, CONFLICT mapping and unchanged execution semantics","result":"passed","evidence_path":"docs/acceptance/integrate-research-readonly-ui-loading-20260914.md"},
+    {"command":"node frontend/scripts/test-research-read-request.mjs with registered-main NODE_PATH","result":"passed","evidence_path":"frontend/scripts/test-research-read-request.mjs"},
+    {"command":"registered-main esbuild bundle ResearchPortfolioWorkspace.tsx with external packages","result":"passed","evidence_path":"docs/acceptance/integrate-research-readonly-ui-loading-20260914.md"},
+    {"command":"node frontend/scripts/check-frontend-identity.mjs","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"git diff --check","result":"passed","evidence_path":"docs/acceptance/integrate-research-readonly-ui-loading-20260914.md"},
+    {"command":"registered-main canonical build, focused E2E, existing 42 Playwright tests, real-page read_only/423 acceptance and official restart","result":"not_run","evidence_path":"docs/acceptance/integrate-research-readonly-ui-loading-20260914.md"}
+  ],
+  "blockers": [
+    "owner:root merge integration commit into registered main",
+    "owner:root refresh final frontend identity and verify exact rollback point",
+    "owner:root run canonical frontend build, focused E2E, existing 42 Playwright tests and real-page read_only/423 acceptance",
+    "owner:root restart canonical frontend and backend through official launchers after final main identity",
+    "readiness_ceiling_quality_checked_no_promotion_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc",
+  "event_type": "integrated",
+  "ticket_id": "BTC-MARKET-STATE-ENTRY-CONSUMER-20260927",
+  "domain": "btc",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer",
+    "researcher"
+  ],
+  "base_commit": "7a1a12f175e9878ffa34d754d3d8d8beca6a42e2",
+  "deliverable_commit": "f2455bfbcafd15404bb4ff98dd6bb925728d0339",
+  "depends_on": [
+    "published-btc-market-entry-policy-consumer-20260927-36abc49d6",
+    "integrated-btc-registered-offline-protection-20260927-ed963919d",
+    "integrated-market-state-shared-and-stage-evidence-20260927-b63cbf2f3"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-market-entry-policy-consumer-20260927-36abc49d6",
+  "created_at": "2026-09-27T04:36:20.668Z",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "type": "report",
+      "schema_version": "btc_market_state_entry_policy_consumer_delivery_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "741ac180935fbfa0793becdb1ccdb5917ecdd4fe9a033e6eb1c0da68fa3c6d29"
+    },
+    {
+      "path": "quant_crypto/application/donchian_offline_replay.py",
+      "type": "code",
+      "schema_version": "btc_market_state_entry_policy_consumer_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "27e41573db5fedd399ea0d64807dcaf4a7fe689405c89b884a38644c77f7e8e8"
+    },
+    {
+      "path": "quant_crypto/application/donchian_historical_replay.py",
+      "type": "code",
+      "schema_version": "btc_market_state_historical_replay_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "9090810fe5cbbff4659650d33153e368da65be3d8ce23eaf1bbae83b16aa52e8"
+    },
+    {
+      "path": "scripts/run_btc_donchian_history.py",
+      "type": "code",
+      "schema_version": "btc_market_state_history_cli_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "2fdd227cb98854989a941119a3885b6ce13b0231a5ff26615fe9329eb8848b4d"
+    },
+    {
+      "path": "tests/contracts/test_btc_donchian_market_entry_policy.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_source_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "a9f8af87d119cfce2f37924177be1d393c52d715d6c62c3e882dcd1dfa56bfc9"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; producer base ancestry; exact five-file deliverable SHA-256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-MARKET-STATE-ENTRY-CONSUMER-20260927/published-btc-market-entry-policy-consumer-20260927-36abc49d6.json"
+    },
+    {
+      "command": "failure-first: stale state with existing-position exit against the producer implementation",
+      "result": "passed",
+      "evidence_path": "1 failed: offline_market_state_binding_mismatch before the existing-position exit could pass through"
+    },
+    {
+      "command": "canonical .venv pytest -q tests/contracts/test_btc_donchian_market_entry_policy.py",
+      "result": "passed",
+      "evidence_path": "6 passed in 12.12s; existing-position stale/None/provider exception, flat no-op, disabled baseline, and enabled flat-entry rejection covered"
+    },
+    {
+      "command": "canonical .venv pytest -q tests/contracts/test_btc_donchian_history_spec.py tests/contracts/test_btc_donchian_history.py tests/contracts/test_donchian_effective_time.py",
+      "result": "passed",
+      "evidence_path": "87 passed in 27.62s"
+    },
+    {
+      "command": "canonical .venv pytest -q tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed",
+      "evidence_path": "11 passed in 51.12s"
+    },
+    {
+      "command": "canonical .venv pytest -q shared market-state, builder and attachment suites",
+      "result": "passed",
+      "evidence_path": "31 passed in 7.34s"
+    },
+    {
+      "command": "canonical .venv check-data with exact frozen spec/protocol/evidence refs for baseline and conditioned arms",
+      "result": "passed",
+      "evidence_path": "both arms rebuilt 2960-event plans; distinct attachment hashes; policy_trial_not_started=true; permissions_granted=false"
+    },
+    {
+      "command": "Python py_compile and git diff --check",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "frozen 2960-event baseline and conditioned A/B writers, post-writer ledger verification, page publication, service restart, main merge, private/order/live access",
+      "result": "not_run",
+      "evidence_path": "source was frozen before the separately bounded sequential trial; no economic or service side effect was created by integration"
+    }
+  ],
+  "blockers": [
+    "owner:research the two fixed 2960-event A/B arms have not run; no policy effect estimate exists yet",
+    "owner:frontend the trial read-model selector and UI result projection are a separate committed delta and are not part of this execution-source commit",
+    "owner:scope sampled hourly marks do not prove the absence or ordering of intrainterval protection triggers",
+    "owner:root the integrated source commit is not merged to registered main and no service restart or browser acceptance was authorized",
+    "owner:gate this source-only quality_checked result is not promotion evidence and does not make a strategy runnable in Demo, paper or live",
+    "promotion_paper_live_private_order_real_order_transfer_and_withdraw_permissions_remain_false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

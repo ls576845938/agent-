@@ -1,0 +1,116 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-frontend-route-bootstrap-20261003-6fb81c07d",
+  "event_type": "integrated",
+  "ticket_id": "FRONTEND-ROUTE-BOOTSTRAP-20261003",
+  "domain": "shared",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/frontend-route-bootstrap-integration-20261003",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "base_commit": "b21bb541127ae71ee5e80c3aa4006c7d5338bd6d",
+  "deliverable_commit": "6fb81c07dbe73e9393c51f27db70baf6a1ff2dfb",
+  "depends_on": [
+    "published-frontend-route-bootstrap-20261003-correction-01-aeb187ddf",
+    "superseded-frontend-route-bootstrap-20261003-feddeecfe-aeb187ddf"
+  ],
+  "supersedes": [],
+  "transition_for": "published-frontend-route-bootstrap-20261003-correction-01-aeb187ddf",
+  "created_at": "2026-10-03T00:06:56Z",
+  "expires_at": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "frontend/src/App.tsx",
+      "type": "code",
+      "schema_version": "frontend_route_lazy_loader_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "e123132ee2935f79a462d64cc36210b3e3d8897971c89dd8187d9fdd7ecdec4d"
+    },
+    {
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "type": "code",
+      "schema_version": "frontend_workbench_icon_import_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "275fb3c3d5e95b8a5379fe1298c7ffed6992895699c0ef4e36a81539002d811b"
+    },
+    {
+      "path": "frontend/scripts/test-route-bootstrap.mjs",
+      "type": "test_evidence",
+      "schema_version": "frontend_route_bootstrap_regression_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "7a782ac099e3b86e9b0d194de38c453e2f44edacb74cfb032567952d356e94a5"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "artifact",
+      "schema_version": "quant_frontend_runtime_identity_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "1b96f31f81f1469c5f5e1091af55df28f733841f08dd4c617438472231c5eacb"
+    },
+    {
+      "path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "type": "report",
+      "schema_version": "frontend_route_bootstrap_acceptance_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "01d2ad7007b4c0fc8ace9c6fed308b0dcf2388422246481356ceb0f878f0bff6"
+    },
+    {
+      "path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-INTEGRATION-20261003.md",
+      "type": "report",
+      "schema_version": "frontend_route_bootstrap_integration_review_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "42da2739dc922f0c123cd5c557da8d8cf4b09d96cd39931b057dc5b0d03ac390"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate corrected published event and required superseded event",
+      "evidence_path": ".agent/handoffs/FRONTEND-ROUTE-BOOTSTRAP-20261003",
+      "result": "passed"
+    },
+    {
+      "command": "verify base to deliverable to producer-final ancestry, exact approved touch set, and six committed Git blob SHA-256 values",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-INTEGRATION-20261003.md",
+      "result": "passed"
+    },
+    {
+      "command": "independent diff review: nine stable outer route keys, BTC health component key retained separately, route props preserved, per-icon CSR imports, execution semantics unchanged",
+      "evidence_path": "frontend/src/App.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts\\test-route-bootstrap.mjs",
+      "evidence_path": "frontend/scripts/test-route-bootstrap.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:refresh; npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main build, restart, unchanged 29-case browser matrix, no-mock navigation, and import-failure refresh recovery",
+      "evidence_path": "root release session pending",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "registered_main_merge_pending",
+    "canonical_current_main_identity_pending",
+    "canonical_research_readonly_restart_pending",
+    "canonical_browser_acceptance_pending",
+    "not_promotion_evidence_ready; demo_control_enabled=false; promotion=false; paper=false; live=false; private=false; order=false; real_order=false; transfer=false; withdraw=false; execution_permission=false; runtime_observed=false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

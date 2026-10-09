@@ -1,0 +1,107 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-cn-v3-qmt-offline-contract-01-aacad98e",
+  "ticket_id": "CN-V3-QMT-OFFLINE-CONTRACT-01",
+  "event_type": "acknowledged",
+  "producer_role": "a_share_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "cn_equity",
+  "producer_branch": "agent/a_share_developer/cn-v3-qmt-offline-contract-01",
+  "base_commit": "92cc60334a5ae21bae904a5c23c9e45ca39045f9",
+  "deliverable_commit": "aacad98ed2e064c392e290a03af72deb97a856e8",
+  "created_at": "2026-07-24T12:33:03Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-cn-v3-oms-ledger-replay-01-goal6-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-cn-v3-oms-ledger-replay-01-goal6-batch-01",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_cn/execution/qmt_adapter_contract.py",
+      "sha256": "8b977a80b6413d3b65a187b3d11348f2c67e9650d97395e65eb1eb771fbaf43e",
+      "schema_version": "cn_qmt_offline_adapter_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/execution/qmt_sdk_fixture_binding.py",
+      "sha256": "a7d50f7b3c691d04a4ac0794bae1687219609c92dbd2b64e0bef69f995b37850",
+      "schema_version": "cn_qmt_sdk_fixture_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cn_equity/test_qmt_adapter_contract.py",
+      "sha256": "6566832812ce7f407a717f577dce4288a4514a9f69af82ae781d7976772578c0",
+      "schema_version": "cn_qmt_offline_adapter_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cn_equity/test_qmt_sdk_fixture_binding.py",
+      "sha256": "23abaf2dd3bd08a86377fc3160a2ab814a47912d1c5ce8d960de6c447f33c5e8",
+      "schema_version": "cn_qmt_sdk_fixture_binding_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/CN-V3-OMS-LEDGER-REPLAY-01/integrated-cn-v3-oms-ledger-replay-01-goal6-batch-01.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/CN-V3-OMS-LEDGER-REPLAY-01/integrated-cn-v3-oms-ledger-replay-01-goal6-batch-01.json"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/cn_equity/test_qmt_adapter_contract.py tests/cn_equity/test_qmt_sdk_fixture_binding.py [observed: 18 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity/test_qmt_adapter_contract.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/cn_equity [observed: 119 passed]",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <unique-system-temp> tests/shared_platform [observed: 13 passed]",
+      "result": "passed",
+      "evidence_path": "tests/shared_platform"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -m compileall -q <exact four-path G08 touch set>",
+      "result": "passed",
+      "evidence_path": "quant_cn/execution/qmt_adapter_contract.py"
+    },
+    {
+      "command": "focused AST contract guard rejects SDK/network/file/private/order imports, definitions, and calls; all fixture runtime actions and trading safety flags false",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity/test_qmt_sdk_fixture_binding.py"
+    }
+  ],
+  "blockers": [
+    "cn_broker_capability_unproven",
+    "cn_qmt_order_write_not_authorized",
+    "cn_qmt_private_read_not_authorized",
+    "cn_qmt_reconciliation_unproven",
+    "cn_qmt_sdk_integration_not_authorized",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "classification:goal8_code_integration_blocker=false",
+    "classification:offline_qmt_fixture_contract=quality_checked",
+    "classification:runtime_qmt_capability=blocked",
+    "classification:recorded_fixture_not_vendor_capability_proof"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

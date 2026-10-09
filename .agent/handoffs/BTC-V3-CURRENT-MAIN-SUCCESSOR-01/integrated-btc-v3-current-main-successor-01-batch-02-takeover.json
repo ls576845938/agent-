@@ -1,0 +1,120 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-current-main-successor-01-batch-02-takeover",
+  "ticket_id": "BTC-V3-CURRENT-MAIN-SUCCESSOR-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "super_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal1-batch-02-takeover",
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "deliverable_commit": "bfee64baed144d759576030f1a1e9f8a726a2f0c",
+  "created_at": "2026-07-24T01:56:38Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-shared-platform-v2-current-main-01-batch-02-takeover",
+    "published-btc-v3-current-main-successor-01-final-299837ff"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-current-main-successor-01-final-299837ff",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "35eed6ef53443b30fbe3e279918fd2bbc25f24719dbcc038dd154289be7197fe",
+      "schema_version": "btc_demo_runtime_shared_entry_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "sha256": "afca87e48cc9580815df532c25c536a3c365340b7c7236042303bbc597325b01",
+      "schema_version": "btc_v3_current_main_successor_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/core/deps.py",
+      "sha256": "05fddff4e75edc95bebda9a5778447336636ff8572cf6b23e908aa0252042e01",
+      "schema_version": "btc_demo_runtime_dependency_container_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "f98664bee8a48d826e35c5154cccec057a6ed42c6f5d4a5693368d5dbf03ad69",
+      "schema_version": "btc_v3_current_main_successor_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "sha256": "a2e2c39feb82bcdcb95c2dc6c7deecf7d8b3dec0895c169a13c4388e7d189e90",
+      "schema_version": "btc_demo_runtime_shared_entry_wiring_test_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "0c978ec0ecb41b2dd0b81fcb0f79823f060ed05760b9a46ba1d34f5a028ef4be",
+      "schema_version": "btc_v3_current_main_successor_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp <unique> tests/contracts/test_btc_root_cause_dag.py tests/contracts/test_btc_gate_report_consistency.py tests/contracts/test_btc_strategy_registry.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_btc_gate_report_consistency.py"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp <unique> backend/tests/test_btc_demo_runtime_api.py backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_root_cause_dag.py tests/contracts/test_btc_strategy_registry.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp <unique> tests/contracts/test_btc_order_surface_audit.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_order_surface_audit.py"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp <unique> tests/shared_platform/test_core_and_boundary.py tests/contracts/test_btc_forecast_layer.py tests/contracts/test_us_equity_shared_forecasting_smoke.py",
+      "result": "passed",
+      "evidence_path": "tests/shared_platform/test_core_and_boundary.py"
+    },
+    {
+      "command": "frontend Playwright e2e/crypto.spec.ts",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/crypto.spec.ts"
+    },
+    {
+      "command": "backend import and create_app smoke",
+      "result": "passed",
+      "evidence_path": "backend/app/api/app_factory.py"
+    }
+  ],
+  "blockers": [
+    "btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "btc_okx_native:30_60_day_observation_window_incomplete",
+    "btc_okx_native:manual_promotion_approval_missing",
+    "btc_successor:current_head_artifacts_missing_in_sparse_worktree",
+    "btc_validation:frontend_e2e_not_run_node_modules_missing"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

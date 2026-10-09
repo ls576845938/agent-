@@ -1,0 +1,61 @@
+{
+  "base_commit": "0789f49c576ef00f90318019e2c070a79e8513ee",
+  "blockers": [
+    "owner:integrator canonical_mocked_playwright_deferred_to_integrated_current_main",
+    "owner:integrator backend_restart_required_after_integration",
+    "promotion_artifact_not_required_for_demo_transport_hotfix",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": ["architect", "integrator"],
+  "created_at": "2026-08-18T10:46:22.8504119Z",
+  "deliverable_commit": "73f6b2185a653a11efa2e9a3ad2e264903e107a9",
+  "deliverables": [
+    {"path": "quant_crypto/oms/okx_demo.py", "readiness_class": "quality_checked", "schema_version": "btc_okx_public_books5_fallback_v1", "sha256": "7f5e31c9aa2888e1d940073ec10d0e6d6b391e7296a6ed531bb4d57c5f8f62ac", "type": "code"},
+    {"path": "backend/app/services/btc_demo_runtime.py", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_market_view_v1", "sha256": "095277e2dea0666bbdc1e2905c1def2f3240c65f89d51eb1a167757b20d129bc", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/demo-types.ts", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_market_view_types_v1", "sha256": "09bffbd18f1446bcc8cb1e5989f6b89d8699cd51014ef031bb3a742ee6939fa3", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/PublicDepthPanel.tsx", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_source_freshness_ui_v1", "sha256": "140a202863745e5901f5c9a1853b918442352d2337e954a5db6fc6e5702015bc", "type": "code"},
+    {"path": "frontend/src/workspaces/CryptoWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_fallback_projection_v1", "sha256": "535df33a144bebbd0f944a36c4d696fb95bc638e100713aea376f6dd6b620058", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "readiness_class": "quality_checked", "schema_version": "btc_backtest_phase_progress_bar_v1", "sha256": "d5503f4f005354be9196e79468103c74ed4583ddc313b4fb7aaacb686fd12b13", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/crypto-strategy-editor.css", "readiness_class": "quality_checked", "schema_version": "btc_backtest_phase_progress_styles_v1", "sha256": "2874bf91068440f86dfc4baf2e7fbe34814526a45b7e1cfc30eeb15f31194baa", "type": "code"},
+    {"path": "frontend/src/index.css", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_fallback_status_style_v1", "sha256": "80822dc0ab388ea2438f365f52eec65694170cfcc358999f8dc18f77aa4d743e", "type": "code"},
+    {"path": "tests/contracts/test_btc_okx_demo_adapter.py", "readiness_class": "quality_checked", "schema_version": "btc_okx_public_books5_contract_v1", "sha256": "a7f5f6d956aec0c2d58506464be8f1034b6339195d9c9983cfba7f0f7f62f9eb", "type": "test_evidence"},
+    {"path": "backend/tests/test_btc_demo_runtime_service.py", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_fallback_service_contract_v1", "sha256": "74d6f1e9d04e85687568482eab6d8ab63253d5b8df3c79607cae5156304bb1c1", "type": "test_evidence"},
+    {"path": "frontend/e2e/btc-demo-console.spec.ts", "readiness_class": "quality_checked", "schema_version": "btc_public_depth_rest_fallback_e2e_v1", "sha256": "3329864899299e4b7b423d5ccd5c044ec2e09def017845c463d79de892f19710", "type": "test_evidence"},
+    {"path": "frontend/e2e/btc-backtest-workbench.spec.ts", "readiness_class": "quality_checked", "schema_version": "btc_backtest_progress_visibility_e2e_v1", "sha256": "e4ccafaef05057fc6035346fab84a44a42a8ded40ffceb647be5cdd99b9e95de", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "frontend_identity_v1", "sha256": "53ce2016c42314fe5d32269c23ca5ecf2b5652777a135601891b6bd16117dc6f", "type": "code"}
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-public-depth-backtest-progress-ux-04-73f6b2185",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-public-depth-backtest-progress-ux-04",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_adapter.py -k public_books", "evidence_path": "4 passed, 54 deselected", "result": "passed"},
+    {"command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py -k 'public_rest_books or prefers_live_public_ws_depth'", "evidence_path": "2 passed, 22 deselected", "result": "passed"},
+    {"command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_public_display_stream.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py", "evidence_path": "104 passed in 7.62s", "result": "passed"},
+    {"command": "py -3 -m py_compile quant_crypto/oms/okx_demo.py backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_okx_demo_adapter.py backend/tests/test_btc_demo_runtime_service.py", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run lint", "evidence_path": "tsc --noEmit passed", "result": "passed"},
+    {"command": "npm --prefix frontend run build", "evidence_path": "Vite 5214 modules transformed; build completed", "result": "passed"},
+    {"command": "git diff --check", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend exec -- playwright test e2e/btc-demo-console.spec.ts --list", "evidence_path": "23 tests listed; execution deferred_to_integrated_current_main", "result": "passed"},
+    {"command": "npm --prefix frontend exec -- playwright test e2e/btc-backtest-workbench.spec.ts --list", "evidence_path": "11 tests listed; execution deferred_to_integrated_current_main", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:refresh", "evidence_path": "fingerprint=ff383f11b7cc275898fdb609d18a22903402d55d49e62c9d9f67409e8a2ea0fb", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check", "evidence_path": "passed; manifest_match=true; canonical=false until integration", "result": "passed"}
+  ],
+  "ticket_id": "BTC-OKX-PUBLIC-DEPTH-BACKTEST-PROGRESS-UX-04",
+  "transition_for": ""
+}

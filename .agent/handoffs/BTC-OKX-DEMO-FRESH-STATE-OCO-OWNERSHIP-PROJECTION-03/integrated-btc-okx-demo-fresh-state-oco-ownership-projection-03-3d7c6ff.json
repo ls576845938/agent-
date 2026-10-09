@@ -1,0 +1,81 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-state-oco-ownership-projection-03-3d7c6ff",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-OCO-OWNERSHIP-PROJECTION-03",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-oco-own-proj-03-integrate",
+  "base_commit": "d3bb284346708bd1f17da38cb8dbafbbc83fb94d",
+  "deliverable_commit": "3d7c6ff40c4307e5d7def2e9b9a89388229e1692",
+  "created_at": "2026-08-10T09:32:05.8456237Z",
+  "expires_at": "",
+  "depends_on": ["superseded-btc-okx-demo-fresh-state-oco-ownership-projection-03-9b8cc0b84"],
+  "supersedes": [],
+  "transition_for": "superseded-btc-okx-demo-fresh-state-oco-ownership-projection-03-9b8cc0b84",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "3c3acece7daec1b73a49115cdf48baf02364f814c00b09eb75d3a852c779dc36",
+      "schema_version": "btc_okx_demo_fresh_state_oco_ownership_projection_v1_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "fb9e7b52483a4a2f682ac12fd2d473cc8c3aafe6eba6833a2cf6dee062876569",
+      "schema_version": "btc_okx_demo_fresh_state_oco_ownership_projection_contract_v1_correction_01",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp=<external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py -k fresh_state_emergency_exit --disable-warnings --maxfail=1 (37 passed, 228 deselected)",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=<external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py --disable-warnings --maxfail=1 (265 passed)",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py .agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-OCO-OWNERSHIP-PROJECTION-03",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "handoff.py validate superseding producer envelope",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-OCO-OWNERSHIP-PROJECTION-03/superseded-btc-okx-demo-fresh-state-oco-ownership-projection-03-9b8cc0b84.json"
+    },
+    {
+      "command": "sanitized production-shape _sanitize_order check (order_id populated from ordId; exchange_order_id absent)",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt:demo_execution_semantics",
+    "no_real_demo_or_private_endpoint_validation_per_ticket",
+    "Demo recovery remains fail_closed until fresh OCO ownership and Private WS gates pass"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

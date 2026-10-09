@@ -1,0 +1,81 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-runtime-main-drift-guard-03-integrate-btc-canonical-ui-binding-01-retry-02",
+  "ticket_id": "QUANT-FRONTEND-RUNTIME-MAIN-DRIFT-GUARD-03",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-btc-canonical-ui-binding-01-retry-02",
+  "base_commit": "b047046f9331f49649ed22f5d1c3779f9de4812d",
+  "deliverable_commit": "daec02402c502203d38018bea25d9f0dc23bd3f4",
+  "created_at": "2026-07-27T02:26:08Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-runtime-main-drift-guard-03-3b680d17"
+  ],
+  "supersedes": [],
+  "transition_for": "published-quant-frontend-runtime-main-drift-guard-03-3b680d17",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/QUANT-FRONTEND-RUNTIME-MAIN-DRIFT-GUARD-03/published-quant-frontend-runtime-main-drift-guard-03-3b680d17.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-RUNTIME-MAIN-DRIFT-GUARD-03/published-quant-frontend-runtime-main-drift-guard-03-3b680d17.json"
+    },
+    {
+      "command": "git merge --ff-only daec02402c502203d38018bea25d9f0dc23bd3f4 [observed: HEAD exact daec0240 and baseline 9a5df2ad remains ancestor]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:test && npm.cmd run identity:check (cwd=frontend) [observed: fingerprint=3c5bf3a27b1b3c300111c3307d577dcdab88036f753804224c39dabdee99db06; manifest_match=true; baseline_ancestor=true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test (cwd=frontend) [observed: five real HTTP and Chromium fail-closed latch scenarios passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, integration branch) [observed: expected fail-closed exit 2 before listener bind]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: 5204 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run smoke && npm.cmd run check:btc-tradingview (cwd=frontend) [observed: smoke passed; 6 of 6 TradingView markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    }
+  ],
+  "blockers": [
+    "exact_main_runtime_identity_remains_a_post_fast_forward_acceptance_check",
+    "historical_pre_guard_worktrees_cannot_be_retroactively_modified_and_remain_unsupported_launch_surfaces",
+    "btc_runtime_artifacts_are_current_only_for_b047046f_and_must_be_rebuilt_after_any_new_main_head",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

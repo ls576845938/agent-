@@ -1,0 +1,73 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-frontend-identity-refresh-01-95e6296",
+  "ticket_id": "BTC-OKX-DEMO-FRONTEND-IDENTITY-REFRESH-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "super_developer", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-frontend-identity-refresh-01-int",
+  "base_commit": "5dab2fb0c7dc7cdb67995f39f81cbc9a836e8bd2",
+  "deliverable_commit": "95e6296d7744f35909a92126817899985a6f08b8",
+  "created_at": "2026-08-10T06:53:04Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-frontend-identity-refresh-01-45c55fef7"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-frontend-identity-refresh-01-45c55fef7",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "code",
+      "sha256": "49579b8c933399bbd4960a6e0b557028c6cc3f84b3e89a63434fa02c5f708d30",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published producer envelope",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git merge-base ancestry and exact one-file diff/blob SHA verification",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- frontend/public/frontend-identity.json",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:environment sparse_worktree_frontend_dependencies_missing_playwright_test",
+    "owner:environment identity_test_canonical_launcher_observes_registered_main_identity_before_main_advance",
+    "owner:main_agent registered_main_fast_forward_and_canonical_frontend_acceptance_pending"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

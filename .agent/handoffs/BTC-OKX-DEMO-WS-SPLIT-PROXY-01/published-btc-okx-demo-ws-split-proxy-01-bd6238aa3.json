@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-ws-split-proxy-01-bd6238aa3",
+  "ticket_id": "BTC-OKX-DEMO-WS-SPLIT-PROXY-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "btc_developer", "super_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-ws-split-proxy-01",
+  "base_commit": "1fecc0c7eac10ca6a67817492f0e45f45c1e12d0",
+  "deliverable_commit": "bd6238aa3b7f2620f9a1f8ec3b904fe42e260dcf",
+  "created_at": "2026-08-04T12:44:56Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "sha256": "fa0fc42d2ac75675fd5497609931449752607e725b2ece432e8d27b7f1783b6d",
+      "schema_version": "okx_demo_private_ws_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "sha256": "59d1740c71dca7e75a6f7505fbe2c6f4e8b17cbe509dfc9e96bd3b64d4856e13",
+      "schema_version": "btc_okx_demo_private_ws_proxy_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest test_btc_okx_demo_private_ws.py -k websocket_factory --basetemp C:\\tmp\\btc-okx-demo-ws-split-proxy-failure-first -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest test_btc_okx_demo_private_ws.py -k websocket_factory --basetemp C:\\tmp\\btc-okx-demo-ws-split-proxy-focused-1 -q",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest test_btc_okx_demo_private_ws.py -k uses_dedicated_loopback_proxy --basetemp C:\\tmp\\btc-okx-demo-ws-split-proxy-review-red-20260804 -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\btc-okx-demo-ws-split-proxy-related -q",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\btc-okx-demo-ws-split-proxy-final-20260804 -q",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_agent deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:main_agent backend_restart_required_after_fast_forward"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

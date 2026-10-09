@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-private-readonly-permission-profile-01-cda21a399",
+  "ticket_id": "BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/btc-private-ro-perm-int-01",
+  "base_commit": "7b956be328016daf133c63ebb0a5632b72d8da1a",
+  "deliverable_commit": "7b956be328016daf133c63ebb0a5632b72d8da1a",
+  "created_at": "2026-08-30T04:20:16Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-private-readonly-permission-profile-01-cda21a399"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-private-readonly-permission-profile-01-cda21a399",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <git-archive producer event>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01/published-btc-private-readonly-permission-profile-01-cda21a399.json"
+    },
+    {
+      "command": "git ancestry plus raw Git-blob SHA-256 verification [observed: main base ancestor=true; deliverable parent of handoff=true; 5/5 declared hashes match]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-PRIVATE-READONLY-PERMISSION-PROFILE-01/published-btc-private-readonly-permission-profile-01-cda21a399.json"
+    },
+    {
+      "command": "independent active-capability bypass review [observed: hooks matcher covers only Bash/apply_patch/Edit/Write; Read/exec_command/MCP/computer-use unmatched; WebClient/BITS/certutil/node/native client and indirect issuer string returned no blocker]",
+      "result": "failed",
+      "evidence_path": ".codex/hooks.json"
+    },
+    {
+      "command": "independent receipt authenticity review [observed: receipt integrity is unkeyed SHA-256 over operator-claimable JSON; no HMAC/signature/platform-protected issuer attestation]",
+      "result": "failed",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py"
+    },
+    {
+      "command": "producer focused and full governance regression",
+      "result": "not_run",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    }
+  ],
+  "blockers": [
+    "p0_pretooluse_matcher_does_not_cover_all_callable_local_and_mcp_tools",
+    "p0_active_capability_allows_unmatched_webclient_bits_certutil_node_and_native_clients",
+    "p0_receipt_authenticity_is_unkeyed_and_agent_forgeable_under_danger_full_access",
+    "p0_string_denylist_does_not_enforce_human_only_issuer",
+    "p0_hooks_are_guardrails_not_an_os_or_platform_permission_boundary",
+    "producer_deliverable_not_merged",
+    "same_ticket_correction_and_new_validated_published_handoff_required",
+    "canonical_main_integration_and_hook_retrust_not_performed",
+    "no_credentials_no_private_no_order_no_live_no_transfer_no_withdraw_access_during_review"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

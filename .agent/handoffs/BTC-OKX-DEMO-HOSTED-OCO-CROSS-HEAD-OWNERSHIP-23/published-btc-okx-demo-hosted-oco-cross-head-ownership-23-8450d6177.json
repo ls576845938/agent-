@@ -1,0 +1,69 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-hosted-oco-cross-head-ownership-23-8450d6177",
+  "ticket_id": "BTC-OKX-DEMO-HOSTED-OCO-CROSS-HEAD-OWNERSHIP-23",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-hosted-oco-cross-head-ownership-23",
+  "base_commit": "6b81d4eb8e740690b53d98b435c800427c69da29",
+  "deliverable_commit": "8450d61779b840862e70d731565cc3ecc6f1f48e",
+  "created_at": "2026-08-11T21:23:53Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-okx-demo-canonical-recovery-identity-archive-22-daf9ebfe"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "b8e0d68515d173396bc63cb14a98202bbe2b652b64d9db2c99b2094b7f9602df",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "74e6479ef000e4c4fd4e79d3c58f1376d79357f94bca0ae6783a05325feaccf0",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k 'cross_head_hosted_exit_projection_restores_only_verified_entry_and_exit' --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "failure-first base result: 1 failed, 321 deselected because the cf58 projection restored zero IDs; final focused result: 3 passed, 319 deselected"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "322 passed in 70.02s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check -- <touch-set>",
+      "result": "passed",
+      "evidence_path": "offline sparse producer worktree"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "canonical_held_position_recovery_not_executed_by_this_offline_ticket",
+    "promotion_artifact_not_rebuilt",
+    "private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

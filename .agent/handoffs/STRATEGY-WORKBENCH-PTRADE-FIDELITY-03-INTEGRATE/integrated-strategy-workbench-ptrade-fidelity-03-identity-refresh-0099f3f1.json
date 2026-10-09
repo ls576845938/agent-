@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-workbench-ptrade-fidelity-03-identity-refresh-0099f3f1",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-FIDELITY-03-INTEGRATE",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer", "integrator"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-ptrade-fidelity-03-int",
+  "base_commit": "7d06a3a98dd0dec2b43ab249c47c1e6b25271874",
+  "deliverable_commit": "0099f3f1a0ad74ecf0e39274b10289dcc0ca6295",
+  "created_at": "2026-08-13T15:29:08Z",
+  "expires_at": "",
+  "depends_on": ["integrated-strategy-workbench-ptrade-fidelity-03-99e608586"],
+  "supersedes": [],
+  "transition_for": "integrated-strategy-workbench-ptrade-fidelity-03-99e608586",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "code",
+      "sha256": "73b56bab71f87947e7eebfb19e0ccb925f2ef3ad209f51f0365e5acfed5a6ee0",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published-strategy-workbench-ptrade-fidelity-03-99e608586 and prior integrated envelope",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/STRATEGY-WORKBENCH-PTRADE-FIDELITY-03-INTEGRATE"
+    },
+    {
+      "command": "npm.cmd run identity:refresh (official registered-main entry)",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run build (registered main, 5211 modules transformed)",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test --list strategy-workbench.spec.ts btc-strategy-history-report.spec.ts btc-strategy-registry.spec.ts",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "node <registered-main-node_modules>/typescript/bin/tsc --noEmit on integrator candidate",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx"
+    },
+    {
+      "command": "npm.cmd run identity:check, identity:test, and node scripts/start-current-main.mjs --check after final identity/handoff commit",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "canonical frontend restart, targeted Playwright execution, /strategies HTTP/DOM smoke",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "backend restart, artifact/read-model rebuild, Demo or private/order/live/transfer/withdraw endpoint activity",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "canonical_identity_checks_and_frontend_restart_pending_final_append_only_handoff_commit",
+    "canonical_registered_main_targeted_playwright_and_visual_acceptance_pending",
+    "promotion_artifact_and_backend_restart_not_applicable_to_frontend_presentation_ticket",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

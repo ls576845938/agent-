@@ -1,0 +1,154 @@
+{
+  "base_commit": "209507ea74121e07337f838705d60533e93b5848",
+  "blockers": [
+    "Runtime registration and account binding not implemented; publish action disabled",
+    "Independent review and canonical browser acceptance pending"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-24T06:14:38Z",
+  "deliverable_commit": "af861f7d3ba71d28adfecc791be6e432a5f862bc",
+  "deliverables": [
+    {
+      "path": "docs/architecture/candidate-runtime-handoff.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "04046f948550086ac2817a8a8c4aef3d313fd2babdc2d24047e593c61f157f77",
+      "type": "document"
+    },
+    {
+      "path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "e573d24ddbd14b3b54759f2acde95a758c885181d4c5758372f47e6baf380a43",
+      "type": "document"
+    },
+    {
+      "path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "7c53800247e28613eaf464619857716acc35cd3722a7344b50b5e34b1b839c3c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-candidate-handoff.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "27fdf04deefa69d31a6f31db59b0429dcbd577ca910c9d5f6578173ebff31568",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "3f5f34d9e54944407dc9df57693dc7f64d228f360493447cd949a15b6f03baf1",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/AlphaFactoryConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "a14027abeb8859c869883957f07ff16627d81a796ed512cdc7d56b5ce1a6b478",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateHandoff.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "3e5cf67f6831b2e3ab656d3d5fca41502636b2d51143cdae9e2444bc284e4c9d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateHandoffInbox.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "9bc9c6da6c5609ebee6e73779e7972893abffa39b288ac5dcfed9b227fa683ac",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/QlibDecisionTrace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "a4df0c4293f2e5af3ae54a617dcb72cb3af4d51b93aba1e6567d6fea92c969cb",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/candidate-handoff.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "efb3cc35ed140c76d32940c1d3c0eb9ac065e81bc0aab390949ede052a3dbbf6",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/candidate-handoff.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_handoff_frontend_v1",
+      "sha256": "f5933132f933b4fb964ab67febcf2e22e3c7274fad1bf3ec698052dee89d0b89",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "candidate-handoff-ui-20260924-published",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/candidate-handoff-ui-20260924",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-candidate-handoff.mjs",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-readonly-workspace.mjs",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-trend-environment.mjs",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-donchian-offline-evidence.mjs",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec vite build (frontend)",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "evidence_path": "docs/operations/candidate-handoff-ui-20260924.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "CANDIDATE-HANDOFF-UI-20260924",
+  "transition_for": ""
+}

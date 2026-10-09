@@ -1,0 +1,75 @@
+{
+  "base_commit": "cc7c1d0d861b6d38311ba1f8e647dcb3da7f1837",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T00:00:00+00:00",
+  "deliverable_commit": "185759f8b43b48b3bebf62b9f9f34c4b68df12b7",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_private_ws_v1",
+      "sha256": "fca5cf20a1131a46425c5c3c74c403adcccdb116341657b3683e18545a66e361",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "1162933d92e32d1adac663ef3650d6ba5a02286ca6aebd83f901de50b4e4e494",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "1177b6afcaf5c0d6107a632301abff5e0c2d09daf077a5d4c7bd58c2d1d0f30a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-private-ws-probe-wallclock-bound-16-185759f8b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-private-ws-probe-wallclock-bound-16",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_private_ws.py quant_crypto/oms/okx_demo_paper_runtime.py && git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-PROBE-WALLCLOCK-BOUND-16",
+  "transition_for": ""
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-workbench-frontend-identity-refresh-01-e5e89e269",
+  "ticket_id": "STRATEGY-WORKBENCH-FRONTEND-IDENTITY-REFRESH-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/strategy-workbench-frontend-identity-refresh-01",
+  "base_commit": "dfa2856c019121f623de237cc9c66a0f9e7cbde1",
+  "deliverable_commit": "e5e89e269bd955e259c6ee272c873f52a70d9083",
+  "created_at": "2026-08-13T14:04:32Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "code",
+      "sha256": "b1e2f9305613ebfc6d07d04cdd6d1fc577efe5b57de068ae63003ffe226681f6",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd run identity:refresh",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "node scripts/start-current-main.mjs --check",
+      "result": "failed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- frontend/public/frontend-identity.json",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required",
+    "owner:main_agent identity_test_and_launcher_guard_require_registered_main_after_integration",
+    "owner:main_agent canonical_frontend_restart_and_browser_acceptance_pending",
+    "promotion_artifact_and_backend_restart_not_applicable_to_frontend_identity_refresh",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

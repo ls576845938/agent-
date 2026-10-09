@@ -1,0 +1,48 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-public-chart-orderbook-ux-02-corr2-6c98cdf62",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-PUBLIC-CHART-ORDERBOOK-UX-02",
+  "domain": "btc",
+  "base_commit": "5e301901f75ab0c00edd5e53d5f633d1fc73ce9e",
+  "deliverable_commit": "5e125ee5032d55d4dabc275f8bbfa8fdb5151baf",
+  "producer_role": "btc_developer",
+  "producer_branch": "agent/btc_developer/btc-okx-public-chart-orderbook-ux-02-corr1",
+  "consumer_roles": ["architect"],
+  "created_at": "2026-08-17T06:50:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-public-chart-orderbook-ux-02-49c1e5c49"],
+  "supersedes": ["published-btc-okx-public-chart-orderbook-ux-02-corr1-5e125ee50"],
+  "transition_for": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/workspaces/CryptoWorkspace.tsx", "sha256": "b8b23bcda1abc5d8a72d0b29735c4002d281c83d85873ce5418394231c7790a8", "schema_version": "btc_okx_public_market_view_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/PublicDepthPanel.tsx", "sha256": "aebd73df846c11ff5b2409f358723bfc0010eb5041114e1621d3deb2d6609137", "schema_version": "btc_okx_public_books5_display_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/index.css", "sha256": "35e559afbfef2881b15da3444426aee33939c31452429202911e2de861c31782", "schema_version": "btc_okx_public_chart_orderbook_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-demo-console.spec.ts", "sha256": "cc00c09c629f8fc7102669468e8be1820abf5f738062f3c86412fb646cd9b43e", "schema_version": "btc_demo_console_mocked_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/public/frontend-identity.json", "sha256": "3d2ac9c6ddfdc280412db75507c07658e633fceae02100fecbb65f6bf4e456cb", "schema_version": "quant_frontend_identity_v1", "readiness_class": "quality_checked"},
+    {"type": "report", "path": "design-qa.md", "sha256": "bc3076605edb472a1cc7a33357842057e340d2d7e750b0ef702957aea7dbd151", "schema_version": "btc_public_chart_orderbook_design_qa_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "failure-first canonical mocked Playwright against running 3000: 16 passed / 4 failed; the served frontend identity was 6a95c522c93a instead of base 5e301901, therefore it cannot validate the unintegrated correction", "result": "failed", "evidence_path": "frontend/test-results"},
+    {"command": "npm.cmd --prefix frontend run lint", "result": "passed", "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command": "npm.cmd --prefix frontend run build", "result": "passed", "evidence_path": "frontend/dist/index.html"},
+    {"command": "npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test; HEAD frontend/src tree equals identity object id", "result": "passed", "evidence_path": "frontend/public/frontend-identity.json"},
+    {"command": "git diff --check scoped frontend paths", "result": "passed", "evidence_path": "frontend/src/index.css"},
+    {"command": "full mocked Playwright 20 tests and 1440x900 visual/design QA final pass against integrated current main", "result": "not_run", "evidence_path": "design-qa.md"}
+  ],
+  "blockers": [
+    "owner:architect fast-forward this deliverable to registered main, restart canonical frontend, then run the full mocked btc-demo-console.spec.ts suite and require 20/20",
+    "owner:architect capture the 1440x900 complete-page/orderbook evidence and publish the deferred design-qa final-pass correction",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ]
+}

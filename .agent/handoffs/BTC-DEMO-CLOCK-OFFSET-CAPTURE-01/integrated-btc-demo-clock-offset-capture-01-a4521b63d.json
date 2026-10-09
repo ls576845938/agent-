@@ -1,0 +1,72 @@
+{
+  "base_commit": "4c4026aa0f82f763537a883e42fd708285d252f6",
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "frontend_identity_refresh_and_canonical_restart_required_after_current_main_rebind",
+    "promotion_artifact_not_rebuilt:demo_runtime_guard_only",
+    "demo_restart_pending_after_current_main_rebind",
+    "25h_observation_not_started_until_post_restart_status_and_private_ws_checks_pass"
+  ],
+  "consumer_roles": ["architect", "btc_developer"],
+  "created_at": "2026-08-06T16:00:00Z",
+  "deliverable_commit": "a4521b63d50936c9c38d1886d7165d97a096e5a5",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_clock_offset_capture_v1",
+      "sha256": "3176da5ec55dae0c718e121ec87b88d4b5a7bf4b453eafdaf78ae05643a3d8d6",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_clock_offset_capture_contract_v1",
+      "sha256": "4d60c1b5994b6a3aa6cfb32c9f327a3a2dfaa8911df8edc7155310bff97ab997",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": ["published-btc-demo-clock-offset-capture-01-9ad300583"],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-clock-offset-capture-01-a4521b63d",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-clock-offset-capture-01-integrate",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "preflight: base=4c4026aa0f82f763537a883e42fd708285d252f6; initial scoped dirty paths=clean; change_risk=demo_execution_semantics; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/btc_developer_pitfalls.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py;tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile and git diff --check",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate producer event",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-CLOCK-OFFSET-CAPTURE-01/published-btc-demo-clock-offset-capture-01-9ad300583.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-CLOCK-OFFSET-CAPTURE-01",
+  "transition_for": "published-btc-demo-clock-offset-capture-01-9ad300583"
+}

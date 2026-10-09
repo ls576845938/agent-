@@ -1,0 +1,115 @@
+{
+  "base_commit": "42052f44fd43e257052970050c394a3a66e55c51",
+  "blockers": [
+    "owner:integrator_explicit_external_runtime_artifact_root_bootstrap_not_run",
+    "owner:btc_research_current_head_runtime_artifacts_not_rebuilt",
+    "owner:btc_data_steward_l2_sample_quality_runtime_artifact_missing",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T18:30:16Z",
+  "deliverable_commit": "15fb24ca2b996fa349fbbe69b6df596ea5bc240a",
+  "deliverables": [
+    {
+      "path": "scripts/bootstrap_btc_runtime_artifact_root.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_root_bootstrap_v1",
+      "sha256": "fe9204ea12e34ebc67796acda4e14864231f99201ce1b37d0165ae3f84ecfff8",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_rebuild_v1",
+      "sha256": "91d28fed966a5240c64d02968f1b92cc7e8e9f906f2019f951f2ea1742d6fa4d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_store_contract_v1",
+      "sha256": "06572a69db6f612a2ca73c7a7329be29fc32b1ed28de6367062045abb0abd915",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_rebuild_contract_v1",
+      "sha256": "c3002a2fca19dd8bbcff9ca4d676360381483283467edf9015b9d88043419cb7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_runtime_artifact_bootstrap_pointer_atomicity_ticket_v1",
+      "sha256": "865ab2f9a9259ac73bb7e0b6fb731dd8af72ec4ed662e3e61db40308d6a7ca26",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-shared-runtime-artifact-root-resolver-01-a788afaf"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-runtime-artifact-bootstrap-and-pointer-atomicity-01-15fb24ca",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-runtime-artifact-bootstrap-atomicity-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first bootstrap collection [ModuleNotFoundError] and current-HEAD contracts [3 failed, 6 passed] before implementation",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_btc_current_head_gate_rebuild.py [28 passed]",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider seven resolver, DataReady, domain read-model, gate snapshot, current-HEAD and L2/reconnect contract files [111 passed on deliverable commit]",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "broader eight-file suite including static L2 sample-quality artifact contracts [113 passed, 3 failed because external runtime artifact is absent]",
+      "evidence_path": "tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py",
+      "result": "failed"
+    },
+    {
+      "command": "focused py -3 -m compileall -q; bootstrap CLI --help; scoped staged git diff --check",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "tests/live/test_safety_boundary_regressions.py",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "not_run"
+    },
+    {
+      "command": "production runtime-artifact bootstrap or current-HEAD gate artifact rebuild",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01",
+  "transition_for": ""
+}

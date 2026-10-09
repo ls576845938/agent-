@@ -1,0 +1,158 @@
+{
+  "base_commit": "0c9efaf51a95ed69bfb7f1180b4a6fbf22d85743",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator full_228_matrix_requires_backend_read_dependencies_not_in_producer_sparse",
+    "owner:runtime_governance explicit_reviewed_real_account_baseline_not_available",
+    "owner:runtime_governance external_deposit_transfer_cashflow_coverage_unknown",
+    "owner:runtime_governance max_drawdown_unit_not_explicitly_configured_legacy_value_remains_unknown",
+    "owner:runtime_operations real_demo_exchange_reconciliation_not_executed",
+    "btc_runtime_artifact_root_env_missing_until_separate_current_head_bootstrap_publication",
+    "promotion_paper_live_private_order_network_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-09-13T06:27:18Z",
+  "deliverable_commit": "e76449c7a0c2355a7b604b07e76e1b56478b3e18",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/account_risk_facts.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_account_drawdown_fact_v1",
+      "sha256": "9d71de69121a94a052f5a9367aaeec80556ce47e545ae512f237c7677a8f8ce3",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/runtime_store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_store_account_fact_uow_v1",
+      "sha256": "d6222c5dff7e4ab98e4b8510698e6be31f8e9e3760e6de4afa2c829120a2df1e",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_account_fact_runtime_closeout_v1",
+      "sha256": "5381d13803b4dab065fd529c46ddbf705447493cbcc92e4d68c228c9bdac0332",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_demo_production_composition.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_production_composition_account_fact_v1",
+      "sha256": "39442f59e1449a66f533843a91089792d8fd2b52abf8b8dd33808bf06b01340c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/runtime_risk_guardian.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_guardian_explicit_drawdown_unit_v1",
+      "sha256": "b02245030d5c30bdb6a90bcc277be0a05f7231bfeab4c6c146c20eb7c2855eaa",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_account_facts_closeout.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_account_facts_closeout_contract_tests_v1",
+      "sha256": "ad364f71e39a566d86ce394219955b09328350ed3ee98af1cbb8ec5c7806b468",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_production_composition.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_production_composition_contract_tests_v1",
+      "sha256": "63677c0fa70d372db94f806a17bd1e3ad0a07675020154e9eadf6cccd7c20fb9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_guardian_latch.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_guardian_latch_contract_tests_v1",
+      "sha256": "b0e091eeec7d763c5f6a29358170146bd08e516c8a39eca6e0f5bcdc37d08a4b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_m1_btc_behavior_freeze.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "m1_historical_freeze_account_fact_delta_v1",
+      "sha256": "cb4b1db6e804269bfadd6801576123b15bece83a78e5b5eccb959e3b495c2e8f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_offline_strategy_safety_acceptance.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_offline_same_decision_engineering_acceptance_v1",
+      "sha256": "accc7346fa42e97cf5a6006376dfc2e8d2377e62b23c8b95d5b67aeb40b19c0c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_account_facts_closeout_report_v1",
+      "sha256": "0a1cd988122303ce11789b1b39ea18b24e2786d26e33c8a5077e3866d71f8782",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-account-facts-closeout-20260913-e76449c7a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-account-facts-closeout-20260913",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-account-facts-closeout-20260913-ff6bae6e0"
+  ],
+  "tests": [
+    {
+      "command": "independent review probes for state-only UOW fact and stale fact attached to later same-hash observation before correction",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "failed"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <two fixed independent review negatives>",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <original 8 BTC files plus test_btc_account_facts_closeout.py>",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_paper_runtime.py::test_runtime_commits_atomic_funding_ledger_uow_and_exchange_reconciliation",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider backend/tests/test_backend_research_readonly.py backend/tests/test_backend_current_main_launcher.py",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --cached --check -- <declared correction touch set>",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "network, secret, private/order/live, service, artifact publication, real Demo account reconciliation",
+      "evidence_path": "docs/acceptance/btc-account-facts-closeout-20260913.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-ACCOUNT-FACTS-CLOSEOUT-20260913",
+  "transition_for": ""
+}

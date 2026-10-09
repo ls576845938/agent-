@@ -1,0 +1,42 @@
+{
+  "base_commit": "478dfccb337c29b1513a5325d1a270d944727fc6",
+  "blockers": [
+    "owner:root canonical current-main mocked Playwright is intentionally deferred; user requested browser acceptance after canonical frontend restart",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; producer and superseded envelopes were validated directly from committed objects",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, service or Demo execution",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": ["architect"],
+  "created_at": "2026-08-19T14:43:55.8826486Z",
+  "deliverable_commit": "e4a999e594d24b781a38aeb4bf54229a8f3c9986",
+  "deliverables": [
+    {"path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "strategy_modules_visual_map_v1", "sha256": "4f1f708ce10255dd8afee51ac46067d2ce6167b4546d7700a0cf5b833a2177bd", "type": "code"},
+    {"path": "frontend/src/strategy-modules.css", "readiness_class": "quality_checked", "schema_version": "strategy_modules_layout_v1", "sha256": "ab76f2c610183693f8cc7ea759f9e61197a88440edaa04fb869acf25e32e0f73", "type": "code"},
+    {"path": "frontend/e2e/strategy-modules.spec.ts", "readiness_class": "quality_checked", "schema_version": "strategy_modules_playwright_contract_v1", "sha256": "c983ad7ba4cb456ab08454bd3c83b67e695eb5547d27b54a095ecb070fd3c267", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "frontend_identity_v1", "sha256": "3bf65aa0b98474d79088a873f754585633d4815758d9adb6f4d0a5eef46235fc", "type": "data_manifest"}
+  ],
+  "depends_on": ["published-qs-strategy-modules-previous-design-microtune-03-correction-01-1f6eac5c8"],
+  "domain": "shared",
+  "event_id": "integrated-qs-strategy-modules-previous-design-microtune-03-correction-01-e4a999e59",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/integrator/qs-microtune-corr-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["integrated-qs-strategy-modules-previous-design-microtune-03-661c87ce1"],
+  "tests": [
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input superseded c2f3 envelope and final 1f6e envelope", "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03/", "result": "passed"},
+    {"command": "npm --prefix frontend run lint", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run build (Vite; existing chunk-size warning only)", "evidence_path": "", "result": "passed"},
+    {"command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list (8 tests collected)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check (manifest_match=true; baseline_ancestor=true)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:test (object_targets=4)", "evidence_path": "", "result": "passed"},
+    {"command": "git diff --check", "evidence_path": "", "result": "passed"},
+    {"command": "canonical full mocked Playwright browser suite", "evidence_path": "", "result": "not_run"}
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03",
+  "transition_for": "published-qs-strategy-modules-previous-design-microtune-03-correction-01-1f6eac5c8"
+}

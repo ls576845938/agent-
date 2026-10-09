@@ -1,0 +1,90 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-frontend-recovery-admission-01-79500c92b",
+  "ticket_id": "BTC-OKX-DEMO-FRONTEND-RECOVERY-ADMISSION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "super_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-fe-recovery-01",
+  "base_commit": "3a3b0cee3b0fb6b62b0813b09daeb3b4ec14fc89",
+  "deliverable_commit": "79500c92b37289070385ed406bb8b40cb0f0dee2",
+  "created_at": "2026-08-15T22:11:26Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-frontend-recovery-admission-01-b2c761a31"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-frontend-recovery-admission-01-b2c761a31",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "eeb0d88b5732b16935035c707204f6853f57592fbad45303028c5bed1e1f48fe",
+      "schema_version": "btc_okx_demo_frontend_recovery_admission_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "sha256": "8220eb885d54b99481be70fcadf62d663dce50ac96ef2098368cb6db9c69851f",
+      "schema_version": "btc_okx_demo_frontend_recovery_admission_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "91716443ba5d403e42968bfed439d481c855fb056127315ea31f160c1687aa5d",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published producer event",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FRONTEND-RECOVERY-ADMISSION-01/published-btc-okx-demo-frontend-recovery-admission-01-b2c761a31.json"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence_path": "frontend/dist/index.html"
+    },
+    {
+      "command": "npm run identity:test",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "canonical frontend restart and mocked Playwright acceptance",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:frontend_operator canonical_registered_main_frontend_restart_and_mocked_playwright_acceptance_pending",
+    "owner:backend_operator demo_execution_semantics_policy_requires_demo_quasi_live_backend_restart_without_demo_start_or_private_order_access",
+    "no_demo_start_reconcile_cancel_only_private_order_live_transfer_withdraw_endpoint_or_secret_access_per_ticket",
+    "promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

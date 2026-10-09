@@ -1,0 +1,46 @@
+{
+  "base_commit": "30205e4462a5dde71e29482e2fc05a5d8c63d6bc",
+  "blockers": [
+    "owner:integrator independent committed-source integration, current-main frontend identity generation and canonical browser regression pending",
+    "frontend/e2e/architecture-mindmap.spec.ts was authored but not run in the producer worktree; canonical browser validation belongs to current main",
+    "M1 and M2-M4 remain unstarted; this source map does not rebuild runtime or promotion evidence"
+  ],
+  "consumer_roles": ["architect", "integrator"],
+  "created_at": "2026-09-10T23:56:49Z",
+  "deliverable_commit": "4eafcaa05ed317cc26b50b8f78e29525d716a8bc",
+  "deliverables": [
+    {"path": "docs/architecture/system-code-map/MINDMAP.md", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "ed4b244c71706e165887264ca3c715263109f33c2b2f3c4c5b56d219bebd351e", "type": "document"},
+    {"path": "frontend/e2e/architecture-mindmap.spec.ts", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "b660028aa73e99ea40623ce121a1a1cde1257b196cd417c105fb06d8de487c42", "type": "test_evidence"},
+    {"path": "frontend/scripts/test-architecture-mindmap.mjs", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "7a6175f3cdd5ede836dc236d99e4f25a10026d0aa9647d47ec02f6cd5271b349", "type": "test_evidence"},
+    {"path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "1ab3895eb9b0d2dc621198b35f0cb98b4e7f649c14bd78f4640197ac50a4665b", "type": "code"},
+    {"path": "frontend/src/workspaces/architecture/ArchitectureMindMap.tsx", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "0334acd4b60c38e2035fd3523731dd8fddc85a9400397d9825834cd67845d095", "type": "code"},
+    {"path": "frontend/src/workspaces/architecture/architecture-mindmap.css", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "4c263ca63faa69e26197ff68086a8bd279402b87699bb42960b4d731170887bf", "type": "code"},
+    {"path": "frontend/src/workspaces/architecture/mindmap.ts", "readiness_class": "quality_checked", "schema_version": "architecture_mindmap_v1", "sha256": "767720685779937ea0ed114f75e35c441b157237ed8a719369d4b7c557e7375d", "type": "code"}
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-architecture-mindmap-01-4eafcaa05",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/architecture-mindmap-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "D:/New Folder/node.exe --test frontend/scripts/test-architecture-mindmap.mjs (5/5)", "evidence_path": "frontend/scripts/test-architecture-mindmap.mjs", "result": "passed"},
+    {"command": "D:/New Folder/node.exe frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json", "evidence_path": "frontend/src/workspaces/architecture/ArchitectureMindMap.tsx", "result": "passed"},
+    {"command": "playwright test frontend/e2e/architecture-mindmap.spec.ts on canonical current main", "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts", "result": "not_run"}
+  ],
+  "ticket_id": "ARCHITECTURE-MINDMAP-01",
+  "transition_for": ""
+}

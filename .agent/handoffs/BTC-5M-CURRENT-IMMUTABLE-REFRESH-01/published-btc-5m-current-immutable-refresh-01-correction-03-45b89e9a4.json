@@ -1,0 +1,94 @@
+{
+  "base_commit": "64e20af8867370d29cfbdb0d8798a78d9c3c5a95",
+  "blockers": [
+    "immutable_manifest_consumer_readiness_blocked",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "okx_timestamp_aligned_l2_manifest_not_published",
+    "backend_restart_required_after_main_integration",
+    "promotion_artifact_rebuild_required_after_main_integration",
+    "qc2_invalid_source_head_orphaned"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T14:30:00Z",
+  "deliverable_commit": "45b89e9a4e6d62e5abf0e55a8f0dba18427f96e2",
+  "deliverables": [
+    {
+      "path": "quant_crypto/data/immutable_kline_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_v1",
+      "sha256": "2fc550a899d6451c3076368bcb0cb8a21bba49ceab895c2c429e2d191d3f042b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_contract_v1",
+      "sha256": "8a64c51cb7ca522f225b02bd55790efd3050a8728e7795f931cd1e3559a671b3",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-5m-current-immutable-refresh-01-correction-02-55e7ec126"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-5m-current-immutable-refresh-01-correction-03-45b89e9a4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-5m-current-immutable-refresh-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-5m-current-immutable-refresh-01-correction-02-55e7ec126"
+  ],
+  "tests": [
+    {
+      "command": "failure-first: math.nextafter(1e18, +inf) reaches adjusted()==18 but is rejected by existing _strict_payload_decimal",
+      "evidence_path": "producer correction target; exact 1e18 remains accepted while nextafter is range-invalid",
+      "result": "passed"
+    },
+    {
+      "command": "pytest -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_kline_immutable_export.py::test_export_rejects_nextafter_above_decimal18_boundary_but_accepts_exact_limit tests/contracts/test_btc_kline_immutable_export.py::test_export_canonicalizes_float_tails_and_boundary_ohlcv_values -q",
+      "evidence_path": "2 passed in 0.48s",
+      "result": "passed"
+    },
+    {
+      "command": "pytest -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py -q",
+      "evidence_path": "70 passed in 2.63s",
+      "result": "passed"
+    },
+    {
+      "command": "canonical .venv Python 3.11 py_compile exporter/test; git diff --check",
+      "evidence_path": "Python 3.11.15; exit=0; no diff-check errors",
+      "result": "passed"
+    },
+    {
+      "command": "qcv2r1 immutable manifest/pointer physical data unchanged and prior full kline scan remains valid",
+      "evidence_path": "no manifest/pointer/data changes; qcv2r1 scan status=pass blockers=[]",
+      "result": "passed"
+    },
+    {
+      "command": "scoped safe_status and handoff validator",
+      "evidence_path": "declared code/test scopes clean before handoff; validator run after emit",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-5M-CURRENT-IMMUTABLE-REFRESH-01",
+  "transition_for": ""
+}

@@ -1,0 +1,971 @@
+{
+  "schema_version": "donchian_paused_stage_snapshot_v1",
+  "selector": "donchian-stage-20260921",
+  "truth_kind": "offline_execution_simulation",
+  "status": "stage_baseline_reconciled_research_only",
+  "source_receipt_sha256": "cc4158866b38c25c4d4d2314671642169bd87304844e1557d7df1dbcc823f647",
+  "source_report_sha256": "643ec8de296ba254efb67dee77750fe1c7313991cfc434410eaa6903090b936f",
+  "source_head": "897d5e99ebe4c898f71ac66cf33fb2d2420855d5",
+  "verification_finished_at_utc": "2026-09-21T11:39:45.821756+00:00",
+  "identity": {
+    "run_id": "donchian-effective-time-20250901-20260901",
+    "source_head": "897d5e99ebe4c898f71ac66cf33fb2d2420855d5",
+    "strategy_id": "long_short_donchian_top5_okx_native",
+    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+    "dataset_version": "donchian-long-input-20260921-v2",
+    "manifest_git_spec": "02e85c7e035cf9fdd8becc8ea110c1bffef57964:.agent/data_manifests/donchian-long-input/donchian-long-input-20260921-v2.json",
+    "manifest_sha256": "349bd130a769796a71877f48ab7aa597338303ece8b124d4b9e23a3759e3993d",
+    "aggregate_sha256": "62bed3a6efa945d8fa4f52917667dc44a276add7ed280bb45085ef52950d10af",
+    "spec_git": "25c00b0c7004d4b02afb419f2fddaa90b1cab26c:docs/research/donchian-long-50usdt-20260921.json",
+    "spec_blob_sha256": "2a7896f4b83926307609b25797b33056f97eb58747297db3467fd70dedfc37cf",
+    "spec_digest": "7a87dba25a55991f86af58c69c29772026ad3fe9f87a90cf4a5c063b0d98a38b",
+    "identity_digest": "466ef2fc203228127f34741183ef4e9dd4b8ec870440090bd31e9584c3d4958e",
+    "cost_policy_hash": "7f821dd38c892c804110a0bc46eee4482f0b28a41f3adf07fb8b1b2502d597b6",
+    "matching_policy_hash": "3364ddc8d79bd47546f7a289ae7803a82c87100746a21ef591f5afcd753d7dc1",
+    "protection_policy_hash": "258b6f00a5dd0333127cea490027dcda28c008bd6c0f3441f3d8e2fad9859dcc",
+    "protection_time_policy_hash": "4f5410d12ca71e13fa1b1047708ff2aff3c97196afeafe6b11a47eca388d7112",
+    "planned_evaluation_end_utc": "2026-09-01T00:00:00+00:00",
+    "order_contracts": "0.01",
+    "contract_value_btc": "0.01",
+    "initial_equity_usdt": "5000",
+    "nominal_cap_usdt": "50",
+    "loss_threshold_usdt": "10"
+  },
+  "progress": {
+    "processed_hours": 2960,
+    "planned_hours": 8760,
+    "paused": true,
+    "paused_at_utc": "2026-09-21T10:25:24.6123295Z",
+    "historical_event_start_utc": "2025-09-01T00:00:00+00:00",
+    "last_event_end_utc": "2026-01-02T08:00:00+00:00"
+  },
+  "counts": {
+    "decisions": 2960,
+    "orders": 56,
+    "fills": 56,
+    "primary_decisions": 30,
+    "protective_exits": 26,
+    "roundtrips": 28,
+    "funding_bills": 370,
+    "nonzero_funding_bills": 24,
+    "ledger_uows": 2992,
+    "journal_events": 14874
+  },
+  "economics": {
+    "price_pnl_usdt": "0.0346310615",
+    "fee_cashflow_usdt": "-0.26552203961525",
+    "funding_cashflow_usdt": "-0.012403344923245647991",
+    "net_usdt": "-0.243294323038495647991",
+    "cash_usdt": "4999.756705676961504352009",
+    "equity_usdt": "4999.756705676961504352009",
+    "position_contracts": "0",
+    "unrealized_pnl_usdt": "0"
+  },
+  "execution_assumptions": {
+    "taker_fee_bps": "5",
+    "half_spread_bps": "0.5",
+    "funding_source": "prior_visible_hour_mark_close_proxy",
+    "assumed_depth_contracts_each_side": "1",
+    "queue_and_market_impact": "not_modeled",
+    "intrabar_exact_fill_time": "not_verified",
+    "ambiguous_dual_touch_order": "fail_closed"
+  },
+  "verification": {
+    "ledger_reconciled": true,
+    "checkpoint_matches_recovered": true,
+    "blockers": [],
+    "venue_ledger_value_mismatches": 0,
+    "batch_exit_zero_count": 10,
+    "checkpoint_verified_count": 10,
+    "inputs_unchanged": true,
+    "source_permissions_changed": false,
+    "source_strategy_run_or_resume_called": false
+  },
+  "permissions": {
+    "demo_control_enabled": false,
+    "execution_permission": false,
+    "live": false,
+    "order": false,
+    "paper": false,
+    "private": false,
+    "promotion": false,
+    "real_order": false,
+    "runtime_observed": false,
+    "transfer": false,
+    "withdraw": false
+  },
+  "decision_links": [
+    {
+      "event_time_utc": "2025-10-02T02:00:00+00:00",
+      "client_order_id": "btcDPdonchian0001",
+      "exchange_order_id": "166010742987238099",
+      "fill_ids": [
+        "838365272597896995"
+      ],
+      "ledger_event_hash": "5b8d1de0a869df13be99a5236fce6eeda2f15989aec1b7b39c58e35ac6a9d28a",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:bc700c5fbc4c8c6eed47afb7f6bf0f2bf8cec9e9640a62c80971696190516b17:3ebaa9fb846f7628a9d3601a1f74a9a27a43f73e3eb61f73810df0bbb80f5c20",
+      "order_intent_id": "oint_cda9352ad3104ad6",
+      "risk_check_id": "risk_b5646768744f41ea",
+      "signal_id": "sig_fdcf51c783744339",
+      "target_position_id": "tgt_babf472de4564734",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-10-03T15:00:00+00:00",
+      "client_order_id": "btcDPdonchian0002",
+      "exchange_order_id": "1105454788838401866",
+      "fill_ids": [
+        "234459460209392903"
+      ],
+      "ledger_event_hash": "b45b5bf0d480572036cc8630fddf5626460b2c472f181e1ce695afad3a908e81",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:210a1972b7e467c0c71b15cfe7ca00e6291b29fd7108029c985020632d811d4e:a5237f35eb37fce62b86137104930fbcf240808f059f48176a6967a1e9436719",
+      "order_intent_id": "oint_a84c168191c64f6c",
+      "risk_check_id": "risk_e50a2546917245ff",
+      "signal_id": "sig_eea0af31475c4d46",
+      "target_position_id": "tgt_806d1f8cf5ce4e40",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-10-05T04:00:00+00:00",
+      "client_order_id": "btcDPdonchian0003",
+      "exchange_order_id": "395505968000781690",
+      "fill_ids": [
+        "94136946551951008"
+      ],
+      "ledger_event_hash": "fd67c8d9ed6e5db9c087642e1a1715b903a83e57f11b03cb66cbc7ac18e608a9",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:bf6e1e4351b665220180d8b5c53c53023db355d8c20bd42d8e41bbab0d066c7f:5114a923079329af406aea507d6a48306aacd680c36f7fa670e3ffcfc5ddc550",
+      "order_intent_id": "oint_16dc98282f824857",
+      "risk_check_id": "risk_80c0291c97a04d9f",
+      "signal_id": "sig_9e3cc9ab557e4647",
+      "target_position_id": "tgt_0720e5e273f0483e",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-10-05T09:00:00+00:00",
+      "client_order_id": "btcDPdonchian0004",
+      "exchange_order_id": "919024889073689169",
+      "fill_ids": [
+        "918119473118834919"
+      ],
+      "ledger_event_hash": "a0c5891f90d25e3409761cee27e79d0db9dd2c0cbaa06b4d695fa9ce4e78c4aa",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:b64357480788a11c6536b45a1d0a88f997a10dda044707127d56c447b9f76e78:c22b7f2d63ce915ca40774e6bcd69db3b462bd7d7bb78f3932dbda8b3169ef80",
+      "order_intent_id": "oint_0027a3f574ec4fab",
+      "risk_check_id": "risk_f001060b912a4fd2",
+      "signal_id": "sig_b7d0adc2b7344102",
+      "target_position_id": "tgt_7d6bfdb03bdf48f9",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-10-06T17:00:00+00:00",
+      "client_order_id": "btcDPdonchian0005",
+      "exchange_order_id": "990364407960690378",
+      "fill_ids": [
+        "849086051155843193"
+      ],
+      "ledger_event_hash": "42d8ea7f3e082503b93d0a38e4a9279568220691ea076a5fa5e1024bb4af0c24",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:fa64450a4142401a5e0617ff75363ff7750b01323965dafa17720616bd213061:6ef083c6e8bf03f0cac96cdecf85be4bb4808147bc63e1ca81b21c611f3a7775",
+      "order_intent_id": "oint_6cf9945f50c34b0a",
+      "risk_check_id": "risk_cdfb69dd93fb40f8",
+      "signal_id": "sig_e26d1e1cd7a94f01",
+      "target_position_id": "tgt_2aea814b1ca249a4",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-10-07T03:00:00+00:00",
+      "client_order_id": "btcDPdonchian0006",
+      "exchange_order_id": "773917887093901609",
+      "fill_ids": [
+        "319479730150244673"
+      ],
+      "ledger_event_hash": "7071fe8307a3a1773fbe3427864f25550b6d1f47faf37643ab2da8570ee7611b",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:b93bd7879047032412921c606d7c8220c34712e9871479e8692eb7b65a0cd379:5823887a7c682000de7e60733a0a9b99ae00995938199b792709c45764e00771",
+      "order_intent_id": "oint_52e22593143d46a6",
+      "risk_check_id": "risk_eba6ffb8832d459c",
+      "signal_id": "sig_9edae9785d854bbc",
+      "target_position_id": "tgt_3a54a854d4414873",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-17T18:00:00+00:00",
+      "client_order_id": "btcDPdonchian0007",
+      "exchange_order_id": "514408118515877524",
+      "fill_ids": [
+        "863888899493462335"
+      ],
+      "ledger_event_hash": "dc9efba6cf537ada92a5dadd16fa02109d5110fc519687fad19ff1b64e0d30cc",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:f2078a0a0592aba5fd20a156fd6a523d0dce27372a5cdc450c9b5bd5a66be125:8ed916ddcc61cc2137ae8653578df81802bb1b0d801d7faf391fcc9b297515af",
+      "order_intent_id": "oint_f5e9444416534dc6",
+      "risk_check_id": "risk_d2c4dc0aafcc480e",
+      "signal_id": "sig_837936cbffe7445e",
+      "target_position_id": "tgt_df20c591769f4e0f",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T03:00:00+00:00",
+      "client_order_id": "btcDPdonchian0008",
+      "exchange_order_id": "536345544961575110",
+      "fill_ids": [
+        "838335782785567252"
+      ],
+      "ledger_event_hash": "113fd4dbcfda8e29841c114c3765716d49ec3be4996c44a18839dd0311231fb3",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:0d6b2e5474e89ed9de88374846f02ea272d25b0151d8f39290a800d9ac194a34:d9f77269ababeb4e6fc7825ac24085d592534b275d882b8976ea8dd4a891340c",
+      "order_intent_id": "oint_2b5e36bac3984a12",
+      "risk_check_id": "risk_3b5e943d6f214a67",
+      "signal_id": "sig_4406226a115b4cb0",
+      "target_position_id": "tgt_456e752d904f4e18",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T12:00:00+00:00",
+      "client_order_id": "btcDPdonchian0009",
+      "exchange_order_id": "996111538141909562",
+      "fill_ids": [
+        "425212580852008835"
+      ],
+      "ledger_event_hash": "80ac1d414216e68b3ad594021ec2f0984235bc94ca9e5fe092f33cb7c107d98b",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:ff96fafded61ca253aa0d97e936209d8d23887077a899603b9a3907cfe34a5c4:b5a5e35f1a22890ed0be54878af884ce6127167386338487c567752a04017345",
+      "order_intent_id": "oint_540db97f6b054ddf",
+      "risk_check_id": "risk_61775c2d688f49ad",
+      "signal_id": "sig_3904ae943cad47a2",
+      "target_position_id": "tgt_bc0bf1ba9a4a48a1",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T14:00:00+00:00",
+      "client_order_id": "btcDPdonchian0010",
+      "exchange_order_id": "435428540662505721",
+      "fill_ids": [
+        "555977700750677142"
+      ],
+      "ledger_event_hash": "cecd0fd012ceee8cff11c78b8e04cb7d1d184ea26f1f5980a6b0d08de4ef0620",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:2d59c058885a2616fa698d4eace8044089783729684085581923e4fb68664e4d:53fbff7190d1e7ef7db464ed21240b1c1f2521407da9b2bc8072e33530485538",
+      "order_intent_id": "oint_28bc8040b4af483d",
+      "risk_check_id": "risk_3d4d8a4fee9c4fd7",
+      "signal_id": "sig_e09e740495ba42c7",
+      "target_position_id": "tgt_dc1470d3ae93447c",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T15:00:00+00:00",
+      "client_order_id": "btcDPdonchian0011",
+      "exchange_order_id": "613474164694621711",
+      "fill_ids": [
+        "301001934634477527"
+      ],
+      "ledger_event_hash": "91d1af7a32ced7359eb7e3ad048f8ffaa5c4336785ce67a31bc38c0cc1f22c2b",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:01750bd02209b0f21443f21ea94c616bc126eec5865630726de6b5ec70304bed:9c9150eccd9d40a13f1304f48e98896ee0e4f62f3fbcb628efc8ecce74f6ab53",
+      "order_intent_id": "oint_ed16b6529cf84330",
+      "risk_check_id": "risk_1ef61085f1824460",
+      "signal_id": "sig_45c95fc80c4a4f93",
+      "target_position_id": "tgt_4ce04307a1e24fe9",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T16:00:00+00:00",
+      "client_order_id": "btcDPdonchian0012",
+      "exchange_order_id": "242971677830612682",
+      "fill_ids": [
+        "773154971035873054"
+      ],
+      "ledger_event_hash": "a1ab8315599ca6b54d8171fcc648dc41eda313e13bf0632b210593945be078ce",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:82db10f81a926290a207827ad844f9ed8d0c2ee23cfaccbe8f224ecb91a9b713:84364755e65b7142d874236ec62e44903d503456c1d88a37ff895c2ca1fd3cc2",
+      "order_intent_id": "oint_2f729367d28f4012",
+      "risk_check_id": "risk_bda53cf68b574c18",
+      "signal_id": "sig_bf84a3911bbc460f",
+      "target_position_id": "tgt_ff1201910db64904",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-18T18:00:00+00:00",
+      "client_order_id": "btcDPdonchian0013",
+      "exchange_order_id": "584590643104628825",
+      "fill_ids": [
+        "487823509342555628"
+      ],
+      "ledger_event_hash": "0a2d035ebc03ff270972ff6f00c2740cbe39a8331940a37b6f266d42475a71cf",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:bf136d26d98c9e5672d5d1689e6a38831a52d856a35d9796321f2ee19f065fb9:eda9140da66cf51c533371c551566f9f0b3759c40a1aa7c6e53349e50f6c3d20",
+      "order_intent_id": "oint_e635560ad40f4254",
+      "risk_check_id": "risk_cef146c418c74c82",
+      "signal_id": "sig_6313e93aa73e4a29",
+      "target_position_id": "tgt_bb447daea7e14224",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-20T18:00:00+00:00",
+      "client_order_id": "btcDPdonchian0014",
+      "exchange_order_id": "797705774597232731",
+      "fill_ids": [
+        "408441200244221976"
+      ],
+      "ledger_event_hash": "ee89c9279f621fda9459da3cdda81ccaa6d1e2151c6cff18b073b775449de511",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:f2bf798fccc113ca7fa0b5b3f0e378dfa7378e08c705a365f4dfee86f9f9a849:09322ef5175527b3b7773974090517121bc005b8ca7dc8016b8054a0c6447bb0",
+      "order_intent_id": "oint_a74fbd19fff840e2",
+      "risk_check_id": "risk_a395f0ba78064ab2",
+      "signal_id": "sig_37bee5eca98f4dc7",
+      "target_position_id": "tgt_a150120926214c9f",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-20T21:00:00+00:00",
+      "client_order_id": "btcDPdonchian0015",
+      "exchange_order_id": "1054190463483969006",
+      "fill_ids": [
+        "981014708474390963"
+      ],
+      "ledger_event_hash": "cc7578dfe75cd66c666f18dcf688c48afb412523efa2b5df6a26e44328b35e43",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:7b603d2eed6674d4c1e833d25275abfbb6913ff42a6cf31b421486187403c550:71a2e742bf049b31a4bd7f3e1e545d24392b460d10705def0d149dce52778951",
+      "order_intent_id": "oint_3fe88d96cde74cfb",
+      "risk_check_id": "risk_a2000dfabb554d30",
+      "signal_id": "sig_5070ccfac3b14fde",
+      "target_position_id": "tgt_f24c3765f2174b93",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-20T22:00:00+00:00",
+      "client_order_id": "btcDPdonchian0016",
+      "exchange_order_id": "195626955882165776",
+      "fill_ids": [
+        "830139518092687183"
+      ],
+      "ledger_event_hash": "f48bba278a8550787dd25679bc9158826bcc7cc497ec7cd744a051022edd7c44",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:1fda179d07ba270ded4ed26832a93be1f0938d3b2fba0e2247a73038a21f13ee:27b8a34752266f4eced51e6adb126f4cdf045692ea5e7701e3eb74e40508d5cf",
+      "order_intent_id": "oint_06c8a48fcfec41f2",
+      "risk_check_id": "risk_fbc5c43ca0ca4cbe",
+      "signal_id": "sig_f51e466d1c5345d6",
+      "target_position_id": "tgt_8c7beabab7ab4ca9",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T02:00:00+00:00",
+      "client_order_id": "btcDPdonchian0017",
+      "exchange_order_id": "380903921890569437",
+      "fill_ids": [
+        "759207763530825648"
+      ],
+      "ledger_event_hash": "93c70af801f0c687e5675fa641f62b00433597daa63644199fdd8b5c4b836e0f",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:d7cc3047eec1e576015cdd1be7fca041c66d4322f30280cf635893865b002d59:1b71ea33e558e049c515c16a2007b356619b1050015a00dd1d439f46d1f86abe",
+      "order_intent_id": "oint_a29f155a473b4502",
+      "risk_check_id": "risk_cf5c4fd52e1c4982",
+      "signal_id": "sig_8b20a6a350ae471b",
+      "target_position_id": "tgt_fd44904b8b6e4261",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T05:00:00+00:00",
+      "client_order_id": "btcDPdonchian0018",
+      "exchange_order_id": "851987695415544339",
+      "fill_ids": [
+        "287519600181509820"
+      ],
+      "ledger_event_hash": "b833b7b974fb01381509823af329ff7517beeef7ce6b18e01c7ab71532a8e20f",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:d2c2283fc90fec5809c7c55c318c82f50d53b34a11fa00e68d5dc5eeeb2de7b6:049459c3c04ac50387a2591453256ffeeb782029577c1b8cf18a9dd1ed05dcc3",
+      "order_intent_id": "oint_db34ff0cc5ce49a0",
+      "risk_check_id": "risk_90188becc8ee448e",
+      "signal_id": "sig_580ae9de58c84a2b",
+      "target_position_id": "tgt_92b44a4612b442f4",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T07:00:00+00:00",
+      "client_order_id": "btcDPdonchian0019",
+      "exchange_order_id": "740412912119107557",
+      "fill_ids": [
+        "1141424778545447750"
+      ],
+      "ledger_event_hash": "33eaf7a9c8796928aa3ce008210ce1535ca3fcefeeb00dbb37b26cd028f3e530",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:8f0f1bf6422f2db3e961075a8529263a6258feab0d67a2d30e3dd24fce91ac6b:0165b81922a4d6f6dd6c6d871072c3a84441ccbffb51bf97156937eeb871958f",
+      "order_intent_id": "oint_84be984c027a4768",
+      "risk_check_id": "risk_c2379dfc05454199",
+      "signal_id": "sig_88c5ac868ac243fc",
+      "target_position_id": "tgt_d76923c666914550",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T09:00:00+00:00",
+      "client_order_id": "btcDPdonchian0020",
+      "exchange_order_id": "770588271469946589",
+      "fill_ids": [
+        "923102321264943654"
+      ],
+      "ledger_event_hash": "b3a20f4485b42f3fd9e0ac5951e3db66aed2b66e19d281b8fa0d44969bb56632",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:6ab93bda29f8b6e5ebd12c9576fd11f142b2f4aab5cef1c12945fa45b3e36cef:7eed1bcf0c088458f2e6bc5d70bc10e0e02d2c58db6e9bc7898544bebb376341",
+      "order_intent_id": "oint_3bcbe3c3be2c41e1",
+      "risk_check_id": "risk_e7a18468ba9b4462",
+      "signal_id": "sig_b8cf8873ce884f5a",
+      "target_position_id": "tgt_527fc4ad14c7415a",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T11:00:00+00:00",
+      "client_order_id": "btcDPdonchian0021",
+      "exchange_order_id": "679526026565179939",
+      "fill_ids": [
+        "48398905929040561"
+      ],
+      "ledger_event_hash": "93aaea29f6ef8362d428b54ddacae4408a597bc69f40d2b35be868f473cf2575",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:918e5fcec991be9b92318d5079773397d8c437862e5274025f142824cc4be27d:c9e95202e148eaa2c7f44a78db53a9ffc0b7e2d8e14e986b1c86e4972c5d504f",
+      "order_intent_id": "oint_c215f2a3d0ed4021",
+      "risk_check_id": "risk_d814974b7b304607",
+      "signal_id": "sig_d2e9ee617d044512",
+      "target_position_id": "tgt_9e2b4ba8bd4440d2",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T12:00:00+00:00",
+      "client_order_id": "btcDPdonchian0022",
+      "exchange_order_id": "419471692045059046",
+      "fill_ids": [
+        "446558503468591330"
+      ],
+      "ledger_event_hash": "d2d1c34bb1c9a8479cc3d748ac45ee8505f59b81c350d3aa61e1d5f556a73f3f",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:132bc49ff6fe15542ad353e4e2deefd57ab00778018fe40a551ea6e953b25f55:bccc2fbf8ba68979aff24a8e33de3e16080c3503262ea367764cb06b3b4ce5fb",
+      "order_intent_id": "oint_c7e043fc804f4777",
+      "risk_check_id": "risk_4df03715d8f74767",
+      "signal_id": "sig_f8953d0a14734749",
+      "target_position_id": "tgt_5bc1249d1e724441",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T13:00:00+00:00",
+      "client_order_id": "btcDPdonchian0023",
+      "exchange_order_id": "18027398709875835",
+      "fill_ids": [
+        "533243174392162989"
+      ],
+      "ledger_event_hash": "6e04283266ef7ed07ec655ebcc6b2dccbe2f1d299d7c189fb29d5287c6547747",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:0e62c540f605cedf1ae9ddb26df9aaff14528bdbe07c938abe547938303376f7:9264deaa2b4f4600242855dbb5f5ffc70f9fdc2ed6b89fde8904a3f0c0782c59",
+      "order_intent_id": "oint_f216e464db384b67",
+      "risk_check_id": "risk_d3cc0862379c4fcd",
+      "signal_id": "sig_0a849570f5e84c96",
+      "target_position_id": "tgt_0610db6b667049cb",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T14:00:00+00:00",
+      "client_order_id": "btcDPdonchian0024",
+      "exchange_order_id": "558972216496523000",
+      "fill_ids": [
+        "698080092679974266"
+      ],
+      "ledger_event_hash": "f7224c88553ea018f872c9fe7882eaeab86873c0038b5939aaedaa6bf44833fa",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:e12437d954c0573f741dbd932da78aaf26940d057b80f98eefad89fe304b5757:095487b1f8791e87c938c239148e6146032550773f44e74151a1c23939548bb4",
+      "order_intent_id": "oint_b0c62b4e5f4340df",
+      "risk_check_id": "risk_87da45db2fda458e",
+      "signal_id": "sig_ef840f10ac544059",
+      "target_position_id": "tgt_fd0d40a403144a20",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T15:00:00+00:00",
+      "client_order_id": "btcDPdonchian0025",
+      "exchange_order_id": "871166921143546127",
+      "fill_ids": [
+        "264855893205912833"
+      ],
+      "ledger_event_hash": "08b4646cec73fcefe5715448a96371147eb5fdb2a0174aaef8be9a04ffcb3a5a",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:9b3a0dc9cd389692ad03e24f36c0cd67a5246f2c76bb6cb8de507ab4952a4af7:aebf1679fb02fd6e9917b35ab120090eeb053696a427af9d9ae1e9088e602d82",
+      "order_intent_id": "oint_9c40b21caf6549e0",
+      "risk_check_id": "risk_3f6eacf2179f4993",
+      "signal_id": "sig_43c42df1b22c4b35",
+      "target_position_id": "tgt_60e87f0f07f04fb2",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-21T16:00:00+00:00",
+      "client_order_id": "btcDPdonchian0026",
+      "exchange_order_id": "544993818586588168",
+      "fill_ids": [
+        "875144077645063603"
+      ],
+      "ledger_event_hash": "9abf9e11fc48c65320be783ce925c8fddb9de267bdcaf908e009c465b07ee00d",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:aac10b824c757e3742bb34a2f804a5b13dda19c33edb9baa3d083038f0c44c0c:6cb6e2da1f54f613192b335fdd64b5304bfef9eca22f2cd6371ad92bee4f41c0",
+      "order_intent_id": "oint_3294d4d06c4d4b54",
+      "risk_check_id": "risk_ec5fb4115cb04565",
+      "signal_id": "sig_b68bad9ab2a64020",
+      "target_position_id": "tgt_c66957bb9a53411d",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-23T01:00:00+00:00",
+      "client_order_id": "btcDPdonchian0027",
+      "exchange_order_id": "403567292792558102",
+      "fill_ids": [
+        "605110486257409118"
+      ],
+      "ledger_event_hash": "0356cee06413336538c1a2bcfb036c8164bb38a40330e1cfd940e99d1343805e",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:dbde34a13c738038b3205008adf4e2ffa6007f8c37043720447866d7c048a416:adaacc13c010d4b22353363b7c2ce761464857128265f6b6f2fe4075b2cea9bd",
+      "order_intent_id": "oint_babd5a1ec21f4a4d",
+      "risk_check_id": "risk_8763b8f1ab434f68",
+      "signal_id": "sig_9cbc1e2d34ff4118",
+      "target_position_id": "tgt_70bb5cf4ff274b6c",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-23T04:00:00+00:00",
+      "client_order_id": "btcDPdonchian0028",
+      "exchange_order_id": "1135162298811542583",
+      "fill_ids": [
+        "228880155460572445"
+      ],
+      "ledger_event_hash": "e0dc7e931112be4e6ca5891ef40c90a966ab09ed036b57e2dc015179e6d256e8",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:1b2692bd4bd6a09398eaa3e648aa45340bb0eb708f8b1699ba5a5f4404e274e4:dc0ddcfc12fb445ddcea584c997d9bfbeb061989660f02c142a82ede0e641fb8",
+      "order_intent_id": "oint_f669489687ff4784",
+      "risk_check_id": "risk_94b098f1958e4bb0",
+      "signal_id": "sig_25c3eff5d36645c0",
+      "target_position_id": "tgt_ad125e108c714ca4",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-23T16:00:00+00:00",
+      "client_order_id": "btcDPdonchian0029",
+      "exchange_order_id": "808061165964396627",
+      "fill_ids": [
+        "238917527857789319"
+      ],
+      "ledger_event_hash": "b3ff0dcca17e51579b8ae471f6b8a22c4cce929dd95b9db60e4645092a90530e",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:0d6bc7ece6fc6e7e90c20295250458731fe070718be80573cc291c35d32cbbd5:d80f07aebb5e99eae57730f8f59cc160aea9417771aa42b23e634096318ff901",
+      "order_intent_id": "oint_1af10e585ed54279",
+      "risk_check_id": "risk_4d82e6e9b839443d",
+      "signal_id": "sig_219b5dc1c92146b2",
+      "target_position_id": "tgt_548f5be840944bae",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    },
+    {
+      "event_time_utc": "2025-11-23T18:00:00+00:00",
+      "client_order_id": "btcDPdonchian0030",
+      "exchange_order_id": "17051331986917894",
+      "fill_ids": [
+        "819591938430599166"
+      ],
+      "ledger_event_hash": "cdb35eba38a355be22f13496bb099c3ec17ddf4addbab04ecd7eb61b48cd7df9",
+      "ledger_event_id": "ledger:donchian-effective-time-20250901-20260901:bb831c852de5c1553c0e8a8015942a7b20fd47a83d1b071ba94b88092e5404df:8b43b90c309048a8ca2502083e76eb2e76dfc53d6e0901e689f1ddbbebde7ebe",
+      "order_intent_id": "oint_332bb8b0ee3d4e02",
+      "risk_check_id": "risk_dc3cddd3c5204f55",
+      "signal_id": "sig_71ecad64748040cc",
+      "target_position_id": "tgt_17dd047544a34745",
+      "ledger_hash_and_fill_refs_resolved": true,
+      "ledger_id_matches_idempotency_key": true
+    }
+  ],
+  "roundtrips": [
+    {
+      "open_fill_id": "838365272597896995",
+      "close_fill_id": "1038931962120889472",
+      "side": "long",
+      "entry_utc": "2025-10-02T03:00:00+00:00",
+      "exit_window_start_utc": "2025-10-03T15:00:00+00:00",
+      "exit_window_end_utc": "2025-10-03T16:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.243506415",
+      "fees_usdt": "0.0119940467925",
+      "entry_notional_usdt": "11.872293585"
+    },
+    {
+      "open_fill_id": "234459460209392903",
+      "close_fill_id": "969849560800305356",
+      "side": "long",
+      "entry_utc": "2025-10-03T16:00:00+00:00",
+      "exit_window_start_utc": "2025-10-05T04:00:00+00:00",
+      "exit_window_end_utc": "2025-10-05T05:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.2506889245",
+      "fees_usdt": "0.01234746553775",
+      "entry_notional_usdt": "12.2221210755"
+    },
+    {
+      "open_fill_id": "94136946551951008",
+      "close_fill_id": "610570506763789775",
+      "side": "long",
+      "entry_utc": "2025-10-05T05:00:00+00:00",
+      "exit_window_start_utc": "2025-10-05T09:00:00+00:00",
+      "exit_window_end_utc": "2025-10-05T10:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.1189557475",
+      "fees_usdt": "0.01245609787375",
+      "entry_notional_usdt": "12.5155757475"
+    },
+    {
+      "open_fill_id": "918119473118834919",
+      "close_fill_id": "463876181117006526",
+      "side": "long",
+      "entry_utc": "2025-10-05T10:00:00+00:00",
+      "exit_window_start_utc": "2025-10-06T17:00:00+00:00",
+      "exit_window_end_utc": "2025-10-06T18:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.2522750535",
+      "fees_usdt": "0.01242568247325",
+      "entry_notional_usdt": "12.2995449465"
+    },
+    {
+      "open_fill_id": "849086051155843193",
+      "close_fill_id": "835474415593492369",
+      "side": "long",
+      "entry_utc": "2025-10-06T18:00:00+00:00",
+      "exit_window_start_utc": "2025-10-07T03:00:00+00:00",
+      "exit_window_end_utc": "2025-10-07T04:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.1190461935",
+      "fees_usdt": "0.01246497309675",
+      "entry_notional_usdt": "12.5244961935"
+    },
+    {
+      "open_fill_id": "319479730150244673",
+      "close_fill_id": "134183014220777525",
+      "side": "long",
+      "entry_utc": "2025-10-07T04:00:00+00:00",
+      "exit_window_start_utc": "2025-10-07T14:00:00+00:00",
+      "exit_window_end_utc": "2025-10-07T15:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.118121342",
+      "fees_usdt": "0.012368400671",
+      "entry_notional_usdt": "12.427461342"
+    },
+    {
+      "open_fill_id": "863888899493462335",
+      "close_fill_id": "1042962447388377008",
+      "side": "short",
+      "entry_utc": "2025-11-17T19:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T03:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T04:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.189507549",
+      "fees_usdt": "0.0091538037745",
+      "entry_notional_usdt": "9.248557549"
+    },
+    {
+      "open_fill_id": "838335782785567252",
+      "close_fill_id": "53756827967102690",
+      "side": "short",
+      "entry_utc": "2025-11-18T04:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T12:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T13:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0862140365",
+      "fees_usdt": "0.00912338298175",
+      "entry_notional_usdt": "9.0802759635"
+    },
+    {
+      "open_fill_id": "425212580852008835",
+      "close_fill_id": "546308827096585613",
+      "side": "short",
+      "entry_utc": "2025-11-18T13:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T14:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T15:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0868473535",
+      "fees_usdt": "0.00919003632325",
+      "entry_notional_usdt": "9.1466126465"
+    },
+    {
+      "open_fill_id": "555977700750677142",
+      "close_fill_id": "1145596615513891544",
+      "side": "short",
+      "entry_utc": "2025-11-18T15:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T15:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T16:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0866966",
+      "fees_usdt": "0.0091748917",
+      "entry_notional_usdt": "9.1315434"
+    },
+    {
+      "open_fill_id": "301001934634477527",
+      "close_fill_id": "901412152962041466",
+      "side": "short",
+      "entry_utc": "2025-11-18T16:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T16:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T17:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0881743065",
+      "fees_usdt": "0.00932975284675",
+      "entry_notional_usdt": "9.2856656935"
+    },
+    {
+      "open_fill_id": "773154971035873054",
+      "close_fill_id": "487823509342555628",
+      "side": "short",
+      "entry_utc": "2025-11-18T17:00:00+00:00",
+      "exit_window_start_utc": "2025-11-18T19:00:00+00:00",
+      "exit_window_end_utc": "2025-11-18T19:00:00+00:00",
+      "exit_type": "historical_next_bar_open_spread_aware",
+      "price_pnl_usdt": "0.0156763305",
+      "fees_usdt": "0.00933669458475",
+      "entry_notional_usdt": "9.34453275"
+    },
+    {
+      "open_fill_id": "408441200244221976",
+      "close_fill_id": "642893676801593197",
+      "side": "short",
+      "entry_utc": "2025-11-20T19:00:00+00:00",
+      "exit_window_start_utc": "2025-11-20T21:00:00+00:00",
+      "exit_window_end_utc": "2025-11-20T22:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0820722",
+      "fees_usdt": "0.0086846039",
+      "entry_notional_usdt": "8.6435678"
+    },
+    {
+      "open_fill_id": "981014708474390963",
+      "close_fill_id": "36090408073045761",
+      "side": "short",
+      "entry_utc": "2025-11-20T22:00:00+00:00",
+      "exit_window_start_utc": "2025-11-20T22:00:00+00:00",
+      "exit_window_end_utc": "2025-11-20T23:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.082826188",
+      "fees_usdt": "0.008764736906",
+      "entry_notional_usdt": "8.723323812"
+    },
+    {
+      "open_fill_id": "830139518092687183",
+      "close_fill_id": "316409136537035281",
+      "side": "short",
+      "entry_utc": "2025-11-20T23:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T02:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T03:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.180369868",
+      "fees_usdt": "0.008712014934",
+      "entry_notional_usdt": "8.802199868"
+    },
+    {
+      "open_fill_id": "759207763530825648",
+      "close_fill_id": "362548108921649470",
+      "side": "short",
+      "entry_utc": "2025-11-21T03:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T05:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T06:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.081087",
+      "fees_usdt": "0.0085801165",
+      "entry_notional_usdt": "8.539573"
+    },
+    {
+      "open_fill_id": "287519600181509820",
+      "close_fill_id": "929060917356310660",
+      "side": "short",
+      "entry_utc": "2025-11-21T06:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T07:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T08:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.1765392015",
+      "fees_usdt": "0.00852726960075",
+      "entry_notional_usdt": "8.6155392015"
+    },
+    {
+      "open_fill_id": "1141424778545447750",
+      "close_fill_id": "28990324059092654",
+      "side": "short",
+      "entry_utc": "2025-11-21T08:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T09:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T10:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.17211",
+      "fees_usdt": "0.008313525",
+      "entry_notional_usdt": "8.39958"
+    },
+    {
+      "open_fill_id": "923102321264943654",
+      "close_fill_id": "337889931091868317",
+      "side": "short",
+      "entry_utc": "2025-11-21T10:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T11:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T12:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0780309035",
+      "fees_usdt": "0.00825667454825",
+      "entry_notional_usdt": "8.2176590965"
+    },
+    {
+      "open_fill_id": "48398905929040561",
+      "close_fill_id": "768529583711876651",
+      "side": "short",
+      "entry_utc": "2025-11-21T12:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T12:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T13:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0781214245",
+      "fees_usdt": "0.00826713928775",
+      "entry_notional_usdt": "8.2280785755"
+    },
+    {
+      "open_fill_id": "446558503468591330",
+      "close_fill_id": "636838689088945406",
+      "side": "short",
+      "entry_utc": "2025-11-21T13:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T13:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T14:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.079016117",
+      "fees_usdt": "0.0083614319415",
+      "entry_notional_usdt": "8.321923883"
+    },
+    {
+      "open_fill_id": "533243174392162989",
+      "close_fill_id": "1062921571507239046",
+      "side": "short",
+      "entry_utc": "2025-11-21T14:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T14:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T15:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0798103025",
+      "fees_usdt": "0.00844553484875",
+      "entry_notional_usdt": "8.4056296975"
+    },
+    {
+      "open_fill_id": "698080092679974266",
+      "close_fill_id": "132406700413812050",
+      "side": "short",
+      "entry_utc": "2025-11-21T15:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T15:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T16:00:00+00:00",
+      "exit_type": "historical_oco_take_profit",
+      "price_pnl_usdt": "0.1737659905",
+      "fees_usdt": "0.00839288299525",
+      "entry_notional_usdt": "8.4797659905"
+    },
+    {
+      "open_fill_id": "264855893205912833",
+      "close_fill_id": "83230788042585074",
+      "side": "short",
+      "entry_utc": "2025-11-21T16:00:00+00:00",
+      "exit_window_start_utc": "2025-11-21T16:00:00+00:00",
+      "exit_window_end_utc": "2025-11-21T17:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0787145235",
+      "fees_usdt": "0.00832941273825",
+      "entry_notional_usdt": "8.2900554765"
+    },
+    {
+      "open_fill_id": "875144077645063603",
+      "close_fill_id": "226769337261147203",
+      "side": "short",
+      "entry_utc": "2025-11-21T17:00:00+00:00",
+      "exit_window_start_utc": "2025-11-23T01:00:00+00:00",
+      "exit_window_end_utc": "2025-11-23T02:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0805944015",
+      "fees_usdt": "0.00852790279925",
+      "entry_notional_usdt": "8.4876055985"
+    },
+    {
+      "open_fill_id": "605110486257409118",
+      "close_fill_id": "1025844043881377179",
+      "side": "short",
+      "entry_utc": "2025-11-23T02:00:00+00:00",
+      "exit_window_start_utc": "2025-11-23T04:00:00+00:00",
+      "exit_window_end_utc": "2025-11-23T05:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0814791355",
+      "fees_usdt": "0.00862302043225",
+      "entry_notional_usdt": "8.5822808645"
+    },
+    {
+      "open_fill_id": "228880155460572445",
+      "close_fill_id": "1095576626219555327",
+      "side": "short",
+      "entry_utc": "2025-11-23T05:00:00+00:00",
+      "exit_window_start_utc": "2025-11-23T16:00:00+00:00",
+      "exit_window_end_utc": "2025-11-23T17:00:00+00:00",
+      "exit_type": "historical_oco_stop_loss",
+      "price_pnl_usdt": "-0.0821324955",
+      "fees_usdt": "0.00869054375225",
+      "entry_notional_usdt": "8.6494775045"
+    },
+    {
+      "open_fill_id": "238917527857789319",
+      "close_fill_id": "819591938430599166",
+      "side": "short",
+      "entry_utc": "2025-11-23T17:00:00+00:00",
+      "exit_window_start_utc": "2025-11-23T19:00:00+00:00",
+      "exit_window_end_utc": "2025-11-23T19:00:00+00:00",
+      "exit_type": "historical_next_bar_open_spread_aware",
+      "price_pnl_usdt": "-0.031868",
+      "fees_usdt": "0.0086800007750",
+      "entry_notional_usdt": "8.664066775"
+    }
+  ],
+  "monthly": {
+    "2025-09": {
+      "events": 720,
+      "fills": 0,
+      "price_pnl": "0",
+      "fees": "0",
+      "funding": "0",
+      "net": "0"
+    },
+    "2025-10": {
+      "events": 744,
+      "fills": 12,
+      "price_pnl": "0.3903471100",
+      "fees": "0.07405666644500",
+      "funding": "-0.014607003705968962259",
+      "net": "0.301683439849031037741"
+    },
+    "2025-11": {
+      "events": 720,
+      "fills": 44,
+      "price_pnl": "-0.3557160485",
+      "fees": "0.19146537317025",
+      "funding": "0.002203658782723314268",
+      "net": "-0.544977762887526685732"
+    },
+    "2025-12": {
+      "events": 744,
+      "fills": 0,
+      "price_pnl": "0",
+      "fees": "0",
+      "funding": "0",
+      "net": "0"
+    },
+    "2026-01": {
+      "events": 32,
+      "fills": 0,
+      "price_pnl": "0",
+      "fees": "0",
+      "funding": "0",
+      "net": "0"
+    }
+  },
+  "not_verified": [
+    "remaining_5800_hours",
+    "annual_performance",
+    "uninterrupted_vs_resumed_annual_equivalence",
+    "arbitrary_crash_recovery_in_this_run",
+    "fresh_repeated_event_injection",
+    "live_or_demo_exchange_reconciliation",
+    "independent_confirmation_or_promotion",
+    "formal_frontend_acceptance_of_this_stage_run",
+    "intrabar_exact_fill_time_or_drawdown"
+  ]
+}

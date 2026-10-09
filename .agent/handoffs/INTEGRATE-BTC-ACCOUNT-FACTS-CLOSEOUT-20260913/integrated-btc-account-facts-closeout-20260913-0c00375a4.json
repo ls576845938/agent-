@@ -1,0 +1,82 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-account-facts-closeout-20260913-0c00375a4",
+  "ticket_id": "INTEGRATE-BTC-ACCOUNT-FACTS-CLOSEOUT-20260913",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-account-facts-closeout-20260913",
+  "base_commit": "0c9efaf51a95ed69bfb7f1180b4a6fbf22d85743",
+  "deliverable_commit": "0c00375a466945224ef870f50b9e6b8861e89678",
+  "created_at": "2026-09-13T07:03:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-account-facts-closeout-20260913-e76449c7a"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-account-facts-closeout-20260913-e76449c7a",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/acceptance/integrate-btc-account-facts-closeout-20260913.md",
+      "sha256": "a73da00f0d82094b44e1fecf7cbfdce2c8ace6d8def02b563ab77dc3e668aaf6",
+      "schema_version": "btc_account_facts_independent_integration_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "producer final handoff validate, base ancestry, exact scope, 11/11 committed-object SHA-256, and git diff --check",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-closeout-20260913.md"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <original 8 BTC files plus test_btc_account_facts_closeout.py>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_account_facts_closeout.py"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <full fixed 228 matrix including two backend read-only files> [227 passed, 1 failed in sparse worktree]",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-closeout-20260913.md"
+    },
+    {
+      "command": "independent state-only and stale-fact negatives plus later-identical-economics/retry/dedup and atomic-funding positives [4 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_account_facts_closeout.py"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs [manifest_match=true, baseline_ancestor=true, sparse canonical=false expected]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "registered-main full 228 regression, canonical frontend identity test, service startup, artifact bootstrap/publication, real Demo reconciliation, network, secret, private/order/live endpoints",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-closeout-20260913.md"
+    }
+  ],
+  "blockers": [
+    "owner:main_session registered_main_full_228_matrix_required_before_service_or_artifact_publication",
+    "owner:main_session canonical_frontend_identity_test_required_after_main_integration",
+    "owner:runtime_governance explicit_reviewed_real_account_baseline_not_available",
+    "owner:runtime_governance external_deposit_transfer_cashflow_coverage_unknown",
+    "owner:runtime_governance max_drawdown_unit_not_explicitly_configured_legacy_value_remains_unknown",
+    "owner:runtime_operations real_demo_exchange_reconciliation_not_executed",
+    "btc_runtime_artifact_root_env_missing_until_separate_current_head_bootstrap_publication",
+    "promotion_paper_live_private_order_network_secret_actions_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-workbench-ptrade-redesign-01-correction-02-70739d47c",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-REDESIGN-01-CORRECTION-02",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-workbench-ptrade-redesign-01",
+  "base_commit": "e8fd743f89d60d8ed4f43e515dc26e89b7d72eae",
+  "deliverable_commit": "70739d47c124d54ee1597ac2743c3122de6064ad",
+  "created_at": "2026-08-13T11:02:17Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-workbench-ptrade-redesign-01-correction-01-8ff94ed76"],
+  "supersedes": ["published-strategy-workbench-ptrade-redesign-01-correction-01-8ff94ed76"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "type": "code",
+      "sha256": "be766231310beb4b7508d4aefe9fb5ab68db65a8056113851a55530b98c31e2c",
+      "schema_version": "strategy_workbench_presentation_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --typeRoots <registered-main>/frontend/node_modules/@types",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/strategy-workbench.spec.ts --list --reporter=list",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- frontend/src/workspaces/StrategyExplorer.tsx",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_frontend_integration_required",
+    "owner:integrator canonical_registered_main_playwright_and_visual_acceptance_pending",
+    "owner:policy noncanonical_worktree_frontend_preview_prohibited",
+    "promotion_artifact_not_applicable_to_frontend_presentation_ticket",
+    "backend_restart_not_applicable_to_frontend_presentation_ticket",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "base_commit": "3c1a28564f2dc2db338f88054f87f875c1e7861a",
+  "blockers": [
+    "browser_e2e_not_executed:selected_in_app_browser_policy",
+    "registered_main_fast_forward_pending:external_write_authorization_required"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-08-02T00:58:58Z",
+  "deliverable_commit": "6b3fd38617a1994879d375e000860534b690bd9e",
+  "deliverables": [
+    {
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_v1",
+      "sha256": "f158c250926c1ecb3e6bf703c8c58f071eb977a4be68eb49ac5a5611e2554099",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_v1",
+      "sha256": "75d6945e2635f4135167f99b911a9ff85379432e24dc2c844c3049317217d753",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/user-backtest-strategy-catalog.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_snapshot_adapter_v1",
+      "sha256": "6f8719bdcbf3cff3b7c44c10fcda34e0874ffbf3f7ead32a8a68ac8b90955cc4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_snapshot_adapter_v1",
+      "sha256": "f07ab8189c7023ce6ed4c615bfb39c1382549cc62f9e45c22df19f2f09e7f257",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_snapshot_adapter_v1",
+      "sha256": "8250355036b0bbd90f969bcb3e64b7d4307cf7969b9d00e550c0aa0bf019aad6",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_v1",
+      "sha256": "90a883d7b3928943770218e6ce04e902d94d5c148018ff9ca69f0e3778ff766a",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_v1",
+      "sha256": "bb1c0077ae86ad825296535de941653d445b693b71c148dbddd736e50d2c1023",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_e2e_v1",
+      "sha256": "8224a489a984898aa2f10e11a3dde2cd5c33aaee4e9e513e8ec6b39c1c37cf90",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_e2e_v1",
+      "sha256": "8f6d2f10956288b1e320c3325a97d2b5313da6003aa423e700871eecd21d88ed",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_readability_resizable_layout_e2e_v1",
+      "sha256": "5d1cf302f8393a7cc0fcdb920e73bbea9d8c87c1829e5d8e3c5239481ce6f6c6",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "3fb29314c7de7abea8e556aab93514bd8b13bee7d4e50c5f12fca8297c981e5d",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "integrated-frontend-readability-report-resizable-layout-01-6b3fd3861",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-frontend-readability-layout-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "producer envelope schema, ancestry, exact 10-path touch set, and raw committed blob SHA-256 validation",
+      "evidence_path": ".agent/handoffs/FRONTEND-READABILITY-REPORT-RESIZABLE-LAYOUT-01/published-frontend-readability-report-resizable-layout-01-17385eb0d.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 3c1a28564f2dc2db338f88054f87f875c1e7861a HEAD -- approved touch set",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright CLI",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "FRONTEND-READABILITY-REPORT-RESIZABLE-LAYOUT-01",
+  "transition_for": "published-frontend-readability-report-resizable-layout-01-17385eb0d"
+}

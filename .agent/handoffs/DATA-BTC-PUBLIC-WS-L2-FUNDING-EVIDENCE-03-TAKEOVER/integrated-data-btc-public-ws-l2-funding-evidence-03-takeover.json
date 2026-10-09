@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-data-btc-public-ws-l2-funding-evidence-03-takeover",
+  "ticket_id": "DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-ws-l2-funding-runtime-ui-02",
+  "base_commit": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "deliverable_commit": "a13748cd342c5682f22d6e0811e48a5b29f20786",
+  "created_at": "2026-07-28T13:14:55Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-data-btc-public-ws-l2-funding-evidence-03-takeover-dba64e82d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-data-btc-public-ws-l2-funding-evidence-03-takeover-dba64e82d",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "sha256": "8177fe8a73c0fea0ba4cce2f9b0d4c78f442e1f4fc899b602388215ed9279b6b",
+      "schema_version": "data_btc_public_ws_l2_funding_evidence_takeover_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "data_manifest",
+      "path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "sha256": "ea87a31cfd15ab134803750c3c6e52035d3d1d8cc2594731afd6c0c75bb37694",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <producer-event> [observed: valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER/published-data-btc-public-ws-l2-funding-evidence-03-takeover-dba64e82d.json"
+    },
+    {
+      "command": "git cat-file blob <producer-deliverable-commit>:<deliverable-path> plus SHA-256 [observed: 2/2 committed-byte hashes matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER/published-data-btc-public-ws-l2-funding-evidence-03-takeover-dba64e82d.json"
+    },
+    {
+      "command": "dependency closure validation [observed: predecessor and top producer events valid; superseded 356c7aabe event excluded from active consumption]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER/published-data-btc-public-ws-l2-funding-evidence-03-takeover-dba64e82d.json"
+    }
+  ],
+  "blockers": [
+    "btc_okx_public_ws_tls_or_runtime_path_connection_reset",
+    "btc_okx_public_ws_endpoint_not_configurable_for_bounded_fallback_probe",
+    "btc_okx_public_ws_l2_no_messages_captured",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_gap_recovery_unverified",
+    "l2_lt_30_natural_days",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "windows_time_service_stopped_environment_blocker",
+    "not_research_ready",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

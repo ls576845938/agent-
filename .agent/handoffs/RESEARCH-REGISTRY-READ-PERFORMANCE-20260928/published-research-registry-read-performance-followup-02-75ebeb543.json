@@ -1,0 +1,108 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-registry-read-performance-followup-02-75ebeb543",
+  "ticket_id": "RESEARCH-REGISTRY-READ-PERFORMANCE-20260928",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/research-registry-read-performance-20260928-clean",
+  "base_commit": "c982620431ddcccce5db27b301763602b1ee108d",
+  "deliverable_commit": "75ebeb543e1527f1ead4318a4817bd268f46a487",
+  "created_at": "2026-09-28T05:04:37.990Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-research-registry-read-performance-followup-01-9c73a40d2"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "sha256": "74a60de4886d884c76d83b923ec99258d92d41954b03752403dd5835ce97b34b",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "sha256": "31391823b1221ef77bd721a59cb519a27f0cff52ec5fdf10463be53446836098",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "git diff --name-status c982620431ddcccce5db27b301763602b1ee108d 75ebeb543e1527f1ead4318a4817bd268f46a487",
+      "result": "passed",
+      "evidence_path": "producer console; exact two paths: quant_us/research/evidence_registry.py and tests/research/test_evidence_registry.py; no handoff or frontend delta"
+    },
+    {
+      "command": "git blob identity comparison between corrected deliverable 75ebeb543 and reviewed implementation 9c73a40d2",
+      "result": "passed",
+      "evidence_path": "producer console; both deliverable file blobs are byte-identical"
+    },
+    {
+      "command": "failure-first same-parent registry path resolution regression",
+      "result": "failed",
+      "evidence_path": "producer console; expected pre-fix failure: 65 Path.resolve calls exceeded the <=4 invariant"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/research/test_evidence_registry.py tests/api/test_research_registry_summary_api.py",
+      "result": "passed",
+      "evidence_path": "producer console; 14 passed, 1 skipped in 4.64s; skip is real symlink creation unavailable on this Windows host, while platform-independent reparse full-resolve coverage passed"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m py_compile quant_us/research/evidence_registry.py",
+      "result": "passed",
+      "evidence_path": "producer console; exit 0"
+    },
+    {
+      "command": "NODE_PATH=<registered-main-frontend-node_modules> node frontend/scripts/test-research-portfolio-contract.mjs",
+      "result": "passed",
+      "evidence_path": "producer console; frozen frontend contract PASS and no network calls"
+    },
+    {
+      "command": "single-process read-only cProfile of registry summary against registered-main data",
+      "result": "passed",
+      "evidence_path": "producer console; full summary 10.063s -> 3.804s, storage validation 9.483s -> 2.998s, response 10839 bytes, existing CONFLICT preserved"
+    },
+    {
+      "command": "single-process three-worker read-only registry-summary plus Qlib plus Alpha archive validation against registered-main data/shared archive",
+      "result": "passed",
+      "evidence_path": "producer console; wall 6.342s; registry 3.865s, Qlib 2.693s, Alpha 6.340s; no writes"
+    },
+    {
+      "command": "full app_factory and research-release governance suites in planner sparse producer",
+      "result": "not_run",
+      "evidence_path": "producer console; collection unavailable because protected quant_crypto is absent from super_developer sparse checkout; this is an environment limitation, not a business-test failure"
+    },
+    {
+      "command": "formal current-main 8765 twelve-request page refresh with unchanged deadlineMs=12000",
+      "result": "not_run",
+      "evidence_path": "requires independent integration, canonical backend restart and browser acceptance"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_review_pending",
+    "current_main_merge_and_canonical_backend_restart_pending",
+    "formal_8765_twelve_request_page_12s_acceptance_pending",
+    "canonical_browser_acceptance_pending",
+    "complete_checkout_app_factory_and_team_context_regression_pending",
+    "existing_registry_conflict_preserved_fail_closed"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

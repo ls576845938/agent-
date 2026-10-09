@@ -1,0 +1,60 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "acknowledged-v3-remaining-display-integration-20260920-245d88dba",
+  "ticket_id": "V3-REMAINING-DISPLAY-INTEGRATION-20260920",
+  "event_type": "acknowledged",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "super_developer",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/v3-remaining-display-integration-20260920",
+  "base_commit": "ea5d62324caf28fb8087f915ef35e08a2d411a30",
+  "deliverable_commit": "245d88dba65b562bfa29171b1365108807a3a456",
+  "created_at": "2026-09-20T10:08:27Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "published-v3-remaining-display-20260920-6c6f70ffa",
+  "deliverables": [
+    {
+      "path": "docs/operations/v3-remaining-display-integration-20260920.md",
+      "sha256": "1608878dd46ed5988485ff0f62b7b2d798013c039b04f840dab432048f8c7d5e",
+      "type": "report",
+      "schema_version": "v3_remaining_display_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "Committed producer handoff Git-blob validation, base ancestry, exact deliverable hashes and diff closure",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-remaining-display-integration-20260920.md"
+    },
+    {
+      "command": "BTC missing-evidence failure-first SSR and five scoped Node regressions; frontend identity check",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-remaining-display-integration-20260920.md"
+    },
+    {
+      "command": "Canonical main browser acceptance after deployment",
+      "result": "not_run",
+      "evidence_path": "docs/operations/v3-remaining-display-integration-20260920.md"
+    }
+  ],
+  "blockers": [
+    "Canonical current-main browser and readonly deployment acceptance pending",
+    "BTC account/trading and promotion evidence remain blocked; no private or trading permission"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-p0-drill-native-data-binding-02-753628cd4",
+  "ticket_id": "BTC-OKX-P0-DRILL-NATIVE-DATA-BINDING-02",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-p0-drill-native-data-binding-02",
+  "base_commit": "466c495bc86c1c0121dba499b52193c798671ef4",
+  "deliverable_commit": "753628cd4b0ce6594603bd4cc50a86c6c75d9606",
+  "created_at": "2026-08-05T15:51:39Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "32fc703e941b8a91dba93fd119936a228e56ea6bc2d6ff9e615282365f5315b3",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "ff54881a46e7041976d307067ab3e04d22336fe0112ed7e3afaf7024c2829f72",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k 'native_shared_dataset_binding or native_binding_validation or worker_child_argv' --basetemp <unique> [failure-first observed: 3 failed, 27 deselected]",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k 'shared_dataset_binding or native_binding_validation or worker_child_argv' --basetemp <unique> [observed: 6 passed, 24 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q --basetemp <unique> [observed: 30 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_runtime_hardening.py -q --basetemp <unique> [observed: 165 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "actual OKX Demo/private/order/live execution [not run: prohibited and not authorized]",
+      "result": "not_run",
+      "evidence_path": "scripts/run_btc_okx_demo_fault_drill.py"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_integration",
+    "owner:operator actual_okx_demo_fault_drills_not_executed",
+    "no_artifact_no_manifest_no_ledger_no_replay_no_promotion_evidence_built",
+    "source_quality_is_not_promotion_evidence",
+    "no_demo_start_no_secret_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

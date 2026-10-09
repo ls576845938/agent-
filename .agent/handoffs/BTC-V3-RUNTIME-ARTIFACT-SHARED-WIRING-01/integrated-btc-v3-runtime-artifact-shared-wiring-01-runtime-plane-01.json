@@ -1,0 +1,59 @@
+{
+  "base_commit": "9166b1b2bb97009b31d03c75ee68ef8674372e85",
+  "blockers": [
+    "owner:integrator_explicit_external_runtime_artifact_root_bootstrap_not_run",
+    "owner:btc_research_current_head_runtime_artifacts_not_rebuilt",
+    "owner:btc_data_steward_l2_sample_quality_runtime_artifact_missing",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-26T19:09:44Z",
+  "deliverable_commit": "ee9603f7ee6e78350a76b75eed474d669c4aace8",
+  "deliverables": [],
+  "depends_on": [
+    "published-btc-v3-runtime-artifact-shared-wiring-01-ee9603f7"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-btc-v3-runtime-artifact-shared-wiring-01-runtime-plane-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-runtime-artifact-plane-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "shared wiring published event schema and 9 raw committed-object SHA-256 checks",
+      "evidence_path": ".agent/handoffs/BTC-V3-RUNTIME-ARTIFACT-SHARED-WIRING-01/published-btc-v3-runtime-artifact-shared-wiring-01-ee9603f7.json",
+      "result": "passed"
+    },
+    {
+      "command": "shared wiring/API/Team Context/control-center suite [47 passed]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "passed"
+    },
+    {
+      "command": "BTC shared-boundary and live safety suite [101 passed]; compileall and six CLI help checks passed",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-RUNTIME-ARTIFACT-SHARED-WIRING-01",
+  "transition_for": "published-btc-v3-runtime-artifact-shared-wiring-01-ee9603f7"
+}

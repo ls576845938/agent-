@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cohort-offline-readonly-ui-overlay-governance-20261004-780f8c23c",
+  "ticket_id": "BTC-COHORT-OFFLINE-READONLY-DELIVERY-20261004",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/btc-cohort-offline-readonly-delivery-20261004-c01",
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "deliverable_commit": "780f8c23c9565d766defe2f100269eaacdc2ec62",
+  "created_at": "2026-10-04T15:29:11Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-cohort-entry-recovery-limited-readonly-20261004-aa9905ee3",
+    "published-btc-cohort-readonly-public-capability-intent-20261004-2eb5e975f"
+  ],
+  "supersedes": [
+    "published-btc-cohort-offline-readonly-governance-20261004-ef5271fdd"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/agent_playbooks/btc_cohort_offline_readonly_delivery_20261004.json",
+      "type": "schema",
+      "schema_version": "btc_cohort_offline_readonly_delivery_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "258b0f39f05c46f19e9e1cc894885e303536d3b164169a4b2eaa8384cc775124"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_cohort_offline_readonly_delivery_20261004.md",
+      "type": "document",
+      "schema_version": "btc_cohort_offline_readonly_delivery_readme_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "0fb2b6702aa44534953911b07a4f832a9877500bf69d7a8a3535095e18d90c3b"
+    },
+    {
+      "path": "tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py",
+      "type": "code",
+      "schema_version": "btc_cohort_offline_readonly_validator_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "c073341c4a23559d89c8268b7e62106c3e187488596c2eb7ee2fd04d8db81bc8"
+    },
+    {
+      "path": "tests/agent_governance/test_btc_cohort_offline_readonly_delivery_20261004.py",
+      "type": "test_evidence",
+      "schema_version": "btc_cohort_offline_readonly_governance_regression_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "3330f9c95dcf21097f33f0460d017b24def48ea5524a404cb385e8fa47d69b84"
+    },
+    {
+      "path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md",
+      "type": "report",
+      "schema_version": "btc_cohort_offline_readonly_producer_report_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "5acf0d0b812e197c44f00047ab86eb5150f1091cc9d910127b880ae98c852ce9"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/agent_governance/test_btc_cohort_offline_readonly_delivery_20261004.py (71 passed in 245.64s)",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    },
+    {
+      "command": "py -3 tools/agent_governance/btc_cohort_offline_readonly_delivery_20261004.py --verify-source (valid/errors=[]/blocks_gate/permissions_granted=false)",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    },
+    {
+      "command": "git diff --cached --check -- exact five declared paths",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-cohort-offline-readonly-governance-20261004.md"
+    }
+  ],
+  "blockers": [
+    "actual_root_governance_review_of_exact_780f8c23c_deliverable_pending",
+    "independent_overlay_plus_governance_integration_and_current_main_readonly_browser_acceptance_pending",
+    "real_Donchian_Qlib_execution_clock_cost_and_protection_policy_incompatible",
+    "real_common_nonzero_execution_protection_attribution_and_economic_recovery_not_run_blocked",
+    "real_Qlib_final_positive_calibration_missing_effective_independent_sample_below_30"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-v3-windows-artifact-path-contract-01-d430f693e3f8",
+  "ticket_id": "US-V3-WINDOWS-ARTIFACT-PATH-CONTRACT-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-v3-windows-artifact-path-contract-01",
+  "base_commit": "e8fdfa4210161b2ec23a0625357adaef16fa6edd",
+  "deliverable_commit": "d430f693e3f8fb2012107626a82c15850ff0127d",
+  "created_at": "2026-07-24T04:48:35Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-v3-current-main-successor-01-goal2-batch-01",
+    "integrated-shared-platform-v2-current-main-01-batch-02-takeover"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "configs/governance/us_windows_artifact_path_contract_v1.json",
+      "sha256": "52510a86fb3b06fa12824a9806abb3305222c3a7115214a330cb177eb65af9af",
+      "schema_version": "us_windows_artifact_path_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/core/artifact_paths.py",
+      "sha256": "a29bc2fca722d5d8758645dcac7e25406b3f4de4af46fb57286d86683e8f3ba7",
+      "schema_version": "us_windows_artifact_path_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/research/strategy_manifest.py",
+      "sha256": "69c1e47e57f76f928a2716d4a3da6f6202e78f314ec45acb6c935bfbd858c0a2",
+      "schema_version": "us_windows_artifact_path_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "dcd1aedcf5918a8c48f59564be572e146461b48f5bb4a099b39f9e459e279873",
+      "schema_version": "us_windows_artifact_path_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_artifact_path_reference.schema.json",
+      "sha256": "f112dc2a6b37c66ecb291319c84ddda5c37c9ac009c06c2558c9ac5e96d04f2a",
+      "schema_version": "us_artifact_path_reference_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/validate_us_windows_artifact_path_contract.py",
+      "sha256": "9a99afe7a8f30e5ff4b4ec7b22a6dd9e88e83418d7e0a28faa5e88c2230f8f89",
+      "schema_version": "us_windows_artifact_path_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_us_artifact_path_contract.py",
+      "sha256": "401e7432dbe338035b34af86d482a886fe236ae26d1b0d3a31327ba1dceea8af",
+      "schema_version": "us_windows_artifact_path_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_paper_review_gate_preflight.py",
+      "sha256": "5f04be4817cc59eae12b9e7e6a5222c4e9fdc539cb56eab24ebc61751bf28cba",
+      "schema_version": "us_windows_artifact_path_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_runtime_paper_worker_safety.py",
+      "sha256": "8707cbb933f784a2953b7ad8df15ebd354afc5939ac33d4179cbe1260a002f6b",
+      "schema_version": "us_windows_artifact_path_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/research/test_paper_review_candidate.py",
+      "sha256": "0371483511d542d3598b6cc21e5d494d6be28af5be8b9cf8a4658ff3c5bbfc3a",
+      "schema_version": "us_windows_artifact_path_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/us-windows-artifact-path-contract.md",
+      "sha256": "45b951d7a2d5ccaf315a83cf720e7d3b213f8da8d628c164a1b00df3790b3472",
+      "schema_version": "us_windows_artifact_path_contract_architecture_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-path-repro-20260724-01 <four-original-test-selectors>",
+      "result": "failed",
+      "evidence_path": "tests/live/test_runtime_paper_worker_safety.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-path-targeted-20260724-02 tests/contracts/test_us_artifact_path_contract.py <four-original-test-selectors>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_artifact_path_contract.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-path-paper-safety-20260724-01 <US-paper-safety-files>",
+      "result": "passed",
+      "evidence_path": "tests/live/test_live_runtime_safety.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-path-committed-20260724-01 <18-US-paper-runtime-registry-shared-files>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_artifact_path_contract.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-path-paper-safety-20260724-01 <US-and-BTC-artifact-dependent-paper-safety-files>",
+      "result": "failed",
+      "evidence_path": "tests/research/test_liquidation_shock_paper_live_safety.py"
+    }
+  ],
+  "blockers": [
+    "shared_asset_neutral_artifact_path_reference_contract_requires_integrator_ticket",
+    "current_head_durable_artifacts_require_rebuild_before_gate_credit",
+    "paper_and_live_gates_remain_locked",
+    "three_btc_artifact_dependent_tests_unavailable_in_sparse_us_worktree"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

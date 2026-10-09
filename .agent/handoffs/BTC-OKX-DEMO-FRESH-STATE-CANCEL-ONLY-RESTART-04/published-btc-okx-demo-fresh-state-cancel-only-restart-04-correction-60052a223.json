@@ -1,0 +1,84 @@
+{
+  "base_commit": "bed15a822e386743b687213b2bd8a211c04187bb",
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt:ticket_forbids_artifact",
+    "no_real_demo_private_or_order_endpoint_validation_per_ticket",
+    "all_promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-10T11:32:45Z",
+  "deliverable_commit": "60052a2237b20c64bae20f6c0f791cc841f12f3f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_cancel_only_restart_strict_flags_v1",
+      "sha256": "d9ccdbd0a91c6f1b8e619e3d4fc590f6c6b059f346b606a677b77af68d87b5f7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_cancel_only_restart_strict_flags_tests_v1",
+      "sha256": "81b8aa9250ab01393bd14d957651b1a7f80d43aa3d0dc3a35213dccfac8418ec",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-fresh-state-cancel-only-restart-04-correction-60052a223",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-cancel-only-restart-04",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "1d06f3ebb16e60c05f2860016ad91de10da75d09",
+    "bed15a822e386743b687213b2bd8a211c04187bb",
+    "published-btc-okx-demo-fresh-state-cancel-only-restart-04-1d06f3ebb"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-cancel-only-correction-failure-first tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'restart_rejects_missing_or_non_boolean_runtime_flags_fail_closed or restart_restores_exact or normal_clean_stopped or incomplete_cancel_only' --disable-warnings --maxfail=1 [observed: 9 passed, 265 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-cancel-only-correction-focused tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fresh_state_emergency_exit or restart or recover or cancel_only' --disable-warnings --maxfail=1 [observed: 107 passed, 167 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=D:\\vibe coding\\Obsidian\\量化系统\\tmp\\pytest-btc-cancel-only-correction-full tests/contracts/test_btc_okx_demo_paper_runtime.py --disable-warnings --maxfail=1 [observed: 274 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-CANCEL-ONLY-RESTART-04",
+  "transition_for": ""
+}

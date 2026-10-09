@@ -1,0 +1,107 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "v3-donchian-source-correction-e80fe7a79",
+  "ticket_id": "V3-DONCHIAN-READONLY-CLOSEOUT-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/super_developer/v3-donchian-readonly-closeout-20260920",
+  "base_commit": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+  "deliverable_commit": "e80fe7a79851a49e15eaaac4bea42c0ce39fbe20",
+  "created_at": "2026-09-20T13:10:49Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["v3-donchian-source-published-be0bf76a7"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "artifact",
+      "path": ".agent/offline_evidence/donchian-v3-closeout-20260920.json",
+      "sha256": "a5d6b1b07060d92e965d7b08d245c3ea2165e01d17be3a77a6ecac8bb63ea15c",
+      "schema_version": "donchian_offline_closeout_seal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/donchian_offline_views.py",
+      "sha256": "a179530fe00049951d49e1b15dec398837c21bdebd5fa8d5ab74151e43611c01",
+      "schema_version": "donchian_offline_closeout_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_donchian_offline_views.py",
+      "sha256": "1e6e412a354fb9128e85208129798018825f2c15e9d90e8beb1a6d7e272d690a",
+      "schema_version": "donchian_offline_closeout_regression_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/DonchianOfflineEvidence.tsx",
+      "sha256": "c3adb8bcd27bb7c48c148b227520add1cd31cf4ececf1b4c0ee429a56bd77b26",
+      "schema_version": "donchian_offline_evidence_ui_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/v3-final-closeout-20260920.json",
+      "sha256": "8ab47a2712123208caf223e95a1d9a9458c5348d178b5086805b0564fe570ed9",
+      "schema_version": "v3_final_closeout_matrix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/v3-final-closeout-20260920.md",
+      "sha256": "37602bb53232768fc8fa898f3dc2c729d992950c00134a539c72a3881fed6535",
+      "schema_version": "v3_final_closeout_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_donchian_offline_views.py backend/tests/test_offline_execution_views.py -q (33 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "read_donchian_summary from current committed object (five decisions, four orders/fills/ledger events)",
+      "result": "passed",
+      "evidence_path": ".agent/offline_evidence/donchian-v3-closeout-20260920.json"
+    },
+    {
+      "command": "node frontend/scripts/test-donchian-offline-evidence.mjs (3 passed; prior source commit)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-donchian-offline-evidence.mjs"
+    },
+    {
+      "command": "node frontend/scripts/test-strategy-delivery-map.mjs (3 passed; prior source commit)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-delivery-map.mjs"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint and build (passed; prior source commit)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "frontend/e2e/research-run-details.spec.ts (canonical main server required)",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/research-run-details.spec.ts"
+    }
+  ],
+  "blockers": [
+    "independent_review_of_corrected_source_pending",
+    "canonical_research_readonly_page_acceptance_pending"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-d2942dd6",
+  "ticket_id": "BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01-INTEGRATION",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-operator-v2-attempt-state-int",
+  "base_commit": "c232f66057450e3acdbebc12008a719909acdb67",
+  "deliverable_commit": "d2942dd6310300c81e9a2c7bd918bd6ae3053242",
+  "created_at": "2026-08-24T14:03:42Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-afad334e3"],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-afad334e3",
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/lib/api.ts", "sha256": "97e5a779015e0aa8ca434b0cddf8ed5acb2e8a6772cf3c78adb60c0b229e9fea", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts", "sha256": "8c0447240557439cb6024e357ce0c9f5ebc1357ae8a5692750d5795af82b49ca", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "f0ed27da10257994af4b61282a4c37df698860642731c0639838b8ae00ea58dc", "schema_version": "btc_demo_operator_frontend_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/operator-attempt-state.ts", "sha256": "8c6cf6db0256f340e34c42aedfe4ea402a4b94dec0064f4e9f320632c6334166", "schema_version": "btc_demo_operator_attempt_state_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-v2-contract.mjs", "sha256": "7e3a3de3472a6fbf073292aa849d446d4bcec76780cbcbaff98be8530bfd41df", "schema_version": "btc_demo_operator_attempt_contract_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/scripts/test-btc-operator-attempt-state.mjs", "sha256": "5cf8c7d8c4ad035240f4e90d86030a8ecf9763f3a23239f50ccd1b6eadd75a09", "schema_version": "btc_demo_operator_attempt_contract_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": ".agent/handoffs/BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01/published-btc-demo-operator-v2-frontend-attempt-state-01-a9f87c92b.json", "sha256": "920d3e6685bbaf74dd901b17726a9ce91c45b3122763251ca67ef791bab20dd4", "schema_version": "agent_handoff_envelope_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": ".agent/handoffs/BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01/published-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-afad334e3.json", "sha256": "522bfde4a167a186d594986a109b0ed3b14e1b0944ad88c89364882a580d51bf", "schema_version": "agent_handoff_envelope_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "handoff.py validate correction-01; verify correction parent/blob/touch set", "result": "passed", "evidence_path": "correction event valid; afad334e parent=ffbe90ba; deliverable SHA=8c6cf6db..."},
+    {"command": "git diff --check c232f66057450e3acdbebc12008a719909acdb67..d2942dd6310300c81e9a2c7bd918bd6ae3053242", "result": "passed", "evidence_path": "zero output"},
+    {"command": "node frontend/scripts/test-btc-operator-attempt-state.mjs", "result": "passed", "evidence_path": "ok=true; contract=btc_demo_operator_attempt_state_v1"},
+    {"command": "node frontend/scripts/test-btc-operator-v2-contract.mjs", "result": "passed", "evidence_path": "ok=true; actions=8; contract=btc_demo_operator_contract_v2; read_model=btc_demo_operation_read_model_v2"},
+    {"command": "npm.cmd --prefix frontend run lint", "result": "passed", "evidence_path": "tsc --noEmit passed using temporary registered-main node_modules junction; junction removed"},
+    {"command": "npm.cmd --prefix frontend run build -- --logLevel error", "result": "passed", "evidence_path": "Vite production build passed"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "integration worktree"},
+    {"command": "frontend/e2e/btc-demo-console.spec.ts mocked Playwright; canonical identity/service restart", "result": "not_run", "evidence_path": "deferred to registered current-main; integrator did not start services or issue POST"}
+  ],
+  "blockers": [
+    "frontend_playwright_deferred_to_integrated_current_main",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

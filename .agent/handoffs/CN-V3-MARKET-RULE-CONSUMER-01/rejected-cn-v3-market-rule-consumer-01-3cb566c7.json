@@ -1,0 +1,122 @@
+{
+  "base_commit": "9629a075774255e48490574d4f24cbb6196b8ec5",
+  "blockers": [
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "cn_market_rule_old_two_security_pilot_not_accepted",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator"
+  ],
+  "created_at": "2026-07-24T07:29:17Z",
+  "deliverable_commit": "3cb566c741db0269ae11084990a64873d6cdd8f3",
+  "deliverables": [
+    {
+      "path": "quant_cn/data/market_rule_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_rule_bundle_consumer_v1",
+      "sha256": "7c7d7fe236d58ee144b2b7fb7721887f60f61e81a032908b6c61a5e3ef6be9ac",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/application/market_semantics_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_semantics_preflight_v1",
+      "sha256": "93886dea0f91f9da9f24938e7301098a2c426480b057e9b4a8136496d2cc23a9",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_market_rule_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_rule_consumer_tests_v1",
+      "sha256": "41acd335215e97da643f803915b9793aaab86c4bc9bf7f9592ce0196ec0ddc78",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/cn_equity/test_market_semantics.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_market_semantics_tests_v1",
+      "sha256": "85553f3604e80890ca7a35d0513eeb07027b9e32f55c3816fea575b2a68f2772",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-cn-v3-current-main-foundation-01-batch-02-takeover",
+    "integrated-cn-v3-market-semantics-01-goal2-batch-01",
+    "integrated-cn-v3-shared-platform-v2-adoption-01-goal3-batch-01",
+    "integrated-cn-v3-dataready-consumer-01-goal4-batch-01"
+  ],
+  "domain": "cn_equity",
+  "event_id": "rejected-cn-v3-market-rule-consumer-01-3cb566c7",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-market-rule-consumer-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate <CN integrated G01-G04 handoffs>",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate <three domain G04 integrated handoffs>",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/cn_equity/test_market_rule_consumer.py tests/cn_equity/test_market_semantics.py -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity/test_market_rule_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/cn_equity -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/shared_platform -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/shared_platform",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/cn-equity-market-rule-bundle/current-main.json --fast",
+      "evidence_path": ".agent/data_manifests",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m compileall -q <G05 touch set>",
+      "evidence_path": "quant_cn",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <G05 touch set>",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CN-V3-MARKET-RULE-CONSUMER-01",
+  "transition_for": "published-cn-market-rule-evidence-001-70dd3a30d5da"
+}

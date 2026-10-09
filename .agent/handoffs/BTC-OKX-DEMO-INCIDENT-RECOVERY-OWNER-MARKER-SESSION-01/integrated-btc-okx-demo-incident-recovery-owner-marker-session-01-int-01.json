@@ -1,0 +1,96 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-incident-recovery-owner-marker-session-01-int-01",
+  "ticket_id": "BTC-OKX-DEMO-INCIDENT-RECOVERY-OWNER-MARKER-SESSION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-owner-marker-session-01-int",
+  "base_commit": "fdcbf0ee3fb87b78aa3a21e4dac036f3a8f17d87",
+  "deliverable_commit": "02b165fa0aa1e975cf9518465c97b50e5eb72a55",
+  "created_at": "2026-08-09T08:04:11Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-incident-recovery-owner-marker-session-01-8caf0734b"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-incident-recovery-owner-marker-session-01-8caf0734b",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "2bbba9a75ef2181d5a0ac47ab24a65c9359ba94f2f41a6836a12d2ebabe441d6",
+      "schema_version": "btc_okx_demo_paper_runtime_owner_marker_session_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "1645f469f0798311c6addbb7138e3742eefcc8c7274eb57f32fb34ee3068bd10",
+      "schema_version": "btc_okx_demo_paper_runtime_owner_marker_session_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_okx_demo_paper_runtime.py -k <owner-marker/recovery focused set> [76 passed, 152 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py -k <runtime/recovery/watchdog minimal set> [32 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py; tests/contracts/test_btc_okx_demo_execution_watchdog.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py; tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate; py -3 tools/agent_governance/safe_status.py --path <two source objects and handoff directory>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-INCIDENT-RECOVERY-OWNER-MARKER-SESSION-01/integrated-btc-okx-demo-incident-recovery-owner-marker-session-01-int-01.json"
+    },
+    {
+      "command": "git merge --ff-only 8caf0734b593989cff1a8064be372a98d2c37866; git merge --ff-only 02b165fa0aa1e975cf9518465c97b50e5eb72a55",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-INCIDENT-RECOVERY-OWNER-MARKER-SESSION-01/published-btc-okx-demo-incident-recovery-owner-marker-session-01-8caf0734b.json"
+    },
+    {
+      "command": "canonical backend restart with demo_quasi_live and GET /__backend_identity plus GET /api/research/btc/demo-paper/status",
+      "result": "passed",
+      "evidence_path": "C:/Temp/agent9-owner-marker-session-01-backend-20260809/backend.stderr.log"
+    },
+    {
+      "command": "producer supplied fault-drill external runtime state hash check [actual 952042dc9c8253360f11aefb68c736fbfef93f41bb34e8605b61fc103e3ddf87 differs from fixed 9d9f6a282ea7c82d7e356cda569f8675c587bbb1e9a26c966e7e1ecc7a847572]",
+      "result": "not_run",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "real Demo/private/order/WS/transfer/withdraw endpoint, secret loading, artifact/read-model rebuild and frontend restart",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:data_steward_or_integrator supplied external incident state hash drift 952042dc9c8253360f11aefb68c736fbfef93f41bb34e8605b61fc103e3ddf87 vs fixed 9d9f6a282ea7c82d7e356cda569f8675c587bbb1e9a26c966e7e1ecc7a847572; do not rewrite test or evidence",
+    "current-head artifact/read-model not rebuilt; backend promotion artifact unavailable: btc_runtime_artifact_root_env_missing",
+    "promotion_evidence_not_produced",
+    "real Demo/private/order/WS/transfer/withdraw and secret actions intentionally not run"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

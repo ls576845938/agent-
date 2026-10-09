@@ -1,0 +1,67 @@
+{
+  "base_commit": "ec9a2422358d2300928def104dc5b9713bc7a709",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T10:56:08Z",
+  "deliverable_commit": "55f93b95d56dd62a4e6386fa98355b7078ca8953",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "24a2f3d266a70764f477d306909ed39d221ffd24548a063bdc83452fed67cc44",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "34a9fc661091112fe9b9969d27d1ace9340e7747f6bc687abb0e4eeb9fd5a416",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-pflfs36",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k partial_fill_preflight --basetemp <external-temp> -q",
+      "evidence_path": "4 passed, 375 deselected; includes timestamp-only failure-first condition, apply/commit freeze, and nonflat no-side-effect guard",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-PARTIAL-FILL-LEDGER-FRESH-SNAPSHOT-36",
+  "transition_for": ""
+}

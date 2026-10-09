@@ -1,0 +1,83 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-canonical-recovery-legacy-empty-prefix-21-032018c1b",
+  "ticket_id": "BTC-OKX-DEMO-CANONICAL-RECOVERY-LEGACY-EMPTY-PREFIX-21",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-canrec-empty-prefix-21-int",
+  "base_commit": "e1e379e33a305839cf6039b7ad2dba33f336e2be",
+  "deliverable_commit": "032018c1b13e12c6422021f8f4058a4e9f216c2d",
+  "created_at": "2026-08-11T20:18:06Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-canonical-recovery-legacy-empty-prefix-21-05dde9440"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-canonical-recovery-legacy-empty-prefix-21-05dde9440",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "087a6cc0a7a804cdb3def1ce592d2ca1965ae31d845aa2da16d215c6e034309f",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "6ccd88b3be7b88cd8ac73c320243792744803966b785398195ad5e714c468596",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-CANONICAL-RECOVERY-LEGACY-EMPTY-PREFIX-21/published-btc-okx-demo-canonical-recovery-legacy-empty-prefix-21-05dde9440.json",
+      "sha256": "8291720dde85140783ea52cdbeeb858e05d3d83e9c27de14aba83c3d1428d001",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k \"legacy_empty_prefix or noncontiguous_or_foreign_current_run_tail or receipt_runtime_run_id_mismatch or historical_prefix or legacy_single_run\" --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "focused legacy-prefix/continuity selection (7 passed, 108 deselected)"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "full fault-drill contract (115 passed)"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k canonical_binding --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "broader canonical-binding regression (28 passed, 87 deselected)"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py; git diff e1e379e33a305839cf6039b7ad2dba33f336e2be..HEAD --check",
+      "result": "passed",
+      "evidence_path": "candidate worktree"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input .agent/handoffs/BTC-OKX-DEMO-CANONICAL-RECOVERY-LEGACY-EMPTY-PREFIX-21/published-btc-okx-demo-canonical-recovery-legacy-empty-prefix-21-05dde9440.json",
+      "result": "passed",
+      "evidence_path": "producer published handoff; committed SHA-256 8291720dde85140783ea52cdbeeb858e05d3d83e9c27de14aba83c3d1428d001"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "held_position_recovery_not_executed_by_this_offline_ticket",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

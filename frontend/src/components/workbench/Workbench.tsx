@@ -1,22 +1,20 @@
 import {useEffect, useState} from 'react';
-import {
-  ArrowsOut,
-  CaretDown,
-  ChartLineUp,
-  ClipboardText,
-  Database,
-  FileMagnifyingGlass,
-  GearSix,
-  List,
-  Lock,
-  MagnifyingGlass,
-  ShieldCheck,
-  SlidersHorizontal,
-  SquaresFour,
-  Target,
-  WarningCircle,
-  X,
-} from '@phosphor-icons/react';
+import {ArrowsOut} from '@phosphor-icons/react/dist/csr/ArrowsOut';
+import {CaretDown} from '@phosphor-icons/react/dist/csr/CaretDown';
+import {ChartLineUp} from '@phosphor-icons/react/dist/csr/ChartLineUp';
+import {ClipboardText} from '@phosphor-icons/react/dist/csr/ClipboardText';
+import {Database} from '@phosphor-icons/react/dist/csr/Database';
+import {FileMagnifyingGlass} from '@phosphor-icons/react/dist/csr/FileMagnifyingGlass';
+import {GearSix} from '@phosphor-icons/react/dist/csr/GearSix';
+import {List} from '@phosphor-icons/react/dist/csr/List';
+import {Lock} from '@phosphor-icons/react/dist/csr/Lock';
+import {MagnifyingGlass} from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
+import {ShieldCheck} from '@phosphor-icons/react/dist/csr/ShieldCheck';
+import {SlidersHorizontal} from '@phosphor-icons/react/dist/csr/SlidersHorizontal';
+import {SquaresFour} from '@phosphor-icons/react/dist/csr/SquaresFour';
+import {Target} from '@phosphor-icons/react/dist/csr/Target';
+import {WarningCircle} from '@phosphor-icons/react/dist/csr/WarningCircle';
+import {X} from '@phosphor-icons/react/dist/csr/X';
 
 type WorkbenchContent = unknown;
 

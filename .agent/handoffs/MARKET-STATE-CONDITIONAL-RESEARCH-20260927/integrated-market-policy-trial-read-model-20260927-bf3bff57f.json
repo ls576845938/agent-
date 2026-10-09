@@ -1,0 +1,130 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-market-policy-trial-read-model-20260927-bf3bff57f",
+  "event_type": "integrated",
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "domain": "shared",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "btc_developer"
+  ],
+  "base_commit": "ad036fb1de882587e781114085214f5c1693c372",
+  "deliverable_commit": "bf3bff57fb89cf8e50b378af2aad7420179a4169",
+  "depends_on": [
+    "published-market-policy-trial-read-model-20260927-f002f4630",
+    "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc",
+    "integrated-market-state-read-model-ui-20260927-6b77734f7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-market-policy-trial-read-model-20260927-f002f4630",
+  "created_at": "2026-09-27T04:59:34.539Z",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "backend/app/services/donchian_stage_views.py",
+      "type": "code",
+      "schema_version": "donchian_stage_market_policy_trial_read_model_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "7070d6b72291632b8b75e1a6771b76ad807b7ce6965f74ec6adf18ea98026c18"
+    },
+    {
+      "path": "backend/tests/test_donchian_stage_views.py",
+      "type": "test_evidence",
+      "schema_version": "donchian_stage_market_policy_trial_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "9288a95016109b3aeb9c946dbd6651ac69ad46b055c828d52657ce58f917d67a"
+    },
+    {
+      "path": "docs/architecture/shared-market-state-v2.md",
+      "type": "document",
+      "schema_version": "shared_market_state_architecture_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "a2e3c73cff7fbc9b32f72cb31ec4b591774efb3a57644dc5f83b8465e7df895b"
+    },
+    {
+      "path": "docs/research/market-policy-trial-read-model-v1.md",
+      "type": "document",
+      "schema_version": "market_policy_trial_read_model_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "4da00da889900e60f4e6e38a232a9aef06f4b3f1a033eb4e6b83679f2c7eea66"
+    },
+    {
+      "path": "frontend/scripts/test-market-state-evidence.mjs",
+      "type": "test_evidence",
+      "schema_version": "market_state_evidence_policy_trial_component_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "14e939988d8efa235ca08ad953dfaadc24093d6dcdc2d73fafbe9b35195636e1"
+    },
+    {
+      "path": "frontend/src/workspaces/research/MarketStateEvidence.tsx",
+      "type": "code",
+      "schema_version": "market_state_evidence_view_with_policy_trial_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "cb0b27553a8b5a00dc3c6c7e7d6019ac77029b397ea7a0ea246e24f887c0a8d2"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; base ancestry; exact six-file final blob SHA-256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/MARKET-STATE-CONDITIONAL-RESEARCH-20260927/published-market-policy-trial-read-model-20260927-f002f4630.json"
+    },
+    {
+      "command": "failure-first: validate report carrying frozen f2455 consumer reason and state_binding_status",
+      "result": "passed",
+      "evidence_path": "2 tests failed as expected because producer reader required market_state_unknown and rejected the real state_binding_status key"
+    },
+    {
+      "command": "canonical .venv pytest -q backend/tests/test_donchian_stage_views.py",
+      "result": "passed",
+      "evidence_path": "35 passed in 35.96s; missing report is not_started, tamper is blocked, real consumer fields and partial projection are accepted"
+    },
+    {
+      "command": "NODE_PATH=canonical frontend/node_modules; node --test frontend/scripts/test-market-state-evidence.mjs frontend/scripts/test-donchian-stage-evidence.mjs",
+      "result": "passed",
+      "evidence_path": "11 passed in 2680.8042ms"
+    },
+    {
+      "command": "producer full Python, frontend and TypeScript evidence",
+      "result": "passed",
+      "evidence_path": "published producer evidence: Python 87 passed; frontend 12 passed; tsc --noEmit exit 0 before integrator two-field contract correction"
+    },
+    {
+      "command": "integrator sparse-worktree tsc using external canonical compiler and typeRoots",
+      "result": "failed",
+      "evidence_path": "environment-only module resolution failure for react-router-dom, phosphor, charts and unrelated CandidateHandoffInbox; affected component node tests passed and producer clean-worktree tsc passed"
+    },
+    {
+      "command": "Python py_compile and git diff --check",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "real A/B artifact publication, page publication, browser acceptance, service restart, main merge, private/order/live access",
+      "result": "not_run",
+      "evidence_path": "the actual trial report does not exist at this source commit; reader therefore remains honestly not_started"
+    }
+  ],
+  "blockers": [
+    "owner:research the actual two-arm report is absent; this read model must return not_started and is not a live progress monitor",
+    "owner:evidence the frozen consumer persists per-phase hashes, status, reasons and cutoff but not every full MarketStateV2 metric; consumer_phase projections remain partial and missing fields stay null",
+    "owner:publication the actual post-writer sealed report must be a separate immutable publication bound to execution source f2455bfbcafd15404bb4ff98dd6bb925728d0339; publication HEAD may differ",
+    "owner:scope only the frozen Donchian spec consumes this policy attachment; arbitrary future Alpha Factory packages are not automatically registered with conditional policy extensions",
+    "owner:root no main merge, research_readonly restart or browser acceptance has occurred",
+    "promotion_paper_live_private_order_real_order_transfer_and_withdraw_permissions_remain_false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

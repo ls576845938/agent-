@@ -1,0 +1,77 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-alpha-parameter-map-01-1aeff3932",
+  "ticket_id": "STRATEGY-ALPHA-PARAMETER-MAP-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "super_developer"],
+  "domain": "research",
+  "producer_branch": "agent/integrator/strategy-alpha-parameter-map-01-integration",
+  "base_commit": "3bbead8231e66856bf7d42f3573d38e57183826d",
+  "deliverable_commit": "1aeff393271dfaf59579b2a881d3d0d7e13fda68",
+  "created_at": "2026-09-08T13:04:52.142Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-alpha-parameter-map-01-f921f6920"],
+  "supersedes": ["integrated-strategy-alpha-parameter-map-01-9867cf1cb"],
+  "transition_for": "published-strategy-alpha-parameter-map-01-f921f6920",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "cffa17dbd54bfae9e1a1addbeb77f306fcfa269b6ca4ce137f2ed45c545c7c69",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/StrategyParameterHeatmap.tsx",
+      "sha256": "17fbf6acfa321952046f49f8b27b2d3818396b0f0c4b6b506d4b278bf756a3ce",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/strategy-alpha-heatmap.spec.ts",
+      "sha256": "f033229bae516e3f57b263398696340f70c39dadac04c0c9bf5ae409c6048453",
+      "schema_version": "playwright_test_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-strategy-parameter-map.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-parameter-map.mjs"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "canonical 1131x975 three-test browser acceptance after restart",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-alpha-heatmap.spec.ts"
+    },
+    {
+      "command": "full legacy browser suite not run; known legacy stable-only route fixture conflicts with default native selection and is outside this correction",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-strategy-history-report.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:root canonical main no-ff, restart and three-test browser rerun pending",
+    "change_risk=unclassified policy promotion artifact rebuild remains incomplete; gate_impact=none and promotion remains blocked",
+    "source_data_hashes_unavailable; historical sample already used for selection"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

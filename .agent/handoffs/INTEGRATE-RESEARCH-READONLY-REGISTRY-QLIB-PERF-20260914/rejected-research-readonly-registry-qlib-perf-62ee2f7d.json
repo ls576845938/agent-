@@ -1,0 +1,70 @@
+{
+  "base_commit": "a1be3f58a4270b5b90b3198e3127dc9c552967c6",
+  "blockers": [
+    "owner:super_developer qlib run_seal files type corruption raises unhandled AttributeError instead of integrity_status=blocked",
+    "owner:super_developer add failure-first regression for truthy non-object seal files and validate file name/digest types",
+    "owner:integrator independent reintegration required after superseding committed handoff",
+    "owner:operator registered-main publication backend restart and canonical-main HTTP/browser acceptance remain pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-14T03:49:40Z",
+  "deliverable_commit": "62ee2f7ddc438f5d55c67cbff555211ca2c8e05b",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/integrate-research-readonly-registry-qlib-performance-20260914.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_integration_rejection_v1",
+      "sha256": "cbc6d71a133b2270ee8a30f2b391d51c2877d3da360c9162af40394a5d90e7d2",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-research-readonly-registry-qlib-perf-20260914-93ca2536e"
+  ],
+  "domain": "shared",
+  "event_id": "rejected-research-readonly-registry-qlib-perf-62ee2f7d",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-readonly-registry-qlib-perf-20260914",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <published handoff>",
+      "evidence_path": ".agent/handoffs/RESEARCH-READONLY-REGISTRY-QLIB-PERF-20260914/published-research-readonly-registry-qlib-perf-20260914-93ca2536e.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/research/test_evidence_registry.py tests/api/test_qlib_pipeline.py -> 22 passed in 16.79s",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-registry-qlib-performance-20260914.md",
+      "result": "passed"
+    },
+    {
+      "command": "temporary malformed qlib_run_seal_v1 with files as truthy string -> unhandled AttributeError",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-registry-qlib-performance-20260914.md",
+      "result": "failed"
+    },
+    {
+      "command": "cold/hot performance, canonical main HTTP/browser and backend restart",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-registry-qlib-performance-20260914.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-RESEARCH-READONLY-REGISTRY-QLIB-PERF-20260914",
+  "transition_for": "published-research-readonly-registry-qlib-perf-20260914-93ca2536e"
+}

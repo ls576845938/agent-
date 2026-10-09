@@ -1,0 +1,108 @@
+{
+  "base_commit": "9f172b8de4601f60f4dfe2afdb9630d34856ffde",
+  "blockers": [
+    "owner:integrator independent integration required for unclassified frontend change_risk",
+    "owner:integrator canonical current-main mocked Playwright and visual acceptance deferred_to_integrated_current_main",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; consumer must validate independently",
+    "frontend-only contract: no backend restart, artifact/read-model rebuild, service or Demo execution",
+    "not_promotion_evidence_ready; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-19T00:00:00Z",
+  "deliverable_commit": "aa703c8e2fcb6c61478d5f24d69fc8cc6a03bafa",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_visual_map_v3",
+      "sha256": "04a085df95d6fa0e45ae33f625f697bd66e62a6638e99d2ead93fb9056957555",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_strategy_modules_css_v2",
+      "sha256": "3d971f0c1d1ec4d1cee57579b1c747a3d1fada62cbd822a9439aff0759d0b098",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_strategy_modules_visual_contract_v2",
+      "sha256": "6a398c8975aec1dc5e39bb0d10e047c6770e9fc145ea674d7a1fd1297eff579a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "af761030675826f863b53f210f28fbedd405f63a46ce9e6d1cb55f5fe7ef32f7",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-previous-design-microtune-03-aa703c8e2",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-modules-previous-design-microtune-03",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build (Vite; chunk-size warning only)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/node_modules/@playwright/test/cli.js test frontend/e2e/strategy-modules.spec.ts --list --config frontend/playwright.config.ts (8 tests collected)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check (manifest_match=true; baseline_ancestor=true)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test (object_targets=4)",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical mocked Playwright and visual QA on registered main (deferred_to_integrated_current_main)",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-PREVIOUS-DESIGN-MICROTUNE-03",
+  "transition_for": ""
+}

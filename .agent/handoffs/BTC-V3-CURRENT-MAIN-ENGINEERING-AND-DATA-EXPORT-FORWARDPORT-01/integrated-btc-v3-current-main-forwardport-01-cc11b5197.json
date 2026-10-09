@@ -1,0 +1,105 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-current-main-forwardport-01-cc11b5197",
+  "ticket_id": "BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "super_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-v3-current-main-forwardport-01",
+  "base_commit": "0c2b9f807c21fb16595764238d4b76c5bd89605a",
+  "deliverable_commit": "cc11b519738c737d8c6a81ab069c8318b40a1092",
+  "created_at": "2026-07-26T15:24:34Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-current-main-forwardport-successor-05-8adf033a2"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-current-main-forwardport-successor-05-8adf033a2",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "committed-object handoff validation for successor-05 and all five predecessor published events; successor-05 exact 45-path inventory and all 45 raw Git blob SHA-256 values matched",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01/published-btc-v3-current-main-forwardport-successor-05-8adf033a2.json"
+    },
+    {
+      "command": "strict ordered cherry-pick of the architect-approved 18-commit BTC chain onto 0c2b9f807c21fb16595764238d4b76c5bd89605a; no merge, producer-branch fast-forward, conflict, or worktree-file copy",
+      "result": "passed",
+      "evidence_path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py -q [131 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> <producer-identical 15-module artifact-independent expanded selection> -q [210 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_completion_audit.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py -q -k builder [7 passed, 9 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/contracts/test_us_shared_platform_adoption.py -q [6 passed]; validate_us_shared_platform_adoption.py [status=valid, migration_rows=10, quant_shared_reverse_dependencies=0, safety_flags_all_false=true]",
+      "result": "passed",
+      "evidence_path": "configs/governance/us_shared_platform_adoption_v1.json"
+    },
+    {
+      "command": "Python compile; BTC and US adoption schema JSON checks; three sparse CLI help imports; base-to-final scoped git diff --check; direct quant_crypto imports from quant_us=0",
+      "result": "passed",
+      "evidence_path": "quant_crypto/trading_contracts.py"
+    },
+    {
+      "command": "frontend identity:test and identity:check passed without refresh; noncanonical start-current-main --check returned expected exit 2 FRONTEND_CANONICAL_GUARD_FAILED",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "latest artifact readers and current-HEAD BTC gate rebuild were not run because runtime artifacts are intentionally absent from the sparse integrator and remain final-head-owner work",
+      "result": "not_run",
+      "evidence_path": "artifacts/btc_scalping_readiness/latest"
+    },
+    {
+      "command": "real DB/shared-data access, runtime artifact creation or copy, data collection, network, paper queue, private/order/live endpoint, broker, secret, and real-order validation were outside this offline integration",
+      "result": "not_run",
+      "evidence_path": "docs/tickets/BTC-V3-CURRENT-MAIN-ENGINEERING-AND-DATA-EXPORT-FORWARDPORT-01.md"
+    },
+    {
+      "command": "promotion, research, backtest, promotion-evidence, paper, live, private, order, broker, withdraw, network, secret, demo, paper-queue, and real-order safety flags remain false",
+      "result": "passed",
+      "evidence_path": "configs/governance/us_shared_platform_adoption_v1.json"
+    }
+  ],
+  "blockers": [
+    "current_head_gate_artifacts_not_rebuilt_at_deliverable_commit",
+    "data_steward_immutable_kline_publication_missing",
+    "data_steward_real_timestamp_aligned_okx_l2_history_missing",
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_funding_cashflow_and_private_ws_reconciliation_natural_observation_incomplete",
+    "btc_30_60_day_observation_window_incomplete",
+    "architect_manual_promotion_approval_missing",
+    "final_head_latest_artifact_readers_not_run"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

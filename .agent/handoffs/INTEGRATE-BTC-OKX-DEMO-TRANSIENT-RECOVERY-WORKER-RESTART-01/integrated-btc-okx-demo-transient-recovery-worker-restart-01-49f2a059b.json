@@ -1,0 +1,110 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-transient-recovery-worker-restart-01-49f2a059b",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-TRANSIENT-RECOVERY-WORKER-RESTART-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-worker-restart-int01",
+  "base_commit": "4b155f4222d86e15b18714d9a285de3fbc8ca316",
+  "deliverable_commit": "49f2a059b92e52db32569644103093fc8a65204b",
+  "created_at": "2026-08-21T01:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-transient-recovery-worker-restart-01-91dc9776e"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-transient-recovery-worker-restart-01-91dc9776e",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "a57ba21c1f1919db121eb02529267298e3dd544f04ed39cdf79ed6ba797024ef",
+      "schema_version": "okx_demo_paper_runtime_transient_worker_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "6d841a77b87eaf51cd222ca9c8d4882eefbbabbedf6c22f6c54b576674ba2770",
+      "schema_version": "btc_okx_demo_paper_runtime_transient_recovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "42653d34a20cf6d5df90702e3e4f69b50e745230535c274a9c936f8dbf62468c",
+      "schema_version": "btc_demo_operator_control_runtime_recovery_projection_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "781aa0f07f0790052a5e9277f4cb7eb373d148d3641a1d305b5639059941e6a0",
+      "schema_version": "btc_demo_runtime_service_transient_recovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-TRANSIENT-RECOVERY-WORKER-RESTART-01/published-btc-okx-demo-transient-recovery-worker-restart-01-91dc9776e.json",
+      "sha256": "e5e670b82e024a353f0eabb89d99e61c4d8f9edd3845aeae9b5ce5a52ecf013d",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k transient_recovery_restarts_exactly_one_worker_after_authority_recovers or dead_man_50011_uses_bounded_recovery_and_clears_historical_latch or transient_recovery_keeps_cancel_only_when_private_ws_authority_is_incomplete --basetemp C:/tmp/qsx_runtime_targeted",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 3 passed, 415 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py -k runtime_recovery or network_transport --basetemp C:/tmp/qsx_backend_targeted",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 3 passed, 32 deselected"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:/tmp/qsx_runtime_contract_rerun",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 418 passed in 73.86s"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp C:/tmp/qsx_backend_contract",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 35 passed in 3.74s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; exit=0"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; clean"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <integrated handoff>",
+      "result": "passed",
+      "evidence_path": "integrator candidate; status=valid"
+    },
+    {
+      "command": "backend restart; Demo start/stop; private/order/live/transfer/withdraw endpoint; secret access; artifact rebuild",
+      "result": "not_run",
+      "evidence_path": "ticket boundary explicitly prohibited"
+    }
+  ],
+  "blockers": [
+    "backend_restart_deferred_by_ticket_scope",
+    "paper_live_private_order_real_order_transfer_withdraw_and_promotion_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

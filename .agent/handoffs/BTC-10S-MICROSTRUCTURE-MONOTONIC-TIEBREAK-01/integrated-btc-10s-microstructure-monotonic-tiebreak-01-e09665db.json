@@ -1,0 +1,100 @@
+{
+  "base_commit": "30bc24a82fa407432697adf08432711dd7783349",
+  "blockers": [
+    "new_public_capture_and_immutable_publication_required_after_integration",
+    "current_head_data_pointer_and_gate_rebuild_required_after_new_data_publication",
+    "private_ws_demo_reconciliation_requires_separate_user_authorization",
+    "natural_25_hour_demo_observation_incomplete",
+    "manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-29T06:11:47.354809Z",
+  "deliverable_commit": "e09665db9453c45848dc6d71de3e48665c35ff2b",
+  "deliverables": [
+    {
+      "path": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_ws_l2_raw_capture_manifest_v1",
+      "sha256": "778593f701e07dedb0c47fa64fef16961ae7d7e20508fcc976a2a35b0b8dadbb",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "c7db012668e9f4fd26b1e38dbe5c6c3fe2cf9d06778e8ef522f786d8be1ec6d3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/BTC-10S-MICROSTRUCTURE-MONOTONIC-TIEBREAK-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_monotonic_tiebreak_ticket_v1",
+      "sha256": "bcb0cc51bd2af517e3a24ef23d0ec29763c051b666ff10b217b42ad543a65bac",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-10s-microstructure-monotonic-tiebreak-01-fe8212fab"
+  ],
+  "domain": "data",
+  "event_id": "integrated-btc-10s-microstructure-monotonic-tiebreak-01-e09665db",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-10s-monotonic-tiebreak-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "temporary committed-object archive pytest harness lacked repository .git and pyproject context; not accepted as validation and rerun in real sparse Git worktree",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "failed"
+    },
+    {
+      "command": "independent committed-object regression with only Git-head harness supplied: raw_monotonic_ns preserved, equal ticks receive auditable 1ns tiebreak, immutable exporter succeeds, true rollback remains blocked",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py::test_okx_public_ws_l2_raw_capture_tiebreaks_equal_windows_monotonic_ticks -q -> 1 passed in 2.76s",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py -q -> 102 passed in 21.95s",
+      "evidence_path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "compileall collector and contract; git diff --check; published handoff validate",
+      "evidence_path": "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression not run; bounded public collector and immutable export suite used",
+      "evidence_path": "docs/handoffs/BTC-10S-MICROSTRUCTURE-MONOTONIC-TIEBREAK-01.md",
+      "result": "not_run"
+    },
+    {
+      "command": "new public capture, immutable publication, external artifact/gate rebuild, network, credentials, private/order/paper/live actions not run by integrator",
+      "evidence_path": "docs/handoffs/BTC-10S-MICROSTRUCTURE-MONOTONIC-TIEBREAK-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-MONOTONIC-TIEBREAK-01",
+  "transition_for": "published-btc-10s-microstructure-monotonic-tiebreak-01-fe8212fab"
+}

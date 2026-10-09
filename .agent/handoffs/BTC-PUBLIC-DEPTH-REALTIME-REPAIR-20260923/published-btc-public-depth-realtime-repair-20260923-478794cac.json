@@ -1,0 +1,134 @@
+{
+  "base_commit": "05d37042f4ea2f5b25708ceb77b8bc6acd52ee17",
+  "blockers": [
+    "owner:root canonical main fast-forward, backend/frontend restart, and browser/SSE acceptance pending",
+    "change_risk=demo_transport_hotfix; public display transport only; no strategy/risk/order/private-WS/ledger/security/live changes",
+    "promotion paper live private order real_order transfer withdraw remain false"
+  ],
+  "consumer_roles": [
+    "super_developer"
+  ],
+  "created_at": "2026-09-23T06:50:17.982Z",
+  "deliverable_commit": "478794cac85d5ec86eb7d17daad4b0aaefafa1c2",
+  "deliverables": [
+    {
+      "path": "backend/app/api/btc_public_market.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "d1c9bb6db4bff9d163731f67351e6eabf8269eac4911cc8a35a6f00de4795dc8",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "00e236b60b9583cba5559c99fd881411f7265cae3b6018ea581b73bcc0b1d637",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/core/backend_access_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "c113c02cf4228e5b56c1d073b5b95ce906879ef227481ba3c933d8ad3060f3c7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/workspace-access.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "559c3497986250a38100c7721024d87677b4e685c114ab7e31525d162857adf7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "c5004cb7431601623daad31d6b09f549e7c864cb427fe56142e9030e2c9d1171",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_btc_public_market_readonly.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "0bcec18a917d6fe8e52613e4b977ebcf7e4491944b04c07031e3b11a134fc8a9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "fb38f02c215105006636262e59cf4e942af50c0ededb211c31913f48e0f23936",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/reports/BTC-PUBLIC-DEPTH-READONLY-STREAM-20260923.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "250f31b787c8baa133f6ae63c2371c289facb7c119eb86a54e033ee1c6f0e812",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-public-depth-realtime-repair-20260923-478794cac",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-public-depth-realtime-repair-20260923",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "PYTHONPATH=registered-main py -3 -m pytest tests/api/test_btc_public_market_readonly.py tests/contracts/test_btc_okx_public_display_stream.py backend/tests/test_btc_demo_runtime_service.py -q: 76 passed",
+      "evidence_path": "tests/api/test_btc_public_market_readonly.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPATH=registered-main py -3 -m pytest backend/tests/test_backend_research_readonly.py backend/tests/test_research_readonly_views.py -q: 52 passed, 2 skipped",
+      "evidence_path": "backend/tests/test_backend_research_readonly.py",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-readonly-workspace.mjs",
+      "evidence_path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-public-depth-ux.mjs",
+      "evidence_path": "frontend/scripts/test-btc-public-depth-ux.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint -- --pretty false",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "docs/reports/BTC-PUBLIC-DEPTH-READONLY-STREAM-20260923.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical main restart and browser/SSE acceptance",
+      "evidence_path": "docs/reports/BTC-PUBLIC-DEPTH-READONLY-STREAM-20260923.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PUBLIC-DEPTH-REALTIME-REPAIR-20260923",
+  "transition_for": ""
+}

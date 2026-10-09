@@ -1,0 +1,124 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "superseded-btc-shared-platform-v3-01-correction-01-bbf289beb",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-01",
+  "event_type": "superseded",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-shared-platform-v3-01",
+  "base_commit": "cae56554cd4288239b1bd4c20bff02c89d21df29",
+  "deliverable_commit": "bbf289beb470795e0d17e25e388da188b5872019",
+  "created_at": "2026-08-22T12:50:02Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-btc-shared-platform-v3-01-e0761bd16"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "docs/knowledge/05_architecture/shared_platform_v3_contract.md",
+      "sha256": "383f9af26b461e82811339aa9b8569487ddc79c365d97877a9067e3a4fd2e73f",
+      "schema_version": "shared_platform_v3_adr_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/shared_platform_v3_compatibility_matrix.md",
+      "sha256": "15fe3357ba32436709d71821d00889673916c971ec94e4bce8d94e00e12b391c",
+      "schema_version": "shared_platform_v3_matrix_mirror_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "configs/governance/shared_platform_v3_compatibility_v1.json",
+      "sha256": "9b59f7722c49fa8f732cd50bdb8382a841518be14495cc17dbcc33c4766bb549",
+      "schema_version": "shared_platform_v3_compatibility_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/shared_platform_v3_compatibility.schema.json",
+      "sha256": "4f8868d8759c48306dce8088bb570b0c900ba99aab77e37d56550c65dc013416",
+      "schema_version": "json_schema_2020_12",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/__init__.py",
+      "sha256": "e58694d8e72a79e09552351fed7ad452237efeffdf2480b8aed28789ce048ea7",
+      "schema_version": "shared_platform_discovery_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/__init__.py",
+      "sha256": "2cff277fe037ce2aa80cd4b60fbd4c6df84252bc839c880ff5829bc7445a74ff",
+      "schema_version": "shared_platform_runtime_exports_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/contracts.py",
+      "sha256": "c62403ebb966fca82cad036c81266e4b0dec2148d9d5943cf425708b2b57a37d",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_core_and_boundary.py",
+      "sha256": "4debf0a44156e90019f4f4b5f923dd9ffb33501c35c301ae44b9af0ee1c79353",
+      "schema_version": "shared_platform_boundary_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_runtime_v3_contract.py",
+      "sha256": "455f82a83ed649ad40e9e7931d4b492266ff0d8584cee7cb44894ba8e86b8782",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py --basetemp=.tmp/pytest-correction-failure-first -p no:cacheprovider",
+      "result": "failed",
+      "evidence_path": "old_deliverable_missing_delivery_sequence_key;12_passed_1_failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py --basetemp=.tmp/pytest-correction-focused-1 -p no:cacheprovider",
+      "result": "passed",
+      "evidence_path": "13_passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py --basetemp=.tmp/pytest-correction-required-1 -p no:cacheprovider",
+      "result": "passed",
+      "evidence_path": "33_passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_shared/__init__.py quant_shared/runtime/__init__.py quant_shared/runtime/contracts.py tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required by unclassified change risk",
+    "artifact_not_built_t0_contract_only_no_promotion_evidence",
+    "promotion_paper_live_private_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

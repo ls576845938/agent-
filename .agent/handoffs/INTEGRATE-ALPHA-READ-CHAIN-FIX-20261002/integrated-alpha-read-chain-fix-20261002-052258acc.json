@@ -1,0 +1,124 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-alpha-read-chain-fix-20261002-052258acc",
+  "ticket_id": "INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-alpha-read-chain-fix-20261002",
+  "base_commit": "23aab6e5a948dc611e762c3193d3f692b896a314",
+  "deliverable_commit": "052258acc712644211564901dbc0edad8ba97820",
+  "created_at": "2026-10-01T17:25:48Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-alpha-read-chain-fix-final-20261002-23afadd3d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-alpha-read-chain-fix-final-20261002-23afadd3d",
+  "deliverables": [
+    {
+      "path": "frontend/src/lib/alpha-factory-api.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "alpha_factory_read_lease_v1",
+      "sha256": "10339bb105a45a419158808694f000cef5998fe831967b6e80f3fa25f963f5e7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/AlphaFactoryConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "alpha_factory_console_read_lifecycle_v1",
+      "sha256": "8a0409e3f2ba1b9dd8acc901587a821dffa3e47376be9af3b4fbdf9aae6ecd21",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-research-read-request.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "node_contract_test_v1",
+      "sha256": "4bf53e6a8e2538d91bfc2787800f4db98eaeaa70d2315150eab5ca73f0c65461",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/alpha-factory.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_v1",
+      "sha256": "b6974236ed04b3d71f7f0955256ae9cedac48059b02e6f7bea377411ab90878a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "d1f73a62bafb909d86fc747571bf5c98e427499e062281c8c8e856c42467a0d7",
+      "type": "artifact"
+    },
+    {
+      "path": "docs/acceptance/ALPHA-READ-CHAIN-FIX-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "acceptance_report_v1",
+      "sha256": "c333ee0d8c0d05e33193391a110c2d1468143163654301784d1b148e7602e5ea",
+      "type": "report"
+    },
+    {
+      "path": "docs/acceptance/INTEGRATE-ALPHA-READ-CHAIN-FIX-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "integration_acceptance_report_v1",
+      "sha256": "6980a1ffbf5a7e1312872fe561cddcf84f846322c80c534ceede5e3c5d854609",
+      "type": "report"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate final producer event; ancestry and five Git blob SHA-256 checks",
+      "evidence_path": ".agent/handoffs/ALPHA-READ-CHAIN-FIX-20261002/published-alpha-read-chain-fix-final-20261002-23afadd3d.json",
+      "result": "passed"
+    },
+    {
+      "command": "NODE_PATH=<canonical frontend node_modules> node frontend/scripts/test-research-read-request.mjs",
+      "evidence_path": "17/17 passed",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "project tsc --noEmit exit 0",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "5403 modules transformed; built in 59.11s; first sandbox attempt EPERM creating task dist was not a source failure",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test",
+      "evidence_path": "fingerprint 0f756c00ac17dd13563d8362836507d31c4d50526647274a00a6c086ac610e77; manifest match; object_targets=4",
+      "result": "passed"
+    },
+    {
+      "command": "scoped git diff --check and safe_status",
+      "evidence_path": "approved source, derived identity, reports and handoff only",
+      "result": "passed"
+    },
+    {
+      "command": "registered main merge, canonical restart, formal public GET timing, Alpha Playwright and GUI system-intake lifecycle",
+      "evidence_path": "must run only after architect normal-merges this integrated event into main",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "architect_normal_merge_and_current_main_restart_pending",
+    "formal_alpha_public_get_and_playwright_acceptance_pending",
+    "formal_test_package_gui_lifecycle_and_closed_ledger_reconciliation_pending",
+    "real_candidate_v3_research_and_48_hour_business_acceptance_remain_separate_and_incomplete",
+    "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

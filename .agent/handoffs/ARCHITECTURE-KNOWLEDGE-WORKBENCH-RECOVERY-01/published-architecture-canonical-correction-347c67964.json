@@ -1,0 +1,108 @@
+{
+  "base_commit": "a53ed9377de1518b691d8c7d356dab2c81bf453b",
+  "blockers": [
+    "owner:integrator TypeScript must be rerun after the final useEffect correction; producer stopped after the earlier run failed on unavailable useLayoutEffect as directed",
+    "owner:integrator current-main build, 29 canonical workbench tests, and 9 research-navigation tests remain pending",
+    "M1-M4 remain unstarted; research completion grants no promotion, paper, private, order, broker, or live authority"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-11T04:25:00Z",
+  "deliverable_commit": "347c679646b4219ce7368d57ced5b0958017b566",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/architecture-knowledge.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "0aaa711480951d1d5ed891ec90faad938d4fd61e519d5455afd8aad6fa0e878c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "a98109b874e7e51d042f9bd7650cb4aaae1ec0d92c84df1c013c46171421402c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "685f6972a84f856e373bb8b327c86c3bcba0a02f75ad03027a4405cf28458d5c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "3fc0a011f79c18d25259cd9a8bb6d9ac4b9fc8db063cf99098591cf39c94a438",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/ResearchPortfolioWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "ab582c7d8c009baef6b03e467213b9f19c5b059c798371a7aba80badc66e277a",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/architecture-knowledge.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_knowledge_v1",
+      "sha256": "37a110e2845178da80fa8c0310117a4c53932dafe3ac6740f8dbed7191787887",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-architecture-canonical-correction-347c67964",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/architecture-knowledge-workbench-recovery-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-architecture-knowledge-reference-correction-a53ed9377"
+  ],
+  "tests": [
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs (5 passed)",
+      "evidence_path": "frontend/scripts/test-architecture-knowledge.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "tsc --pretty false --noEmit -p frontend/tsconfig.json before final correction (TS2305 useLayoutEffect unavailable)",
+      "evidence_path": "frontend/src/workspaces/ResearchPortfolioWorkspace.tsx",
+      "result": "failed"
+    },
+    {
+      "command": "tsc after final useEffect correction",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check before canonical correction commit",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main Playwright and build",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01",
+  "transition_for": ""
+}

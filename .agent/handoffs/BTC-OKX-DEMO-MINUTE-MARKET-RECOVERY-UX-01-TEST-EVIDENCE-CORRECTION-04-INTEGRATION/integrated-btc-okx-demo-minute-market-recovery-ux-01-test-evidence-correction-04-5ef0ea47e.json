@@ -1,0 +1,49 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-04-5ef0ea47e",
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-04-INTEGRATION",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-mm-evidence-c4-integrate",
+  "base_commit": "9c9003f39e788ccffe9469a30ca696b5780654c0",
+  "deliverable_commit": "5ef0ea47e8de0d54a7c8ec548e1f3b5e8374ff5f",
+  "created_at": "2026-08-17T06:00:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-04-c78d9c357"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-04-c78d9c357",
+  "deliverables": [
+    {"type":"test_evidence","path":"frontend/e2e/btc-demo-console.spec.ts","sha256":"2d744d7a5abdaa7949ec77065d8d7a49c62222a3755e4beddea5d26a92be9672","schema_version":"btc_demo_console_e2e_contract_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/public/frontend-identity.json","sha256":"85090f11e59cebbfd534ad3a097f52df9635ff778a11581a8641718c03fcc74e","schema_version":"quant_frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"integrator preflight: main=9c9003f39e788ccffe9469a30ca696b5780654c0; producer chain f31e599cfca625632e6d1b7febd26eb3ebb5450c -> c78d9c3579fba71d12eeeb4d8a3f3e75c620c3eb -> 5ef0ea47e8de0d54a7c8ec548e1f3b5e8374ff5f; exact scoped paths clean","result":"passed","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"handoff.py validate producer correction-04 envelope; committed raw SHA-256 c32d95a9cda8b59c388b7da7eb3adbd851d85c593ad15f87282dd3995479d975","result":"passed","evidence_path":".agent/handoffs/BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-04"},
+    {"command":"producer blob/touch audit: test SHA 2d744d7a5abdaa7949ec77065d8d7a49c62222a3755e4beddea5d26a92be9672; identity SHA 85090f11e59cebbfd534ad3a097f52df9635ff778a11581a8641718c03fcc74e; no extra business files","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"producer correction-04 Playwright second complete run (reported 16/16); producer identity check/test and diff-check","result":"passed","evidence_path":"C:/temp/btc-demo-console-corr04-playwright-20260817011301358"},
+    {"command":"npm.cmd --prefix frontend run lint on final registered main","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"npm.cmd --prefix frontend run build on final registered main","result":"not_run","evidence_path":"frontend/dist/index.html"},
+    {"command":"identity:check --canonical; identity:test; launcher --check after preserving producer identity baseline f31e599","result":"not_run","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"canonical frontend/backend restart and mocked btc-demo-console.spec.ts 16-test run","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"git diff --check; integrated handoff validator; scoped safe_status","result":"passed","evidence_path":".agent/handoffs/BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-04-INTEGRATION"}
+  ],
+  "blockers": [
+    "registered main must fast-forward to this producer-tip handoff commit before final lint/build/identity and canonical 16-test validation",
+    "backend/frontend restart deferred until after the single main fast-forward",
+    "promotion artifact remains unavailable and is not rebuilt",
+    "Demo remains inactive/fail-closed; no key/private/order/live/transfer/withdraw actions",
+    "promotion_paper_live_private_order_real_order flags remain false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

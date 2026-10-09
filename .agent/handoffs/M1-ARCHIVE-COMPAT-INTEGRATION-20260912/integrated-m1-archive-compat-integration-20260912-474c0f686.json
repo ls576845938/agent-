@@ -1,0 +1,129 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-m1-archive-compat-integration-20260912-474c0f686",
+  "ticket_id": "M1-ARCHIVE-COMPAT-INTEGRATION-20260912",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/integrator/m1-archive-compat-integration-20260912",
+  "base_commit": "c9aec584fb1fbe6712399162f080935c59d2e81f",
+  "deliverable_commit": "474c0f686d190740de566553ec5242a2a16c2a55",
+  "created_at": "2026-09-12T10:56:32Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-m1-readonly-release-20260912-d63591838",
+    "published-m1-archive-compat-fix-20260912-66aa7c43f"
+  ],
+  "supersedes": [],
+  "transition_for": "published-m1-archive-compat-fix-20260912-66aa7c43f",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/m1-archive-compat-integration-20260912.md",
+      "sha256": "6a699d8fb9b89a7b19aab04f5bd7d8fe822c850dbdd6b9b63130dd3f8583440d",
+      "schema_version": "m1_archive_compat_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/workspace-evidence.ts",
+      "sha256": "482fd1e864f512874636cda737a75f25a8d5da5c96cf211854947833de0309e0",
+      "schema_version": "m1_archive_evidence_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/ResearchRunDetails.tsx",
+      "sha256": "276efdfcd25c0c71bc2928df22e9be203a4b6413ae762a5770bc115a29adb792",
+      "schema_version": "m1_archive_read_sequence_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/AlphaFactoryConsole.tsx",
+      "sha256": "dc630fcf5a1a168334c8e6a81c6bf116c8e45e123155c529d5b42437d678601a",
+      "schema_version": "m1_factory_readonly_detail_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-m1-archive-compat.mjs",
+      "sha256": "dfa5b4840c024572f3b5196f65a61c2adf05cd14a81ec36e7a52d491a60b67af",
+      "schema_version": "m1_archive_compat_contract_test_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/m1-archive-compat.spec.ts",
+      "sha256": "d287c6ab465f7a5607cc8981b77c04f5de0afe80f41c6ebb0037dc92996e3d54",
+      "schema_version": "m1_archive_compat_browser_test_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "1772c5d63efac885b84180f94179641fe4a9ed3f362f83494c4cb6a65986ce8a",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-m1-archive-compat.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md"
+    },
+    {
+      "command": "python -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_m1_research_readonly_archive.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md; 11 passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint; npm.cmd --prefix frontend run build; npm.cmd --prefix frontend run identity:check; npm.cmd --prefix frontend run identity:test",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md; TypeScript passed, build 5258 modules, identity passed"
+    },
+    {
+      "command": "npx.cmd playwright test --list e2e/m1-archive-compat.spec.ts",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md; discovery only, four tests listed"
+    },
+    {
+      "command": "playwright test e2e/m1-archive-compat.spec.ts on canonical current main",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md"
+    },
+    {
+      "command": "node frontend/scripts/test-research-portfolio-contract.mjs",
+      "result": "failed",
+      "evidence_path": "docs/operations/m1-archive-compat-integration-20260912.md; pre-existing task-api frozen baseline mismatch, unchanged by ticket"
+    }
+  ],
+  "blockers": [
+    "registered_main_integration_pending",
+    "backend_restart_pending",
+    "current_main_identity_pending",
+    "canonical_browser_acceptance_pending",
+    "existing_research_portfolio_contract_task_api_baseline_mismatch_not_changed",
+    "historical_reconstructed_availability",
+    "computation_source_head_59f5eb861_is_stale",
+    "factory_candidate_rejected_no_alpha_effectiveness_claim",
+    "btc_runtime_artifact_root_unavailable_preserved",
+    "not_runtime_or_promotion_evidence",
+    "M2_M3_M4_not_authorized"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

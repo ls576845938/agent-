@@ -7,7 +7,7 @@ import {ArchitectureKnowledge} from './architecture/ArchitectureKnowledge';
 import {BtcSystemPanorama} from './architecture/BtcSystemPanorama';
 import {architectureMilestoneStatus, currentDevelopmentStatus, strategyDeliveryStatus} from './architecture/mindmap';
 import {catalog, coverage, groups, moduleOf, readers} from './architecture/model';
-import type {SourceRef} from './architecture/model';
+import type {SourceFile, SourceRef} from './architecture/model';
 import './architecture/architecture-map.css';
 
 const number = (value: number) => value.toLocaleString('zh-CN');
@@ -27,8 +27,11 @@ export default function ArchitectureMapWorkspace() {
   const view = searchParams.get('view') === 'btc-panorama' ? 'btc-panorama' : localView;
   const total = coverage(catalog.files);
   const module = catalog.modules.find(item => item.id === selected)!;
-  const byModule = useMemo(() => new Map(catalog.modules.map(item =>
-    [item.id, catalog.files.filter(file => moduleOf(file.path) === item.id)])), []);
+  const byModule = useMemo(() => {
+    const grouped = new Map(catalog.modules.map(item => [item.id, [] as SourceFile[]]));
+    for (const file of catalog.files) grouped.get(moduleOf(file.path))?.push(file);
+    return grouped;
+  }, []);
   const selectedCoverage = coverage(byModule.get(selected) ?? []);
   const edges = catalog.edges.filter(edge => edge.from === selected || edge.to === selected);
   const findings = catalog.findings.filter(finding => finding.module === selected);

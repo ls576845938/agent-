@@ -1,0 +1,84 @@
+{
+  "base_commit": "f8b366bc5759dff64bf2c86aa2d0b39ea799091a",
+  "blockers": [
+    "independent_integrator_current_main_integration_required",
+    "promotion_artifact_and_read_model_rebuild_required_by_live_execution_delivery_policy",
+    "backend_restart_required_after_current_main_integration",
+    "no_private_endpoint_no_order_endpoint_no_live_transport_no_real_order_no_secret_access",
+    "opaque_read_only_receipt_is_quality_checked_offline_fixture_not_live_attestation",
+    "data_readonly_receipt_cannot_unlock_order_capability",
+    "fixed_ip_observed_egress_and_provider_authority_require_real_authorized_verifier_before_live_use",
+    "default_all_paper_live_promotion_flags_false",
+    "no_live_network_provider_registered"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-08T15:26:03Z",
+  "deliverable_commit": "9f611bc053022774324ccc5b81697c96ca7df5fd",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_live_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_live_read_only_preflight_v1",
+      "sha256": "a850314027b407c1ea7a27a693971c5744492f72f0828b2844f80a762103d6a8",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_okx_live_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "244e27c23cbdb9efa141efe960de44b7f09bd53ebbaa9d4ec106c55d5c1a8d2a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-shared-runtime-live-canary-01-correction-preflight-01-9f611bc05",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-live-preflight-correction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py -q [observed: 53 passed in 0.32s]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py tests/contracts/test_btc_okx_live_transport.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_lean_microlive_canary.py tests/live/test_btc_okx_shared_runtime_live_canary.py -q [observed: 118 passed in 2.92s]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_live_preflight.py tests/contracts/test_okx_live_preflight.py [observed: exit 0]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check [observed: exit 0 before deliverable commit]",
+      "evidence_path": "quant_crypto/oms/okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "real network/private/order/live/transfer/withdraw endpoint, secret/key read, POST provider registration, artifact/read-model build, main integration, or push",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-PREFLIGHT-01",
+  "transition_for": ""
+}

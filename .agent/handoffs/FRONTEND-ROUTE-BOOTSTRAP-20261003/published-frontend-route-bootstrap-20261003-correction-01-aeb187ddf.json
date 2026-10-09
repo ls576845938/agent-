@@ -1,0 +1,95 @@
+{
+  "base_commit": "b21bb541127ae71ee5e80c3aa4006c7d5338bd6d",
+  "blockers": [
+    "owner:integrator independently integrate correction commit and refresh frontend/public/frontend-identity.json",
+    "owner:integrator run canonical current-main browser acceptance with unchanged 29-item/30s/5s/1-worker/0-retry budget, including US to research to crypto to architecture navigation and import-failure route-return-refresh recovery",
+    "team_context_unavailable_in_sparse_producer:ModuleNotFoundError quant_crypto; no upstream delivery was consumed",
+    "producer did not start Vite, preview, Playwright server, backend, or frontend",
+    "not_promotion_evidence_ready; demo_control_enabled=false; promotion=false; paper=false; live=false; private=false; order=false; real_order=false; transfer=false; withdraw=false; execution_permission=false; runtime_observed=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-10-02T23:49:51Z",
+  "deliverable_commit": "aeb187ddfa3e04010d81581f1d7ef94ca1e49ac2",
+  "deliverables": [
+    {
+      "path": "frontend/src/App.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_route_lazy_loader_v2",
+      "sha256": "e123132ee2935f79a462d64cc36210b3e3d8897971c89dd8187d9fdd7ecdec4d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_workbench_icon_import_v1",
+      "sha256": "275fb3c3d5e95b8a5379fe1298c7ffed6992895699c0ef4e36a81539002d811b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-route-bootstrap.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_route_bootstrap_regression_v2",
+      "sha256": "7a782ac099e3b86e9b0d194de38c453e2f44edacb74cfb032567952d356e94a5",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_route_bootstrap_acceptance_v2",
+      "sha256": "01d2ad7007b4c0fc8ace9c6fed308b0dcf2388422246481356ceb0f878f0bff6",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "superseded-frontend-route-bootstrap-20261003-feddeecfe-aeb187ddf"
+  ],
+  "domain": "shared",
+  "event_id": "published-frontend-route-bootstrap-20261003-correction-01-aeb187ddf",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/frontend-route-bootstrap-20261003",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "node scripts\\test-route-bootstrap.mjs before route identity correction [58.642s]",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint first correction attempt [13.495s; repository React shim key typing]",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint final correction [13.459s]",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts\\test-route-bootstrap.mjs final correction [55.009s]",
+      "evidence_path": "frontend/scripts/test-route-bootstrap.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main US to research to crypto to architecture same-document navigation and import-failure route-return-refresh recovery",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "FRONTEND-ROUTE-BOOTSTRAP-20261003",
+  "transition_for": ""
+}

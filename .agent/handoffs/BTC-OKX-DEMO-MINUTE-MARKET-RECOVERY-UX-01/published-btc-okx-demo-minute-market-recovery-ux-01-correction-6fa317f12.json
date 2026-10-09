@@ -1,0 +1,107 @@
+{
+  "base_commit": "f3d08b1b8372da695439e2a4d8bc72fb0f9a6a02",
+  "blockers": [
+    "owner:integrator correction_deliverable_not_integrated_to_registered_main",
+    "independent_integrator_required:demo_execution_semantics",
+    "mocked_playwright_requires_post_integration_registered_main_frontend_server",
+    "promotion_artifact_and_read_model_rebuild_deferred",
+    "producer_validation_no_key_no_network_no_private_no_order_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-16T15:34:51Z",
+  "deliverable_commit": "6fa317f1289891509b05280e8dd63d832c36896f",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_public_market_visual_only_v2",
+      "sha256": "bebd7a642a0ded23ab13190c001395b9aba9a6b9940d507d6a99a39d3833748d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_pnl_provenance_ui_v2",
+      "sha256": "0a2ed0e0381c8072f48ba320b771e6fba63b8bea335a61529ce95d413880e348",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "7fe932e71d3ee61a3ba38aa3d783d5f4ecc99d466ee70e4325b2632d61328de4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_public_market_recovery_e2e_v2",
+      "sha256": "da903818f1dea44811ba2b2833ca6636285658204989d655116841ab3b113d10",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-minute-market-recovery-ux-01-correction-6fa317f12",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-minute-market-recovery-ux-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-demo-minute-market-recovery-ux-01-a40bea4b8"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_adapter.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py [observed: 69 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build [observed: passed; chunk-size warning only]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo.py quant_crypto/application/btc_demo_runtime.py backend/app/services/btc_demo_runtime.py backend/app/api/btc_demo_runtime.py [observed: passed]",
+      "evidence_path": "quant_crypto/oms/okx_demo.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-equivalent frontend identity assertion: git rev-parse HEAD:frontend/src == frontend-identity.object_ids.frontend_src_tree [observed: 333ff1b26dab41eff1d2b29204c2d9b8847c7c89]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/node_modules/.bin/playwright.cmd test e2e/btc-demo-console.spec.ts --grep '(market view|realized net PnL|start POST timeout|unclean frozen)' [not run against worktree: canonical frontend serve guard intentionally serves registered main only; post-integration integrator action]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01",
+  "transition_for": ""
+}

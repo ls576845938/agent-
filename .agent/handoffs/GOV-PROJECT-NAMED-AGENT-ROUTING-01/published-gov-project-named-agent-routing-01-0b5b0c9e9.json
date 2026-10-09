@@ -1,0 +1,59 @@
+{
+  "base_commit": "ad8bcd4221450852fbdf0186612b329413c212f3",
+  "blockers": [
+    "independent_integrator_required"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-17T00:00:00Z",
+  "deliverable_commit": "0b5b0c9e94155e0386111092a8f16924122a8406",
+  "deliverables": [
+    {
+      "path": "AGENTS.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "project_named_agent_routing_v1",
+      "sha256": "49ed351d8af7c60b19d670d5d3ad287df95edbca2e5bb6c4c4bd46993ecb718d",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-gov-project-named-agent-routing-01-0b5b0c9e9",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/gov-project-named-agent-routing-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py -q",
+      "evidence_path": "tests/agent_governance",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- AGENTS.md",
+      "evidence_path": "AGENTS.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path AGENTS.md",
+      "evidence_path": "AGENTS.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "GOV-PROJECT-NAMED-AGENT-ROUTING-01",
+  "transition_for": ""
+}

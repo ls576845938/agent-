@@ -1,0 +1,284 @@
+{
+  "base_commit": "c9356da5c3b9b5242471c89e01d67294bcd9f96b",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "promotion_artifact_rebuild_blocked_GOV-STORAGE-001_D_free_49.11_GiB_below_50_GiB",
+    "backend_restart_required_after_current_main_integration",
+    "three_pre_existing_Windows_path_test_failures_remain_outside_ticket_touch_set"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-28T02:49:26Z",
+  "deliverable_commit": "c4fdd453e077213ab441b8960f25d9414dfc879e",
+  "deliverables": [
+    {
+      "path": "docs/knowledge/02_research_backtest/strategy_interface_contract.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_contract_doc",
+      "sha256": "027e64741442bbe68fdfdf018eb6982a341af978b07e908770d4b91e179be0a1",
+      "type": "document"
+    },
+    {
+      "path": "quant_shared/strategy_runtime/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1",
+      "sha256": "4634542e46760c89efcb747806616c95d1c8339f7165abf341b15b6235312f38",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/strategy_runtime/models.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1",
+      "sha256": "825d512b907309c0ff185857b26e29889749ac4e6bb8d1cef607034f2b808a0c",
+      "type": "schema"
+    },
+    {
+      "path": "quant_shared/strategy_runtime/state.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_state_store_v1",
+      "sha256": "58baf8a236056eac8df1ea394a12ad82c824139ba6320c0d9022c5b610a1856f",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/backtest/engine.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "8d6d8113ff6f6cc3ec6180c08492eff924c3bb2688724927d960e78b53787c7f",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/backtest/replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "1864678a7b9397e4143bd9c5925dd616d65b4f68ce1b34344662efc2fb7705fd",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/backtest/unified_runner.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "19c66ba09c9e14955ef63515344b19fcc8c6519cc5f93f4659b37bc5b45f8787",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/backtest/walk_forward.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "e3d40c15c2c675b143ac6bdc6aa47f8e61aca890de05be639ed729bd449496c8",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/cli.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "f112861b026736557087fcc8b4fc79c3cb907b3bd9e90e3c723b407c8bbfdd14",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "e959254c6e7b2666bc2b7bc806cc5ee023fa4233df6071a2ba72fef9090c6a48",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/paper_trading_loop.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "647c85e5e48ade33d70c5b82063bec8762fe6bc4cec570f325c9a5e412659e60",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/shadow_live.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "18795a10c1b984a27a269aa7cc6a15b2cd4f06dc8c00febdce34b21d81af7a8f",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/live/shadow_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "3e5370c73f701f8ea7f0f6f568d5267b904fb1a17f5ae0c0e8a8e6c7ac2e8cf1",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/base.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1",
+      "sha256": "610dc206fc6cd859d606b6c857d810f3bfb04cb0edd38abc6df1c772cca13c67",
+      "type": "schema"
+    },
+    {
+      "path": "quant_us/strategies/composite.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_adapter",
+      "sha256": "b5704461a39ea2e6d08fbd70663ed671b1b4b3c796f266e0f44a50055c769868",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/decision_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_service_v1",
+      "sha256": "646c24257ce5021ae0e3236d057c1fc504b985640300ffe6c8d436c31a06c707",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/donchian_breakout_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "3f4ab5660ae6f912a5d14f9b1e2b2c63967b5f84796a4ba8927bfe6850d605e3",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/earnings_drift_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "5bf5abbee055b7bcdbd03eb007e7709f88e6e9acb78ab164864b20c7acd320cd",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/etf_rotation_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "092fcf9642fdce17507d2d2a180d5d94cb2cb8d35e6fd545b8d4a99c7b862e43",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/macro_trend_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "629fddfbc050dd7cd316d73a975a81fba8ddbc70bb45dca4b2bd125b5f034f4b",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/mean_reversion_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "f2dcf0aa7da1ee7e6e39f691c58e2f3e0599ec791c4025a1d74d058ce707c97b",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/momentum_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "feacfd767b3b411350687415bc40cf51c4b306c7353e42b3e01c549f82611c13",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/reversion_rsi_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "82b63c9e82418bf9d17cdb9c929e39b684b2b5fdcf2bfbf045a7c3ea186dc7e2",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/time_window_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "ace55236ab07b603daeeb5983f01172db459dba757aff4ee846203f45b2af9d3",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/trend_macd_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "c51b9bcf6e27ac5077b5b02e7b040f886971f020ece8b634d6470699ea743f26",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/strategies/volatility_squeeze_strategy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_state_adapter",
+      "sha256": "8aad9400d4a5bf20e3f54a9f24b233d3bb43d5d9ba24d4621772c40f87b73047",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_strategy_decision_context_v1.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_decision_context_v1_contract_tests",
+      "sha256": "210c0c0db8e638d7b1b15218576ed211127d521b15f55ea284048d51a315e6ad",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qsys-strategy-decision-context-v1-01-c4fdd453e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qsys-strategy-decision-context-v1",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "preflight: sparse=true; base=c9356da5c3b9b5242471c89e01d67294bcd9f96b; initial_touch_set_dirty=clean; change_risk=unclassified; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "result": "passed"
+    },
+    {
+      "command": "failure-first: py -3 -m pytest tests/contracts/test_strategy_decision_context_v1.py -q -> ModuleNotFoundError quant_shared.strategy_runtime before implementation",
+      "evidence_path": "tests/contracts/test_strategy_decision_context_v1.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_strategy_decision_context_v1.py tests/strategies tests/backtest/test_backtest_multi_timeframe_scheduler.py tests/backtest/test_no_same_bar_lookahead.py backend/tests/test_unified_backtest.py backend/tests/test_phase_f5_integration.py backend/tests/test_strategy_interface.py backend/tests/test_anti_lookahead.py -q -> 119 passed",
+      "evidence_path": "tests/contracts/test_strategy_decision_context_v1.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_replay.py backend/tests/test_walk_forward_multisymbol.py tests/contracts/test_no_lookahead_walk_forward.py tests/backtest/test_unified_runner_evidence.py tests/backtest/test_external_target_positions.py -q -> 49 passed",
+      "evidence_path": "backend/tests/test_replay.py",
+      "result": "passed"
+    },
+    {
+      "command": "paper/shadow/CLI matrix with three explicit unrelated Windows-path deselections -> 236 passed, 3 deselected",
+      "evidence_path": "backend/tests/test_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "known baseline debt rerun: paper manifest history relative-path check plus two POSIX-separator CLI assertions -> 3 failed",
+      "evidence_path": "backend/tests/test_cli.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m compileall -q quant_shared/strategy_runtime quant_us/strategies quant_us/backtest quant_us/live quant_us/cli.py tests/contracts/test_strategy_decision_context_v1.py",
+      "evidence_path": "quant_shared/strategy_runtime",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check task touch set",
+      "evidence_path": "pyproject.toml",
+      "result": "not_run"
+    },
+    {
+      "command": "current-HEAD promotion artifact rebuild not run because D free=49.11 GiB is below GOV-STORAGE-001 50 GiB minimum",
+      "evidence_path": "docs/agent_playbooks/shared_pitfalls.md",
+      "result": "not_run"
+    },
+    {
+      "command": "backend restart not run in producer worktree; required only after independently integrated current main",
+      "evidence_path": "scripts/start_backend_current_main.ps1",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py on declared touch set after deliverable commit -> clean",
+      "evidence_path": "tools/agent_governance/safe_status.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QSYS-STRATEGY-DECISION-CONTEXT-V1-01",
+  "transition_for": ""
+}

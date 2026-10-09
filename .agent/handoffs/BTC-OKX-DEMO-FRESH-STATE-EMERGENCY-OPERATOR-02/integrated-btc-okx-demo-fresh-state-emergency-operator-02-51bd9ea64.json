@@ -1,0 +1,126 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-state-emergency-operator-02-51bd9ea64",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-EMERGENCY-OPERATOR-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-fresh-state-operator-02-int-01",
+  "base_commit": "0d0473b741de20240ae76a17c3e52e04b8567b3d",
+  "deliverable_commit": "51bd9ea648835cf2e2aa2a240639bc501ea3164f",
+  "created_at": "2026-08-09T23:55:52Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-fresh-state-emergency-operator-02-16fc4e7a9"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fresh-state-emergency-operator-02-16fc4e7a9",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "307390c3b924ab707501783165882a4708913617a15bff305cc8b27903a4f853",
+      "schema_version": "okx_demo_paper_runtime_status_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "2195580ad017d179a7a1b6127dd9faf7a4a2bac8387ab6d27022b4deb3248527",
+      "schema_version": "btc_demo_fresh_state_emergency_operator_service_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "sha256": "afb1d360445f68c0c9f05111114e6ae261067dd1bce86ffe21c3803da78a77c2",
+      "schema_version": "btc_demo_fresh_state_emergency_operator_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "0a45fc23bdfd94501561ac8ad564eb103e82eff22f7e37d47fac6dde8c7ad85f",
+      "schema_version": "btc_okx_demo_paper_runtime_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "614d244a5371cf170ec311297ee4eea6ecedb9756aca64e0162bc88895b1bc1a",
+      "schema_version": "btc_demo_fresh_state_emergency_operator_service_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "sha256": "458664e7f4b47a4d7e11f70476abdda31414b9ec82beb524c675e5eebb8af7b0",
+      "schema_version": "btc_demo_fresh_state_emergency_operator_api_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k fresh_state_emergency_exit --basetemp=<unique-system-temp> [10 passed, 228 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp=<unique-system-temp> [238 passed in 32.15s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py -q --basetemp=<unique-system-temp> [17 passed in 5.31s]",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py -q --basetemp=<unique-system-temp> [32 passed in 0.61s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py backend/app/services/btc_demo_runtime.py backend/app/api/btc_demo_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 0d0473b741de20240ae76a17c3e52e04b8567b3d..51bd9ea648835cf2e2aa2a240639bc501ea3164f -- six-file-touch-set",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-btc-okx-demo-fresh-state-emergency-operator-02-16fc4e7a9.json [valid]; byte-preserving Git blob SHA-256=7ab2f7f647061a3259ee7604631400879d96b1efb02744989ad525fdbb166c77",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-EMERGENCY-OPERATOR-02/published-btc-okx-demo-fresh-state-emergency-operator-02-16fc4e7a9.json"
+    },
+    {
+      "command": "registered main fast-forward, backend restart/service acceptance, artifact/read-model rebuild, Demo/private/order/live endpoint, key/secret access, transfer, withdraw, and real order",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_sync registered_main_not_advanced_from_0d0473b741de20240ae76a17c3e52e04b8567b3d",
+    "owner:backend_operator backend_restart_required_after_integration",
+    "current_head_artifact_and_read_model_rebuild_not_run",
+    "quality_checked_source_is_not_promotion_evidence",
+    "no_service_start_no_network_no_secret_no_demo_no_private_no_order_no_live_no_transfer_no_withdraw",
+    "promotion_paper_live_private_order_and_real_order_permissions_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

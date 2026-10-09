@@ -1,0 +1,81 @@
+{
+  "base_commit": "e4486e7f09349313acbdbf0a2d28e54ea1b84c3d",
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "canonical_registered_main_playwright_validation_completed; producer is not merged",
+    "backend_restart_required_by_delivery_policy_not_performed",
+    "promotion_paper_live_private_order_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-17T00:44:22Z",
+  "deliverable_commit": "0dd467fef13065d7f9ef9d80783f9ab5ca9b029a",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_v1",
+      "sha256": "9b1e4b54f4378af21e5fe6952823b1537e89264d391c827c848b99c70454beb4",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-02-0dd467fef",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-demo-console-locator-corr-02",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --grep \"market view is public-only\" --workers=1 --reporter=line (baseline before patch)",
+      "evidence_path": "C:/temp/btc-demo-console-locator-corr-02-baseline-single",
+      "result": "failed"
+    },
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --grep \"market view is public-only\" --workers=1 --reporter=line (after anchored locator patch)",
+      "evidence_path": "C:/temp/btc-demo-console-locator-corr-02-single-fixed-rerun",
+      "result": "passed"
+    },
+    {
+      "command": "cd frontend; playwright test e2e/btc-demo-console.spec.ts --workers=1 --reporter=line against canonical http://127.0.0.1:3000 with mocked APIs",
+      "evidence_path": "C:/temp/btc-demo-console-locator-corr-02-full-rerun",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint (producer sparse worktree)",
+      "evidence_path": "tsc not found in sparse worktree node_modules",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix D:/vibe coding/Obsidian/量化系统/agent-/frontend run lint",
+      "evidence_path": "registered-main frontend TypeScript lint",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json unchanged; manifest_match=true",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-02",
+  "transition_for": ""
+}

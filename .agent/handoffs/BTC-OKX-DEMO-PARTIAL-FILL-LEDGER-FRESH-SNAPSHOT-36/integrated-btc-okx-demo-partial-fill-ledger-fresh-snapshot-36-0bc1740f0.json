@@ -1,0 +1,88 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-0bc1740f0",
+  "ticket_id": "INTEGRATE-BTC-OKX-DEMO-PARTIAL-FILL-LEDGER-FRESH-SNAPSHOT-36",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-pflfs-36-int",
+  "base_commit": "ec9a2422358d2300928def104dc5b9713bc7a709",
+  "deliverable_commit": "0bc1740f0f933516dc00d6f62ebb58977395e3d9",
+  "created_at": "2026-08-12T11:35:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d-corr1"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d-corr1",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "9ea9f44dea56c12f2b9790a6dbb026ea7a8686688fb36cabfb13f72babacab59",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "388a906cdecee6b155299e3595c56fa6730faf09cb8b7c55b25aae04ab7c5caf",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-PARTIAL-FILL-LEDGER-FRESH-SNAPSHOT-36/published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d-corr1.json",
+      "sha256": "ee82e02e57d86436d5276e2ca2bb03958a0190f0995bd85f4fb9759a86baa824",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q --basetemp <external-temp> tests/contracts/test_btc_okx_demo_paper_runtime.py -k partial_fill_preflight",
+      "result": "passed",
+      "evidence_path": "integrator candidate; 4 passed, 375 deselected"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "integrator candidate; exit=0"
+    },
+    {
+      "command": "git diff ec9a2422358d2300928def104dc5b9713bc7a709..HEAD --check",
+      "result": "passed",
+      "evidence_path": "integrator candidate; clean"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <corr1 producer handoff>",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PARTIAL-FILL-LEDGER-FRESH-SNAPSHOT-36/published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d-corr1.json; SHA-256 ee82e02e..."
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <superseded original handoff>",
+      "result": "failed",
+      "evidence_path": "historical event retained append-only but not consumed; validator reports handoff_deliverable_hash_mismatch for runtime and test blobs"
+    },
+    {
+      "command": "artifact/read-model rebuild; backend restart; Demo; endpoint, secret, private/order/live/transfer/withdraw access",
+      "result": "not_run",
+      "evidence_path": "ticket safety boundary"
+    }
+  ],
+  "blockers": [
+    "superseded_original_handoff_invalid_and_retained_only: published-btc-okx-demo-partial-fill-ledger-fresh-snapshot-36-55f93b95d; validator hash mismatch for both deliverables; corr1 is the sole consumed valid handoff",
+    "promotion_artifact_and_read_model_deferred",
+    "backend_restart_deferred_or_not_required_for_this_ticket",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

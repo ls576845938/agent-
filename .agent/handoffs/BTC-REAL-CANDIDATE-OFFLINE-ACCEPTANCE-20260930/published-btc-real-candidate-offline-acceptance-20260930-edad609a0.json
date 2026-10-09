@@ -1,0 +1,79 @@
+{
+  "base_commit": "afeca215c55b54b2b7d8e1a28622678df65b2817",
+  "blockers": [
+    "owner:btc_developer formal_48_decision_v2_replay_failed_at_2026-06-17T11:52:30Z_with_risk_evidence_proof_invalid_and_qlib_offline_maintenance_ack_failed",
+    "owner:security_governance exact_risk_proof_verifier_failure_dimension_not_persisted_in_closed_runtime_log_and_remains_unresolved",
+    "owner:integrator independent_commit_review_and_source_integration_pending",
+    "owner:integrator final_three_node_cache_wiring_batch_was_2_failed_1_passed_in_504.17s_and_committed_test_assertion_corrections_require_independent_minimal_validation",
+    "owner:architect integrated_source_S_freeze_and_explicit_real_fit_authorization_pending_real_campaign_fit_count_0",
+    "owner:operator formal_48_decision_6_funding_event_tail_replay_not_completed_no_runtime_artifact_published",
+    "performance_only_short_sample_1_decision_239_maintenance_events_does_not_replace_formal_48_decision_acceptance",
+    "failed_run_did_not_persist_duplicate_return_or_execute_call_wall_window_so_those_two_items_are_not_locally_validated_and_must_not_be_inferred",
+    "not_promotion_evidence_no_catalog_write_no_account_write_no_registration_write_no_job_write_no_service_started_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-30T07:20:34Z",
+  "deliverable_commit": "edad609a0c4157646254d6a418ac4c9e9a17328f",
+  "deliverables": [
+    {"path":"backend/app/services/alpha_factory.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"ab8bce96661685de9b03b6fee9843186398a2ab9342ae56c7ce5f311ef89a72e","type":"code"},
+    {"path":"backend/app/services/candidate_offline_inputs.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"81e2302f3bfe409b4016c14cb055e1a5b71439b099fb23324efe8c7021ebd7df","type":"code"},
+    {"path":"integrations/qlib_adapter/factory_delivery.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"23878dc963d88b5623a021df1ee065d77ca1cad3a8a0ce5c3bfa964292f3c771","type":"code"},
+    {"path":"integrations/qlib_adapter/factory_package.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"a0e0cf7808b50a1e9f8fde157a811b6a59e1894edbeee8674355b704bd480a76","type":"code"},
+    {"path":"integrations/qlib_adapter/factory_trainer.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"4e10fbf8d8b21c451b725863e86089052adc2f792fce7ab57a83908d103666f7","type":"code"},
+    {"path":"integrations/qlib_adapter/research_pipeline.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"6d63ff6809b494acb8bb0c686b979c6383dc3c1303f87b56ef9cc66c05528778","type":"code"},
+    {"path":"integrations/qlib_adapter/run_qlib_workflow.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"b44ce92a9ba7b290d435cec2ee851efbc934fa3d1478d3830f1f64a2f484b352","type":"code"},
+    {"path":"quant_crypto/application/btc_registered_candidate.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"590f4d62fe30e952121b896ee647330d1d676bd077c6c3fbd9fe1dfefd7076c5","type":"code"},
+    {"path":"quant_crypto/application/qlib_offline_replay.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"2e3616fbdcc275eba707f8d6374d9f64f745e63f82173412c312ea631c486f3f","type":"code"},
+    {"path":"quant_shared/alpha_factory/contracts.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"802de9f8cc8292d5b5bea507c4e29a3a181b5e02484c560e9fc738a584528707","type":"code"},
+    {"path":"quant_shared/alpha_factory/engine.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"480b96cc4134de68d302010dade88eb0a7b5dfec382a1b93f32b3b0c304913b4","type":"code"},
+    {"path":"quant_shared/strategy_delivery/package_evidence.py","readiness_class":"quality_checked","schema_version":"python_source_v1","sha256":"cf5fd707166e43fea1e324ac9a54d8b8602647153a91b9ec815cf8b0f3b7be16","type":"code"},
+    {"path":"tests/api/test_alpha_factory.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"9e8f5f2b0198a765b34e08eea8d7c3149f5a90d480e1580e4ade3de33eea20b4","type":"test_evidence"},
+    {"path":"tests/contracts/test_candidate_offline_access.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"4cd39fd205a70804d5356d3486504f209caa88cd2bab13d1567f16eec325bb14","type":"test_evidence"},
+    {"path":"tests/contracts/test_candidate_package_runtime.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"eaf049e9f0c5e72ff623a0a560ed45941d50d260e41518ae535386361de3964b","type":"test_evidence"},
+    {"path":"tests/contracts/test_registered_candidate_execution.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"047f1f1e9968e27eceddd369c4004b4748bb6ea4df578aab8574734366d14a6e","type":"test_evidence"},
+    {"path":"tests/integrations/test_candidate_package_inference.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"06abe493d4fc64588bf41cfb7402111308ca361618f3ff545de71cc9bd01a311","type":"test_evidence"},
+    {"path":"tests/integrations/test_qlib_adapter_contract.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"b4abdcf17490ae3bdab64d66474dc4a7f3064a84f880ef4533fa1d110f42c364","type":"test_evidence"},
+    {"path":"tests/integrations/test_qlib_alpha_factory.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"e52592023b23c22c1fc04b700c5170e49d600aef47995d4381ce96c8b4ebec67","type":"test_evidence"},
+    {"path":"tests/research/test_alpha_factory.py","readiness_class":"quality_checked","schema_version":"pytest_contract_v1","sha256":"5d930949eaf9d941d52fb2fc6cb390ece47fbdcac0691e036e139a7b1f479c64","type":"test_evidence"}
+  ],
+  "depends_on": [
+    "data_manifest_commit_314c440ac2fc20c958472da14ff68265351ce0b0"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-real-candidate-offline-acceptance-20260930-edad609a0",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-real-candidate-20260930",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "transition_for": "",
+  "tests": [
+    {"command":"R10 formal funding/recovery exact registered v2 48-decision node; 1 failed in 29082.39s at 2026-06-17T11:52:30Z risk_evidence_proof_invalid -> qlib_offline_maintenance_ack_failed; closed log C:/Users/LOCAL_USER/AppData/Local/Temp/pytest-of-LOCAL_USER/pytest-1549/test_registered_v2_funding_pre0/economic-state/runtime/events.jsonl","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"failed"},
+    {"command":"canonical Python full nine-file matrix excluding separately running long node; R10 220 passed, 3 failed, 1 deselected in 2771.36s; frontend NODE_PATH failure passed separately and two dependency failures were fixed/revalidated on R11","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"failed"},
+    {"command":"canonical Python A+B test_candidate_package_inference.py and test_candidate_package_runtime.py; 60 passed in 55.48s","evidence_path":"tests/integrations/test_candidate_package_inference.py","result":"passed"},
+    {"command":"canonical Python C actual-final synthetic fixture; 1 passed in 36.04s; software fixture fit only and real campaign fits remain 0","evidence_path":"tests/integrations/test_qlib_alpha_factory.py","result":"passed"},
+    {"command":"canonical Python earlier selected-field legacy/cache one-decision plus duplicate performance sample; 1 passed in 148.36s; 239 maintenance, 52 recover, 43 ledger, 290 events, 4442206 bytes each; elapsed 61.233s -> 57.048s; inclusive recover 5.522s -> 1.352s; this predates the stricter full-semantic comparison and is performance evidence only","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"},
+    {"command":"canonical Python release/construction/evaluate failure and exclusive writer focused tests; 2 passed in 109.81s","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"},
+    {"command":"canonical Python existing restart/lease/exact-market regression nodes; 3 passed in 230.87s","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"},
+    {"command":"closed log bounded read-only profile first 2000 events; 38287206 bytes, read 0.0621s, JSON parse 0.3690s, raw SHA256 0.0264s, canonical JSON+SHA256 0.4279s, 1680 maintenance and 285 ledger UOW events","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"},
+    {"command":"canonical Python final three-node cache-wiring proof batch with isolated D:/codex-test-tmp/btc-real-candidate-perf-final-proof-20260930; 2 failed, 1 passed in 504.17s; invalid-risk wrapper/cause/logical-step/no-economic-effects passed; full comparison failed at premature raw first UUID/hash equality and tamper probe failed at wrong expected wrapper layer","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"failed"},
+    {"command":"read-only strict comparison over the preserved paired failed-run outputs; both default recover blockers empty and sequence 290, events 0:286 exact, exact tail path set 104/104 with no missing or unexpected paths, UUID/digest references closed, normalized complete events diff 0, venue exact, account ledger replay exact; persisted result differed only order_intent_id and referenced ledger_event_hash; duplicate return and execute wall window were not persisted and remain unvalidated","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"},
+    {"command":"canonical Python AST parse plus git diff --check for committed assertion corrections; passed; no post-correction replay rerun by producer","evidence_path":"tests/contracts/test_registered_candidate_execution.py","result":"passed"}
+  ],
+  "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930"
+}

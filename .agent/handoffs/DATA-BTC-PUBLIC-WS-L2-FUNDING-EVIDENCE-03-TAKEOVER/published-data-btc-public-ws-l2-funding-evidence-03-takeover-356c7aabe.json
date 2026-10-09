@@ -1,0 +1,93 @@
+{
+  "base_commit": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "blockers": [
+    "btc_okx_public_ws_tls_or_runtime_path_connection_reset",
+    "btc_okx_public_ws_l2_no_messages_captured",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_gap_recovery_unverified",
+    "l2_lt_30_natural_days",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "windows_time_service_stopped_environment_blocker",
+    "not_research_ready",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "created_at": "2026-07-28T09:12:29Z",
+  "deliverable_commit": "356c7aabe52b6aed742518a10774e7ff71b7053c",
+  "deliverables": [
+    {
+      "path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "data_btc_public_ws_l2_funding_evidence_takeover_report_v1",
+      "sha256": "49eee37da18f46c129198f95253b68e409978dded1af811cf1bb5a25952e228c",
+      "type": "report"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "ea87a31cfd15ab134803750c3c6e52035d3d1d8cc2594731afd6c0c75bb37694",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-public-ws-l2-funding-evidence-02-e6af3ebe1"
+  ],
+  "domain": "btc",
+  "event_id": "published-data-btc-public-ws-l2-funding-evidence-03-takeover-356c7aabe",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-btc-public-ws-l2-funding-evidence-02",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input .agent/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-02/published-data-btc-public-ws-l2-funding-evidence-02-e6af3ebe1.json",
+      "evidence_path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent immutable funding CSV row, gap, duplicate, PIT, freshness and SHA-256 audit",
+      "evidence_path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "result": "passed"
+    },
+    {
+      "command": "public OKX books WebSocket bounded 15-second capture",
+      "evidence_path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "result": "failed"
+    },
+    {
+      "command": "public OKX server-time seven-sample preflight",
+      "evidence_path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "result": "failed"
+    },
+    {
+      "command": "isolated-python -m pytest tests/agent_governance/test_shared_data.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_okx_server_time_preflight.py --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "docs/handoffs/DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER-takeover-validation-report.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-03-TAKEOVER",
+  "transition_for": ""
+}

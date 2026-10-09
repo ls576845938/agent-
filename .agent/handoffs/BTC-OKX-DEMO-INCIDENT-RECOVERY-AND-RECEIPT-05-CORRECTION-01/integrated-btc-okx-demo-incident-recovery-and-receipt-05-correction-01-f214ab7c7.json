@@ -1,0 +1,105 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-f214ab7c7",
+  "ticket_id": "BTC-OKX-DEMO-INCIDENT-RECOVERY-AND-RECEIPT-05-CORRECTION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-recovery-receipt-05-correction-01",
+  "base_commit": "4b4e004875c8a1e1433c7130fab356ce5a186c54",
+  "deliverable_commit": "f214ab7c7c0bd7d4c4bdee2ff404f2e88c60287d",
+  "created_at": "2026-08-06T03:49:40Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-54bf18f14"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-54bf18f14",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "72ad3ffc5e50d5203a64eac7e22c0fa27a027df0deedf1dfdd53d1978dcf58a8",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "967968ea688876299f603798c232262fa923a76f270fba1f54f57d9e5b569670",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published-envelope> [status=valid; exact producer ancestry, two-path touch set, raw Git blob SHA-256, schemas, blockers, and guardrails matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-INCIDENT-RECOVERY-AND-RECEIPT-05-CORRECTION-01/published-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-54bf18f14.json"
+    },
+    {
+      "command": "scoped parent-vs-producer regression review [base hard-coded partial-fill 0.01/10 rejects the new 0.03/25 regression; base full-ledger fingerprint rejects the new valuation-drift acceptance; stable identity mutations remain zero-POST fail-closed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git cherry-pick 54bf18f145a58b83914cff10a5fff923c6cdea97 9697c9ed73f8fdeff698483c692125ee1ec9bf96 [mapped to 846dd06dd and f214ab7c7; no conflicts]",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"incident_recovery or partial_fill\" -q [44 passed, 145 deselected in 66.68s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q [189 passed in 94.44s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q [52 passed in 30.23s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 4b4e004875c8a1e1433c7130fab356ce5a186c54..f214ab7c7c0bd7d4c4bdee2ff404f2e88c60287d -- <approved-touch-set-plus-published-handoff>",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "network, secret, OKX Demo/private/order/live/transfer/withdraw endpoint, service start/restart, artifact/manifest/ledger/replay/promotion build, refs/heads/main update",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_sync integrated_commit_not_applied_to_refs_heads_main",
+    "owner:backend_operator backend_restart_required_after_main_sync",
+    "owner:application partial_fill_disconnect_preflight_max_notional_remains_10_usdt",
+    "owner:application partial_fill_disconnect_service_still_returns_blocked_no_real_partial_fill_evidence",
+    "owner:cli partial_fill_disconnect_execute_demo_still_does_not_construct_runtime",
+    "no_artifact_no_manifest_no_ledger_no_replay_no_promotion_evidence_built",
+    "quality_checked_source_is_not_promotion_evidence_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

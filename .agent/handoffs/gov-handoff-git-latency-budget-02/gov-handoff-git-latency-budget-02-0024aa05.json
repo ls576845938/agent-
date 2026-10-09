@@ -1,0 +1,72 @@
+{
+  "base_commit": "dd8aa75965973f424915e67dfcd759cbe32dad3b",
+  "blockers": [
+    "independent_integrator_required:governance_control",
+    "test_context_scalability_collection_missing_quant_crypto_in_sparse_worktree"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-11T19:16:04Z",
+  "deliverable_commit": "0024aa05d8cc6fb302f574529404f6d9a0114ddb",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "9702967157e2973f3c683adb3cbe04d2d2e83d93726ac2636c81d5304eab8713",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_contract_tests_v1",
+      "sha256": "c4fcdaf24fc0cab8b52d51c3fb70efe8a5881fc9588184167d9b98fa47a66309",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "gov-handoff-git-latency-budget-02-0024aa05",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/gov-handoff-git-latency-budget-02",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py -q --basetemp <external-temp>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_context_scalability.py -q --basetemp <external-temp>",
+      "evidence_path": "",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "gov-handoff-git-latency-budget-02",
+  "transition_for": ""
+}

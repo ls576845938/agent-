@@ -1,0 +1,78 @@
+{
+  "base_commit": "1cd4ca2f70a547a21ce60a98acff992510286332",
+  "blockers": [
+    "canonical_main_merge_and_readonly_acceptance_pending",
+    "candidate_management_not_enabled",
+    "runtime_entrypoints_do_not_consume_management_catalog",
+    "fixed_qlib_original_admission_blockers_preserved",
+    "promotion_paper_live_private_order_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-24T16:40:06Z",
+  "deliverable_commit": "08c74f398701e844028d87b75c2dc6b24e4a22df",
+  "deliverables": [
+    {
+      "path": "docs/operations/candidate-management-readonly-integration-20260924.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_management_readonly_integration_review_v1",
+      "sha256": "d7122e5646602be33ff767cf76c7ea9de101971f6fff850c9a5b17077deb57a3",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "e153bd188c056dfcb9f523eb4089f61c4acd32cb6c61431f0851082556bb3479",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "candidate-management-governance-integrated-20260924-02",
+    "candidate-delivery-currency-reviewed-20260924-04"
+  ],
+  "domain": "shared",
+  "event_id": "candidate-management-readonly-integrated-20260925-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/candidate-mgmt-ro-integration-20260924",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "candidate management backend bounded suite: 71 passed; repository-local basetemp protection failure rerun externally: 1 passed",
+      "evidence_path": "docs/operations/candidate-management-readonly-integration-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-candidate-delivery.mjs frontend/scripts/test-candidate-handoff.mjs: 20 passed",
+      "evidence_path": "docs/operations/candidate-management-readonly-integration-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint; npm run build",
+      "evidence_path": "docs/operations/candidate-management-readonly-integration-20260924.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical main research_readonly restart and browser acceptance",
+      "evidence_path": "docs/operations/candidate-management-readonly-integration-20260924.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "candidate-management-readonly-integration-20260924",
+  "transition_for": "candidate-delivery-currency-fixed-20260924-03"
+}

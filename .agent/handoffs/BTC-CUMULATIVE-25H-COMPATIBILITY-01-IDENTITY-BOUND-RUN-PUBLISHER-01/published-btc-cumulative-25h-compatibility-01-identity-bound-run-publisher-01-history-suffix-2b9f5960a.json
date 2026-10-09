@@ -1,0 +1,100 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-history-suffix-2b9f5960a",
+  "ticket_id": "BTC-CUMULATIVE-25H-COMPATIBILITY-01-IDENTITY-BOUND-RUN-PUBLISHER-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-owned-id-suffix-01",
+  "base_commit": "093548cd7935d756dad13e5d3dd2bf3c8e3ece06",
+  "deliverable_commit": "2b9f5960a723a355d03c7f4ca024243a9b7afe62",
+  "created_at": "2026-08-09T03:25:23Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-exec-order-457cd7475",
+    "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-ledger-uow-dbf1a5235",
+    "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-25224c792",
+    "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-07527f2ef",
+    "457cd74752ac997ed173267c956abb91e563e8c7",
+    "093548cd7935d756dad13e5d3dd2bf3c8e3ece06",
+    "dbf1a52350ce359c4bf0bb7210e3233e77d29a0b",
+    "7799ff5189c7a303453f67898e05de50550806e0",
+    "25224c79210c2afe35ff818d5bed3de515e7a33b",
+    "6950d3808e4d3020108911867e927605ae14ef4f",
+    "07527f2ef8c52be6ce8f29fa39eefc24093af3af"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_owned_id_restore_archive.py",
+      "sha256": "c06a46957a2646b55607cb4a551669354124b54c96627284d6c95f5e3e24a0b2",
+      "schema_version": "btc_owned_id_restore_archive_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_owned_id_restore_archive.py",
+      "sha256": "b7991d602016b8b2c9290a969a723dac050e08b2555738b1ae54c72599b344fc",
+      "schema_version": "btc_owned_id_restore_archive_contract_v4",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_owned_id_restore_archive.py --basetemp=D:\\vibe coding\\Obsidian\\quant-test-basetemp-btc-owned-suffix-focused-20260809-01 [observed: 39 passed in 17.10s on committed deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_owned_id_restore_archive.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_demo_adapter.py --basetemp=D:\\vibe coding\\Obsidian\\quant-test-basetemp-btc-owned-suffix-adj-20260809-01 [observed: 316 passed in 51.78s on committed deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_private_ws.py --basetemp=D:\\vibe coding\\Obsidian\\quant-test-basetemp-btc-owned-suffix-fault-20260809-01 [observed: 90 passed in 9.99s on committed deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_owned_id_restore_archive.py scripts/build_btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "git diff --check 093548cd7935d756dad13e5d3dd2bf3c8e3ece06 -- quant_crypto/application/btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "py -3 -m ruff check quant_crypto/application/btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_registered_main",
+    "identity_only_owned_id_restore_admission_not_25_hour_observation_or_promotion_evidence",
+    "old_archive_24_compatible_plus_1_conditional_strict14_promotion_blocked_fact_preserved",
+    "external_archive_must_be_built_only_by_explicit_demo_private_read_admission_and_is_not_committed",
+    "no_real_demo_private_get_or_secret_loading_run_in_producer_validation",
+    "no_external_derived_archive_or_artifact_generated",
+    "ruff_not_run_in_producer_environment"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "base_commit": "9629a075774255e48490574d4f24cbb6196b8ec5",
+  "blockers": [
+    "owner:data_steward immutable_snapshot_not_published",
+    "owner:data_steward data_steward_attestation_required",
+    "owner:data_steward okx_timestamp_aligned_l2_manifest_not_published",
+    "owner:btc_research btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing_until_current_head_real_reports_validate",
+    "owner:btc_research btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_operations btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_operations btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_observation btc_okx_native:30_60_day_observation_window_incomplete",
+    "owner:architect btc_okx_native:manual_promotion_approval_missing",
+    "classification:goal5_code_integration_blocker=false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T07:52:45Z",
+  "deliverable_commit": "ba9ad92432da618d3dfe4b4183aba37a2105fdeb",
+  "deliverables": [
+    {
+      "path": "docs/handoffs/BTC-V3-L2-DEPTH-FILL-MAPPING-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_l2_depth_fill_mapping_delivery_v1",
+      "sha256": "56357b37eab2de7c94d79680ace2009c1aa75ee0197f5e5c32849b2ab4e465a6",
+      "type": "report"
+    },
+    {
+      "path": "quant_crypto/research/btc_depth_slippage.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_depth_slippage_fill_mapping_report_v2",
+      "sha256": "9317c82d1e7f6025d2d5a8079551924a859e5f219745411e779916852fcae31a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/research/btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_native_promotion_blocker_evaluation_v1",
+      "sha256": "73e620757737a4d7ba56b1c872e55a27a0a1945ff6bc6f0d2f0375c51ef1019c",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_okx_l2_depth_observation_batch.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_depth_observation_batch_v2",
+      "sha256": "320839b5d18bb3419a1340c31e58bfb58a7a595e8550ae33972f2fc9c7b4d5e8",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_depth_slippage_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_depth_slippage_contract_v2",
+      "sha256": "2be270a2e104bba1e4ca354e325e98021437ee3de324d0ea40bc22c23d13b700",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_l2_depth_observation_batch.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_depth_observation_batch_contract_v2",
+      "sha256": "5dc5c18f37b9a64bb8058d63444540d2b95c892ad379ee6ede46739ff2863338",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_native_promotion_gate.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_native_promotion_blocker_contract_v1",
+      "sha256": "530fbf051ec46c52177e8a70b068efe87abcdc26bab3815a6656a6ab0d7fce0f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-l2-depth-fill-mapping-01-9f4ee410"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-v3-l2-depth-fill-mapping-01-goal5-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal5-batch-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_depth_slippage_report.py tests/contracts/test_btc_okx_l2_depth_observation_batch.py tests/contracts/test_btc_okx_native_promotion_gate.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 21 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_native_promotion_gate.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_depth_slippage_report.py tests/contracts/test_btc_okx_l2_depth_observation_daily.py tests/contracts/test_btc_okx_l2_depth_observation_batch.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_perpetual_paper_runtime_replay_report.py tests/contracts/test_btc_perpetual_gate_objective_status.py tests/contracts/test_btc_gate_aggregation_chain.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed from repo root: 61 passed]",
+      "evidence_path": "docs/handoffs/BTC-V3-L2-DEPTH-FILL-MAPPING-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "producer handoff validate; source business commit 9f4ee4108a19d48fe06b980fd45741cf0e225fd0; producer final ba9ad92432da618d3dfe4b4183aba37a2105fdeb; committed-byte SHA-256 and exact touch-set precheck",
+      "evidence_path": ".agent/handoffs/BTC-V3-L2-DEPTH-FILL-MAPPING-01/published-btc-v3-l2-depth-fill-mapping-01-9f4ee410.json",
+      "result": "passed"
+    },
+    {
+      "command": "exact approved touch-set plus tracked data/artifact/ledger side-effect verification after BTC suites",
+      "evidence_path": "docs/handoffs/BTC-V3-L2-DEPTH-FILL-MAPPING-01.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-L2-DEPTH-FILL-MAPPING-01",
+  "transition_for": "published-btc-v3-l2-depth-fill-mapping-01-9f4ee410"
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-panorama-closeout-correction-20260930-20f834732",
+  "ticket_id": "BTC-ARCHITECTURE-PANORAMA-20260929",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/btc-panorama-closeout-20260929",
+  "base_commit": "32154386e0ec958179fcd318715ff6c5a5f695a8",
+  "deliverable_commit": "20f83473244efae8d6675ac0dcf965d259271f00",
+  "created_at": "2026-09-29T16:36:10Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-panorama-closeout-20260930-9f32ff862"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-panorama-closeout-20260930-9f32ff862",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/architecture/BtcSystemPanorama.tsx",
+      "sha256": "23182e4f98c74bfcc43adb107c0e539d8ac9faeb0bf591e5586b75b167a65714",
+      "schema_version": "btc_system_panorama_editor_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-system-panorama.spec.ts",
+      "sha256": "6122d62547bb339ca8fa7f8ed9804e5e8228ec99cd42785cecda6268c708edc9",
+      "schema_version": "btc_system_panorama_browser_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-system-panorama.mjs",
+      "sha256": "64ccaf46d2a7aafb701d95b63a78ff1e9eb43faf56ad5d96c23c15442c1d7fa7",
+      "schema_version": "btc_system_panorama_static_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "74351cae915246d8b656c0ff56e41b461b1b4ba739b73a3608ae9c2c7df39ba0",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "canonical main Playwright matrix before correction: four architecture specs, 29 tests, 30-second per-test budget",
+      "result": "failed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-system-panorama.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-system-panorama.mjs"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh && npm.cmd --prefix frontend run identity:check",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "post-correction canonical current-main Playwright 29-test matrix",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:main_session integration_commit_not_merged_to_refs_heads_main",
+    "owner:main_session canonical_main_restart_identity_and_29_spec_no_mock_browser_rerun_pending",
+    "readiness_ceiling_quality_checked_not_promotion_evidence",
+    "no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

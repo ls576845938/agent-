@@ -1,0 +1,102 @@
+{
+  "base_commit": "4432c18251e827487070f598161ef9cacbfc068c",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "continuous_observer_must_start_only_from_independently_integrated_current_main",
+    "btc_10s_all_applicable_family_horizon_rows_blocked_insufficient_information",
+    "eligible_windows_10s_30s_60s_are_0_0_0_below_1000_each_after_gap_resync_embargo",
+    "effective_sample_size_10s_30s_60s_are_0_0_0_below_500_each",
+    "utc_weekday_regime_coverage_and_cost_stratified_stability_incomplete",
+    "liquidation_family_missing_time_aligned_open_interest_and_liquidation_events",
+    "maker_queue_family_not_applicable_taker_only_baseline",
+    "current_head_promotion_artifact_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-27T12:50:00Z",
+  "deliverable_commit": "6242c141d8980897253ba4dffb06f207aa53bfe3",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_10s_microstructure_data_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_report_v1",
+      "sha256": "88e49b0b9c723dddcbabe569c9c3ff20e00af30c2af72d1aedec9b86cff1515b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_10s_microstructure_data_contract_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_data_contract_report_tests_v1",
+      "sha256": "239da237d5c1db59a613630a43f21471ef818f8f01bbfa063889e1e9c7f95164",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_IMMUTABLE_FEED_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_immutable_feed_doc_v1",
+      "sha256": "e344e74a509deaf88e71b13e98c16af6cb18476cec202a70c44dc198e41b0441",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-10s-microstructure-data-contract-01-correction-01-e5cfd5a4d"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-10s-microstructure-immutable-feed-01-correction-02-6242c141d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-10s-microstructure-immutable-feed-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-10s-microstructure-immutable-feed-01-correction-01-fdb5ee5e7"
+  ],
+  "tests": [
+    {
+      "command": "failure-first evaluator regression before correction-02 implementation",
+      "evidence_path": "2 failed, 7 passed: embargo/result-shape and decision-time feature contracts",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py tests/contracts/test_btc_10s_microstructure_data_contract_report.py tests/agent_governance/test_shared_data.py -q",
+      "evidence_path": "33 passed in 2.70s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile evaluator and report builder; Draft 2020-12 schema check",
+      "evidence_path": "compile_and_schema_valid",
+      "result": "passed"
+    },
+    {
+      "command": "build_btc_10s_microstructure_data_contract_report.py exact committed manifest at 6242c141d8980897253ba4dffb06f207aa53bfe3",
+      "evidence_path": "research_artifacts/BTC-10S-MICROSTRUCTURE-IMMUTABLE-FEED-01/6242c141d8980897253ba4dffb06f207aa53bfe3/artifact_manifest.json; aggregate_sha256=476c20eefd2c32034f50ff25a1f70bd401a1e5211d575e5a30bbadde5dfe9f56",
+      "result": "passed"
+    },
+    {
+      "command": "exact report result and internal-evidence sanitization",
+      "evidence_path": "10s/30s/60s potential=eligible=ESS=0; no _internal_regime_observations in report/source_evaluations",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 4432c18251e827487070f598161ef9cacbfc068c..6242c141d8980897253ba4dffb06f207aa53bfe3",
+      "evidence_path": "range_diff_check_valid",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-IMMUTABLE-FEED-01",
+  "transition_for": ""
+}

@@ -1,0 +1,164 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-market-state-shared-and-stage-evidence-20260927-b63cbf2f3",
+  "event_type": "integrated",
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "domain": "shared",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer",
+    "researcher"
+  ],
+  "base_commit": "3da459a2267011a430562547b6a0929b40e1d975",
+  "deliverable_commit": "b63cbf2f3ebb14259e99b793d5b1e210e640ba4a",
+  "depends_on": [
+    "published-market-state-shared-contracts-20260927-b22baf73f",
+    "published-market-state-stage-evidence-20260927-211e5e286"
+  ],
+  "supersedes": [],
+  "transition_for": "published-market-state-stage-evidence-20260927-211e5e286",
+  "created_at": "2026-09-27T03:27:13.512Z",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "quant_shared/trend_environment/state_v2.py",
+      "type": "code",
+      "schema_version": "market_state_descriptive_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "29b920725ed2600bd8ec751ecf38638847f4bc8e0206f84267e3b9a224318131"
+    },
+    {
+      "path": "quant_shared/trend_environment/entry_policy.py",
+      "type": "code",
+      "schema_version": "entry_path_efficiency_72h_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "34cc48e6c785b23e57a0aef2b30a6f248dee55a5352e2216f7d443bf1cf38a15"
+    },
+    {
+      "path": "quant_shared/strategy_delivery/market_policy_attachment.py",
+      "type": "code",
+      "schema_version": "market_state_entry_policy_attachment_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "9bbb3e8880a2c7ffb9505ebf48b756d9c2458a3c94ce984ed5f3ce01f376b2de"
+    },
+    {
+      "path": "quant_shared/trend_environment/diagnostics.py",
+      "type": "code",
+      "schema_version": "market_state_stage_diagnostics_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "12e1597f3877c397d868f8b74211198ff266be283b5f91ea701e4d2bb713c871"
+    },
+    {
+      "path": "scripts/research/build_market_state_diagnostic.py",
+      "type": "code",
+      "schema_version": "market_state_stage_diagnostic_builder_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "149012431774b720975f5ceafee459337eb913690858c2f30da1e6bf04a8e2d4"
+    },
+    {
+      "path": ".agent/market_state_evidence/donchian-stage-market-state-v2-20260927.json",
+      "type": "artifact",
+      "schema_version": "market_state_stage_evidence_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "2a4345a7d9a867cd1888addad00659583ea744911aa0b5b8486ad8c282c9c00b"
+    },
+    {
+      "path": "docs/research/market-state-conditional-policy-protocol-20260927.json",
+      "type": "document",
+      "schema_version": "market_state_conditional_policy_protocol_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "7eca70e55aa40d1f2db6e4c72b79a326bf73bd54d583a50347d7f34364e8d85e"
+    },
+    {
+      "path": "tests/research/test_market_state_v2.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_source_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "68fc48eb0e25dba80a9e7dff1fa133de22acb0b2005e8537248e04e0e29c7d83"
+    },
+    {
+      "path": "tests/research/test_market_state_entry_policy.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_source_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "228ceb922827b42600a70b08189dfd096fceb447cb8a675c83265baaaea4249c"
+    },
+    {
+      "path": "tests/contracts/test_market_policy_attachment.py",
+      "type": "test_evidence",
+      "schema_version": "pytest_source_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "6950f86d576a3e2376bf8548c0e798ab0900ea209b5eaf606439c284d01ae037"
+    },
+    {
+      "path": "tests/research/test_market_state_builder.py",
+      "type": "test_evidence",
+      "schema_version": "market_state_builder_integrity_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "7c24e7c6e94b155df4da5c3940c91cd7cda9400d11e39c536b2a1e9354253ce1"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate for final shared and stage events; ancestry and exact blob SHA-256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/MARKET-STATE-CONDITIONAL-RESEARCH-20260927"
+    },
+    {
+      "command": "pytest integrated market-state v2, entry-policy and attachment tests",
+      "result": "passed",
+      "evidence_path": "29 passed in 5.11s; repeated after integration 29 passed in 4.70s"
+    },
+    {
+      "command": "pytest committed producer diagnostic tests against integrated source",
+      "result": "passed",
+      "evidence_path": "2 passed in 43.95s from an exact commit-only external test copy"
+    },
+    {
+      "command": "pytest builder integrity guards plus integrated shared tests",
+      "result": "passed",
+      "evidence_path": "31 passed in 8.49s"
+    },
+    {
+      "command": "sealed artifact evidence hash, protocol blob binding, group totals and all safety flags",
+      "result": "passed",
+      "evidence_path": "2960 bars, 28 roundtrips, 170 contiguous state segments; protocol blob SHA-256 7eca70e55aa40d1f2db6e4c72b79a326bf73bd54d583a50347d7f34364e8d85e; all permission flags false"
+    },
+    {
+      "command": "failure-first Windows worktree protocol hash check",
+      "result": "passed",
+      "evidence_path": "reproduced worktree CRLF hash mismatch versus frozen Git blob; builder now reads 97d8ad21dda3317afae0bfa7f1bf68ff0ce1ed02:protocol and refuses existing output"
+    },
+    {
+      "command": "Python py_compile and git diff --check",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "policy A/B replay, model training, annual replay resume, account access, service restart, main merge, browser publication, private/order/live access",
+      "result": "not_run",
+      "evidence_path": "outside this bounded research-only source integration"
+    }
+  ],
+  "blockers": [
+    "owner:btc-consumer shared entry policy is default-disabled and is not yet consumed by the BTC offline runtime",
+    "owner:research policy trial has not started; the sealed diagnostic only counts 18 historical entries that the frozen rule would reject and does not evaluate realized trade or PnL effects",
+    "owner:research 2960 bars, 28 roundtrips and 170 contiguous state segments are exploratory partial-window evidence and cannot support promotion",
+    "owner:data funding is available only as a total and is not allocated to state groups or individual roundtrips; funding, open interest and depth are missing from state inputs",
+    "owner:gate current-HEAD runtime/promotion evidence was not built; no research conclusion grants candidate, Demo, paper or live permission",
+    "promotion_paper_live_private_order_real_order_transfer_and_withdraw_permissions_remain_false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

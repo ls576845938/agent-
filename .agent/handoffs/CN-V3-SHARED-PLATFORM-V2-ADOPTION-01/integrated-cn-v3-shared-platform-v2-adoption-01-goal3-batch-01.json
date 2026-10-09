@@ -1,0 +1,94 @@
+{
+  "base_commit": "e8fdfa4210161b2ec23a0625357adaef16fa6edd",
+  "blockers": [
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "classification:goal3_integration_blocker=false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T06:14:08Z",
+  "deliverable_commit": "15f907f94eba133947182f93929ccb2a900a3063",
+  "deliverables": [
+    {
+      "path": "quant_cn/compat/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adapter_v1",
+      "sha256": "b26c0592e8a03718b8a20aa083148b1baa7e8f1c65dc33c6fb96a5aed37dd0c0",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/compat/shared_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adapter_v1",
+      "sha256": "6b8fe153e15454577d1a55b4a31f8b98db20c63ddc1ad758f699c872c9400157",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_shared_platform_adoption.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_platform_adoption_tests_v1",
+      "sha256": "3b7a85b5815c7f6b08f7c1000be5fdcdf313c41eb09acd1c63832868f4b76bb7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/cn_equity/test_boundaries.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_boundary_shared_import_contract_v2",
+      "sha256": "290c763773e993328ba22cb5b468fd6e811b7d76a92395d2ddb4ce4b18d1ad4a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-cn-v3-shared-platform-v2-adoption-01-90946e73"
+  ],
+  "domain": "cn_equity",
+  "event_id": "integrated-cn-v3-shared-platform-v2-adoption-01-goal3-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-goal3-batch-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/cn_equity/test_shared_platform_adoption.py --basetemp <system-temp> [observed: 7 passed]",
+      "evidence_path": "tests/cn_equity/test_shared_platform_adoption.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/shared_platform --basetemp <system-temp> [observed: 13 passed]",
+      "evidence_path": "tests/shared_platform",
+      "result": "passed"
+    },
+    {
+      "command": "pre-repair CN suite [observed: 52 passed, 1 failed only because cn_boundary_test_shared_import_contract_stale]",
+      "evidence_path": "tests/cn_equity/test_boundaries.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/cn_equity --basetemp <system-temp> [observed after approved test-contract repair: 54 passed; cn_boundary_test_shared_import_contract_stale resolved by integration commit 15f907f94eba133947182f93929ccb2a900a3063]",
+      "evidence_path": "tests/cn_equity/test_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "source business commit 90946e736a51da127fd498fd3f66aedb4e07c81d; committed-byte SHA-256 and no-overlap precheck",
+      "evidence_path": "quant_cn/compat/shared_adapter.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "CN-V3-SHARED-PLATFORM-V2-ADOPTION-01",
+  "transition_for": "published-cn-v3-shared-platform-v2-adoption-01-90946e73"
+}

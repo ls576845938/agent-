@@ -1,0 +1,97 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-state-owner-marker-pid-reuse-02-bff0775dd",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-STATE-OWNER-MARKER-PID-REUSE-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-owner-marker-pid-reuse-02-integrate",
+  "base_commit": "cb8c8794c6e72fc2e3188dce7f94f4c30b900c8d",
+  "deliverable_commit": "02b4c446fa4e5b8405713446c361f621565467f2",
+  "created_at": "2026-08-11T00:26:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-fresh-state-owner-marker-pid-reuse-02-5c6627723"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fresh-state-owner-marker-pid-reuse-02-5c6627723",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "caf8ad8e2512051849f5967509a103ed5a6a66c815a18ebf5b8d136f99217ec2",
+      "schema_version": "btc_okx_demo_owner_marker_pid_reuse_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "9189a21ac868e1539b50a5220a1f19658b94519a738d3f180ef30924d3034206",
+      "schema_version": "btc_okx_demo_owner_marker_pid_reuse_identity_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"pid_reuse_birth or birth_identity_unknown or identity_match_ignores\" [3 passed, 282 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"owner_marker or writer_lock\" [11 passed, 274 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"fresh_state_emergency_exit or owner_marker or writer_lock\" [48 passed, 237 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k \"owner_marker or recovery_binding\" [5 passed, 87 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py [285 passed in 71.80s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "production import of quant_crypto.oms.okx_demo_paper_runtime",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "handoff.py validate, ancestry, exact touch set and producer-tree equality",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FRESH-STATE-OWNER-MARKER-PID-REUSE-02"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "real_demo_private_ws_network_and_secret_actions_not_run_by_scope",
+    "paper_live_private_order_transfer_withdraw_actions_remain_disabled",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

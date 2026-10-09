@@ -1,0 +1,132 @@
+{
+  "base_commit": "fcb8f5b4479aa6ea6d4ee41ecd0f0b5796cfd8bc",
+  "blockers": [
+    "btc_legacy_agent_ops_runner_permanently_isolated",
+    "btc_legacy_agent_ops_task_permanently_isolated",
+    "btc_external_runtime_observe_scheduled_task_not_registered",
+    "btc_external_runtime_observe_scheduled_task_not_smoke_tested",
+    "btc_external_runtime_observe_scheduled_task_enable_not_approved",
+    "btc_micro_live_sqlite_input_missing",
+    "btc_derivatives_read_model_missing",
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "btc_30_natural_day_observation_incomplete",
+    "btc_current_head_runtime_artifacts_not_rebuilt",
+    "btc_current_head_gate_not_rebuilt",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-26T22:25:07Z",
+  "deliverable_commit": "1d33409913eefd5525f6e1a7bd15c376c35ea432",
+  "deliverables": [],
+  "depends_on": [
+    "published-btc-v3-external-runtime-observe-consumer-migration-01-32b43235",
+    "published-btc-v3-external-runtime-observe-consumer-migration-01-12658553",
+    "published-btc-v3-external-runtime-observe-consumer-migration-01-1d334099",
+    "integrated-data-btc-public-immutable-scheduler-migration-01-source-data-batch-01",
+    "integrated-btc-v3-public-ws-hermetic-runtime-root-fix-01-integration-01"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-v3-external-runtime-observe-consumer-migration-01-integration-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-external-runtime-observe-migration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "three published generations full-Git validated with exact supersedes chain, 18/18 raw committed-object SHA-256 checks, and exact linear ancestry fcb8f5b4 -> 32b43235 -> d89ccc25 -> 12658553 -> bb63c2e2 -> 1d334099 -> 9249726e",
+      "evidence_path": ".agent/handoffs/BTC-V3-EXTERNAL-RUNTIME-OBSERVE-CONSUMER-MIGRATION-01/published-btc-v3-external-runtime-observe-consumer-migration-01-1d334099.json",
+      "result": "passed"
+    },
+    {
+      "command": "six exact producer commits consumed sequentially by git merge --ff-only; integration business HEAD=9249726e7fec649cb3c172ac787bcc71e301a1bc; no conflict, squash, rewrite, or merge commit",
+      "evidence_path": ".agent/handoffs/BTC-V3-EXTERNAL-RUNTIME-OBSERVE-CONSUMER-MIGRATION-01/published-btc-v3-external-runtime-observe-consumer-migration-01-32b43235.json",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD producer seven-file selector with cache disabled and unique system basetemp [129 passed]",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD focused external-observe three-file selector with cache disabled and unique system basetemp [47 passed]",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD public collector selector [131 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD source-identity selector [99 passed]; collection expanded by two runtime-store contracts and covers the requested original 97-test set",
+      "evidence_path": "tests/contracts/test_btc_artifact_source_identity.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD shared-data core selector [94 passed]",
+      "evidence_path": "tests/agent_governance/test_shared_data.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined runtime-store, source-identity, and public-collector selector [77 passed]; collection expanded by two runtime-store contracts and covers the requested original 75-test set",
+      "evidence_path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "result": "passed"
+    },
+    {
+      "command": "CLI help passed; six changed source/test files compiled in memory; scoped git diff --check passed; bytecode and pytest cache writes disabled",
+      "evidence_path": "scripts/run_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "real pinned D1/D2 temp external-root smoke: exit=2, receipt schema valid, source_head=9249726e7fec649cb3c172ac787bcc71e301a1bc, receipt_sha256=9d7362c118ab63827abfe5a3c600e981f8af51e40e4e7546af62131d6911b1d4; D1 resolved_research_only_input file_count=21 aggregate_sha256=833126e7eaa4b2e95cf49a2727b538b3d1308bb05c3225f3382b90063a6ebf81; D2 resolved_blocked_evidence_only file_count=1 aggregate_sha256=2296e41a6994979120a90326dbc8dc864ffe381eb43d6287aad391dde7c4b8dc with source_receipt status=rejected completed_sample_count=0 source_file_count=0; all_files_verified=true; all safety false",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T201047588Z-main82e1c116.json",
+      "result": "passed"
+    },
+    {
+      "command": "both committed manifests full physical resolve before and after smoke; D1/D2 physical aggregate hashes remained identical to committed manifests; consumer read-only and no shared-data mutation",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e.json",
+      "result": "passed"
+    },
+    {
+      "command": "closed review findings preserved without history rewrite: btc_external_runtime_observe_artifact_shared_root_overlap and btc_observe_real_rejected_empty_l2_receipt_compatibility",
+      "evidence_path": "tests/contracts/test_btc_shared_observation_inputs.py",
+      "result": "passed"
+    },
+    {
+      "command": "closed engineering gaps preserved: btc_repo_tracked_canonical_observe_consumer_missing,btc_observe_consumer_manifest_not_pinned_latest_discovery_risk,btc_observe_consumer_repo_local_artifact_write_risk,btc_observe_consumer_receipt_full_source_identity_missing,btc_blocked_manifest_external_fail_closed_receipt_missing,btc_runtime_artifact_read_reparse_chain_unchecked",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "existing D1/D2 data integrated handoff and public-WS fixture integrated handoff validated; no production redesign, data collection, old runner/task/root, shared data, existing latest artifact, main, private/order/live endpoint, network, secret, paper/live permission, push, or promotion mutation",
+      "evidence_path": ".agent/handoffs/DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01/integrated-data-btc-public-immutable-scheduler-migration-01-source-data-batch-01.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-EXTERNAL-RUNTIME-OBSERVE-CONSUMER-MIGRATION-01",
+  "transition_for": "published-btc-v3-external-runtime-observe-consumer-migration-01-1d334099"
+}

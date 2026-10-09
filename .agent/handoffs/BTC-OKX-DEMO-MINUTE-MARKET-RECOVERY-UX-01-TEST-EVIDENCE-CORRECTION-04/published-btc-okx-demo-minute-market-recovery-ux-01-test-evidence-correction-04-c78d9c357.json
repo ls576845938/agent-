@@ -1,0 +1,87 @@
+{
+  "base_commit": "9c9003f39e788ccffe9469a30ca696b5780654c0",
+  "blockers": [
+    "owner:integrator independent_frontend_integration_required",
+    "canonical_registered_main_e2e_pending",
+    "promotion_paper_live_private_order_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-17T01:15:00Z",
+  "deliverable_commit": "c78d9c3579fba71d12eeeb4d8a3f3e75c620c3eb",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_console_e2e_contract_v1",
+      "sha256": "2d744d7a5abdaa7949ec77065d8d7a49c62222a3755e4beddea5d26a92be9672",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "85090f11e59cebbfd534ad3a097f52df9635ff778a11581a8641718c03fcc74e",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-04-c78d9c357",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-demo-minute-recovery-ux-01-corr-04",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --workers=1 --reporter=line (canonical 3000 reused; second complete run)",
+      "evidence_path": "C:/temp/btc-demo-console-corr04-playwright-20260817011301358",
+      "result": "passed"
+    },
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts --workers=1 --reporter=line (first complete run)",
+      "evidence_path": "C:/temp/btc-demo-console-corr04-playwright-20260817011108121",
+      "result": "failed"
+    },
+    {
+      "command": "rg legacy button/source/observation/splitter assertions in frontend/e2e/btc-demo-console.spec.ts",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-04",
+  "transition_for": ""
+}

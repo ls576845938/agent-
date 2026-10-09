@@ -1,0 +1,97 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "superseded-btc-okx-demo-post-failure-recovery-binding-01-correction-02-cross-head-53aada1a",
+  "ticket_id": "BTC-OKX-DEMO-POST-FAILURE-RECOVERY-BINDING-01-CORRECTION-02-CROSS-HEAD",
+  "event_type": "superseded",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-recovery-cross-head-02",
+  "base_commit": "605c6261cbb84fd44eb813a21993952bad7d2dae",
+  "deliverable_commit": "53aada1aba7d672f73479fa2dd862c11270cd9d6",
+  "created_at": "2026-08-09T06:07:44Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "superseded-btc-okx-demo-post-failure-recovery-binding-01-correction-01-36d083ef",
+    "published-btc-okx-demo-post-failure-recovery-binding-01-e7b7051f"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "9296d7cc038167fff2fc4b2be51892231115050080b5765635567a7155a71d00",
+      "schema_version": "btc_okx_demo_fault_drill_recovery_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "bb80ad66e01f27198cb157d489c1fadbec31bb89c14916fd1ff2cb4d1cc4a040",
+      "schema_version": "okx_demo_paper_runtime_cross_head_recovery_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "33fbdc61132f55fdf6adbe6ccf3185f095a178e076b858b599d86178bbdd8f36",
+      "schema_version": "btc_okx_demo_fault_drill_cli_recovery_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "742fa119944cc57de5aa37b72aaa0e0b27c21f923a22d54adafaa78a7ff1a59a",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "fc28df07b3e27ea5df1305bccc033a8da2d6d1296e6b14fe5b48b32388827e4a",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py --basetemp D:\\Temp\\btc-cross-head-committed-fault [92 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp D:\\Temp\\btc-cross-head-committed-paper [227 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp D:\\Temp\\btc-cross-head-committed-adjacent55 [55 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py; tests/contracts/test_btc_okx_demo_runtime_hardening.py; tests/contracts/test_btc_okx_demo_execution_watchdog.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py scripts/run_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_okx_demo_fault_drill.py; quant_crypto/oms/okx_demo_paper_runtime.py; scripts/run_btc_okx_demo_fault_drill.py"
+    }
+  ],
+  "blockers": [
+    "current_main_not_integrated: deliverable is on producer branch only",
+    "real_demo_recovery_not_run: no endpoint, private WS, order POST, key, or secret access",
+    "promotion_paper_live_unlock_remain_blocked_and_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "base_commit": "b047046f9331f49649ed22f5d1c3779f9de4812d",
+  "blockers": [
+    "owner:integrator scheduled_task_design_disabled_and_not_registered",
+    "owner:integrator production_machine_python_and_external_runtime_roots_not_provisioned",
+    "owner:integrator service_account_acl_firewall_and_task_smoke_not_completed",
+    "owner:architect pinned_production_invocation_not_approved_or_enabled",
+    "owner:architect promotion_evidence_current_head_rebuild_required",
+    "owner:data_steward historical_timestamp_aligned_depth_fill_mapping_missing",
+    "owner:btc_research natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_developer funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_developer private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_research 30_60_day_observation_window_incomplete",
+    "owner:architect manual_promotion_approval_missing",
+    "owner:integrator safety_boundary_regression_requires_final_clean_sparse_integration_environment"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-27T01:28:58Z",
+  "deliverable_commit": "db21e221aaa2daae3bb4a440a4deda3c93916ace",
+  "deliverables": [
+    {
+      "path": "scripts/run_btc_canonical_observe_task.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_canonical_observe_task_powershell_launcher_v1",
+      "sha256": "136b9bd6b5690f1e240e072b03f8018d3fe734855dcd5858144c21773f323379",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_canonical_observe_task.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_canonical_observe_task_launcher_v1",
+      "sha256": "6ebe50b25cc86287add32e8f97d5ab4aa064aadade09adf97f95533bf0f7dc84",
+      "type": "code"
+    },
+    {
+      "path": "config/btc_canonical_observe_task_contract.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_canonical_observe_task_contract_v1",
+      "sha256": "938b08b19cd653b2acd3e4d98e86000ac4c9ee339b0b9c5cac20ca402af22df0",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_canonical_observe_task_contract.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_canonical_observe_task_contract_schema_v1",
+      "sha256": "a0b545ee48dacb560573343194bf8dadf72724c314d90a3014eaa2429ac7faf6",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/run_btc_external_runtime_observe_job.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_external_runtime_observe_job_explicit_git_v1",
+      "sha256": "4ab5fc851ba3643d9f7e5dd70dbb58dde3a1697a5c5e98a3b85286ab4c55e26d",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_shared_observation_inputs.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_observation_inputs_explicit_git_v1",
+      "sha256": "70c2ac2e9f3f335edfb0bc5a37ac0ba2c1e226a01893addff3e50599a90b076d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_canonical_observe_task_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_canonical_observe_task_launcher_contract_tests_v1",
+      "sha256": "a76eb306418e063c2f701852ccca1b151e3809f9da8c9db4e5a2b29976531763",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_external_runtime_observe_job_contract_tests_v1",
+      "sha256": "9ef0b27ea664dcd26ee0459824cdfdecd9dd052e977f357512f4d25b66f9cb52",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_observation_inputs.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_observation_inputs_contract_tests_v1",
+      "sha256": "df4260a157e7363347c795a16af9bc8ab7e3a7a39582214e6f7492a6030abde0",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-canonical-observe-task-launcher-01-db21e221",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-canonical-observe-task-launcher-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/contracts/test_btc_canonical_observe_task_launcher.py --basetemp <unique> -q",
+      "evidence_path": "tests/contracts/test_btc_canonical_observe_task_launcher.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/contracts/test_btc_external_runtime_observe_job.py tests/contracts/test_btc_shared_observation_inputs.py --basetemp <unique> -q",
+      "evidence_path": "tests/contracts/test_btc_external_runtime_observe_job.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/contracts/test_btc_runtime_artifact_store.py --basetemp <unique> -q",
+      "evidence_path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile <touched-python-files>",
+      "evidence_path": "scripts/run_btc_canonical_observe_task.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/live/test_safety_boundary_regressions.py --basetemp <unique> -q",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m ruff check <touched-python-files>",
+      "evidence_path": "scripts/run_btc_canonical_observe_task.py",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-CANONICAL-OBSERVE-TASK-LAUNCHER-01",
+  "transition_for": ""
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-delivery-currency-reviewed-20260924-04",
+  "ticket_id": "candidate-delivery-backend-20260924",
+  "event_type": "acknowledged",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-delivery-backend-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "435d1ed1b0e68c49e620d7bafff0356ffa61e404",
+  "created_at": "2026-09-24T15:16:18Z",
+  "expires_at": "",
+  "depends_on": [
+    "candidate-delivery-currency-fixed-20260924-03"
+  ],
+  "supersedes": [],
+  "transition_for": "candidate-delivery-currency-fixed-20260924-03",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/candidate-delivery-currency-correction-20260924.md",
+      "sha256": "6e6bc445f2a8897235836bcfe92a044543b18affb5bd0f8833246ba01f17a139",
+      "schema_version": "candidate_delivery_currency_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "Independent scoped source review of 891d79f316d3850a80578ae132a670a476d4e02b by candidate_delivery_independent_review: P1/P2 closed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "Independent targeted pytest currency and frozen-source regressions: 18 passed; node test-candidate-delivery.mjs: 6 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "Additional legacy-v1 temporary SQLite probe: business rejection observed; cleanup WinError32 caused nonzero exit; excluded from passes",
+      "result": "failed",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    },
+    {
+      "command": "main integration, service enablement, publication and browser acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/candidate-delivery-currency-correction-20260924.md"
+    }
+  ],
+  "blockers": [
+    "unclassified_independent_integration_not_performed",
+    "user_scope_no_enablement_no_publication",
+    "runtime_entrypoints_do_not_consume_management_catalog",
+    "fixed_qlib_original_admission_blockers_preserved"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

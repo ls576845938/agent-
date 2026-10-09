@@ -1,0 +1,73 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-02-e07311e69",
+  "ticket_id": "BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37-CORRECTION-02",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-worker-parent-37-corr2",
+  "base_commit": "f5b6c526ef393bd0cae6b9c0633ca5393d4ebcff",
+  "deliverable_commit": "e07311e691cb5d1179430ecb62877040cb9a881a",
+  "created_at": "2026-08-12T12:31:59Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-01-b2874a616"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "0c43ce423261f0b8b32d7011072148884d035f07a5c04176ebe55572cbdcf15a",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "5ef23278f5355d94619730c1a07241acaa99eb1911bc0b7c6f8c8326bd779425",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first: current f5b6 canonical worker-parent loader with real seq296 complementary pending-OCO plus owned_attached_algos shape",
+      "result": "failed_before_fix",
+      "evidence_path": "fault_drill_worker_parent_emergency_identity_ambiguous; pending parent was empty while the durable owned record supplied the exact parent"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k worker_parent_emergency -q",
+      "result": "passed",
+      "evidence_path": "exit=0; 19 selected by collection, 146 deselected; validates exact dual-source join and all negative identity cases"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed",
+      "evidence_path": "exit=0"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "exit=0 before producer commit"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

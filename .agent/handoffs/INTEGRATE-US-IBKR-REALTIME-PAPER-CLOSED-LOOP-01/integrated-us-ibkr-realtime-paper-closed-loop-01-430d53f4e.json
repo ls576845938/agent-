@@ -1,0 +1,125 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-ibkr-realtime-paper-closed-loop-01-430d53f4e",
+  "ticket_id": "INTEGRATE-US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "researcher"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/us-ibkr-realtime-paper-closed-loop-correction-01",
+  "base_commit": "30b3613aa0d4774ba74cc0995e176b0ff02eee63",
+  "deliverable_commit": "430d53f4e51fe839e42f5aba13b0284e760a4757",
+  "created_at": "2026-08-07T05:57:21Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-ibkr-realtime-paper-closed-loop-01-6cf1933be",
+    "published-us-ibkr-integration-receipt-head-binding-01-361a6340d"
+  ],
+  "supersedes": [
+    "integrated-us-ibkr-realtime-paper-closed-loop-01-d5597210d"
+  ],
+  "transition_for": "US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": ".agent/handoffs/INTEGRATE-US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01/integrated-us-ibkr-realtime-paper-closed-loop-01-d5597210d.json",
+      "sha256": "6af18f1ffa37f695fdaf1d4e26a795099e9a761615fc8f3642715883a6fb8ff2",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/US-IBKR-INTEGRATION-RECEIPT-HEAD-BINDING-01/published-us-ibkr-integration-receipt-head-binding-01-361a6340d.json",
+      "sha256": "39caf011afe1ce9e5e18316fb694f26caa05a823e84b72c51313882fe6b227b5",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "15bfdb4b2646024720c643b222e92b5cd942fc884c05200506016f4cd8b85e88",
+      "schema_version": "us_ibkr_integration_receipt_head_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_closed_loop.py",
+      "sha256": "bcf2cec7ef3942b088f63eb82275ef099f9db097c37b5a0f363484ae19932102",
+      "schema_version": "us_ibkr_integration_receipt_head_binding_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "strict integration chain completed: original four commits, integrated receipt event, then head-binding producer 361a6340d and handoff 2eea4f41b",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/US-IBKR-INTEGRATION-RECEIPT-HEAD-BINDING-01/published-us-ibkr-integration-receipt-head-binding-01-361a6340d.json"
+    },
+    {
+      "command": "handoff.py validate original, superseding, prior integrated, and head-binding published events",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/INTEGRATE-US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01/integrated-us-ibkr-realtime-paper-closed-loop-01-d5597210d.json"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/us-ibkr-integrator-final-live-20260807a [195 passed in 99.07s]",
+      "result": "passed",
+      "evidence_path": "tests/live"
+    },
+    {
+      "command": "py -3 -m pytest -q <13 related IBKR/runtime/ledger/semantic contract files> --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/us-ibkr-integrator-final-related-20260807a [178 passed in 51.49s]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_closed_loop.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live/test_us_etf_26_ibkr_no_submit_shadow.py --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/us-ibkr-integrator-final-shadow-20260807a [13 passed in 17.96s]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "py -3 -m py_compile <integrated Python touch set including receipt head-binding hotfix>",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_runtime.py"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/live tests/contracts --basetemp <isolated>",
+      "result": "not_run",
+      "evidence_path": "tests/contracts/test_us_equity_broker_credentials_local_review_init.py"
+    }
+  ],
+  "blockers": [
+    "change_risk=unclassified;strict_producer_plus_integrator_hotfix_path_completed",
+    "catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+    "active_pitfall_ids=GOV-CONCURRENCY-001,GOV-DIRTY-001,GOV-ENGINEERING-CIRCUIT-001,GOV-HANDOFF-001,GOV-OBJECTIVE-001,GOV-PITFALL-001,GOV-ROOT-001,GOV-STORAGE-001,GOV-WORKTREE-001,QSYS-GATE-001,QSYS-SECURITY-001,GOV-PROMPT-001,GOV-WINDOWS-001",
+    "receipt_head_binding=current_envelope_commit_first_parent_equals_declared_deliverable_commit;no_self_reference_required",
+    "stale_untracked_uncommitted_wrong_ticket_wrong_role_wrong_domain_or_guardrail_receipts_remain_fail_closed",
+    "data/paper_ledger/paper_runtime_audit.jsonl_test_side_effect_restored_to_integrated_HEAD_blob=b3c39107d86d53bc465d1ce28346d9d4d86eb3ab",
+    "registered_main_paper_runtime_audit_preserved_sha256=b7a4eb6144834816055ab4434b05d39fd38d03a1ebde56065d315f8019473c53;registered_main_untouched",
+    "registered_main_ref_not_advanced;final_candidate_exists_only_on_dedicated_integrator_branch",
+    "full_live_plus_contracts_suite_not_run;upstream_records_preexisting_DEFAULT_TEMPLATE_collection_error_outside_this touch set",
+    "current_HEAD_us_equity_gate_read_model_and real Gateway runtime receipt not rebuilt",
+    "IBKR_gateway_connection_market_data_entitlement_and corporate_action_entitlement_not_verified;runtime remains fail_closed",
+    "backend_restart_required only after future registered_main integration",
+    "30_natural_day_forward_observation_not_started;fixtures and tests never count",
+    "manual_operator_authorization_required before any real paper submit path",
+    "promotion_artifact_not_rebuilt;promotion_eligible=false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

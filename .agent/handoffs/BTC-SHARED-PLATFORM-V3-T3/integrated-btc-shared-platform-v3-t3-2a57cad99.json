@@ -1,0 +1,121 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-shared-platform-v3-t3-2a57cad99",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T3",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-shared-platform-v3-t3",
+  "base_commit": "e4015d8035383e421007c781a6232a1f1b3d3691",
+  "deliverable_commit": "2a57cad99d5c941505b96ccdbe440a1153727405",
+  "created_at": "2026-08-22T16:20:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-shared-platform-v3-t3-bf4044548",
+    "published-btc-shared-platform-v3-t3-correction-01-26d9b2df5",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-shared-platform-v3-t3-correction-01-26d9b2df5",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/portfolio/decision.py",
+      "sha256": "2564693c3768cbcdd7b7bc02340f5c3be11d95e5cfa66fa7cf178055875a72c9",
+      "schema_version": "btc_shared_platform_v3_t3_risk_binding_correction_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/portfolio/__init__.py",
+      "sha256": "06c899f43b0e9b618186d40367beef7edfc99dd9d55b8a07e03ca724e9c87290",
+      "schema_version": "btc_shared_platform_v3_t3_public_exports_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py",
+      "sha256": "06a009e5c4081ea37094a9bd106dadd9d0eda91db700cb140cb5cc4af69f570d",
+      "schema_version": "btc_shared_platform_v3_t3_risk_binding_correction_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T3/published-btc-shared-platform-v3-t3-bf4044548.json",
+      "sha256": "5c018945a2e8ed396d31abb5eeb54e20c05c783467d40301389eed775b08e3fa",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T3/published-btc-shared-platform-v3-t3-correction-01-26d9b2df5.json",
+      "sha256": "3a8b6ecbcd9bf43412173b1df06d570bd1b77a1a2fdaafe6e30b736101d99baf",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-a -p no:cacheprovider -q tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_forecast_layer.py tests/contracts/test_btc_cost_aware_order_intent.py",
+      "result": "passed",
+      "evidence_path": "51 passed in 0.90s"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-b -p no:cacheprovider -q tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_liquidation_risk.py",
+      "result": "passed",
+      "evidence_path": "33 passed in 0.61s"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-c -p no:cacheprovider -q tests/shared_platform/test_runtime_permission_semantics_v3.py",
+      "result": "passed",
+      "evidence_path": "40 passed in 0.37s"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-d -p no:cacheprovider -q tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py tests/contracts/test_btc_external_framework_adoption_tickets.py tests/contracts/test_us_equity_external_framework_adoption_audit.py",
+      "result": "passed",
+      "evidence_path": "40 passed in 7.68s"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-e -p no:cacheprovider -q tests/live/test_live_frozen_session_gate.py",
+      "result": "passed",
+      "evidence_path": "1 passed in 0.42s"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp C:\\tmp\\qsx-shared-t3-f -p no:cacheprovider -q tests/research/test_live_frozen_no_side_effects.py",
+      "result": "failed",
+      "evidence_path": "2 passed, 2 failed: missing artifacts/btc_canonical/20260516T061000Z_attribution/promotion_decision.json and artifacts/btc_canonical/20260516T080000Z_eventpf_wf/paper_live_safety_status.json in sparse checkout; known baseline, no artifact copied or rebuilt"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=C:\\tmp\\qsx-shared-t3-pyc py -3 -m py_compile quant_crypto/portfolio/decision.py quant_crypto/portfolio/__init__.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "candidate integrator worktree"
+    },
+    {
+      "command": "handoff.py validate original/correction; committed ancestry/blob/touch-set verification; scoped safe_status",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T3/ and authorized T3 paths"
+    },
+    {
+      "command": "current-HEAD promotion artifact/read-model build and service restart",
+      "result": "not_run",
+      "evidence_path": "ticket explicitly defers artifact/restart; no service or trading endpoint accessed"
+    }
+  ],
+  "blockers": [
+    "frozen_no_side_effects_fixture_artifacts_missing_in_sparse_worktree",
+    "promotion_artifact_rebuild_required_by_unclassified_policy_deferred",
+    "backend_restart_required_after_integration_by_unclassified_policy_deferred",
+    "promotion_paper_private_order_live_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

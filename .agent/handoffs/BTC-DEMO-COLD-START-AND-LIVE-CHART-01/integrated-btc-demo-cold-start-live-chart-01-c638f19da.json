@@ -1,0 +1,194 @@
+{
+  "base_commit": "0a425054ec669be645ecc024d5b11c71bb8c2c2f",
+  "blockers": [
+    "owner:root merge_integrator_commit_into_registered_main_with_non_fast_forward_history_preserved",
+    "owner:root rerun_identity_checks_and_canonical_main_mock_playwright_after_final_main_merge",
+    "owner:root restart_canonical_backend_and_frontend_after_final_main_merge",
+    "owner:operator authoritative Demo account snapshot refresh and backend preflight required before any start",
+    "owner:environment public websocket unavailable; credential-free public REST ticker fallback only",
+    "owner:root current-HEAD promotion artifact not rebuilt; this delivery is quality_checked only and promotion remains blocked",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_and_secret_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-04T02:28:34Z",
+  "deliverable_commit": "c638f19daecd69af2a1da072ddf1b9e251ae5d8f",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "65a02a9f54a5d044a5891e237ca5760014b826ae7637805c939b8b0f53a179cd",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "af5dd15213c18045ed5552a215204f9e1b93f1e80392a21e94e88e30c159f9f4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "310ddba4b9de351b5f39d86614f1600c87106af1b5609b662c051eddcc50567c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "28f0411e76c4229e5b3106c0c3ff29039e2c4f4d9fce8751051f42c4fc445133",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "1c4e09b3b053416a005b576e66217f2c6e722727a96a54af5848951cf469cdd5",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "8c187cd6e8fe5d4ec36904a7ab43c11c82e34c7886b39b9bce1e9ded681dca63",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "659bf446207336e295e9e5575112229a3b1c0a3e3f272d276a3e3451f4469eb7",
+      "type": "data_manifest"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "cab98c200c2f4ac88e71177d030eb8a90f486810b57866ce14456d6266a03064",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "02c95f98b50c30793ff482aa2b17b673f6cd8e69a21e48a52bebf53360898a3c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_source_v1",
+      "sha256": "4fb682a8d0bbddee01fdfe6bd5afbac596e3bd2fee0e049f8fe1d1e2a005bd6e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_fixture_v1",
+      "sha256": "ab8be812b3c51c943e33a5cd1f0267c966e1c71a315f3aefe1da13fd5c19adcb",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-DEMO-COLD-START-AND-LIVE-CHART-01/published-btc-demo-cold-start-live-chart-01-0dea1a806-v2.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "4346b5af0e2be4a08aafe4b21d97399dce793cca8485a3779c6e31afe7da4b04",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-cold-start-live-chart-01-0dea1a806-v2"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-cold-start-live-chart-01-c638f19da",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-cold-start-live-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate; v2 supersedes original event; exact base and linear ancestry; 11-file touch set plus corrected handoff; 12 committed-object SHA-256 values",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-COLD-START-AND-LIVE-CHART-01/published-btc-demo-cold-start-live-chart-01-0dea1a806-v2.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff 11b781db616502ef7dae6afe55ad0e0bfdcace79",
+      "evidence_path": "merge commit c638f19daecd69af2a1da072ddf1b9e251ae5d8f",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py (47 passed)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_api.py (16 passed)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py (60 passed)",
+      "evidence_path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed"
+    },
+    {
+      "command": "runtime contract probe: market-ticker GET=200; POST=405; read_only/public_only=true; persisted_market_rows/strategy_signal_compatible=false",
+      "evidence_path": "backend/app/api/btc_demo_runtime.py; backend/app/services/btc_demo_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "evidence_path": "frontend/src/index.css; responsive height markers and natural chrome markers true",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (tsc --noEmit)",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx; frontend/src/workspaces/crypto/TradingViewChart.tsx; frontend/src/workspaces/crypto/demo-types.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "frontend/dist; 5219 modules; existing chunk-size warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check; npm.cmd run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json; manifest_match=true; baseline_ancestor=true; fingerprint=a39f7f436572927754cdfd102101a8dfc6ef8e894f3f45a31bee39942eb08400",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs; 12 scenarios",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright frontend/e2e/crypto.spec.ts including chart zoom, live ticker, 280-480px chart and tester-gap assertions",
+      "evidence_path": "frontend/e2e/crypto.spec.ts; frontend/e2e/btc-trading-fixtures.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "canonical backend/frontend restart and listener verification; private Demo refresh/start; private/order/live endpoint access",
+      "evidence_path": "deferred by integration ticket boundary; no service launch, credential, private, order, or live access",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-COLD-START-AND-LIVE-CHART-01",
+  "transition_for": "published-btc-demo-cold-start-live-chart-01-0dea1a806-v2"
+}

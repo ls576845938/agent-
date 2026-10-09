@@ -1,0 +1,117 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-shared-workbench-dock-actual-collapse-02-8ae3720bfd",
+  "ticket_id": "SHARED-WORKBENCH-DOCK-ACTUAL-COLLAPSE-02",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/shared-workbench-dock-actual-collapse-02",
+  "base_commit": "0df67017c525eb79ee8670c4279af161af7de277",
+  "deliverable_commit": "8ae3720bfd3a4e0fc297b1a954de6a5baca9ac4d",
+  "created_at": "2026-08-17T23:16:37Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "type": "code",
+      "sha256": "622d465cd7bde760f9c9516fbf762f37c2acf3da3106f302453ff742c4f2e274",
+      "schema_version": "frontend_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "type": "code",
+      "sha256": "5d676a755ba84b2a453887e3aaeb69aeccdd623c552f337bd191e60f7ac95e47",
+      "schema_version": "frontend_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "type": "test_evidence",
+      "sha256": "5c9edc267e8ad00128b614886264638cafcd49d30be03c5a89695af3d089f1e0",
+      "schema_version": "frontend_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "document",
+      "sha256": "50a9e5a3cd062ca967ecf48bd71ed914f57c063ca8394c3b211725150fa06bb3",
+      "schema_version": "frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd run lint",
+      "result": "passed",
+      "evidence_path": "frontend worktree; tsc --noEmit"
+    },
+    {
+      "command": "npm.cmd run build",
+      "result": "passed",
+      "evidence_path": "Vite production build; warning-only chunk-size notice"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/system-workbench.spec.ts --config=playwright.config.ts --list",
+      "result": "passed",
+      "evidence_path": "12 tests listed"
+    },
+    {
+      "command": "focused six-route dock geometry against port 3000 before fix",
+      "result": "failed",
+      "evidence_path": "failure-first baseline; stale served frontend identity a087f5648ba17ed4a46f2202d2ac4457531ed879"
+    },
+    {
+      "command": "producer CSS-injection six-route geometry smoke",
+      "result": "passed",
+      "evidence_path": "all six routes compact/flush at 1440x900; injected CSS only, not canonical acceptance"
+    },
+    {
+      "command": "canonical current-main mocked/full Playwright",
+      "result": "not_run",
+      "evidence_path": "port 3000 serves baseline a087f5648ba17ed4a46f2202d2ac4457531ed879, target main is 0df67017c525eb79ee8670c4279af161af7de277; service restart forbidden"
+    },
+    {
+      "command": "npm.cmd run identity:refresh",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json; baseline_commit=0df67017c525eb79ee8670c4279af161af7de277"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "result": "passed",
+      "evidence_path": "manifest_match=true; configured fingerprint matches"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "scoped producer diff"
+    },
+    {
+      "command": "scoped safe_status",
+      "result": "passed",
+      "evidence_path": "post-commit producer worktree clean"
+    }
+  ],
+  "blockers": [
+    "canonical_playwright_deferred_to_integrated_current_main: port 3000 serves stale baseline a087f5648ba17ed4a46f2202d2ac4457531ed879, not target 0df67017c525eb79ee8670c4279af161af7de277",
+    "independent_integrator_required:governance_control",
+    "registered_main_not_advanced"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "base_commit": "b02836ce1415693471c0bc263a164160b27736d9",
+  "blockers": [
+    "owner:root deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:root current_main_research_readonly_restart_and_canonical_browser_acceptance_pending",
+    "old_btc_runtime_and_promotion_artifacts_not_rebuilt_must_remain_stale_or_blocked",
+    "btc_real_account_readonly_acceptance_not_started_three_production_wiring_gaps_remain",
+    "private_readonly_receipt_missing",
+    "m2_historical_exploratory_increment_not_stable_no_promotion_no_m3_m4"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-13T12:03:29Z",
+  "deliverable_commit": "ca4a32990680562a8c6bcdb7b8f11a12ddb8035b",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/integrate-m1-m2-status-archive-20260913.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "m1_m2_status_archive_integration_acceptance_v1",
+      "sha256": "95a810ba5b32314f4cd54898644a094c5eeb2049f4c0bdf3336c0ca8e2074c76",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "9ef66d49f44917c7011d30a262787d214c04a97b1acbbf047c9df5838ca78ee7",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [
+    "published-m1-m2-status-archive-20260913-71e095d6b"
+  ],
+  "domain": "research",
+  "event_id": "integrated-m1-m2-status-archive-20260913-ca4a32990",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-m1-m2-status-archive-20260913",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published producer and superseded M2 digest-review envelopes",
+      "evidence_path": "docs/acceptance/integrate-m1-m2-status-archive-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "docs/acceptance/integrate-m1-m2-status-archive-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-architecture-knowledge.mjs frontend/scripts/test-architecture-mindmap.mjs",
+      "evidence_path": "docs/acceptance/integrate-m1-m2-status-archive-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check && npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main browser acceptance after main integration and restart",
+      "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "build, training, runtime artifact rebuild, private/order/live calls",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-M1-M2-STATUS-ARCHIVE-20260913",
+  "transition_for": "published-m1-m2-status-archive-20260913-71e095d6b"
+}

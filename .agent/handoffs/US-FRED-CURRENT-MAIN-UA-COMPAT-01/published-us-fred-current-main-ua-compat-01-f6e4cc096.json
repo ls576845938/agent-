@@ -1,0 +1,106 @@
+{
+  "base_commit": "6376a7b34d82658f5abb27b413f139460f081f80",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_deliverable_f6e4cc096a29243e3e7f5a3d6570a883dad75c86",
+    "owner:repository current_main_base_does_not_contain_public_snapshot_collection_or_public_forward_snapshot_test_modules",
+    "owner:operator backend_restart_required_after_unclassified_integration",
+    "owner:evidence no_data_publication_runtime_artifact_manifest_ledger_promotion_artifact_or_gate_artifact_created",
+    "owner:gate quality_checked_transport_compatibility_does_not_unlock_any_trading_or_promotion_permission"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "data_steward"
+  ],
+  "created_at": "2026-08-06T04:42:58Z",
+  "deliverable_commit": "f6e4cc096a29243e3e7f5a3d6570a883dad75c86",
+  "deliverables": [
+    {
+      "path": "scripts/fetch_us_equity_fred_macro.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_fred_macro_import_report_v1",
+      "sha256": "70ce39bfe99eccd8a7d63524f733c78f9bce00f1509af5fa10e5578de0bd2d48",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_fred_macro_import.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "72fa6c0fe8f4fc859d363e79969dadcd1896ee4e6d0da88772bef6e7b9dc3dab",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "us_equity",
+  "event_id": "published-us-fred-current-main-ua-compat-01-f6e4cc096",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-fred-current-main-ua-compat-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first current-main UA test; actual Mozilla/5.0 versus expected curl-compatible product UA; 1 failed, 5 deselected",
+      "evidence_path": "tests/contracts/test_us_equity_fred_macro_import.py",
+      "result": "failed"
+    },
+    {
+      "command": "current-main targeted UA regression after implementation; 1 passed, 5 deselected",
+      "evidence_path": "tests/contracts/test_us_equity_fred_macro_import.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_us_equity_fred_macro_import.py; 6 passed",
+      "evidence_path": "tests/contracts/test_us_equity_fred_macro_import.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/data/test_public_snapshot_collection.py; current-main path not found",
+      "evidence_path": "tests/data/test_public_snapshot_collection.py",
+      "result": "failed"
+    },
+    {
+      "command": "pytest tests/contracts/test_us_equity_public_forward_snapshot.py; current-main path not found",
+      "evidence_path": "tests/contracts/test_us_equity_public_forward_snapshot.py",
+      "result": "failed"
+    },
+    {
+      "command": "bounded public WALCL GET; HTTP 200, 23149 bytes, sha256 e3b8a4195046380406c310980e8c29c3f9feb99304bc3b42f898b7432d488c71",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py",
+      "result": "passed"
+    },
+    {
+      "command": "static audit: authenticated FRED Request remains Mozilla/5.0; public Graph Request alone uses the new constant",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py",
+      "result": "passed"
+    },
+    {
+      "command": "static structure audit: RawFetcher, collection_session, and _http_get_bytes remain absent; _load_series signature and tuple return unchanged",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py",
+      "result": "passed"
+    },
+    {
+      "command": "in-memory AST compile exact-2 and git diff --check",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py",
+      "result": "passed"
+    },
+    {
+      "command": "safety attestation confirms UA-only scope and all execution permissions remain disabled",
+      "evidence_path": "scripts/fetch_us_equity_fred_macro.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-FRED-CURRENT-MAIN-UA-COMPAT-01",
+  "transition_for": ""
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "mutable_runtime_storage_pointer_v1",
+  "storage_id": "btc-market-data",
+  "owner_role": "data_steward",
+  "writer_mode": "single_writer",
+  "compatibility_path": "data/market_data.sqlite",
+  "external_path_relative_to_workspace": "shared-data/.staging/runtime/btc-market-data/market_data.sqlite",
+  "link_type": "ntfs_hardlink",
+  "bytes_at_migration": 570884096,
+  "sha256_at_migration": "f73c69ae0405668a38c585aba0b2a88c47eb0c49a2bc24e714e6bde32537b2c3",
+  "migrated_at": "2026-07-21T09:09:17Z",
+  "git_tracking": "forbidden",
+  "immutable_publication": {
+    "dataset_id": "btc-market-data-sqlite-snapshot",
+    "status": "published",
+    "manifest_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1.json",
+    "dataset_version": "btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1",
+    "manifest_sha256": "ad6981dc7c8d5124b594ff4212192e5e94ff87c965bd3e3470f247da56efa9ee",
+    "physical_manifest_sha256": "0ee09f51f53608c16c9306334c5e4fbe7ede86f948c625ba91bbd36d7f327068",
+    "coverage_end": "2026-08-26T11:59:59.999000Z",
+    "source_sha256": "40741d3929d3d337a784ff2a475148e68d6e3e7aaf944c34ed73d34eba6cfaea",
+    "consumer_readiness": "blocked",
+    "blockers": [
+      "btc_execution_latency_model_missing",
+      "btc_queue_model_missing",
+      "btc_kline_dataready_not_promotion_evidence"
+    ],
+    "next_action": "consumers must resolve the exact immutable manifest/version/hash; mutable staging is never a fallback"
+  },
+  "guardrails": {
+    "runtime_database_is_promotion_evidence": false,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false
+  }
+}

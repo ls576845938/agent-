@@ -1,0 +1,115 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-shared-platform-v3-t1-correction-01-42f840f9a",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T1-CORRECTION-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator", "super_developer"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-shared-platform-v3-t1",
+  "base_commit": "325a5ea6f799721deeee4acf360ae10ede2a42a3",
+  "deliverable_commit": "42f840f9a79c6fcf75f2c4fbed326b96c6b313ca",
+  "created_at": "2026-08-22T14:28:09Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-shared-platform-v3-t1-c023e00bf",
+    "integrated-btc-shared-platform-v3-01-fe68263da"
+  ],
+  "supersedes": ["published-btc-shared-platform-v3-t1-c023e00bf"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/permissions.py",
+      "sha256": "a302f2be3e1aa322a71bd06e89ddc34f3d8f17d01dd8e027f7859bdd7e25ceea",
+      "schema_version": "shared_runtime_permission_semantics_v3_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_runtime_permission_semantics_v3.py",
+      "sha256": "78de2906d8441c15b3edc1b3056dda0eb6d1f1e67ceae480125c57097a048053",
+      "schema_version": "shared_runtime_permission_semantics_v3_correction_01_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_btc_okx_shared_runtime_live_canary.py",
+      "sha256": "b3bfd94e8a1377e6bcf4f8fc969eb4980e85dcef2a01d8fe2fa8c1b1a6d1697d",
+      "schema_version": "btc_shared_runtime_sealed_proof_contract_correction_01",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/integrations/test_ibkr_runtime_integration_wiring.py",
+      "sha256": "00f334f42e0712e75c6957b33c2d573733e46e337950e007db16a05f1ceac3ee",
+      "schema_version": "ibkr_legacy_kill_reduction_gate_correction_01",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first: py -3 -m pytest -p no:cacheprovider tests/shared_platform/test_runtime_permission_semantics_v3.py -q --basetemp <external-temp>",
+      "result": "failed",
+      "evidence_path": "before correction: 2 failed, 15 passed (legacy kill bool and BUY/+0.01->0 arithmetic)"
+    },
+    {
+      "command": "strict permission probe: risk_invalid_opening, legacy kill booleans, transport capability, signed reduce/cancel",
+      "result": "passed",
+      "evidence_path": "risk_invalid_opening_allowed=false; legacy_can_reduce=false; legacy_can_cancel=false; transport_reduce=true; transport_cancel=true; strict_reduce_allowed=true; strict_cancel_allowed=true"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/shared_platform/test_runtime_permission_semantics_v3.py tests/live/test_btc_okx_shared_runtime_live_canary.py tests/integrations/test_ibkr_runtime_integration_wiring.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "75 passed (40 shared permission, 22 BTC canary, 13 integration wiring)"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/live/test_ibkr_runtime_control_plane.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "15 passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/live/test_ibkr_runtime_failure_matrix.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "40 passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "35 passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "425 passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider -q --basetemp <external-temp> tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py",
+      "result": "passed",
+      "evidence_path": "T0 frozen contract suite: 33 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 py -3 -m py_compile <six changed python files>; git diff --check",
+      "result": "passed",
+      "evidence_path": "producer worktree; no whitespace errors"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required for unclassified change_risk",
+    "promotion_artifact_rebuild_required_by_unclassified_policy",
+    "backend_restart_required_after_integration_by_unclassified_policy",
+    "producer_deliverable_not_integrated_to_registered_main",
+    "initial scoped dirty paths were clean; registered main remains unchanged at 40df44484453b9375a492812d9bcbfb54adef4ac",
+    "no artifact, manifest, ledger, service, endpoint, secret, private/order/live, transfer or withdraw access"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "base_commit": "afeca215c55b54b2b7d8e1a28622678df65b2817",
+  "blockers": [
+    "owner:integrator independent_closed_artifact_verification_of_commit_ff13ccdfd_pending",
+    "owner:btc_developer formal_48_decision_v2_replay_failed_at_2026-06-17T11:52:30Z_with_risk_evidence_proof_invalid_and_qlib_offline_maintenance_ack_failed",
+    "owner:security_governance exact_risk_proof_verifier_failure_dimension_not_persisted_in_closed_runtime_log_and_remains_unresolved",
+    "owner:architect integrated_source_S_freeze_and_real_campaign_start_review_pending_real_campaign_fit_count_0",
+    "owner:operator formal_48_decision_6_funding_event_tail_replay_not_completed_no_runtime_artifact_published",
+    "original_independent_two_node_result_remains_1_failed_1_passed_in_432_18s_and_is_not_rewritten_as_passed",
+    "closed_artifact_verification_does_not_revalidate_recover_ledger_or_maintenance_call_counters_not_persisted_in_receipt",
+    "performance_only_short_sample_does_not_replace_formal_48_decision_acceptance",
+    "not_promotion_evidence_no_catalog_write_no_account_write_no_registration_write_no_job_write_no_service_started_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-30T09:47:44Z",
+  "deliverable_commit": "ff13ccdfd49a443caa2da6d2e791ec2fe48aeca2",
+  "deliverables": [
+    {
+      "path": "tests/contracts/test_registered_candidate_execution.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "7cc7a1ed41f89f38952ac91da6bde85f35d454b72fec81726d775ccc26f16612",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-real-candidate-offline-acceptance-20260930-edad609a0",
+    "data_manifest_commit_314c440ac2fc20c958472da14ff68265351ce0b0"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-real-candidate-offline-cache-wall-roles-20260930-ff13ccdf",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-real-candidate-20260930",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-real-candidate-offline-acceptance-20260930-edad609a0"
+  ],
+  "transition_for": "",
+  "tests": [
+    {
+      "command": "independent canonical Python two-node legacy/cache equivalence plus exclusive-writer test on source edad609a0; 1 failed, 1 passed in 432.18s; the only equivalence failure was cached wall_time distinct count 5 versus legacy 4 after all strict comparisons before that assertion passed",
+      "evidence_path": "tests/contracts/test_registered_candidate_execution.py",
+      "result": "failed"
+    },
+    {
+      "command": "canonical Python read-only closed-artifact invocation of verify_registered_offline_cache_equivalence over legacy-cache-comparison.json, both events.jsonl files, both offline_venue.json files, and both checkpoint account_ledger_replay values; no runtime construction or replay; verified_equivalent with 116 exact dynamic paths, 290 event/semantic/idempotency hashes, seven wall roles in each run, legacy 4 versus cached 5 distinct raw wall values, and all UUID/digest cardinalities one",
+      "evidence_path": "tests/contracts/test_registered_candidate_execution.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python -B -m py_compile tests/contracts/test_registered_candidate_execution.py and git diff --check; passed",
+      "evidence_path": "tests/contracts/test_registered_candidate_execution.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930"
+}

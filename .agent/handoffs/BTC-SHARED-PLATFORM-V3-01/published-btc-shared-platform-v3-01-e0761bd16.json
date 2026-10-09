@@ -1,0 +1,124 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-shared-platform-v3-01-e0761bd16",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-shared-platform-v3-01",
+  "base_commit": "cae56554cd4288239b1bd4c20bff02c89d21df29",
+  "deliverable_commit": "e0761bd166ecd80fa544df1a26dc62d3ccc6e45a",
+  "created_at": "2026-08-22T12:42:58Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "docs/knowledge/05_architecture/shared_platform_v3_contract.md",
+      "sha256": "d0c1c97c14a5f5adc32a35911c6b3ee7f68e5cc566af8beb31ec00dff10929be",
+      "schema_version": "shared_platform_v3_adr_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/shared_platform_v3_compatibility_matrix.md",
+      "sha256": "52fae1a237e588a413c6dfbf4f0d4f88730c7101ab33776be8f79bf5936e27c3",
+      "schema_version": "shared_platform_v3_matrix_mirror_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "configs/governance/shared_platform_v3_compatibility_v1.json",
+      "sha256": "410dd7b7a293ad773ac1c04fec2613eb91c9079c9992c1f428110c85fff4c208",
+      "schema_version": "shared_platform_v3_compatibility_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/shared_platform_v3_compatibility.schema.json",
+      "sha256": "8d6679dbc9a7bea7c2734fc940b2c206c7b3213abe01df3549324cc5180de197",
+      "schema_version": "json_schema_2020_12",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/__init__.py",
+      "sha256": "e58694d8e72a79e09552351fed7ad452237efeffdf2480b8aed28789ce048ea7",
+      "schema_version": "shared_platform_discovery_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/__init__.py",
+      "sha256": "2cff277fe037ce2aa80cd4b60fbd4c6df84252bc839c880ff5829bc7445a74ff",
+      "schema_version": "shared_platform_runtime_exports_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/runtime/contracts.py",
+      "sha256": "c62403ebb966fca82cad036c81266e4b0dec2148d9d5943cf425708b2b57a37d",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_core_and_boundary.py",
+      "sha256": "ca21e86bf4739cbee8cc7b094a65885f7d88b77bd7ee93e896a066a5f717628a",
+      "schema_version": "shared_platform_boundary_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_runtime_v3_contract.py",
+      "sha256": "e3a97e7d923f96e9cec23880062811a62dbcd4d16d8770be24d715714495cbed",
+      "schema_version": "shared_platform_runtime_contract_v3",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py --basetemp=.tmp/pytest-failure-first-v3 -p no:cacheprovider",
+      "result": "failed",
+      "evidence_path": "old_HEAD_missing_v3_exports_and_contract_module"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py --basetemp=.tmp/pytest-v3-required-2 -p no:cacheprovider",
+      "result": "passed",
+      "evidence_path": "31_passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_shared/__init__.py quant_shared/runtime/__init__.py quant_shared/runtime/contracts.py tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path <declared-touch-set>",
+      "result": "passed",
+      "evidence_path": "scoped-clean-after-deliverable-commit"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required by unclassified change risk",
+    "artifact_not_built_t0_contract_only_no_promotion_evidence",
+    "promotion_paper_live_private_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

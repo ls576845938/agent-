@@ -1,0 +1,99 @@
+{
+  "base_commit": "e5722c519a532b3743d35acce63f4f6b0af8b77b",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "600_second_current_main_continuous_observation_not_run_by_offline_correction",
+    "btc_10s_research_admission_still_requires_measured_information_gate_evidence",
+    "liquidation_family_missing_time_aligned_open_interest_and_liquidation_events",
+    "maker_queue_family_not_applicable_taker_only_baseline",
+    "current_head_promotion_artifact_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-27T13:25:00Z",
+  "deliverable_commit": "6cb300bf4f6537b5244a27f851ea565ad899b8e1",
+  "deliverables": [
+    {
+      "path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1",
+      "sha256": "127bafdd4b1631d66c58d2bd543ae44a18ed5dc287955cb449c229b7e296e5bd",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_tests_v1",
+      "sha256": "97af392f7485b230b2279a581e2696b29a00c1d76fd303e5d61f656a8514eee2",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_10S_MICROSTRUCTURE_IMMUTABLE_FEED_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_10s_microstructure_immutable_feed_doc_v1",
+      "sha256": "9ca9028a978632189057edeaafe1aa9c1bde28ecde81ebec7085a56715d1dc49",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-10s-microstructure-immutable-feed-01-correction-02-6242c141d"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-10s-microstructure-immutable-feed-01-correction-03-6cb300bf4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-10s-feed-corr-03",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-10s-microstructure-immutable-feed-01-correction-02-6242c141d"
+  ],
+  "tests": [
+    {
+      "command": "failure-first 600 second acceptance and above-600 fail-closed regression on e5722c519",
+      "evidence_path": "2 failed, 18 passed; old 120 second validator reproduced",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py -q",
+      "evidence_path": "21 passed in 1.91s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <feed,evaluator,L2-exporter,shared-data,collector,observer six suites> -q",
+      "evidence_path": "128 passed in 11.63s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile runner; JSON prereg/schema load; runner --help CLI smoke",
+      "evidence_path": "compile_json_cli_valid",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check e5722c519a532b3743d35acce63f4f6b0af8b77b..6cb300bf4f6537b5244a27f851ea565ad899b8e1",
+      "evidence_path": "range_diff_check_valid",
+      "result": "passed"
+    },
+    {
+      "command": "network/capture/service/private/order/live execution",
+      "evidence_path": "offline correction contract",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-IMMUTABLE-FEED-01-CORRECTION-03",
+  "transition_for": ""
+}

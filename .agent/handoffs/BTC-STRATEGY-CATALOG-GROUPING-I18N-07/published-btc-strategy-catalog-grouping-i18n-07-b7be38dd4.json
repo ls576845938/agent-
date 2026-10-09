@@ -1,0 +1,137 @@
+{
+  "base_commit": "cdc46a3bf7b6805d77feb8cb23473ae4d97b62d2",
+  "blockers": [
+    "owner:integrator unclassified_frontend_change_requires_independent_integration",
+    "owner:integrator canonical_mocked_playwright_deferred_to_registered_current_main",
+    "owner:integrator backend_restart_and_promotion_artifact_rebuild_required_after_integration",
+    "quality_checked_only_not_promotion_evidence",
+    "paper_live_private_order_real_order_transfer_withdraw_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-18T00:00:00Z",
+  "deliverable_commit": "b7be38dd4c7fc88d8fb6c5067fe407879e601965",
+  "deliverables": [
+    {
+      "path": "frontend/src/lib/strategy-presentation.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_presentation_i18n_grouping_v1",
+      "sha256": "94b54aa9c2b85a3613dc540a294bfad762da633b834c18fef3d3dc51d6c452d4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_discovery_family_grouping_v1",
+      "sha256": "7e3da95cb1ead1a56134fa032746957344bd0e2ec4e59985ffcbb652b26d2479",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_explorer_variant_presentation_v1",
+      "sha256": "58312c04a4c2d9aaae19764589b3d747944637a7708cf7b764a85343c647ab43",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_strategy_editor_variant_presentation_v1",
+      "sha256": "76c8d7c3c1c6bb87fa26e3b0aee9a6fb52ce83efc93fa4b49ff2f0b089af071c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "demo_strategy_status_i18n_v1",
+      "sha256": "60a381ee21d4bbe6dd97da45c2977fe14b225d76e60b391411154ede6ef03803",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_catalog_grouping_e2e_v1",
+      "sha256": "f9591e98e2192be2b4536f9be5453e0d14f2a5273070933f2d3e82a0fe00aa20",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-registry.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_catalog_status_i18n_e2e_v1",
+      "sha256": "3522058cc315f86d21df3aadbef154f00365d00d1f591d18679b61725a8aa36e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "0c05558d0770ed06596521643130c797576688a75cbdf7dd1e96e7bedfd18d79",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-btc-strategy-catalog-grouping-i18n-07-b7be38dd4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-strategy-catalog-grouping-i18n-07",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run lint -- --pretty false",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build [5215 modules transformed; existing >500 kB chunk warning preserved]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-strategy-history-report.spec.ts e2e/btc-strategy-registry.spec.ts e2e/btc-demo-console.spec.ts --list --config=playwright.config.ts [45 tests listed; no server started]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check [manifest_match=true; canonical_required=false on producer branch]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical mocked Playwright browser execution",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "backend restart; Demo/private/order/live/transfer/withdraw/secret actions; promotion artifact rebuild",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-CATALOG-GROUPING-I18N-07",
+  "transition_for": ""
+}

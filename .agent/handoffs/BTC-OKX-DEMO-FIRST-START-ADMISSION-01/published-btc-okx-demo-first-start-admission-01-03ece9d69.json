@@ -1,0 +1,108 @@
+{
+  "base_commit": "25e6c5737ec93d7fd73b42e652032ca2ba24d6b5",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "canonical_mocked_playwright_deferred_to_integrated_current_main: port_3000_serves_base_identity_25e6c5737ec93d7fd73b42e652032ca2ba24d6b5_not_producer_commit",
+    "team_context_discovery_unavailable: handoff_discovery_ref_cap_exceeded",
+    "backend_restart_required_after_demo_execution_semantics_integration",
+    "promotion_artifact_rebuild_required_by_current_delivery_policy",
+    "paper_live_private_order_real_order_transfer_withdraw_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-19T23:36:07Z",
+  "deliverable_commit": "03ece9d6921ecc7ccb19c1e824d18078dc0a9ac0",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_code_v1",
+      "sha256": "cacb61aa68eb760ca6e37296682ee58db98ab063b923c531314d466c698839e7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "42b44184232166c7884668be7b82ad9785042d709c275f9b9bb7c280117726a9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "d4defdb7dccf296d18d2f0fe8e9ff69ce9707c0111ae6e193934c96cdfc26fc4",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-first-start-admission-01-03ece9d69",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-first-start-admission-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line -g \"first stopped runtime_not_started|other frozen reason\"",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FIRST-START-ADMISSION-01",
+  "transition_for": ""
+}

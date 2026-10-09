@@ -4,9 +4,9 @@
 
 ### 参考输入与实现范围
 
-- 参考图 1（研究草稿编辑器）：`C:\Users\李烁18353780778\AppData\Local\Temp\codex-clipboard-1d34cda9-08e2-4a9a-ad3d-b21379ef1005.png`。
-- 参考图 2（配置并启动回测）：`C:\Users\李烁18353780778\AppData\Local\Temp\codex-clipboard-bdc4accc-a9ba-454a-9f6d-8473c37dd8f6.png`。
-- 参考图 3（策略结果概览）：`C:\Users\李烁18353780778\AppData\Local\Temp\codex-clipboard-209d9326-f1f9-402e-9ccc-344a7f93eaa3.jpg`。
+- 参考图 1（研究草稿编辑器）：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-1d34cda9-08e2-4a9a-ad3d-b21379ef1005.png`。
+- 参考图 2（配置并启动回测）：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-bdc4accc-a9ba-454a-9f6d-8473c37dd8f6.png`。
+- 参考图 3（策略结果概览）：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-209d9326-f1f9-402e-9ccc-344a7f93eaa3.jpg`。
 - 目标 viewport：`1440×900`；本阶段未启动前端服务，未访问任何真实 endpoint。
 - 实现路径：`frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx`、`crypto-strategy-editor.css`、`StrategyTesterReport.tsx`、`CryptoWorkspace.tsx`。
 
@@ -37,8 +37,8 @@ final result: blocked (deferred_to_integrated_current_main)
 
 ## 比较输入
 
-- 参考图：`C:\Users\李烁18~1\AppData\Local\Temp\codex-clipboard-ddababbe-17da-4e6b-baa2-a025fa400aa4.png`
-- 实现图：`C:\Users\李烁18353780778\AppData\Local\Temp\quantstation-ptrade-fidelity-c4-visual\strategy-workbench-1440x960.png`
+- 参考图：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-ddababbe-17da-4e6b-baa2-a025fa400aa4.png`
+- 实现图：`C:\Users\LOCAL_USER\AppData\Local\Temp\quantstation-ptrade-fidelity-c4-visual\strategy-workbench-1440x960.png`
 - viewport：`1440x960`
 - 数据边界：所有 `/api/**` 均由离线 mock fixture 提供；未访问真实交易或行情端点。
 
@@ -111,8 +111,8 @@ final result: passed
 
 ### 比较输入与证据
 
-- 参考图：`C:\Users\李烁18~1\AppData\Local\Temp\codex-clipboard-ddababbe-17da-4e6b-baa2-a025fa400aa4.png`
-- 参考图补充：`C:\Users\李烁18353780778\AppData\Local\Temp\codex-clipboard-209d9326-f1f9-402e-9ccc-344a7f93eaa3.jpg`
+- 参考图：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-ddababbe-17da-4e6b-baa2-a025fa400aa4.png`
+- 参考图补充：`C:\Users\LOCAL_USER\AppData\Local\Temp\codex-clipboard-209d9326-f1f9-402e-9ccc-344a7f93eaa3.jpg`
 - Stage B 实现图（1440×960）：`C:\tmp\strategy-workbench-ptrade-fidelity-04\strategy-workbench-1440x960.png`
 - Stage B 实现图（1180×900）：`C:\tmp\strategy-workbench-ptrade-fidelity-04\strategy-workbench-1180x900.png`
 - 机器证据：`C:\tmp\strategy-workbench-ptrade-fidelity-04\capture-evidence.json`
@@ -150,7 +150,7 @@ final result: passed
 - Official visual reference: <https://www.okx.com/learn/what-is-an-order-book-crypto> (`OKX_order_book_example.png`).
 - Canonical implementation: `main@891fb27762a3805b9053b3be389d71bc3b96e73b`; frontend fingerprint `e33a16fed4a95ebc61b81f84bf2e341d9f315ea9967aac88502a8fc0c8d96759`.
 - Implementation paths: `frontend/src/workspaces/CryptoWorkspace.tsx`, `frontend/src/workspaces/crypto/TradingViewChart.tsx`, `frontend/src/workspaces/crypto/PublicDepthPanel.tsx`, and `frontend/src/index.css`.
-- QA viewport: `1440×900`. Full-page and focused evidence: `C:/Users/李烁18353780778/AppData/Local/Temp/btc-okx-public-chart-orderbook-ux-02-final-focus.png`.
+- QA viewport: `1440×900`. Full-page and focused evidence: `C:/Users/LOCAL_USER/AppData/Local/Temp/btc-okx-public-chart-orderbook-ux-02-final-focus.png`.
 - Canonical backend identity: HTTP `200`, `canonical=true`, `runtime_stale=false`, profile `demo_quasi_live`.
 
 ### Functional and safety evidence
@@ -178,9 +178,9 @@ final result: passed
 
 ### Reference, implementation, and evidence
 
-- Reference target: `C:\Users\李烁18353780778\.codex\generated_images\019facb5-9817-7b10-a3ac-e08bdea521e8\exec-49e95103-31ac-4ff5-af7f-23a4bb0f2a69.png`
-- Canonical implementation: `C:\Users\李烁18353780778\.codex\visualizations\2026\07\29\019facb5-9817-7b10-a3ac-e08bdea521e8\strategy-modules-final-1488x1058.png`
-- Side-by-side composite: `C:\Users\李烁18353780778\.codex\visualizations\2026\07\29\019facb5-9817-7b10-a3ac-e08bdea521e8\strategy-modules-design-qa-composite.png`
+- Reference target: `C:\Users\LOCAL_USER\.codex\generated_images\019facb5-9817-7b10-a3ac-e08bdea521e8\exec-49e95103-31ac-4ff5-af7f-23a4bb0f2a69.png`
+- Canonical implementation: `C:\Users\LOCAL_USER\.codex\visualizations\2026\07\29\019facb5-9817-7b10-a3ac-e08bdea521e8\strategy-modules-final-1488x1058.png`
+- Side-by-side composite: `C:\Users\LOCAL_USER\.codex\visualizations\2026\07\29\019facb5-9817-7b10-a3ac-e08bdea521e8\strategy-modules-design-qa-composite.png`
 - Current main under review: `e39ade587c4fdf3d92597bfe46d31be7336589cc`
 - Viewport: `1488x1058`
 - Canonical evidence: Playwright `e2e/strategy-modules.spec.ts` `6/6` passed; left panel `477.265625px`, right panel `778.734375px`, measured ratio `0.37998855`; US/CN switching passed; all seven modules passed; POST count `0`; console errors `0`.

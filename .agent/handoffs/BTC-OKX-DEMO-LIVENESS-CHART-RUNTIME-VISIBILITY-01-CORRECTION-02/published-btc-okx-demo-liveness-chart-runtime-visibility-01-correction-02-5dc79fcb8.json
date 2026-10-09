@@ -1,0 +1,62 @@
+{
+  "base_commit": "830c2c94336be4777297ee8c1b4196f676f0bfac",
+  "blockers": [
+    "independent_integrator_required",
+    "services_not_started",
+    "demo_not_started",
+    "promotion_artifact_not_rebuilt",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-16T14:09:58Z",
+  "deliverable_commit": "5dc79fcb893b5ab81255ccf3d5c977a4d6bf0824",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_spec_v1",
+      "sha256": "c923d07999c25247598d4584afaae4287325d6a5e588a00c206c81752b2f2ffc",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-liveness-chart-runtime-visibility-01-correction-02-5dc79fcb8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-liveness-chart-corr-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npx playwright test e2e/btc-demo-console.spec.ts --grep \"running status refreshes confirmed OKX chart\" --reporter=line",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- frontend/e2e/btc-demo-console.spec.ts",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-CHART-RUNTIME-VISIBILITY-01-CORRECTION-02",
+  "transition_for": ""
+}

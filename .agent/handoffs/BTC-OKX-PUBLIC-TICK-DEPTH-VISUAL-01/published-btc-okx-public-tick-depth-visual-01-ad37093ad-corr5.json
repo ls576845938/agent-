@@ -1,0 +1,44 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-public-tick-depth-visual-01-ad37093ad-corr5",
+  "ticket_id": "BTC-OKX-PUBLIC-TICK-DEPTH-VISUAL-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-public-tick-depth-visual-01",
+  "base_commit": "3575bf0fbbdd3f2d569eb5be417b864d4a14866d",
+  "deliverable_commit": "ad37093ad527673d431329ec0e0bb59242a0acc6",
+  "created_at": "2026-08-17T04:44:11Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-btc-okx-public-tick-depth-visual-01-e85e15757-corr4"],
+  "transition_for": "",
+  "deliverables": [
+    {"type":"code","path":"frontend/src/workspaces/CryptoWorkspace.tsx","sha256":"7c509be88dc97d70a1473e1838c94c8ed044ae7a67b0848a5abd77ddd54b1078","schema_version":"btc_public_visual_tick_rest_ordering_v1","readiness_class":"quality_checked"},
+    {"type":"document","path":"frontend/public/frontend-identity.json","sha256":"26e977d031acb0c7d8e98bdfde171373e92ed69b22611dd2f039e513de222143","schema_version":"frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"failure-first canonical main evidence before correction: frontend/e2e/btc-demo-console.spec.ts 17 passed, 2 failed at lines 234 and 293 because old REST ticker 62030.5 overwrote newer EventSource 62048/62055","result":"failed","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"},
+    {"command":"npm --prefix frontend run lint -- --baseUrl <registered-main-node_modules> --typeRoots <registered-main-node_modules/@types>","result":"passed","evidence_path":"frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command":"direct Vite build with registered-main read-only node_modules path","result":"passed","evidence_path":"frontend/package.json"},
+    {"command":"git diff --check","result":"passed","evidence_path":"frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command":"node scripts/update-frontend-identity.mjs; node scripts/check-frontend-identity.mjs; canonical-equivalent frontend_src_tree=4be3807d8e1403331868106891b335273e4cc781","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"full frontend/e2e/btc-demo-console.spec.ts canonical mocked run after fast-path main integration","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "owner:integrator fast_forward_to_current_main_then_run_canonical_mocked_playwright_19_of_19",
+    "owner:integrator backend_restart_required_for_demo_transport_hotfix",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "base_commit": "16cf0ad4d04a6c5d52661a089a20867e83d0f220",
+  "blockers": [
+    "committed_immutable_natural_non_diagnostic_gate_eligible_fill_ledger_manifest_required",
+    "committed_verified_multi_manifest_ess_artifact_bound_to_current_head_required",
+    "real_depth_fill_mapping_artifact_requires_time_overlapping_natural_fill",
+    "public_slice_3_blocked_export_l2_clock_lag_and_snapshot_reset_must_not_be_consumed",
+    "independent_integrator_required_change_risk_promotion_evidence",
+    "current_head_promotion_artifact_and_read_model_rebuild_required_after_integration",
+    "private_ws_funding_25h_observation_and_manual_approval_remain_outside_ticket"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "data_steward"
+  ],
+  "created_at": "2026-09-01T08:36:56Z",
+  "deliverable_commit": "5844f2a113ae21b641b7060e0877c313cb24a12b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_depth_slippage.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_depth_slippage_fill_mapping_v2",
+      "sha256": "baea15d3fb67490a05f9545152407cba44ee72ba38dd05debfa584d3e615f4bb",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_depth_slippage_fill_mapping_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_depth_slippage_fill_mapping_cli_v2",
+      "sha256": "cdaa107fd677be56bc2f867fd8961c8e8e053da7cc499d9bf7d3947b56a394db",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_current_head_authoritative_data_pointer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_authoritative_data_pointer_v2",
+      "sha256": "7028e1a7adc5156b00ddfac16666cc78e05399521e2e20c4bf97f11f0401e624",
+      "type": "code"
+    },
+    {
+      "path": "scripts/publish_btc_current_head_authoritative_data_pointer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_authoritative_data_pointer_cli_v2",
+      "sha256": "89a01df0665853face7e66016a25f8a98e2bd72433ce4f3c26c2d06694dc0e55",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_depth_slippage_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_depth_slippage_report_contract_tests_v2",
+      "sha256": "5648c74b44e37a98cf328bac064e3c43aa908c04bcc87a1519923ecae332df21",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_authoritative_data_pointer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_authoritative_data_pointer_contract_tests_v2",
+      "sha256": "a4f34abbab4d683defb90c4bd5fadb21925908e80480076e8d0a32d82e14c74b",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-current-head-l2-ess-evidence-binding-01-5844f2a11",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-current-head-l2-ess-evidence-binding-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first depth mapping import: py -3 -m pytest tests/contracts/test_btc_depth_slippage_report.py -q --basetemp .tmp/pytest-l2-ess-failure-first (expected collection failure before implementation: missing DepthFillEvidenceDependencies)",
+      "evidence_path": "tests/contracts/test_btc_depth_slippage_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "failure-first authoritative pointer: py -3 -m pytest tests/contracts/test_btc_current_head_authoritative_data_pointer.py -q (expected 2 failures before implementation: read_git_json and manifest_git_specs missing)",
+      "evidence_path": "tests/contracts/test_btc_current_head_authoritative_data_pointer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_authoritative_data_pointer.py tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_depth_slippage_report.py tests/contracts/test_btc_gate_aggregation_chain.py tests/contracts/test_btc_okx_l2_depth_observation_daily.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_perpetual_evidence_observe_only_daily.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q --basetemp D:/vibe coding/Obsidian/量化系统/pytest-btc-l2-ess-final2 (71 passed in 14.60s)",
+      "evidence_path": "tests/contracts/test_btc_depth_slippage_report.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile four ticket-owned source/CLI files; git diff --check; scoped safe_status",
+      "evidence_path": "quant_crypto/application/btc_current_head_authoritative_data_pointer.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "promotion artifact/read-model rebuild, backend restart, browser E2E, private/order/live validation",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CURRENT-HEAD-L2-ESS-EVIDENCE-BINDING-01",
+  "transition_for": ""
+}

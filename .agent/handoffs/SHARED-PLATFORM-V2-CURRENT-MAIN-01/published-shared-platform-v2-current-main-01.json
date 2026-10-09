@@ -1,0 +1,249 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-shared-platform-v2-current-main-01",
+  "ticket_id": "SHARED-PLATFORM-V2-CURRENT-MAIN-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/shared-platform-v2-current-main-01",
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "deliverable_commit": "8e6d1b25cda0bce85098f67e16c993a5edff3e3d",
+  "created_at": "2026-07-23T14:12:24Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "docs/knowledge/05_architecture/shared_platform_v2_contract.md",
+      "sha256": "9f878db816076052cc0fea90360e0a78d546b6d6a7e314bc68453425f03c0ab6",
+      "schema_version": "shared_platform_v2_contract",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/__init__.py",
+      "sha256": "346e39ca237815065f8b30e1c96ed817011590382d8fb67c77167d484f5db776",
+      "schema_version": "shared_platform_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/core/__init__.py",
+      "sha256": "ac3e254a2b2d1f929d0e736ab706a1dd24fa32a058ca11769fe6952350178862",
+      "schema_version": "shared_core_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/core/contracts.py",
+      "sha256": "f510c7848483859eb624691b41d0121ca7d5f8a15fb94c83feb854f4c6455a00",
+      "schema_version": "shared_core_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/core/identity.py",
+      "sha256": "79c6f99d7689cf17ae1e520f6e79fb0bba42aa89998e32907f5b852e7284eb62",
+      "schema_version": "shared_stable_identity_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/core/serialization.py",
+      "sha256": "b828aef6e37c30132e28a0ab73794b1b49ab273b44d16194a869596b144c9bd9",
+      "schema_version": "shared_canonical_serialization_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/core/time.py",
+      "sha256": "cf2402d009ac6107dd61d8df57b9bd7f8c38159292d861f6d8755719564b74fe",
+      "schema_version": "shared_utc_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/evidence/__init__.py",
+      "sha256": "5ddfaeca3b9987bcfcfc4a1962e8deaffbe0cdf309c3bd6215a4e05c4adb6fa4",
+      "schema_version": "shared_evidence_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/evidence/contracts.py",
+      "sha256": "3c357413be573d37ac54cae6403ee1448a983da495f3de8a119aba933db7c27c",
+      "schema_version": "shared_evidence_contracts_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/evidence/freshness.py",
+      "sha256": "a7623c56280960ba3e4bd149b98ab4b20d846fbd04452aeca7d07326f4389ca7",
+      "schema_version": "shared_freshness_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/evidence/immutable.py",
+      "sha256": "b6071a0ff780227cef88db48b113dc2ad62e7fe50af5416dafece8b90f4d3097",
+      "schema_version": "shared_immutable_evidence_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/ledger/__init__.py",
+      "sha256": "2845d0e33d293c23efd3e214ce19d4ceda721376a17a4eb72ef94d9f4003c1eb",
+      "schema_version": "shared_ledger_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/ledger/contracts.py",
+      "sha256": "85da40fceebb83b41398bb8bff429dde8869099b08b010c4b4963712174b99ee",
+      "schema_version": "shared_ledger_contracts_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/replay/__init__.py",
+      "sha256": "8fd7d5b756951e03490474599b2099b5a65f891be44f936be3b62910d86bd89b",
+      "schema_version": "shared_replay_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/replay/contracts.py",
+      "sha256": "35f9ee57243efd64d602156651bd6d6cd03a201175bad57155b034ba8f055ec3",
+      "schema_version": "shared_replay_contracts_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/backtest/__init__.py",
+      "sha256": "4b0f647e37ce1728c2ea33fdee43eb1ab2f3c6c24b2d3ebb791b4a11b0fb2248",
+      "schema_version": "shared_backtest_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/backtest/contracts.py",
+      "sha256": "c88e884a9308574f62893f951231044f909efd11b98bf6822f6eaf1bc9e348bd",
+      "schema_version": "shared_backtest_contracts_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/read_model/__init__.py",
+      "sha256": "2dfc19f6887c4b28336771dbfcab46e9c4aad8fe0716c6eb490a96040f2269fe",
+      "schema_version": "shared_read_model_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/read_model/contracts.py",
+      "sha256": "43c81f001c1a419eb81164ff6618025cea11b054c155f032d3c41f260b38c58f",
+      "schema_version": "shared_read_model_contracts_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/forecasting/__init__.py",
+      "sha256": "231af4c5a3da51fd0c7dc84d2906967c283fd37129d9c15c4d4289c75a55416c",
+      "schema_version": "shared_forecasting_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/forecasting/baseline_adapter.py",
+      "sha256": "5636d5089fca0904cec23761765e8119fc7787d2bdc3adabf7865faa97a7f2d9",
+      "schema_version": "shared_forecasting_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "quant_shared/forecasting/contracts.py",
+      "sha256": "cfce19131fde8f176fa6ea59ce1570db368b5c9054248936bfad05615372504b",
+      "schema_version": "shared_forecasting_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/forecasting/timesfm_adapter.py",
+      "sha256": "316287316e1c1926096952b1a7b9ee374d44c6fcbd7ecb4e8898fe368650ddd4",
+      "schema_version": "shared_forecasting_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_core_and_boundary.py",
+      "sha256": "96d1410a2355ddb2a58d77a35ab84917510515c5d361a16ca62e964b81c1076b",
+      "schema_version": "shared_platform_v2_boundary_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_evidence.py",
+      "sha256": "8cf26fbad0378cbd36b70dcdd7a7ea9eb9726b6a4111cca59bf05585763cd5ab",
+      "schema_version": "shared_platform_v2_evidence_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_ledger_replay_backtest.py",
+      "sha256": "279f08b1718b31d807a2d4ac30f0b42db8e54d67e38ef1d525566372c2bc0d66",
+      "schema_version": "shared_platform_v2_ledger_replay_backtest_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/shared_platform/test_read_model_and_forecasting.py",
+      "sha256": "d6c8f7313ef019df50930de05411ab4c569fc9012dc9a6c95c75293ef9ec9895",
+      "schema_version": "shared_platform_v2_read_model_forecasting_tests",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-shared-platform-v2-20260723-a tests\\shared_platform tests\\contracts\\test_shared_forecasting_timesfm.py tests\\contracts\\test_us_equity_shared_forecasting_smoke.py",
+      "result": "passed",
+      "evidence_path": "tests/shared_platform"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-shared-platform-v2-us-compat-20260723-a tests\\contracts\\test_us_equity_shared_forecasting_smoke.py tests\\contracts\\test_us_etf_rotation_layered_architecture.py tests\\core\\test_us_equity_calendar_external_providers.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_shared_forecasting_smoke.py"
+    },
+    {
+      "command": "PYTHONPATH=<current-head-quant_crypto-archive>;<writer-worktree> py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-shared-platform-v2-btc-compat-20260723-a tests\\contracts\\test_btc_forecast_layer.py",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_forecast_layer.py"
+    },
+    {
+      "command": "py -3 tools\\agent_governance\\handoff.py validate --input .agent\\handoffs\\SHARED-PLATFORM-V2-CURRENT-MAIN-01\\published-shared-platform-v2-current-main-01.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/SHARED-PLATFORM-V2-CURRENT-MAIN-01/published-shared-platform-v2-current-main-01.json"
+    }
+  ],
+  "blockers": [
+    "shared_platform_v2_consumer_wiring_requires_integrator_ticket",
+    "promotion_and_paper_live_gates_not_unlocked"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

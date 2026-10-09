@@ -1,0 +1,101 @@
+{
+  "base_commit": "2ae2ec7eb52cc0a9898af039f70648fa0ca609f2",
+  "blockers": [
+    "owner:data_steward real_timestamp_aligned_l2_missing",
+    "owner:data_steward l2_lt_30_natural_days",
+    "owner:data_steward btc_okx_selected_bundle_dir_missing",
+    "owner:data_steward btc_okx_ws_collector_dependency_missing:websocket",
+    "owner:btc_observation btc_okx_l2_natural_execution_observation_missing",
+    "owner:data_steward btc_okx_l2_sequence_continuity_unverified",
+    "owner:data_steward btc_okx_l2_two_sided_coverage_unverified",
+    "owner:data_steward l2_artifact_source_head_mismatch",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_demo_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T17:10:07Z",
+  "deliverable_commit": "aa69b8f1f32c505a590599becf7676fdd4eb8a82",
+  "deliverables": [
+    {
+      "path": "scripts/build_btc_dataready_consumption_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_blocked_l2_discovery_v1",
+      "sha256": "49b40534590bb7466bcd561234250d63aa829bcb4c0614bb491233e90f645a7b",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_blocked_l2_consumer_contract_v1",
+      "sha256": "6f7c928f009c0845bfee5a4351b57ef5bbc1bd7a7ff7eed5a77f2c98ef21b448",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_dataready_blocked_l2_schema_consumer_ticket_v1",
+      "sha256": "fbfff9f1b1a116eefd142e06f0067520e117043d9942226c4395a50bcc55a411",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-dataready-blocked-l2-schema-consumer-01-aa69b8f1",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-dataready-blocked-l2-schema-consumer-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first blocked L2 subset, then py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py -k blocked_l2 --basetemp <unique-system-temp> -p no:cacheprovider -q [4 passed]",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py --basetemp <unique-system-temp> -p no:cacheprovider -q [51 passed]",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py --basetemp <unique-system-temp> -p no:cacheprovider -q [142 passed]",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "business-HEAD exact four-selector CLI [expected exit 2, report sha256=37736c8c10b0a00b78b169f0f21bcb63a3cf9e7eee2ed4770b6e5f86b7030cd0, blocked/fail_closed, Kline manifest and physical pass, L2 blocked]",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q builder and contract test; builder --help; scoped git diff --check",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "current-HEAD promotion, paper, or live artifact rebuild",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-DATAREADY-BLOCKED-L2-SCHEMA-CONSUMER-01",
+  "transition_for": ""
+}

@@ -1,0 +1,90 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-already-flat-restart-state-15-e71d7d3e0",
+  "ticket_id": "BTC-OKX-DEMO-ALREADY-FLAT-RESTART-STATE-15",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-already-flat-restart-state-15",
+  "base_commit": "30a33152e1c1facd084fb4d34c6bb5ca948b0f7e",
+  "deliverable_commit": "e71d7d3e0ea7938eeca2706d4bc08c410ae0288c",
+  "created_at": "2026-08-11T15:15:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "9c2f844c5519b8c13e5b2dfcb3e51c4968a15a03e3fed2fb8fad9ee1aa3c7418",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "e61865dd54891cbff7b14ad2d7f895dd0161ada76c10f8e54fd84bfcdee29372",
+      "schema_version": "btc_okx_demo_paper_runtime_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k incident_recovery_already_flat_is_read_only_and_clears_freeze --basetemp <unique-temp> -q [base failure reproduced: STARTUP_RECONCILING]",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'incident_recovery_already_flat_is_read_only_and_clears_freeze or incident_recovery_already_flat_binds_hosted_oco_exit_before_private_ws' --basetemp <unique-temp> -q [2 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'incident_recovery_already_flat or restart_restores_exact_persisted_cancel_only or restart_rejects_incomplete_cancel_only or hosted_oco_terminal_exit' --basetemp <unique-temp> -q [16 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k 'flat_hosted_exit or incident_recovery' --basetemp <unique-temp> -q [21 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <unique-temp> -q [318 passed in 69.80s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_registered_main",
+    "backend_restart_required_after_integration",
+    "promotion_evidence_not_rebuilt",
+    "offline_fake_client_validation_only",
+    "paper_live_private_order_transfer_withdraw_and_real_order_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "base_commit": "ba5195df38782f0e13a1ca6b360917d4a5c92f35",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_current_main_integration",
+    "owner:operator new_task_and_fresh_signed_receipt_bound_to_integrated_main_required_old_r8_receipt_consumed",
+    "owner:operator trusted_hook_hash_review_required_after_integration",
+    "owner:governance nine_out_of_scope_agent_governance_fixture_failures_remain_explicit",
+    "promotion_paper_live_order_real_order_transfer_withdraw_remain_blocked_fail_closed"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-01T14:28:50Z",
+  "deliverable_commit": "176c64b07694404e9a7cf1054aedd7af3ecfae09",
+  "deliverables": [
+    {
+      "path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_runner_self_authorization_v1",
+      "sha256": "ff0784423232943b051a2e96631d51d572f9d86a2bc845b471397112d7f57ffe",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_permission_v2",
+      "sha256": "71c4fe9998f02568314ab75e2170bd09018a60dfc38a47ce1a0b096a98b5190c",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_hook_context_v2",
+      "sha256": "a5f999c63d6765f2a3099e79d70fc1aa53731b009d68dd2795857497f95e76d1",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_pretool_guard_v2",
+      "sha256": "79c03361ee9cd601c4157fc9a68c4c45c06b14d013d1362c17a7f1ee096f8679",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "0da3c6719a08d506b9b3cf9092c52594cd4a21cc0de9ccabbbb3008a566c5328",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "98dbc1929ca70e415b7773883d03ef0e6a20858154ffb26a140d3cb7ecf95760",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "9062005de51b062d60e927ab6b285ee6da7bcbc3374f09945597c5da0e759bf1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_private_readonly_permission_profile.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_permission_profile_v2",
+      "sha256": "791248ef98bc9192122f65f9ce6f979301af7fde590bc9c263ceab10a2cf5bd9",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/BTC-PRIVATE-READONLY-RUNNER-SELF-AUTHORIZATION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_readonly_runner_self_authorization_handoff_v1",
+      "sha256": "5c1ab25dd4bb7873f025d9458ece902ee92f8012feca2e512242ba784ef65744",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-private-readonly-runner-self-authorization-01-176c64b07",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-private-readonly-runner-self-authorization-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first focused regression [2 failed: authorize_runner_process missing; zero-argument parser unsupported]",
+      "evidence_path": "docs/handoffs/BTC-PRIVATE-READONLY-RUNNER-SELF-AUTHORIZATION-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py -q --basetemp .pytest_tmp_btc_private_ro_permission_final [40 passed in 39.48s]",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py::test_cross_process_runner_start_claim_has_exactly_one_winner -q [16 spawned claims; exactly one winner; 1 passed in 9.37s]",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_hooks.py -q --basetemp .pytest_tmp_btc_private_ro_hooks_final [8 passed in 65.27s]",
+      "evidence_path": "tests/agent_governance/test_hooks.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py -q --basetemp .pytest_tmp_btc_private_ro_contract_final [27 passed in 5.30s]",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q --basetemp .pytest_tmp_btc_private_ro_agent_governance_full [122 passed, 10 failed in 258.98s; one ticket assertion fixed and covered by final 40 passed; nine out-of-scope fixture failures remain]",
+      "evidence_path": "docs/handoffs/BTC-PRIVATE-READONLY-RUNNER-SELF-AUTHORIZATION-01.md",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile <seven touched Python files>",
+      "evidence_path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- <declared touch set>",
+      "evidence_path": "docs/handoffs/BTC-PRIVATE-READONLY-RUNNER-SELF-AUTHORIZATION-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "real receipt store/private key/keyring/network/private/account/order/live endpoints, backend, and actual observer runner",
+      "evidence_path": "prohibited by producer ticket scope",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PRIVATE-READONLY-RUNNER-SELF-AUTHORIZATION-01",
+  "transition_for": ""
+}

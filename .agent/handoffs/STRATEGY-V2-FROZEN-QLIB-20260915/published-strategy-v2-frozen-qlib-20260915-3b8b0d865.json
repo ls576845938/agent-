@@ -1,0 +1,107 @@
+{
+  "base_commit": "a315f1169d9b628e9a4acd70100f188076c32560",
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics committed-source review and integration have not been performed; this producer branch is not released or merged",
+    "owner:architecture V3 is not authorized and must be decided only after independent V2 review; no target-position, exit, risk, OMS, fill, ledger or runtime binding exists",
+    "owner:research the frozen candidate retains negative test IC, zero simulated fills and no_simulated_fills; deterministic replay is not alpha or promotion evidence",
+    "owner:release model training/search, MLflow restore writes, service/UI/API, actual account, OKX Demo, private/order/live, promotion publication and main integration were not run and remain disabled",
+    "owner:baseline the inherited M1 static post-M1 file allowlist test fails on the reviewed V1 base; expected values were not changed and the failure is outside this ticket"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-09-15T13:09:43Z",
+  "deliverable_commit": "3b8b0d8653fa0f3bcf2276449dc68eba4116d450",
+  "deliverables": [
+    {
+      "path": "integrations/qlib_adapter/frozen_inference.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_frozen_qlib_inference_v1",
+      "sha256": "267ced6d9c3c37517ea2f26fd2d42c3c1a066062ea5ae1456616462b2cc8d82e",
+      "type": "code"
+    },
+    {
+      "path": "tests/integrations/test_qlib_frozen_inference.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_strategy_v2_frozen_qlib_v1",
+      "sha256": "0e613b7a38a1117bd60fbdf29bbaefc4e6e7ad1d7a25a1dee41568b132ce2482",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/fixtures/strategy_v2/contract.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_frozen_inference_contract_v1",
+      "sha256": "1c76dde521d2bc7558f8d2457d1839b01f7c8bf81c3b5d3e400784a62722f725",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/strategy-admission-v2.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_v2_admission_report_v1",
+      "sha256": "31542a00ddc040ab62e33e8662931651058365dd2a44b2ca85e4279ea3fa4100",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-protection-parent-join-independent-review-20260915-cd6b37d59",
+    "published-strategy-v0-freeze-20260915-e0b7a08f8"
+  ],
+  "domain": "shared",
+  "event_id": "published-strategy-v2-frozen-qlib-20260915-3b8b0d865",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/strategy-v2-frozen-qlib-20260915",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pytest tests/integrations/test_qlib_frozen_inference.py before implementation (collection failed: ModuleNotFoundError; 1 error in 0.89s)",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "failed"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --tb=short tests/integrations/test_qlib_frozen_inference.py (18 passed in 63.50s; no skip)",
+      "evidence_path": "tests/integrations/test_qlib_frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/integrations/test_qlib_frozen_inference.py::test_prediction_mutation_is_detected_by_sealed_reference (1 passed in 15.08s)",
+      "evidence_path": "tests/integrations/test_qlib_frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_strategy_v1_donchian_offline.py with network denied (11 passed in 205.40s)",
+      "evidence_path": "tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -B -m pytest tests/contracts/test_strategy_v0_freeze.py tests/contracts/test_m1_btc_behavior_freeze.py tests/integrations/test_qlib_time_series.py with QS_V0_VERIFY_ARCHIVE=1 and network denied (62 passed, 1 inherited M1 allowlist failure in 114.16s)",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "failed"
+    },
+    {
+      "command": "AST parse of two Python touch-set files, scoped safe_status and git diff --cached --check",
+      "evidence_path": "integrations/qlib_adapter/frozen_inference.py",
+      "result": "passed"
+    },
+    {
+      "command": "training/search, MLflow restore writes, target/exit/risk/OMS/fill/ledger, services, UI/API, actual account, OKX Demo, private/order/live, promotion publication, V3 and main integration",
+      "evidence_path": "docs/architecture/strategy-admission-v2.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "STRATEGY-V2-FROZEN-QLIB-20260915",
+  "transition_for": ""
+}

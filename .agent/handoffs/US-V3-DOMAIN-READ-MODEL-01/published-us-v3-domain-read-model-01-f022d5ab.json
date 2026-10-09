@@ -1,0 +1,189 @@
+{
+  "base_commit": "40f6515131799db27ec06b9b82832a4a3ff4c980",
+  "blockers": [
+    "owner:data_steward production_pit_bundle_root_not_supplied",
+    "owner:data_steward production_pit_seven_file_immutable_handoff_missing",
+    "owner:data_steward production_corporate_action_available_time_replay_missing",
+    "owner:data_steward production_delisted_symbol_history_missing",
+    "owner:data_steward production_survivorship_clean_universe_missing",
+    "owner:paper_operations paper_start_not_authorized",
+    "owner:paper_operations real_paper_evidence_missing",
+    "owner:paper_operations production_event_ledger_missing",
+    "owner:architect manual_paper_start_approval_missing",
+    "owner:integrator app_factory_get_router_wiring_pending",
+    "classification:goal9_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_fail_closed"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "data_steward"
+  ],
+  "created_at": "2026-07-24T13:40:22Z",
+  "deliverable_commit": "f022d5ab4db7b4f58e2c3d5cbb1a31b6e66b25e0",
+  "deliverables": [
+    {
+      "path": "quant_us/application/us_equity_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_v1",
+      "sha256": "24aeaf91984576026d57b67f28058a58e2eacc41c0e5eeaac55ff4fd7c346922",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/monitoring/us_equity_domain_read_model_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_repository_v1",
+      "sha256": "ad0d0e9fec32bb38fced0d2905ebdde15b3d2037b1ba0df6ccf6708de23032db",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/us_equity_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_api_v1",
+      "sha256": "09d558dc35e8316aaa0dc9c146f24ae0f0d420726a9811b5faafe46816ebc3ea",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_domain_read_model.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_v1",
+      "sha256": "d99dbd47d0ee1b4823e64b63c2f8ef797ca8cc35b5af7285ee1fc09eafbf8ce3",
+      "type": "schema"
+    },
+    {
+      "path": "configs/governance/us_equity_domain_read_model_sources_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_sources_v1",
+      "sha256": "4a04756abffdf6d8827f99b14e8ef1bde26042c639588d4fbc11f769ed4392ed",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_us_equity_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_cli_v1",
+      "sha256": "4bd2bfc4f8aebb32a62050709c7cee6491fc3c72d9b5837b2df47e3645b1c59e",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "2502a5797b7463cda17a7bbae6d38aadab1c3bfe11f8f51b8dd6fd2607129f38",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/us-equity/domain-read-model.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_frontend_types_v1",
+      "sha256": "5795bbdb6b0a6e3864f055ab17f3c762ca8bddf154e1b84ee199ce1c9a1e3bb1",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/us-equity/USEquityDomainReadModel.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_domain_read_model_frontend_view_v1",
+      "sha256": "3d069f83a792dc62afba0942e223ff73a6c9917f384d5367dceafeede4b7c423",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/USEquityWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_workspace_operator_partition_v1",
+      "sha256": "1f0a5a0db79abfae98537ee2392f1a8313ae76d1801ccf0de28cd9afbc4b2ff8",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/us-domain-read-model.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "b6140ed5d5e09cbfe2ace2c4ace07d91d3b527c670c2b765cf8861766b1d47ea",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_domain_read_model.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_domain_read_model_contract_v1",
+      "sha256": "8645c8607f1f4892e93687db4edf36886945fee067cfe7ac5e2baf1428347a01",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/integrator_wiring.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_domain_read_model_integrator_wiring_v1",
+      "sha256": "cf3346a47dbec9e85f6f2ca44155f3d198f4437477c78e516255b5f1a64c6d6f",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/evidence/report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_domain_read_model_delivery_report_v1",
+      "sha256": "9ec6ff965aa97d6ce3f185c342fe17a8b08bb8c3976736fb7f8d59774d845211",
+      "type": "report"
+    },
+    {
+      "path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/evidence/manifest.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_domain_read_model_delivery_manifest_v1",
+      "sha256": "bce75662cf6eddd56f734e790b3f96a374d59227152a5b5ba033665ab39f1984",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-pit-dataready-consumer-01-goal6-batch-01",
+    "integrated-us-v3-canonical-backtest-portfolio-evidence-01-goal7-batch-01",
+    "integrated-us-v3-paper-oms-reconciliation-01-goal8-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-domain-read-model-01-f022d5ab",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-domain-read-model-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_domain_read_model.py -q -p no:cacheprovider --basetemp <unique-system-temp> [8 passed]",
+      "evidence_path": "tests/contracts/test_us_equity_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_domain_read_model.py tests/contracts/test_us_equity_pit_dataready_consumer.py tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py tests/contracts/test_us_v3_paper_oms_reconciliation.py -q -p no:cacheprovider --basetemp <unique-system-temp> [34 passed]",
+      "evidence_path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/evidence/report.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_team_context.py -q -p no:cacheprovider --basetemp <unique-system-temp> [6 passed]",
+      "evidence_path": "tests/agent_governance/test_team_context.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint; npm.cmd run build; npm.cmd run smoke [all passed]",
+      "evidence_path": "frontend/src/workspaces/us-equity/USEquityDomainReadModel.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "playwright test e2e/us-domain-read-model.spec.ts [1 passed]; npm.cmd run test:status-cards [1 passed]",
+      "evidence_path": "frontend/e2e/us-domain-read-model.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/build_us_equity_domain_read_model.py --repo-root .; Team Context us_equity freshness=current_head and domain_read_model_missing=false",
+      "evidence_path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/evidence/manifest.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-DOMAIN-READ-MODEL-01",
+  "transition_for": ""
+}

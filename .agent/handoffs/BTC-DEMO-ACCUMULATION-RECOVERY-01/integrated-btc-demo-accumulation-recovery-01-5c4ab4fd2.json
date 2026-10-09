@@ -1,0 +1,98 @@
+{
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "blockers": [
+    "registered_main_not_yet_fast_forwarded_to_integrated_commit",
+    "backend_and_canonical_frontend_restart_required_after_main_integration",
+    "promotion_artifact_not_rebuilt:demo_recovery_observability_fix_only",
+    "focused_browser_e2e_not_run:current_main_canonical_guard_and_port_3000_listener",
+    "25h_observation_not_started_until_post_restart_status_and_private_ws_checks_pass"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-06T14:52:25Z",
+  "deliverable_commit": "5c4ab4fd22b981a643e235a7f0dfdcb532e5b03d",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_accumulation_recovery_v1",
+      "sha256": "2db5a18a15baabfea0f32757a60a3668980365911c5456b6075e7ef10d320432",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_accumulation_recovery_contract_v1",
+      "sha256": "dfc44ed2c5de2bd93355a5b113946ffb39ad64c77c235ed198c68258074f5481",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_v1",
+      "sha256": "227a6018b2b0cfdd8c5143434cb5beb1b981d1fcf908bf189ec6299289185d01",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_v1",
+      "sha256": "85b95f511e68e747ba037503e8de86de670f1d01ebe2c52034bcb61a1eea0c35",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_e2e_v1",
+      "sha256": "a4aa7ad7df5b4b5578a9faa8bd7ed832a6633e2877986e38ae02840710738932",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-accumulation-recovery-01-2e7d657e2"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-accumulation-recovery-01-5c4ab4fd2",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-accumulation-recovery-01-integrate-main",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate published producer event",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-ACCUMULATION-RECOVERY-01/published-btc-demo-accumulation-recovery-01-2e7d657e2.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k restart_restores_only_ledger_proven_order_ids_for_private_ws or explicit_demo_start_runs_private_ws_reconnect_probe_before_opening",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check on integrated branch",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-ACCUMULATION-RECOVERY-01/integrated-btc-demo-accumulation-recovery-01-5c4ab4fd2.json",
+      "result": "passed"
+    },
+    {
+      "command": "promotion artifact/read model rebuild and Demo/private/order endpoint activity",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-ACCUMULATION-RECOVERY-01",
+  "transition_for": "published-btc-demo-accumulation-recovery-01-2e7d657e2"
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-terminal-ack-handler-01-correction-01-ed020f0ee",
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-terminal-ack-handler-01",
+  "base_commit": "6d6308b0d9c4faae3ad13325a13c3742335ce007",
+  "deliverable_commit": "ed020f0ee1142350b7a0b092ac37d3607dafc0a5",
+  "created_at": "2026-08-25T03:07:42Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-operator-terminal-ack-handler-01-47bda0b4c"],
+  "supersedes": ["published-btc-demo-operator-terminal-ack-handler-01-47bda0b4c"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "86a828d0895b17c2b74e6d3e8a8fbdb1eb811448537f0bde7e8d19e872dc31a8",
+      "schema_version": "btc_demo_operator_contract_terminal_ack_handler_line_ending_regression_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "agent9 Windows CRLF checkout before correction: node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "failed",
+      "evidence_path": "AssertionError missing canAcknowledgeOperatorOperation( known, at test-btc-operator-v2-contract.mjs:79; failure occurred before the executable handler harness"
+    },
+    {
+      "command": "Windows CRLF checkout after correction: node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "handler_harness.executed=true; fenced_ack_posts=1; payload_asserted=true; output contract/read_model passed"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "btc_demo_operator_attempt_state_v1"
+    },
+    {
+      "command": "node frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed",
+      "evidence_path": "crypto route, chart import/render/engine/dependency and fail-closed markers"
+    },
+    {
+      "command": "tsc --noEmit --project frontend/tsconfig.json using registered-main frontend/node_modules",
+      "result": "passed",
+      "evidence_path": "no diagnostics; dependency runtime reused read-only"
+    },
+    {
+      "command": "git diff --check 6d6308b0d9c4faae3ad13325a13c3742335ce007..ed020f0ee1142350b7a0b092ac37d3607dafc0a5",
+      "result": "passed",
+      "evidence_path": "correction test-only diff"
+    },
+    {
+      "command": "handoff.py validate --input published-btc-demo-operator-terminal-ack-handler-01-correction-01-ed020f0ee.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "producer_worktree_identity_canonical_false_until_integration",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

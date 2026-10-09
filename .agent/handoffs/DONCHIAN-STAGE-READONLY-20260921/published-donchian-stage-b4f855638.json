@@ -1,0 +1,44 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-donchian-stage-b4f855638",
+  "ticket_id": "DONCHIAN-STAGE-READONLY-20260921",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/donchian-stage-readonly-20260921",
+  "base_commit": "e2e7496acaa16b9fd5eda37dd65ea328a18ab032",
+  "deliverable_commit": "b4f85563886a9fb07e13b92a11e23929e619d0b5",
+  "created_at": "2026-09-21T15:16:40Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type":"artifact","path":".agent/offline_evidence/donchian-stage-20260921.json","sha256":"f1cf62a272222b8bdc1c63c420b41e828c161f1362569c88f065ba154fd0b45f","schema_version":"donchian_paused_stage_snapshot_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/services/donchian_stage_views.py","sha256":"6f04852503681a4de7587e6341cfe93f6e5d83e91b2e56a06a0514dd36f52dd9","schema_version":"donchian_paused_stage_read_model_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/api/app_factory.py","sha256":"8de6759aa7ce405ba321f011888957e34e60b9f480704cd72a80a9823b3af4d9","schema_version":"btc_strategy_registry_readonly_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"backend/tests/test_donchian_stage_views.py","sha256":"c7aa8fd1054bcbafe99c9a9f59516d4e4e05cb8041a27b5408cb6595fb15d1e9","schema_version":"donchian_paused_stage_regression_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/DonchianStageEvidence.tsx","sha256":"b00277a4216b3003a128c3249bd42e45b98d01d66fbcadcbd8059cdd58e2f42f","schema_version":"donchian_paused_stage_ui_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/architecture/mindmap.ts","sha256":"abcd466dce53f5b7b8585395934222b96d49841f07c4990af57062a706458021","schema_version":"strategy_delivery_status_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"frontend/e2e/research-run-details.spec.ts","sha256":"ecb46fe6d04143808a68b42200a0b86cc5757502b7f8faa98ec580ec635f0e11","schema_version":"research_run_details_e2e_v1","readiness_class":"quality_checked"},
+    {"type":"report","path":"docs/operations/donchian-stage-readonly-20260921.md","sha256":"4965d0b4d8463db73c7e2ef67ca78f04a06a9d79fe61026db8bf36d78b540b01","schema_version":"donchian_paused_stage_delivery_report_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"py -3 -B -X utf8 -m pytest -q -p no:cacheprovider backend/tests/test_donchian_stage_views.py backend/tests/test_donchian_offline_views.py backend/tests/test_offline_execution_views.py (47 passed)","result":"passed","evidence_path":"docs/operations/donchian-stage-readonly-20260921.md"},
+    {"command":"node frontend/scripts/test-donchian-stage-evidence.mjs; node frontend/scripts/test-donchian-offline-evidence.mjs; node frontend/scripts/test-strategy-delivery-map.mjs; node frontend/scripts/test-architecture-mindmap.mjs (14 passed)","result":"passed","evidence_path":"docs/operations/donchian-stage-readonly-20260921.md"},
+    {"command":"npm run lint; npm run build (exit 0, existing large-chunk warning)","result":"passed","evidence_path":"docs/operations/donchian-stage-readonly-20260921.md"},
+    {"command":"npx playwright test e2e/research-run-details.spec.ts --list (5 collected; canonical main server required to run)","result":"not_run","evidence_path":"frontend/e2e/research-run-details.spec.ts"}
+  ],
+  "blockers": ["independent_source_review_and_integration_pending", "canonical_research_readonly_stage_page_acceptance_pending", "annual_5800_hours_not_run"],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

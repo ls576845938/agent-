@@ -1,0 +1,87 @@
+{
+  "base_commit": "870ca75f5a2fad57fba1a73571020308b302328b",
+  "blockers": [
+    "independent_integrator_delta_review_pending",
+    "current_main_delta_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_fixed_eleven_attempt_browser_matrix_pending",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T17:48:08.236Z",
+  "deliverable_commit": "9aa5a44fbbd837324c9c2e55104c10193448eef0",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "03e8e46169169f2273c37fb0738b22509e04e83731bababc4c9fbdfb33edc792",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "f0dae189ca8723da02b7209dbd9723c1027cba3cd16315df1be6cb30bebf7198",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "published-research-registry-request-chain-superseding-03-20260928-9aa5a44fb",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-registry-request-chain-20260928",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-research-registry-request-chain-superseding-02-20260928-cc9fee02d"
+  ],
+  "tests": [
+    {
+      "command": "failure-first bounded Qlib summary concurrency test",
+      "evidence_path": "producer console; pre-implementation test failed because four workers were not reached",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python focused bounded-parallel, shared-app worker limit, fail-closed recovery and shutdown tests",
+      "evidence_path": "producer console; 4 passed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest tests/api/test_qlib_pipeline.py tests/api/test_m1_research_readonly_archive.py",
+      "evidence_path": "producer console; 40 passed, 1 deprecation warning",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python files and git diff --check",
+      "evidence_path": "producer console",
+      "result": "passed"
+    },
+    {
+      "command": "new-process canonical-data cold Qlib 13-way TestClient measurement",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/cold-qlib-13way-after-bounded-parallel.json; SHA256 A099E7E8E91B2B31AABE0A0DF82E7DD2851648980530CB26FD58D26872580CC5; wall 6.709s versus 8.477s, Qlib list 6.395s versus 8.458s, all 13 under 12s; list payload unchanged at 23838 bytes and SHA256 673e58586b70d626fcb48005cabc68c24af8a178ee9e025fe1f2af0662fbe9bd; 18 sealed validations retained",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main 8765/3000 fixed eleven-attempt browser matrix after integration",
+      "evidence_path": "pending independent integration; current d7cb976 formal matrix remained 10/11 because initial bare Qlib list hit the unchanged 12-second deadline",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": ""
+}

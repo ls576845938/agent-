@@ -1,0 +1,114 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_integration_and_review_pending",
+    "candidate_management_capability_projection_update_pending_integrator",
+    "continuous_intrainterval_mark_path_not_available",
+    "legacy_registered_protection_blocked_runs_remain_blocked",
+    "demo_paper_live_private_order_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-09-27T02:46:50Z",
+  "deliverable_commit": "8127eb5ab8cc15186f2de66124548981bbf98d5d",
+  "deliverables": [
+    {
+      "path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_registered_offline_protection_delivery_v1",
+      "sha256": "f4386e6eb93940a41a420d004e704ad06ea89845860fab0682ec8f383a92837a",
+      "type": "report"
+    },
+    {
+      "path": "backend/app/services/candidate_offline_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "fcb1dcb9f9c1648589e028c5883861317b31b68184fec25f99272694b68a6c48",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/donchian_historical_venue.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "12d5800cc3ad0613e51fbfa81e6a0a7f99e47723920b74dc00d1df84682f8a83",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/qlib_offline_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "d131003b07b47f938e178f03e2e2ab7869dad5efa2ab7feb91bf21d44d223307",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_donchian_history.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "5e20ef2ddc567dd97a5ef6e1b22ab9379974b76cd45aa79573b32fce0f563a5c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_candidate_offline_entry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "e1fa4fb01482cd512108beab6b417601694bc37e4386f4dced66511ae6eefcce",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-registered-offline-protection-20260927-8127eb5ab",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-registered-offline-protection-20260927",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pytest tests/contracts/test_btc_donchian_history.py -q",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_donchian_effective_time.py -q",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_candidate_offline_entry.py::test_actual_registered_protection_executes_once_and_recovers_ledger -q",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_candidate_offline_entry.py::test_actual_registered_protection_executes_once_and_recovers_ledger[long-sl] -q (after final policy evidence fields)",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python sources; git diff --check",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "existing two-model HTTP/CLI workflow suite",
+      "evidence_path": "docs/architecture/btc-registered-offline-protection-20260927.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-REGISTERED-OFFLINE-PROTECTION-20260927",
+  "transition_for": ""
+}

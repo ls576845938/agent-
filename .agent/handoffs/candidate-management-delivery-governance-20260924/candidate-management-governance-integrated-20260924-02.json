@@ -1,0 +1,68 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-management-governance-integrated-20260924-02",
+  "ticket_id": "candidate-management-delivery-governance-20260924",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/candidate-management-governance-review-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "a76022d9f589b4e356bfe484839ca2aca1dcfb96",
+  "created_at": "2026-09-24T15:59:34.7016992Z",
+  "expires_at": "",
+  "depends_on": [
+    "candidate-management-governance-source-20260924-01"
+  ],
+  "supersedes": [],
+  "transition_for": "candidate-management-governance-source-20260924-01",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/candidate-management-delivery-governance-review-20260924.md",
+      "sha256": "e124e24d5077334181c5ab00651ed8a59db33acc0175b60bede902adfc9a8cf0",
+      "schema_version": "candidate_management_governance_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate candidate-management-governance-source-20260924-01; producer commit ancestry and five-file touch set",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-delivery-governance-review-20260924.md"
+    },
+    {
+      "command": ".venv/Scripts/python.exe -B -X utf8 -m pytest -q tests/agent_governance/test_candidate_management_readonly_delivery.py tests/agent_governance/test_delivery_policy.py tests/agent_governance/test_research_release_policy.py tests/agent_governance/test_donchian_history_readonly_delivery.py -p no:cacheprovider --tb=short --basetemp isolated; 78 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-delivery-governance-review-20260924.md"
+    },
+    {
+      "command": "frozen_source plus reviewed-business ancestry and both candidate-delivery source/review handoff validations",
+      "result": "passed",
+      "evidence_path": "docs/agent_playbooks/candidate_management_readonly_delivery.json"
+    },
+    {
+      "command": "registered-main governance activation, fresh-context business integration, research_readonly restart and canonical browser acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/agent_playbooks/candidate_management_readonly_delivery.md"
+    }
+  ],
+  "blockers": [
+    "governance_main_activation_pending",
+    "fresh_context_business_integration_and_research_readonly_publication_pending",
+    "candidate_management_and_all_trading_permissions_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "base_commit": "d1f5afe2a61b5ec731a32efbb593ad20435f0125",
+  "blockers": [
+    "owner:integrator_explicit_external_runtime_artifact_root_bootstrap_not_run",
+    "owner:btc_research_current_head_runtime_artifacts_not_rebuilt",
+    "owner:btc_data_steward_l2_sample_quality_runtime_artifact_missing",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-26T19:07:29Z",
+  "deliverable_commit": "ee9603f7ee6e78350a76b75eed474d669c4aace8",
+  "deliverables": [
+    {
+      "path": "AGENTS.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_system_agent_contract_v2",
+      "sha256": "3ced4a4ba0d231fccce471cb5c4c66637a9316b7ef2c3c650dc2c5dbd8a861a6",
+      "type": "document"
+    },
+    {
+      "path": "docs/agent_playbooks/cross_agent_coordination.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "cross_agent_coordination_runtime_artifact_plane_v1",
+      "sha256": "7bbe375aa00ccd52a7005007d2f8669a085641d7fee99751a5af95691727b819",
+      "type": "document"
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_btc_runtime_artifact_settings_v1",
+      "sha256": "2281949ac20a424aaf1f0941e423294f06a3172cf79740cf60ac3c17c8cd57a0",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_btc_runtime_artifact_reader_wiring_v1",
+      "sha256": "2da0e1b9cbec819cfad29848498caa121375edacb35b24b95100d9b09eaa4676",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "team_context_btc_runtime_artifact_reader_v1",
+      "sha256": "88058f0f0a410fb2ec5cf0917927ebd2f0fc104a915e26e8ad17c30946327774",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_btc_runtime_artifact_wiring_contract_v1",
+      "sha256": "129512efdf10198b3d63455f1bdd2696936ee4f1f9d9906532f03ea2b23d4e22",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_api_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_api_contract_v1",
+      "sha256": "20ac0ca96d0cd4ab1a7993be33bd50335d0d720df0e0d537390f04b471b50e62",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "team_context_runtime_artifact_contract_v1",
+      "sha256": "7d684af8d1e02cd893b051bc7ea980db5b3aaf652c3e17ba50fe439769fd7d80",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_control_center_operator_contract.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_control_center_external_artifact_contract_v1",
+      "sha256": "044dc45a88972b656b3aa73003c0b109c2d3f7487b47be1354d3870f8c7cf9de",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-shared-runtime-artifact-root-resolver-01-a788afaf",
+    "published-btc-bootstrap-atomicity-evidence-742c19a6"
+  ],
+  "domain": "shared",
+  "event_id": "published-btc-v3-runtime-artifact-shared-wiring-01-ee9603f7",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-runtime-artifact-plane-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_api_contract.py tests/agent_governance/test_team_context.py tests/contracts/test_btc_control_center_operator_contract.py",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_btc_current_head_gate_rebuild.py [28 passed]",
+      "evidence_path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "result": "passed"
+    },
+    {
+      "command": "seven-file bootstrap source/runtime-consumer regression suite [111 passed]",
+      "evidence_path": "docs/tickets/BTC-V3-RUNTIME-ARTIFACT-BOOTSTRAP-AND-POINTER-ATOMICITY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "eight-file resolver regression suite [116 passed after bootstrap additions; resolver coverage retained]",
+      "evidence_path": "docs/tickets/BTC-V3-SHARED-RUNTIME-ARTIFACT-ROOT-RESOLVER-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "expanded eight-file suite [113 passed, 3 blocked external_runtime_artifact_not_provisioned]",
+      "evidence_path": "tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py",
+      "result": "failed"
+    },
+    {
+      "command": "BTC shared-boundary, gate aggregation, no-broker-import, backend live-order and shared live safety suite [101 passed]",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "passed"
+    },
+    {
+      "command": "focused compileall; six affected CLI --help invocations; scoped staged git diff --check",
+      "evidence_path": "docs/agent_playbooks/cross_agent_coordination.md",
+      "result": "passed"
+    },
+    {
+      "command": "Black formatting check",
+      "evidence_path": "backend/app/api/app_factory.py",
+      "result": "not_run"
+    },
+    {
+      "command": "production runtime-artifact root bootstrap, artifact rebuild, process start, or frontend runtime",
+      "evidence_path": "docs/agent_playbooks/cross_agent_coordination.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-RUNTIME-ARTIFACT-SHARED-WIRING-01",
+  "transition_for": ""
+}

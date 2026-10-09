@@ -1,0 +1,97 @@
+{
+  "base_commit": "5563011ea284dd5cb9d41e1af1a1aa1b44e241de",
+  "blockers": [
+    "canonical_mocked_playwright_deferred_to_integrated_current_main; registered port 3000 returned 409 runtime_stale due source_head 8d6fcb21bb682229a011f4d08f4012ea2ded63cb vs current main 5563011ea284dd5cb9d41e1af1a1aa1b44e241de",
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_by_contract",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T18:14:32Z",
+  "deliverable_commit": "975485257e8c3d46f041529532a026592213cd39",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "a06d7e280f83365737c2903b565bbf5f679c2f2ef8dc384c04e363efdf4c2b13",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "cf7339294c103947398cdeef97e35b248566b680216929754ff14fa3c13fda5e",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-demo-durable-start-control-plane-01-correction-03-975485257",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-durable-start-cp-01-corr-03",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line (failure-first before correction: 32 passed, 2 failed; both stale second-poll assertions)",
+      "evidence_path": "canonical current-main evidence supplied by user",
+      "result": "failed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "http://127.0.0.1:3000/__frontend_identity -> HTTP 409 runtime_stale (served source_head 8d6fcb21bb682229a011f4d08f4012ea2ded63cb); stale-page run stopped after 2 unrelated old-page failures; full 34/34 deferred_to_integrated_current_main",
+      "result": "not_run"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts (34 tests listed)",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend TypeScript lint (tsc --noEmit)",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "evidence_path": "Vite production build completed; chunk-size warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh; npm --prefix frontend run identity:check; npm --prefix frontend run identity:test",
+      "evidence_path": "identity fingerprint 8c86227bd6f2ba557d2148df52a15e85c18a28913062020f55b6eaf40b4d4e54; frontend_src_tree 910810f5c5eba63236c97771af371bd7d6fe479f; manifest_match=true; canonical=false on producer branch",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 5563011ea284dd5cb9d41e1af1a1aa1b44e241de..HEAD",
+      "evidence_path": "scoped final diff",
+      "result": "passed"
+    },
+    {
+      "command": "Demo runtime/service, key/secret, private/order/live/transfer/withdraw endpoints, artifact rebuild",
+      "evidence_path": "deferred_by_ticket_scope_and_security_boundary",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-03",
+  "transition_for": ""
+}

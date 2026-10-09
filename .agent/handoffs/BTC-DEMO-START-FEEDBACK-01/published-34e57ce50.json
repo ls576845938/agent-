@@ -1,0 +1,114 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-start-feedback-01-34e57ce50",
+  "ticket_id": "BTC-DEMO-START-FEEDBACK-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-start-feedback-01",
+  "base_commit": "f7862301933777145f2934790afcb141925e15b1",
+  "deliverable_commit": "34e57ce502213e7e44b2ebabad8243461ed4235e",
+  "created_at": "2026-09-06T09:54:34.829Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "f7e82893bca92152265a3a8f7bc9abafde31ea29a04245f897ca074d361b04f4",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-start-feedback.ts",
+      "sha256": "405774c87ba3116d0c4e7f4c30cd38d0d0401619a2cb34a53b21ea718d842f0e",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "sha256": "d163f99bacc06eb3c679bc52b153e4cd2be42b291100f3a5e045bfc3f1567d90",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "b9b5754ec27d4dc643e97e3f2e785bb10ba0af8860d382e3d7f53843c4403034",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md",
+      "sha256": "a963ce9e57b535706c516c085913c8a73111250e62e6083c0d63ce04bf84cf79",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first regression reproduced original false running failure",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "node scripts/test-btc-demo-start-feedback.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "node scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "node scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "Canonical main browser verification after integration; private/account/start/order actions excluded",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required; change_risk=demo_execution_semantics",
+    "owner:root canonical main browser verification and inactive backend restart required",
+    "owner:operator verify Demo isolated long and short 1x leverage evidence; acknowledge terminal operation and manually refresh/preflight",
+    "promotion paper live private order remain blocked; no readiness claim"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

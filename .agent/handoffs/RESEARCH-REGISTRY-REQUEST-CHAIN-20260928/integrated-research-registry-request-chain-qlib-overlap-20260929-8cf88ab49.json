@@ -1,0 +1,83 @@
+{
+  "base_commit": "b03f505376f2c906a1a4abaecf526b72c58e6beb",
+  "blockers": [
+    "current_main_delta_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_fixed_eleven_attempt_browser_matrix_pending",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-28T17:11:52.301Z",
+  "deliverable_commit": "8cf88ab49c3db672aed46a1e03e45b1e126bb953",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "26ac33cd13bb59345609d62c2aadf1b3398c0e1f316d152c9b2f0f5a384f3f20",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "27fc858b4ed0863e229b902a6861d3901c142546e15b4a8493512c3de847e27e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/research-registry-request-chain-integration-20260929.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_integration_v1",
+      "sha256": "f5b7c3f81f73647b868c0a46d2ad15b363e238a9f29070cb60b78ce653d1a57c",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-research-registry-request-chain-superseding-02-20260928-cc9fee02d"
+  ],
+  "domain": "research",
+  "event_id": "integrated-research-registry-request-chain-qlib-overlap-20260929-8cf88ab49",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/registry-qlib-overlap-20260929",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical Python Qlib pipeline and M1 readonly archive tests",
+      "evidence_path": "docs/acceptance/research-registry-request-chain-integration-20260929.md; 36 passed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-data overlapping Qlib list TestClient measurement",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/offline-runs/research-registry-request-chain-20260928/integration-qlib-delta/independent-qlib-list-overlap.json; wall 2.201s, both HTTP 200, one archive verification and 17 seal validations",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python paths and git diff --check",
+      "evidence_path": "docs/acceptance/research-registry-request-chain-integration-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main fixed eleven-attempt browser matrix after delta",
+      "evidence_path": "pending ordinary main merge, canonical restart, and new create-only matrix directory",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": "published-research-registry-request-chain-superseding-02-20260928-cc9fee02d"
+}

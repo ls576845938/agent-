@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-panorama-closeout-20260930-9f32ff862",
+  "ticket_id": "BTC-ARCHITECTURE-PANORAMA-20260929",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-panorama-20260929-closeout",
+  "base_commit": "32154386e0ec958179fcd318715ff6c5a5f695a8",
+  "deliverable_commit": "9f32ff862f373617092873b9bb7d036a1f209f9d",
+  "created_at": "2026-09-29T16:29:20Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-btc-architecture-panorama-20260929-8bffc2de1"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/architecture/BtcSystemPanorama.tsx",
+      "sha256": "23182e4f98c74bfcc43adb107c0e539d8ac9faeb0bf591e5586b75b167a65714",
+      "schema_version": "btc_system_panorama_editor_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-system-panorama.spec.ts",
+      "sha256": "6122d62547bb339ca8fa7f8ed9804e5e8228ec99cd42785cecda6268c708edc9",
+      "schema_version": "btc_system_panorama_browser_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-system-panorama.mjs",
+      "sha256": "64ccaf46d2a7aafb701d95b63a78ff1e9eb43faf56ad5d96c23c15442c1d7fa7",
+      "schema_version": "btc_system_panorama_static_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "canonical main Playwright matrix: four architecture specs, 29 tests, 30-second per-test budget; observed 26 passed and 3 failed in 5.5 minutes at baseline restore timeout, post-rearrange ready drag miss, and computed dash serialization",
+      "result": "failed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/btc-system-panorama.spec.ts --grep personal edits save locally --workers=1 --reporter=line on pre-fix canonical main; at 30 seconds restore left controls busy and atlas nav intercepted undo while viewport fitting continued",
+      "result": "failed",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-system-panorama.mjs; 7 passed and 0 failed including restore-no-ELK and fit-completion/request-identity ordering regressions",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-system-panorama.mjs"
+    },
+    {
+      "command": "npm.cmd run lint; tsc --noEmit exited 0",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "post-fix canonical current-main Playwright 29-test matrix; source awaits independent integration, identity refresh and canonical publication",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-system-panorama.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent committed-source review and integration pending",
+    "owner:integrator frontend identity refresh and canonical restart pending after integration",
+    "owner:root canonical current-main four-spec 29-test browser acceptance pending after publication",
+    "readiness_ceiling_quality_checked_not_promotion_evidence",
+    "no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

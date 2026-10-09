@@ -1,0 +1,48 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-strategy-history-current-head-publication-09-a521b79d1",
+  "ticket_id": "BTC-STRATEGY-HISTORY-CURRENT-HEAD-PUBLICATION-09",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-strategy-ux-history-int-10",
+  "base_commit": "cdc46a3bf7b6805d77feb8cb23473ae4d97b62d2",
+  "deliverable_commit": "a521b79d1f9c5084b35a64f7f06e4e526e54521e",
+  "created_at": "2026-08-18T14:45:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-strategy-history-current-head-publication-09-33e02f2ff",
+    "published-btc-strategy-catalog-grouping-i18n-07-b7be38dd4"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-strategy-history-current-head-publication-09-33e02f2ff",
+  "deliverables": [
+    {"type": "code", "path": "quant_crypto/application/btc_strategy_history.py", "sha256": "aa7d5ae5384a3f039ca84b5533453271c942b7d57e828c0cf127331be2e908eb", "schema_version": "btc_strategy_history_provenance_v2", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "scripts/publish_btc_strategy_history_snapshot.py", "sha256": "61aa50fc925db43e1768b586c1a597a80c3d3787955a803a13b4e769d0fbe68c", "schema_version": "btc_strategy_history_snapshot_publisher_cli_v2", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "backend/tests/test_btc_strategy_history_api.py", "sha256": "daa9a666f0cbfeb1b8f71fee41251156330367fb6625c67178fb71c33807cdb2", "schema_version": "btc_strategy_history_current_head_contract_tests_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "py -3 -m pytest backend/tests/test_btc_strategy_history_api.py -q", "result": "passed", "evidence_path": "19 passed in 32.41s"},
+    {"command": "py -3 -m py_compile quant_crypto/application/btc_strategy_history.py scripts/publish_btc_strategy_history_snapshot.py backend/tests/test_btc_strategy_history_api.py", "result": "passed", "evidence_path": "all three files compiled"},
+    {"command": "py -3 scripts/publish_btc_strategy_history_snapshot.py --help", "result": "passed", "evidence_path": "publisher CLI help rendered"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "clean scoped integration diff"},
+    {"command": "final external strategy-history artifact publication and integrated-main backend GET-only acceptance", "result": "not_run", "evidence_path": "deferred until final current HEAD is selected; no artifact/service writes in this turn"}
+  ],
+  "blockers": [
+    "owner:integrator final external strategy-history artifact publication deferred until final current HEAD",
+    "owner:root integrated-main backend restart and GET-only catalog/detail acceptance deferred",
+    "current-head-match must be proven by the publisher against final external root; no historical report was relabeled",
+    "promotion/paper/live/private/order/real-order/transfer/withdraw/secret remain false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

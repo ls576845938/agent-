@@ -1,5 +1,3 @@
-import ELK from 'elkjs/lib/elk.bundled.js';
-
 export type LayoutNodeLike = {
   id: string;
   parentId?: string;
@@ -342,6 +340,7 @@ export async function arrangeBtcPanorama<TNode extends LayoutNodeLike, TEdge ext
   nodes: readonly TNode[],
   edges: readonly TEdge[],
 ) {
+  const {default: ELK} = await import('elkjs/lib/elk.bundled.js');
   const elk = new ELK();
   const groups = nodes.filter(node => node.data.kind === 'group');
   const arranged = nodes.map(node => ({...node, position: {...node.position}, style: {...node.style}})) as TNode[];

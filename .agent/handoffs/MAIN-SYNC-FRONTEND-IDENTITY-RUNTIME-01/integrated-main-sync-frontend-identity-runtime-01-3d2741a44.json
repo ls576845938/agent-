@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-main-sync-frontend-identity-runtime-01-3d2741a44",
+  "ticket_id": "MAIN-SYNC-FRONTEND-IDENTITY-RUNTIME-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/main-sync-frontend-identity-runtime-01",
+  "base_commit": "4a94e0e36a32f7ab26e15280b4b4a1e5cc6d6ab8",
+  "deliverable_commit": "3d2741a444b2afc740c1591c14ff82bfcdd1a54a",
+  "created_at": "2026-08-08T00:05:04Z",
+  "expires_at": "",
+  "depends_on": [
+    "INTEGRATE-QS-TRADING-RUNTIME-RECOVERY-01"
+  ],
+  "supersedes": [],
+  "transition_for": "MAIN-SYNC-FRONTEND-IDENTITY-RUNTIME-01",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "227b7c98a8880ced71b412a87a719f65d46a89ba3d78e8dc6e1dc5ddb98463e2",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node scripts/update-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm run identity:check",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-frontend-identity.mjs"
+    },
+    {
+      "command": "npm run identity:runtime-test after npm ci",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs"
+    },
+    {
+      "command": "npm run identity:test before registered-main landing",
+      "result": "failed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "registered-main start-frontend.cmd -Check and canonical identity:test after ff-only landing",
+      "result": "not_run",
+      "evidence_path": "start-frontend.cmd"
+    }
+  ],
+  "blockers": [
+    "owner:main_sync registered-main canonical identity:test and start-frontend.cmd -Check must pass after the authorized ff-only landing",
+    "pre-landing identity:test reaches the stale registered-main manifest and fails with fingerprint_or_object_ids_mismatch; candidate manifest_match and baseline_ancestor are true"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

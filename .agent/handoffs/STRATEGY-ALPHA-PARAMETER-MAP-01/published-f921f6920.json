@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-alpha-parameter-map-01-f921f6920",
+  "ticket_id": "STRATEGY-ALPHA-PARAMETER-MAP-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-alpha-parameter-map-01",
+  "base_commit": "4096453b344e777e99f4272b43582d60cf1251f9",
+  "deliverable_commit": "f921f6920700174cd93aa569ace64a19861138e9",
+  "created_at": "2026-09-08T13:01:24.938Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-alpha-parameter-map-01-b5aef3559"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md",
+      "sha256": "abeed9be555eb123731c9b3252fcb983d27ef3ff0506dcbeefce577100be50bf",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/strategy_parameter_evidence.py",
+      "sha256": "19784a00b2906d1d37187453089bd834629f0ca2d6976bf164c1a6c91f92dbd3",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/lib/strategy-alpha.ts",
+      "sha256": "86b0c87469c9968d9559df2f4085fd3a639a05f3c411fedd211a722be618518c",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/publish_strategy_parameter_evidence.py",
+      "sha256": "3a02bdfb7b35dff207f51e890c9ed2f49cdf9faab732a0cd81269ef99caa18da",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/StrategyParameterHeatmap.tsx",
+      "sha256": "17fbf6acfa321952046f49f8b27b2d3818396b0f0c4b6b506d4b278bf756a3ce",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/e2e/strategy-alpha-heatmap.spec.ts",
+      "sha256": "f033229bae516e3f57b263398696340f70c39dadac04c0c9bf5ae409c6048453",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest backend/tests/test_strategy_parameter_evidence.py backend/tests/test_btc_strategy_history_api.py -q: 33 passed (14 new + 19 existing); failure-first 2 failed before correction",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md"
+    },
+    {
+      "command": "node frontend/scripts/test-strategy-parameter-map.mjs; tsc --noEmit; vite build",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md"
+    },
+    {
+      "command": "Canonical main 3bbead823: all 10 history detail GETs 200; parameter GET 1448 rows; browser 2 passed, 1 failed due fixture strategy identity mismatch, now corrected; collapsed filters default and explicit 1131x975 acceptance await integration",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-alpha-heatmap.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator two-file UI/test correction and frontend identity refresh pending",
+    "owner:root canonical restart and final browser rerun pending",
+    "change_risk=unclassified; gate_impact=none; source_data_hashes_unavailable; all trading permissions false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

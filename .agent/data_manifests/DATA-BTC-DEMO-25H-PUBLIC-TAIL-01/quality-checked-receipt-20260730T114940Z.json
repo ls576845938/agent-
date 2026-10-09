@@ -1,0 +1,146 @@
+{
+  "schema_version": "data_ticket_delivery_receipt_v1",
+  "ticket_id": "DATA-BTC-DEMO-25H-PUBLIC-TAIL-01",
+  "status": "quality_checked",
+  "generated_at": "2026-07-30T11:49:40Z",
+  "producer_role": "data_steward",
+  "git": {
+    "base_commit": "6cea196b44511024912bc064cdd4c024d7ba60de",
+    "manifest_validation_commit": "5fc808125"
+  },
+  "touch_set": [
+    ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+    ".agent/data_manifests/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/quality-checked-receipt-20260730T114940Z.json",
+    ".agent/handoffs/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/<append-only-event>.json",
+    "external immutable shared-data dataset version"
+  ],
+  "prior": {
+    "dataset_id": "btc-okx-public-swap-research-bundle",
+    "dataset_version": "btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644",
+    "manifest_git_spec": "6cea196b44511024912bc064cdd4c024d7ba60de:.agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+    "aggregate_sha256": "fad21ecd6c3d22c92b32f3c7fc7c8ba64f0071f55659e43764dcdc5206f4f25f",
+    "coverage_end_utc": "2026-07-29T13:00:00Z",
+    "handoff_validation": "valid"
+  },
+  "publication": {
+    "dataset_id": "btc-okx-public-swap-research-bundle",
+    "dataset_version": "btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1",
+    "data_schema": "btc_okx_public_swap_research_bundle_v1",
+    "shared_manifest_logical_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+    "shared_manifest_sha256": "6c5dd8036da320062002b839792852c1aa53971fecdd20b1ba7ae3ec6c2260c9",
+    "aggregate_sha256": "3a61fc915da66994294113cc7b2334a1da4c0e08bccf428a743564c863c8d680",
+    "file_count": 15,
+    "total_bytes": 22188527,
+    "coverage_start_utc": "2025-12-21T13:00:00Z",
+    "coverage_end_utc": "2026-07-30T11:00:00Z",
+    "consumer_read_only": true,
+    "immutable_version": true
+  },
+  "incremental_capture": {
+    "capture_entrypoint": "scripts/fetch_btc_okx_swap_public_data.py",
+    "merge_entrypoint": "scripts/merge_btc_okx_swap_tail_bundle.py",
+    "history_days_fetched": 2,
+    "network_route": "public_rest_via_credential_free_proxy_127.0.0.1:12334",
+    "network_status": "verified",
+    "tail_sample_start_utc": "2026-07-28T11:00:00Z",
+    "tail_sample_end_utc": "2026-07-30T11:00:00Z",
+    "full_history_refetched": false,
+    "prior_version_preserved": true,
+    "merge_status": "verified"
+  },
+  "component_quality": {
+    "completed_1h": {
+      "row_count": 5302,
+      "confirmed_only": true,
+      "duplicate_count": 0,
+      "gap_count": 0,
+      "sample_start_utc": "2025-12-21T13:00:00Z",
+      "latest_completed_close_utc": "2026-07-30T11:00:00Z",
+      "freshness_status": "pass",
+      "sha256": "e30158c4f18ffdf5dc2aa67199a4bedcb25e08f7331e947582c96d9f130a5950"
+    },
+    "mark_1h": {
+      "row_count": 5302,
+      "latest_open_utc": "2026-07-30T10:00:00Z",
+      "sha256": "2ac1d79ae69ced2df07dd7dd9006052aa41f2bcf5bd0f19059bb63ae3f6df9c9"
+    },
+    "index_1h": {
+      "row_count": 5302,
+      "latest_open_utc": "2026-07-30T10:00:00Z",
+      "sha256": "e403bd951bc91a6da8dc8c0c8a7a16f437500d9e48f67aa8628e8c5a3d80a9d4"
+    },
+    "funding": {
+      "row_count": 276,
+      "sample_start_utc": "2026-04-29T16:00:00Z",
+      "sample_end_utc": "2026-07-30T08:00:00Z",
+      "sha256": "ba745f622ff9753ecd6b0a7a828ba308cebcc151c22c5b9424ed9c12de324d19"
+    }
+  },
+  "actual_reader_validation": {
+    "manifest_git_spec": "5fc808125:.agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+    "eligible": true,
+    "integrity_passed": true,
+    "freshness_status": "pass",
+    "physical_root_redacted": true,
+    "full_shared_data_hash_verified": true,
+    "bundle_manifest_verified": true,
+    "completed_1h_row_count": 5302,
+    "confirmed_only": true,
+    "duplicate_count": 0,
+    "gap_count": 0,
+    "mark_price_present": true,
+    "index_price_present": true,
+    "funding_present": true,
+    "promotion_evidence_ready": false,
+    "blockers": []
+  },
+  "existing_entry_observation": {
+    "status": "deterministic_current_head_data_publication_defect_observed_not_fixed",
+    "detail": "merge_btc_okx_swap_tail_bundle.py emits an inner bundle manifest with exchange=okx_swap, promotion_clean_allowed=true, and a sample_end extended by diagnostic microstructure rows; the current Demo reader requires exchange=okx, promotion_clean_allowed=false, and completed-1h available_end equality.",
+    "ticket_action": "No business code was changed. The corrected immutable version was rebuilt with the existing manifest builder and validated through the actual current-HEAD reader.",
+    "next_owner": "btc_developer_or_integrator_if_a_code_fix_is_authorized"
+  },
+  "verification": [
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_tail_bundle_merge.py tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "result": "62 passed in 18.83s"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <new-manifest>",
+      "result": "resolved_full_hash_consumer_read_only"
+    },
+    {
+      "command": "inspect_okx_native_demo_signal_data using committed manifest 5fc808125:<new-manifest> and the shared-data resolver",
+      "result": "eligible=true integrity_passed=true freshness_status=pass blockers=[]"
+    }
+  ],
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "paper_ready": false,
+    "live_ready": false
+  },
+  "known_gaps": [
+    "funding_history_available_only_from_2026-04-29T16:00:00Z",
+    "open_interest_history_not_verified_diagnostic_partial",
+    "liquidation_snapshots_missing_diagnostic_only",
+    "existing_tail_merge_entry_requires_corrected_manifest_semantics_for_current_demo_reader",
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "security_flags": {
+    "api_key_used": false,
+    "secret_read_or_emitted": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_access": false,
+    "oms_access": false,
+    "paper_queue_write": false,
+    "paper_start": false,
+    "promotion_unlock": false,
+    "live_unlock": false,
+    "real_order": false,
+    "withdraw": false
+  }
+}

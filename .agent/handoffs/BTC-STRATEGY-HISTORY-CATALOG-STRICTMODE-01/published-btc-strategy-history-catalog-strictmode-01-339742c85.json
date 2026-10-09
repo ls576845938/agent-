@@ -1,0 +1,85 @@
+{
+  "base_commit": "5195e5e492e2c781528c1789bdb4b1ab107410ae",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator canonical_current_main_strictmode_e2e_not_run_after_integration",
+    "validation_failed:first_direct_tsc_invocation_timed_out_without_diagnostics_tsc_cmd_passed",
+    "quality_checked_frontend_request_deduplication_not_promotion_evidence",
+    "promotion_paper_live_private_order_broker_transfer_withdraw_real_order_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-30T23:54:52Z",
+  "deliverable_commit": "339742c859f8c21d24be4ae7ccfea36c758970db",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_catalog_strictmode_request_v1",
+      "sha256": "d20cc03daa474bde13ac865b3bb5b05396239f78814802c3cc56c9ce2f52190d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_catalog_strictmode_e2e_v1",
+      "sha256": "2eb460afde4a6f1bdff589cd7cb3021f4c1ddad0c90600b6658de81f39a901d7",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-strategy-history-catalog-strictmode-01-339742c85",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-strategy-history-catalog-strictmode-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false --incremental false",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\tsc.cmd --noEmit --pretty false --incremental false",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- frontend/src/workspaces/StrategyExplorer.tsx frontend/e2e/btc-strategy-history-report.spec.ts",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01",
+  "transition_for": ""
+}

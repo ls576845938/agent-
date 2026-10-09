@@ -1,0 +1,78 @@
+{
+  "base_commit": "95435588ca562545d30574885fedc00908eb9f18",
+  "blockers": [
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T08:17:13Z",
+  "deliverable_commit": "1002dc33242d2ec28d4906d025766c68dc234c40",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "f883ef30cb76db49788a4b8bc941ea58c245d7147d4674b0dc8a5c86094048b5",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "5cf92a5e6269f7635dfab34ccfc4e18974255e8db94459a5e9e46e1e9b7b23df",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-snapshot-fence-stability-01-1002dc332",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-snapshot-fence-stability-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py::test_operator_contract_snapshot_fence_is_stable_after_legacy_start_is_historicalized -q (pre-fix)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py::test_operator_contract_snapshot_fence_is_stable_after_legacy_start_is_historicalized -q",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py (1 passed)",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q",
+      "evidence_path": "pytest stdout (116 passed)",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "frontend build/browser E2E, backend service restart, private/order/live verification",
+      "evidence_path": "not_run_by_ticket_scope_and_private_order_live_prohibition",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-SNAPSHOT-FENCE-STABILITY-01",
+  "transition_for": ""
+}

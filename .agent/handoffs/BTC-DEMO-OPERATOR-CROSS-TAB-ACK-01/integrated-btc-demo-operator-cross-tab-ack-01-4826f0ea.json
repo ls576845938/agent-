@@ -1,0 +1,116 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-cross-tab-ack-01-4826f0ea",
+  "ticket_id": "BTC-DEMO-OPERATOR-CROSS-TAB-ACK-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-demo-operator-cross-tab-ack-01",
+  "base_commit": "6a79d174d954c7569eee3cce8bf559ee6a34419c",
+  "deliverable_commit": "4826f0ea5c26d6713a3c1852f3d7f92d4ae08df0",
+  "created_at": "2026-08-25T03:30:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-operator-cross-tab-ack-01-e1897af80"],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-operator-cross-tab-ack-01-e1897af80",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "6f98bb2bd6cb19713babe2bf012d841a8cc2281aa827dcdb64a69a989df17d11",
+      "schema_version": "btc_demo_operator_contract_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "c2321a403b752dc0091c0b06fd994076db2287739ed5e1096ca5992430135290",
+      "schema_version": "btc_demo_operator_contract_test_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "97fbd0eb6bc409c263585d45952abc50cbf7e1cb366614528dca5eb387211add",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-OPERATOR-CROSS-TAB-ACK-01/published-btc-demo-operator-cross-tab-ack-01-e1897af80.json",
+      "sha256": "0cf7a4dc2a9cb7a0db07d757fe8b14f49aba745934169847b691f9c6b4262b52",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; base->deliverable->handoff ancestry; deliverable blob SHA-256 and exact touch set",
+      "result": "passed",
+      "evidence_path": "published-btc-demo-operator-cross-tab-ack-01-e1897af80.json; producer handoff valid; source hashes matched"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "actions=8; read_model=btc_demo_operation_read_model_v2"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "btc_demo_operator_attempt_state_v1"
+    },
+    {
+      "command": "node frontend/scripts/check-btc-tradingview-entry.mjs (from frontend cwd)",
+      "result": "passed",
+      "evidence_path": "cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy=true"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint (tsc --noEmit)",
+      "result": "passed",
+      "evidence_path": "temporary junction to registered-main frontend/node_modules; junction removed after run"
+    },
+    {
+      "command": "node frontend/scripts/update-frontend-identity.mjs; node frontend/scripts/check-frontend-identity.mjs; node frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "fingerprint=55923ca993c0078c14b2649060bc0475367671ea5d3a4de2d4d67390f88a1284; manifest_match=true; baseline_ancestor=true; canonical=false"
+    },
+    {
+      "command": "node frontend/scripts/start-current-main.mjs --check",
+      "result": "not_run",
+      "evidence_path": "expected FRONTEND_CANONICAL_GUARD_FAILED in non-main integrator worktree; no service started"
+    },
+    {
+      "command": "start-frontend.cmd -Check",
+      "result": "passed",
+      "evidence_path": "read-only check resolved registered main; candidate remains deferred until main receives integration"
+    },
+    {
+      "command": "git diff --check; scoped safe_status",
+      "result": "passed",
+      "evidence_path": "candidate touch scopes clean after source/identity commits"
+    },
+    {
+      "command": "canonical frontend/browser, backend restart, Demo/private/order/live endpoint access",
+      "result": "not_run",
+      "evidence_path": "deferred by ticket boundary; no service, credential or endpoint access"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_updated_fast_forward_main_disallowed",
+    "canonical_frontend_restart_and_browser_acceptance_deferred_until_main_receives_identity",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

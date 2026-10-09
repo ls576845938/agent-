@@ -1,0 +1,109 @@
+{
+  "base_commit": "2c7360619dd93594f78865c48825bb389a052e81",
+  "blockers": [
+    "cn_dataready_current_main_handoff_missing",
+    "cn_dataready_current_main_manifest_missing",
+    "cn_dataready_old_two_security_pilot_not_accepted",
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator"
+  ],
+  "created_at": "2026-07-24T06:50:00Z",
+  "deliverable_commit": "5db76eab2a643917a08147524380d33bb1acde5b",
+  "deliverables": [
+    {
+      "path": "quant_cn/data/read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_data_read_model_v1",
+      "sha256": "61db9f2a4ed835e359bacdfed20d5c613d449f5250433e22e80352c51ba158d2",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/application/data_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_dataready_consumer_v1",
+      "sha256": "f7acd9536b065c4c9dca02324930f2c44f67db8c78927ee87d29ed0b6e962b72",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/operations/blockers.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_dataready_blockers_v1",
+      "sha256": "aa2dcc0356acfa1bc8443eee0a252b4e66c325d614a5eba734c9534769b87141",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_data_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_dataready_consumer_tests_v1",
+      "sha256": "422a874b1348d7d4497662efddd4c6ece002ded700e49f4ef67b5221695d3d7c",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-cn-v3-current-main-foundation-01-batch-02-takeover",
+    "integrated-cn-v3-market-semantics-01-goal2-batch-01",
+    "integrated-cn-v3-shared-platform-v2-adoption-01-goal3-batch-01"
+  ],
+  "domain": "cn_equity",
+  "event_id": "rejected-cn-v3-dataready-consumer-01-5db76eab",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-dataready-consumer-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate <three CN integrated G01-G03 handoffs>",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity/test_data_read_model.py -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity/test_data_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/cn_equity -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/shared_platform -p no:cacheprovider --basetemp <unique>",
+      "evidence_path": "tests/shared_platform",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/cn-equity-dataready/current-main.json --fast",
+      "evidence_path": ".agent/data_manifests",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m compileall -q <G04 touch set>",
+      "evidence_path": "quant_cn",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <G04 touch set>",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CN-V3-DATAREADY-CONSUMER-01",
+  "transition_for": "published-cn-dataready-publish-001-73726e8491dd"
+}

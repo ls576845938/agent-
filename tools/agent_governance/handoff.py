@@ -53,10 +53,10 @@ HASH_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 # lightweight scan must be bounded independently.  ``subprocess.run`` kills
 # the child on timeout; callers surface the timeout instead of manufacturing
 # an empty discovery result.
-# The cold-start measurement on the registered Windows checkout is 2.86s for
-# a valid ``cat-file`` lookup.  Keep a small fixed margin while remaining
-# strictly below the discovery-wide deadline; callers still pass the remaining
-# deadline to ``_run_git`` for discovery operations.
+# A short-ref ``cat-file`` lookup on the registered Windows checkout can spend
+# most of this budget in ref DWIM.  Discovery therefore captures immutable
+# commit ids first and queries ``<commit>:<path>`` without increasing either
+# limit.  Callers still pass the remaining deadline to ``_run_git``.
 GIT_COMMAND_TIMEOUT_SECONDS = 4.0
 HANDOFF_DISCOVERY_TIMEOUT_SECONDS = 10.0
 
@@ -405,6 +405,7 @@ def _merged_agent_refs(
     repo_root: Path,
     ref_heads: list[dict[str, str]],
     *,
+    main_head: str,
     deadline: float,
 ) -> set[str]:
     """Return agent refs merged into main using one bounded Git query.
@@ -420,7 +421,7 @@ def _merged_agent_refs(
     output = _run_git(
         repo_root,
         "for-each-ref",
-        "--merged=refs/heads/main",
+        f"--merged={main_head}",
         "--format=%(refname:strip=2)%09%(objectname)",
         "refs/heads/agent/",
         check=True,
@@ -440,6 +441,30 @@ def _merged_agent_refs(
     return merged
 
 
+def _assert_captured_ref_heads_unchanged(
+    repo_root: Path,
+    ref_heads: list[dict[str, str]],
+    *,
+    main_head: str,
+    deadline: float,
+) -> None:
+    """Fail closed if branch metadata moved after the immutable snapshot."""
+
+    _remaining_timeout(deadline, "discovery")
+    expected = {
+        str(item.get("branch", "")): str(item.get("head", ""))
+        for item in ref_heads
+    }
+    current = {
+        str(item.get("branch", "")): str(item.get("head", ""))
+        for item in list_agent_ref_heads(repo_root)
+    }
+    current_main = _main_ref_head(repo_root)
+    _remaining_timeout(deadline, "discovery")
+    if current_main != main_head or current != expected:
+        raise HandoffError("handoff_discovery_ref_heads_changed")
+
+
 def scan_handoffs(repo_root: Path, *, verify_git: bool = True) -> dict[str, Any]:
     canonical: dict[str, dict[str, Any]] = {}
     invalid: list[dict[str, Any]] = []
@@ -449,13 +474,32 @@ def scan_handoffs(repo_root: Path, *, verify_git: bool = True) -> dict[str, Any]
     # Main is an authoritative coverage source, not an agent alias.  Include
     # it in the same bounded tree walk so its projection and blobs are held to
     # the exact same parser/cap checks without starting a Git child per ref.
-    _main_ref_head(repo_root)
-    merged_refs = _merged_agent_refs(repo_root, ref_heads, deadline=deadline)
+    main_head = _main_ref_head(repo_root)
+    captured_heads = {
+        str(item.get("branch", "")): str(item.get("head", ""))
+        for item in ref_heads
+    }
+    if len(captured_heads) != len(ref_heads):
+        raise HandoffError("handoff_discovery_ref_head_invalid")
+    captured_heads["main"] = main_head
+    merged_refs = _merged_agent_refs(
+        repo_root,
+        ref_heads,
+        main_head=main_head,
+        deadline=deadline,
+    )
     root_by_ref, parsed_trees = _git_tree_handoff_index(
         repo_root,
         [*refs, "main"],
+        captured_heads=captured_heads,
         deadline=deadline,
         enforce_ref_cap=False,
+    )
+    _assert_captured_ref_heads_unchanged(
+        repo_root,
+        ref_heads,
+        main_head=main_head,
+        deadline=deadline,
     )
     projection_cache: dict[str, tuple[tuple[str, str], ...]] = {}
     main_root = root_by_ref.get("main", "")
@@ -749,6 +793,7 @@ def _git_tree_handoff_index(
     repo_root: Path,
     refs: list[str],
     *,
+    captured_heads: Mapping[str, str] | None = None,
     deadline: float,
     enforce_ref_cap: bool = True,
 ) -> tuple[dict[str, str], dict[str, list[tuple[str, str, str]]]]:
@@ -759,7 +804,15 @@ def _git_tree_handoff_index(
     if enforce_ref_cap and len(refs) > MAX_DISCOVERY_REFS:
         raise HandoffError("handoff_discovery_ref_cap_exceeded")
 
-    root_specs = [f"{ref}:{HANDOFF_ROOT_POSIX}" for ref in refs]
+    if captured_heads is None:
+        root_specs = [f"{ref}:{HANDOFF_ROOT_POSIX}" for ref in refs]
+    else:
+        root_specs = []
+        for ref in refs:
+            head = str(captured_heads.get(ref, ""))
+            if not COMMIT_PATTERN.fullmatch(head):
+                raise HandoffError(f"handoff_discovery_ref_head_invalid:{ref}")
+            root_specs.append(f"{head}:{HANDOFF_ROOT_POSIX}")
     root_rows = _git_batch_records(
         repo_root,
         root_specs,
@@ -1032,12 +1085,16 @@ def _git_batch_records(
         if len(parts) != 3:
             raise HandoffError(f"handoff_git_batch_object_invalid:{spec}:{header}")
         object_id, object_type, size_text = parts
+        if not COMMIT_PATTERN.fullmatch(object_id):
+            raise HandoffError(f"handoff_git_batch_object_invalid:{spec}:{header}")
         if expected_type and object_type != expected_type:
             raise HandoffError(f"handoff_git_batch_object_type_invalid:{spec}:{object_type}")
         try:
             size = int(size_text)
         except ValueError as exc:
             raise HandoffError(f"handoff_git_batch_size_invalid:{spec}") from exc
+        if size < 0:
+            raise HandoffError(f"handoff_git_batch_size_invalid:{spec}")
         if max_single_bytes is not None and size > max_single_bytes:
             raise HandoffError(f"handoff_discovery_single_blob_bytes_exceeded:{spec}")
         total_bytes += size

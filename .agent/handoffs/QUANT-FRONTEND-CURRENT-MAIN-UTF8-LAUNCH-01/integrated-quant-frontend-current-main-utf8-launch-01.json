@@ -1,0 +1,76 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-current-main-utf8-launch-01",
+  "ticket_id": "QUANT-FRONTEND-CURRENT-MAIN-UTF8-LAUNCH-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/frontend-utf8-launch-01-ff",
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "deliverable_commit": "b85a797b2eaf75c6eb055287e22470367fc5d16a",
+  "created_at": "2026-07-26T16:24:55Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-current-main-utf8-launch-01-2af6ea418"
+  ],
+  "supersedes": [],
+  "transition_for": "published-quant-frontend-current-main-utf8-launch-01-2af6ea418",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <committed-producer-event> [observed: valid; three deliverable Git blob SHA-256 values matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-CURRENT-MAIN-UTF8-LAUNCH-01/published-quant-frontend-current-main-utf8-launch-01-2af6ea418.json"
+    },
+    {
+      "command": "git merge-base --is-ancestor 97d6448b89ce6029c69b20fbfe2427d99ae083e8 b85a797b2eaf75c6eb055287e22470367fc5d16a && git rev-list --reverse 97d6448b89ce6029c69b20fbfe2427d99ae083e8..b85a797b2eaf75c6eb055287e22470367fc5d16a [observed: exact 19c01a89 -> 2af6ea41 -> b85a797b sequence]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-CURRENT-MAIN-UTF8-LAUNCH-01/published-quant-frontend-current-main-utf8-launch-01-2af6ea418.json"
+    },
+    {
+      "command": "git merge --ff-only b85a797b2eaf75c6eb055287e22470367fc5d16a [observed: ancestor-preserving fast-forward from frozen base]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:test && npm.cmd run identity:check (cwd=frontend) [observed: fingerprint ee9aa3077f9841690d22818a9992e7308bbf2edc47b73b6de6ebe2ab19147768; manifest_match=true; baseline_ancestor=true; dirty_paths=[]]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, integrator worktree) [observed: expected fail-closed exit 2; no listener started]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "powershell.exe -NoProfile -File ..\\scripts\\start_frontend_current_main.ps1 -Check (cwd=frontend) [observed: frozen main read-only check exit 0; Chinese main/frontend paths preserved; no mojibake]",
+      "result": "passed",
+      "evidence_path": "scripts/start_frontend_current_main.ps1"
+    },
+    {
+      "command": "git diff --check 97d6448b89ce6029c69b20fbfe2427d99ae083e8 HEAD -- <approved-touch-set>",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "local_main_fast_forward_not_performed_by_this_integration_ticket",
+    "canonical_runtime_on_port_3000_must_be_restarted_after_final_main_is_stable",
+    "historical_pre_guard_worktrees_remain_unsupported_launch_surfaces",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

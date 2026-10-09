@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-action-admission-01-correction-01-33c45acce",
+  "ticket_id": "INTEGRATE-BTC-DEMO-OPERATOR-ACTION-ADMISSION-01-CORRECTION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-op-admission-corr01-int",
+  "base_commit": "b1b6b0980217a28651ab24bd7afd28a160089342",
+  "deliverable_commit": "33c45acce724a56332433fec421321a7b57722b3",
+  "created_at": "2026-08-21T04:48:51Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-operator-action-admission-01-correction-01-27ece7cd6",
+    "integrated-btc-demo-operator-action-admission-01-cce55a147"
+  ],
+  "supersedes": [
+    "integrated-btc-demo-operator-action-admission-01-cce55a147"
+  ],
+  "transition_for": "published-btc-demo-operator-action-admission-01-correction-01-27ece7cd6",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "8f3378ff84993b9a83bdb7122636dc7c4448924b65b2b73b90346e06bb791b0c",
+      "schema_version": "btc_demo_operator_historical_error_presentation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "2c017d2a7ac4be0433f68e57ba638efaf3b840174cb1e0a737d1d2d7d6052cfa",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-OPERATOR-ACTION-ADMISSION-01-CORRECTION-01/published-btc-demo-operator-action-admission-01-correction-01-27ece7cd6.json",
+      "result": "passed",
+      "evidence_path": "published correction event valid; blob sha256=53ba89e9060a56bc56ca7fe3576dfdecb7bc9cf31ffada05e805813271702cb7"
+    },
+    {
+      "command": "git merge-base ancestry and exact correction touch set",
+      "result": "passed",
+      "evidence_path": "b1b6b098 -> 27ece7cd -> b26e7b31; only DemoTradingConsole.tsx plus published correction handoff"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "passed",
+      "evidence_path": "tsc --noEmit; temporary read-only registered-main node_modules junction"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "result": "passed",
+      "evidence_path": "Vite 5217 modules transformed; existing chunk-size warning"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "candidate correction worktree"
+    },
+    {
+      "command": "npm.cmd run identity:refresh && npm.cmd run identity:check && npm.cmd run identity:test",
+      "result": "passed",
+      "evidence_path": "candidate canonical=false; manifest_match=true; baseline_ancestor=true; fingerprint=e15cd8dcf823ad49babeb0b218c502a038a16757a5494323d6cfa3d96759d5e7"
+    },
+    {
+      "command": "frontend/e2e/btc-demo-console.spec.ts complete mocked Playwright",
+      "result": "not_run",
+      "evidence_path": "deferred to registered current-main frontend restart; no service restart in this integration"
+    }
+  ],
+  "blockers": [
+    "owner:main_session canonical_full_mocked_playwright_deferred_until_current_main_frontend_restart",
+    "owner:main_session backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_and_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

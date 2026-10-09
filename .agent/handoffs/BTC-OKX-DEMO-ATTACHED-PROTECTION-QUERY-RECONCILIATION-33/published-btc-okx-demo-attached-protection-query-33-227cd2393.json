@@ -1,0 +1,84 @@
+{
+  "base_commit": "aa1c4261139083944e503aa6b1dcdfab6e854cf3",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "full_runtime_contract_terminal_summary_unavailable_windows_wrapper",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T08:10:29Z",
+  "deliverable_commit": "227cd2393c3b18a99aa964cbd343925068c8e500",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "68019c6fa4c798af4e95c63411887b78723f1913bff9a2289df74d7fb3c65c8e",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "a8d88baaa376d12c3b6deec65781805c15b09d75ea2b52565d24072d0df09bf9",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-attached-protection-query-33-227cd2393",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-attach-prot-query-33",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py::test_attached_protection_reconciles_explicit_parent_conflict_by_exact_client_id_query",
+      "evidence_path": "baseline: explicit failCode=51603 raised okx_demo_attached_algo_parent_reports_failure before GET",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k attached_protection",
+      "evidence_path": "26 passed, 319 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py::test_execute_receipt_is_sanitized_atomic_and_postflight_mismatch_freezes",
+      "evidence_path": "1 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "Executed once; no failure output observed, but the Windows process wrapper did not return a terminal exit summary, so it is not claimed as passed",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-ATTACHED-PROTECTION-QUERY-RECONCILIATION-33",
+  "transition_for": ""
+}

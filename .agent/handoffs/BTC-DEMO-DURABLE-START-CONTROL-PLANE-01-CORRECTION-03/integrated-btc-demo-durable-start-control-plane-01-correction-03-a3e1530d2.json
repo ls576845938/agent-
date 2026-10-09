@@ -1,0 +1,99 @@
+{
+  "base_commit": "5563011ea284dd5cb9d41e1af1a1aa1b44e241de",
+  "blockers": [
+    "canonical_mocked_playwright_deferred_to_registered_current_main_after_frontend_restart",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_by_contract",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T18:24:49Z",
+  "deliverable_commit": "a3e1530d2a545646e5ac1dc8f14180501278fc20",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "a06d7e280f83365737c2903b565bbf5f679c2f2ef8dc384c04e363efdf4c2b13",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "83ab00b97d686c3c885e1ae1f9e848fe404996480d34ed25ce0783cdbd55fa93",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-03/published-btc-demo-durable-start-control-plane-01-correction-03-975485257.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "36fd4b487bc1d0b9103e2930f76accae105b3e76abc183f23b26fbae0480281a",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-durable-start-control-plane-01-correction-03-975485257",
+    "integrated-btc-demo-durable-start-control-plane-01-correction-02-ea98f15b1"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-durable-start-control-plane-01-correction-03-a3e1530d2",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-durable-start-corr03-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate on committed correction envelope; base ancestry; complete producer chain; exact spec/identity touch set and committed Git raw SHA checks",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-03/published-btc-demo-durable-start-control-plane-01-correction-03-975485257.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "frontend TypeScript lint (tsc --noEmit)",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "Vite production build; chunk-size warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts (34 tests listed)",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json; fingerprint 8c86227bd6f2ba557d2148df52a15e85c18a28913062020f55b6eaf40b4d4e54; manifest_match=true; baseline_ancestor=true",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check; scoped safe_status",
+      "evidence_path": "git and scoped safe_status",
+      "result": "passed"
+    },
+    {
+      "command": "complete mocked Playwright execution, service/Demo runtime, artifact rebuild, secret/private/order/live/transfer/withdraw access",
+      "evidence_path": "deferred_by_canonical_current_main_and_ticket_security_scope",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-03",
+  "transition_for": "published-btc-demo-durable-start-control-plane-01-correction-03-975485257"
+}

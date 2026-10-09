@@ -1,0 +1,121 @@
+{
+  "base_commit": "4f774ac4e8e4b4621981f3e2ef3c085923533ff8",
+  "blockers": [
+    "binary_tree_parser_accepts_invalid_mode_without_structured_fail_closed_rejection:tools/agent_governance/handoff.py:647-657"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-08-10T00:45:00Z",
+  "deliverable_commit": "d313abc0ef1c670b629fc115cf269df7e58c0b23",
+  "deliverables": [
+    {
+      "path": ".codex/hooks/inject_agent_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "b7b04ca30a589e071479d4a80a1f3458c2d27e760aad531c37a9b0bd575477d2",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "6b80294a9227168f8509e03018bb68632aab8240fd847bbe7379e9f08a294e9c",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "d86285afd6b2b86205b3b2b7de7633652e5d66b1fca00e07f261602fe53c6bf5",
+      "type": "code"
+    },
+    {
+      "path": "tools/agent_governance/context_packet.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "7a41bd6e18cce6e7506c6339880a270b6ec090fdf8387a061ad32fe86c5bf970",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "7404ac82ff9a670c1f666016867aea4f0358048af2cc79f5fe933254ad5c94e0",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_context_scalability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_code_v1",
+      "sha256": "6533d5c94a87a14efb1abecf89cc04ea0d5275dea0575e559b1df0c3a46ddc28",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-gov-codex-development-bounded-discovery-01-4a28460a47"
+  ],
+  "domain": "governance",
+  "event_id": "rejected-gov-codex-development-bounded-discovery-01-4a28460a47-20260810",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/gov-codex-development-bounded-discovery-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q --basetemp <external>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py tests/agent_governance/test_team_context.py tests/agent_governance/test_hooks.py tests/agent_governance/test_context_scalability.py -q --basetemp <external>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_context_scalability.py -q --basetemp <external>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile .codex/hooks/inject_agent_context.py tools/agent_governance/handoff.py tools/agent_governance/team_context.py tools/agent_governance/context_packet.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate --input published-gov-codex-development-bounded-discovery-01-4a28460a47.json",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "binary tree parser adversarial invalid-mode probe",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "SessionStart/UserPromptSubmit/SubagentStart hooks x2 with wall/RSS/orphan",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "GOV-CODEX-DEVELOPMENT-BOUNDED-DISCOVERY-01",
+  "transition_for": "published-gov-codex-development-bounded-discovery-01-4a28460a47"
+}

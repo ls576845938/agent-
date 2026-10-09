@@ -1,0 +1,163 @@
+{
+  "base_commit": "9629a075774255e48490574d4f24cbb6196b8ec5",
+  "blockers": [
+    "historical_us_artifact_contract_suite_requires_non_sparse_current_head_artifact_rebuild",
+    "preexisting_us_broker_credentials_default_template_import_drift_owner_super_developer_followup",
+    "preexisting_trading_calendar_provider_label_assertion_drift_owner_us_calendar_followup",
+    "evidence_registry_and_strategy_production_line_builder_extraction_deferred_to_separate_ticket",
+    "app_factory_us_router_wiring_requires_integrator_ticket",
+    "promotion_paper_private_order_and_live_gates_remain_locked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T07:35:25Z",
+  "deliverable_commit": "f32598c8f9d985cc9a15329e2cb548d51b8ca9c7",
+  "deliverables": [
+    {
+      "path": "quant_us/application/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_v1",
+      "sha256": "41e5ea7f269a95cf01ce42038c496be9dda266f0001309f1087bfd23c4a7a0ef",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/application/ports.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_ports_v1",
+      "sha256": "4f2ca4febc881ac951adbc2a6c9a29891abfc6e1541f6e15b069aca44ae2e527",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/application/service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_v1",
+      "sha256": "cb6fde44c3a429227d54fcce40e332e74e60f005863125e57e7d32fd7b82747b",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/compat/application_adapters.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_adapter_v1",
+      "sha256": "eafc8fed9eb1f0f3e828b6895e2a41d6f599f70835496a27c42abde9ee9898a2",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/us_application_facade.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_facade_v1",
+      "sha256": "2ee8c9e0507602abc6dda31bb65a2f1436113d10e8de80583b084390543ef0ab",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/us_quant.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_quant_compat_facade_v1",
+      "sha256": "1d0d40fedce48928f9a1a6374bd04ade9776f4d1422a4ec721db553f6f41283e",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/cli.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_cli_compat_facade_v1",
+      "sha256": "46567e6c17c41a2d66ce71015ebc55d307d17c2d9a4078eb35641867c69bd296",
+      "type": "code"
+    },
+    {
+      "path": "configs/governance/us_application_service_boundary_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_v1",
+      "sha256": "1158e3acedd2c80bbfe8fe532b3ac7b2ad3cbcf23bd8441d167296b6a9870122",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_application_service_boundary.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_v1",
+      "sha256": "73306e301814884928a32fe7cfdc401681f985f458de40842e5fe123dd5d20b1",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/validate_us_application_service_boundary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_validator_v1",
+      "sha256": "8f7afbe2f9a8b303b85aa271e442ed3123102913c7cf8f66e9907fb64abdd468",
+      "type": "code"
+    },
+    {
+      "path": "docs/architecture/us_application_service_boundary.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_architecture_v1",
+      "sha256": "817c54f6b7c9874bb3d4f64676edd6c433d72091368c353ec5b2441c2697bb18",
+      "type": "document"
+    },
+    {
+      "path": "tests/contracts/test_us_application_service_boundary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_boundary_tests_v1",
+      "sha256": "492e41ede53baad6bc5b5a57d37d28491784e0a4cf26eba3c5bc20d76657e990",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_us_application_service_characterization.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_application_service_characterization_tests_v1",
+      "sha256": "44be01636532b9058d305224117f9a40accb6c348b0c879acd4bd6fb5f7e0e3a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-shared-adoption-01-goal4-batch-01",
+    "integrated-btc-v3-dataready-consumer-01-goal4-batch-01",
+    "integrated-cn-v3-dataready-consumer-01-goal4-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-application-service-boundary-01-f32598c8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-application-service-boundary-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_us_application_service_characterization.py -q -p no:cacheprovider --basetemp <unique-system-temp> [pre-extraction baseline]",
+      "evidence_path": "backend/tests/test_us_application_service_characterization.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <G05 application/API/CLI target suite> -q -p no:cacheprovider --basetemp <unique-system-temp> [54 passed]",
+      "evidence_path": "tests/contracts/test_us_application_service_boundary.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <G04 US/BTC/CN combined regression> -q -p no:cacheprovider --basetemp <unique-system-temp> [181 passed]",
+      "evidence_path": "tests/contracts/test_us_shared_platform_adoption.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/validate_us_application_service_boundary.py",
+      "evidence_path": "configs/governance/us_application_service_boundary_v1.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_trading_calendar.py -q -p no:cacheprovider --basetemp <unique-system-temp> [8 passed, 2 failed: existing provider label drift]",
+      "evidence_path": "backend/tests/test_trading_calendar.py",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "US-V3-APPLICATION-SERVICE-BOUNDARY-01",
+  "transition_for": ""
+}

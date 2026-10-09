@@ -1,0 +1,34 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-delivery-review-rejected-20260924-02",
+  "ticket_id": "candidate-delivery-backend-20260924",
+  "event_type": "rejected",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-delivery-backend-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "87e6d12f02d4f6dda22ea1cc4e7f39ec4a503e42",
+  "created_at": "2026-09-24T14:46:26Z",
+  "expires_at": "",
+  "depends_on": ["candidate-delivery-source-20260924-01"],
+  "supersedes": [],
+  "transition_for": "candidate-delivery-source-20260924-01",
+  "deliverables": [
+    {"type": "report", "path": "docs/operations/candidate-delivery-independent-review-20260924.md", "sha256": "bb0fdf0fa7971beb8072e321e2aa375554eb366c38cd2bee365441ce973ffc41", "schema_version": "candidate_delivery_independent_review_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "Independent targeted contract/API regressions: 10 passed; independent real Donchian USD mismatch reproduction", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-independent-review-20260924.md"},
+    {"command": "Independent source admission review of ac74ba23c46110e42d21227418e9b7f5a0c1ea28", "result": "failed", "evidence_path": "docs/operations/candidate-delivery-independent-review-20260924.md"},
+    {"command": "Primary repeat: 57 backend/API compatibility tests; 19 frontend protocol/SSR tests", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-independent-review-20260924.md"}
+  ],
+  "blockers": [
+    "P1_package_account_settlement_currency_mismatch_accepted",
+    "P2_frontend_target_directory_wording_not_matching_management_only_directory",
+    "source_rejected_no_main_integration_enablement_or_publication",
+    "runtime_entrypoints_do_not_consume_management_catalog"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {"handoff_only": true, "promotion_unlock_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "order_endpoint_allowed": false, "real_order_submitted": false}
+}

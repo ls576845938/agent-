@@ -1,0 +1,94 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cohort-readonly-public-capability-intent-20261004-2eb5e975f",
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-cohort-entry-recovery-closeout-20261004",
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "deliverable_commit": "2eb5e975f69a200bd200cf200a75dcc35f01a36f",
+  "created_at": "2026-10-04T15:08:53.7514373Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-cohort-entry-recovery-seam-correction-20261004-af7d1ba32"
+  ],
+  "supersedes": [
+    "published-btc-cohort-entry-recovery-seam-correction-20261004-af7d1ba32"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "sha256": "38d13745fc0b9514fdd4f3bc71e087a933d6c28318a9eb39c8d167bd955c72ec",
+      "schema_version": "candidate_delivery_readonly_cohort_capability_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_candidate_offline_access.py",
+      "sha256": "aa97a0dea938e0410f3f659267766e74725ce49ce9d5fc287e2d875575de3303",
+      "schema_version": "candidate_offline_access_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "PYTHONUTF8=1 NODE_PATH=<registered-main>/frontend/node_modules py -3 -m pytest tests/contracts/test_candidate_offline_access.py::test_frontend_components_and_selectors_without_worktree_server -q --tb=short",
+      "result": "failed",
+      "evidence_path": "failure-first: direct apiGet lacked offlineRequest('/capabilities','',undefined,abort.current.signal); 1 failed in 3.15s"
+    },
+    {
+      "command": "PYTHONUTF8=1 NODE_PATH=<registered-main>/frontend/node_modules py -3 -m pytest tests/contracts/test_candidate_offline_access.py::test_frontend_components_and_selectors_without_worktree_server -q --tb=short",
+      "result": "passed",
+      "evidence_path": "1 passed in 1.96s"
+    },
+    {
+      "command": "node --test scripts/test-candidate-local-auth.mjs using an in-memory ESM resolver for registered-main read-only dependencies",
+      "result": "passed",
+      "evidence_path": "7 passed, 0 failed; component harness, public intent header, no empty key and GET-only contracts"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_candidate_local_auth.py::test_local_intent_not_a_password tests/contracts/test_candidate_local_auth.py::test_bad_request_rejected tests/contracts/test_candidate_local_auth.py::test_browser_origin_and_get_referer_rules tests/contracts/test_candidate_local_auth.py::test_offline_context_does_not_relax_enablement_or_accept_string -q --tb=short",
+      "result": "passed",
+      "evidence_path": "25 passed in 1.86s"
+    },
+    {
+      "command": "TypeScript Compiler API noEmit using registered-main read-only dependencies",
+      "result": "passed",
+      "evidence_path": "117 source files"
+    },
+    {
+      "command": "git diff --check 5b0ecf9050ca0d99364f7271dd5eb25916878b9c 2eb5e975f69a200bd200cf200a75dcc35f01a36f",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "fixed-version five long candidate-offline lifecycle nodes and unchanged backend 59-test suite",
+      "result": "not_run",
+      "evidence_path": "explicitly out of scope for this two-file frontend public-read correction"
+    }
+  ],
+  "blockers": [
+    "current registered Donchian and Qlib execution timing/cost contracts remain incompatible",
+    "current registered Donchian and Qlib protection-policy hashes remain incompatible",
+    "real common nonzero execution, hosted-protection attribution, and economic recovery remain unsupported",
+    "readonly capability remains fail-closed when the backend reports candidate_offline_not_configured; no management catalog, jobs, POST, account, or trading capability was opened",
+    "no merge, deployment, service restart, private endpoint, order endpoint, paper, live, or promotion action was performed by this producer"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

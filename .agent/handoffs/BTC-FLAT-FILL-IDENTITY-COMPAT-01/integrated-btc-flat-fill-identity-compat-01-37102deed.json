@@ -1,0 +1,122 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-flat-fill-identity-compat-01-37102deed",
+  "ticket_id": "BTC-FLAT-FILL-IDENTITY-COMPAT-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-flat-fill-identity-compat-01",
+  "base_commit": "c4cdcffef42da36cbe3d6081a248c94e4cc173e6",
+  "deliverable_commit": "37102deed73fafa29a7690adb9f3e461a1e6aee4",
+  "created_at": "2026-08-06T11:15:35Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-flat-fill-identity-compat-01-f8d89cd0c"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-flat-fill-identity-compat-01-f8d89cd0c",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "5ec26186b5a95f83e3495d9da4ee6f1b8eca3b6da58c474cb2078a8cc9c4ccfa",
+      "schema_version": "btc_okx_demo_fault_drill_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "c126c3664964b4db0cbc9b405f9d9d13365abfe7c35767bece063bb9851803b3",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "398c3183ef223d62b64d5b695e665d85acae8f01e3329b51e69f673624ccb67c",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "411c543d3bbbf59074fb01df9d9f143ac13671db7915d27d7ed94562016e2ef4",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "committed-object validation for producer f8d89cd0c95488e5bc4e01d16124526c84e0865f and published handoff 4974a10fcf589df34a9189f0c393bf4de14b9a4d: direct base ancestry, exact four-path business touch set plus one append-only envelope, four-of-four raw Git blob SHA-256 closure, schema, blockers, guardrails, and producer failure-first evidence",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-FLAT-FILL-IDENTITY-COMPAT-01/published-btc-flat-fill-identity-compat-01-f8d89cd0c.json"
+    },
+    {
+      "command": "failure-first review: four compatibility and ambiguity contracts failed on base and pass after unique clOrdId-to-order_id reconstruction with missing-or-ambiguous mapping fail-closed",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git cherry-pick f8d89cd0c95488e5bc4e01d16124526c84e0865f then git cherry-pick 4974a10fcf589df34a9189f0c393bf4de14b9a4d; integration commits 37102deed73fafa29a7690adb9f3e461a1e6aee4 and 39e48989a7472f955b9c5fd0268f71a981801ee3; no conflicts",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3.14 -m pytest four exact flat-fill compatibility and ambiguity contracts -q --basetemp unique; 4 passed in 2.59s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3.14 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py -k flat-or-identity-or-incident_recovery --basetemp unique; 75 passed, 174 deselected in 25.44s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3.14 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp unique; 249 passed in 82.55s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3.14 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check c4cdcffef42da36cbe3d6081a248c94e4cc173e6 HEAD -- approved touch set",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "supplemental static zero-POST probe: first assertion was narrower than dynamic error construction and second attempt had PowerShell quoting SyntaxError; corrected structural probe confirmed read-only client, ambiguity guard, and no submit/cancel/order-capable calls",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "artifact or manifest rebuild, backend restart, service start, network access, secret access, actual OKX Demo/private/order/live execution, transfer, and withdraw",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:backend_operator backend_restart_required_after_integration",
+    "registered_main_not_advanced_integration_branch_only",
+    "ticket_contract_no_artifact_built_no_promotion_evidence_rebuild",
+    "quality_checked_source_is_not_promotion_evidence",
+    "no_service_no_network_no_secret_no_demo_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

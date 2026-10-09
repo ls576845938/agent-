@@ -1,0 +1,117 @@
+{
+  "base_commit": "7ce80e06692f0f8655eb7cbdd1c3d943a470114d",
+  "blockers": [
+    "owner:producer frontend workbench recovery and layered architecture knowledge remain pending in the same ticket",
+    "owner:integrator current-main startup and canonical browser regression remain pending",
+    "M1-M4 remain unstarted; research completion does not grant paper, private, order, broker, or live authority"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-11T01:46:23Z",
+  "deliverable_commit": "93abd6e7ad9bf66ded2ecd9fa8180b6b3c26f3f5",
+  "deliverables": [
+    {
+      "path": "backend/app/core/backend_access_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "96dd3c0eff47bc8abbeb12062158d5c9a688d8f4e9956c6324365ea386501c5d",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "bd19e98a1ca4f91766c752dd38de60e4aec1fe50d77f8b6691a086908019fa23",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/core/deps.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "761e567270d0780586c40f09bdf811c8a48be2c9261aa3ec0ef4da51cdee6cda",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "4f86a48032e1deb9d6a8ba0184bbec786eb86a7709f722d115f0c26eee361c6f",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/schemas.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "4ac27e444de4fe015545d2914572cec1ef705eb6e6a3a9b8490ddd9324582066",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "32d7371d1cd77ca1622a7960df15e9821734390fef98b21b220f5f1c497625b8",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_backend_research_readonly.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "aae261af8c9c9c1d4e2566f16adb4113174a98c682423b6b4f64ba1fbc8edd26",
+      "type": "test_evidence"
+    },
+    {
+      "path": "scripts/start_backend_current_main.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "9214d09e5646f6a25fdd685ce312baf3eef73e070bf2f5ba83a83ea51c10aca6",
+      "type": "code"
+    },
+    {
+      "path": "scripts/start_backend_current_main.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_research_readonly_v1",
+      "sha256": "edf75bdf89c6137ad3c889aec663d8bff05eb870e81f4dc6678208368f146fbb",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-architecture-knowledge-backend-stage-93abd6e7a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/architecture-knowledge-workbench-recovery-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pytest backend/tests/test_backend_research_readonly.py backend/tests/test_backend_current_main_launcher.py (49 passed)",
+      "evidence_path": "backend/tests/test_backend_research_readonly.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check before source commit",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main startup and browser regression",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01",
+  "transition_for": ""
+}

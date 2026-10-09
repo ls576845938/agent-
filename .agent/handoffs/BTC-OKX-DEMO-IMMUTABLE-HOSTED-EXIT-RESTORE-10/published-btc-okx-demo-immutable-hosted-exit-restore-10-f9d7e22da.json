@@ -1,0 +1,76 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-immutable-hosted-exit-restore-10-f9d7e22da",
+  "ticket_id": "BTC-OKX-DEMO-IMMUTABLE-HOSTED-EXIT-RESTORE-10",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-immutable-hosted-exit-restore-10",
+  "base_commit": "a238c27bdadc9092dcfe8b7809dc02784053aaad",
+  "deliverable_commit": "f9d7e22da87a0a63df9ddd9a608fec4002fdad74",
+  "created_at": "2026-08-11T04:31:39Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "schema_version": "okx_demo_immutable_hosted_exit_restore_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "6bd36c0b43db93dff6a552560dcbc95f76f30dbca973a51e273462ee9d7e5433"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "schema_version": "okx_demo_immutable_hosted_exit_restore_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "59ac7403f0b0650bbbca322a42993f1634d8117e77afc7a95d1989fb14bd6440"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first immutable hosted exit restart recovery",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --junitxml=TEMP/pytest-immutable-hosted-exit-10-runtime.xml",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q --junitxml=TEMP/pytest-immutable-hosted-exit-10-fault.xml",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_private_ws.py -q",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "fresh_private_rest_private_ws_funding_and_ledger_reconciliation_required_before_runtime_can_clear_frozen_state",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

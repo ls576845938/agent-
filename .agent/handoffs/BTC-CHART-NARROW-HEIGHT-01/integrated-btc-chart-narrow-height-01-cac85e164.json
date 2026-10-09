@@ -1,0 +1,118 @@
+{
+  "base_commit": "73d1fbd25820bed186ddc5f88be58a5f14ded747",
+  "blockers": [
+    "owner:root merge_integrator_commit_into_registered_main_with_non_fast_forward_history_preserved",
+    "owner:root rerun_identity_checks_and_canonical_main_mock_playwright_after_final_main_merge",
+    "owner:root restart_canonical_frontend_and_backend_after_final_main_merge",
+    "owner:root promotion_artifact_rebuild_required_by_unclassified_delivery_policy",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_and_secret_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-03T12:30:01Z",
+  "deliverable_commit": "cac85e16436d18244ebfc2dd6e68d40ed1d18c99",
+  "deliverables": [
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "4a9aeeb97144748c2ab4fadf466f48838443d368fcc758c8dd47ddae5a19e7de",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "static_regression_v1",
+      "sha256": "685b27d653ea9b7a32a3dc4c7bcc692d2456ee365c2720ad4edf4e9e2742ef51",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "d8a9f57041dfaa44af65e5bf7574e5b02fd382ec9fbc4aef4d95a7001d331350",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "dd2cce5e15afa3137b4bdfe3de65f4ad7b1cd02e6711a5d45169e060a9c7ed8a",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-CHART-NARROW-HEIGHT-01/published-btc-chart-narrow-height-01-778d25fbc-v2.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "7ba4b71ed7a8d4ed37762c4737232756530a0de5d06a9a566fe39fbb4e728cff",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-chart-narrow-height-01-778d25fbc-v2"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-chart-narrow-height-01-cac85e164",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-chart-narrow-height-01-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate; base->deliverable->handoff ancestry; committed-object SHA-256 and exact touch set",
+      "evidence_path": ".agent/handoffs/BTC-CHART-NARROW-HEIGHT-01/published-btc-chart-narrow-height-01-778d25fbc-v2.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (tsc --noEmit)",
+      "evidence_path": "frontend/src/index.css; integration worktree used a temporary junction to the producer's verified node_modules",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "frontend/dist; 5219 modules; existing chunk-size warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check; npm.cmd run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json; manifest_match=true; baseline_ancestor=true; fingerprint=fed975734b076e0aae4278708330de9fab77c15fe22c694d998b7587fd061cef",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs; 12 scenarios",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright frontend/e2e/crypto.spec.ts after registered-main merge",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "canonical frontend/backend restart and private/order/live endpoint access",
+      "evidence_path": "deferred by integration ticket boundary; no service, credential, private, order, or live access",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CHART-NARROW-HEIGHT-01",
+  "transition_for": "published-btc-chart-narrow-height-01-778d25fbc-v2"
+}

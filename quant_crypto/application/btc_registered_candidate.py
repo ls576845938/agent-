@@ -219,7 +219,7 @@ class VerifiedRegisteredInputs:
     Construction is performed by verify_registered_candidate_inputs; a supplied
     boolean, prediction table or caller-authored risk object cannot substitute.
     """
-    __slots__=("service","row","recovery_only","state_dir","package","manifest","bars",
+    __slots__=("service","row","recovery_only","decision_only","runtime_binding","state_dir","package","manifest","bars",
                "observations","predictions","digest","__weakref__")
 
     def __init_subclass__(cls, **kwargs):
@@ -228,15 +228,17 @@ class VerifiedRegisteredInputs:
     def __setattr__(self,name,value):
         raise AttributeError("registered_context_is_immutable")
 
-    def __init__(self, *, service, row, bars, manifest, observations, predictions, state_dir, recovery_only=False, _issuer=None):
+    def __init__(self, *, service, row, bars, manifest, observations, predictions, state_dir, recovery_only=False,
+            decision_only=False, runtime_binding=None, _issuer=None):
         if _issuer is not _ISSUE_KEY: raise DeliveryError("registered_issued_context_required")
         from copy import deepcopy
         stored_row=deepcopy(row)
-        values={"service":service,"row":stored_row,"recovery_only":recovery_only,"state_dir":state_dir,
+        values={"service":service,"row":stored_row,"recovery_only":recovery_only,"decision_only":decision_only,
+            "runtime_binding":deepcopy(runtime_binding),"state_dir":state_dir,
             "package":stored_row["package"],"manifest":deepcopy(manifest),"bars":bars.copy(deep=True),
             "observations":tuple(observations),"predictions":predictions,
             "digest":digest({"registration_id":row["id"], "package":row["content_digest"],
-            "binding":row["binding_digest"], "manifest":manifest})
+            "binding":row["binding_digest"], "runtime":runtime_binding, "manifest":manifest})
         }
         for name,value in values.items(): object.__setattr__(self,name,value)
         _ISSUED_CONTEXTS.add(self)
@@ -251,7 +253,7 @@ class VerifiedRegisteredInputs:
             or market_frame_digest(self.bars) != self.manifest["bars_sha256"]
             or observation_digest(self.observations) != self.manifest["observations_sha256"]
             or self.digest != digest({"registration_id":row["id"],"package":row["content_digest"],
-                "binding":row["binding_digest"],"manifest":self.manifest})):
+                "binding":row["binding_digest"],"runtime":self.runtime_binding,"manifest":self.manifest})):
             raise DeliveryError("registered_verified_inputs_changed")
         # Re-run the public verifier rather than trusting this Python type's
         # constructor or caller-rehashed fields as an authority token.
@@ -259,7 +261,8 @@ class VerifiedRegisteredInputs:
             content_digest=row["content_digest"],account_identity_hash=row["binding"]["identity_hash"],
             adapter_id=self.package["adapter_id"],bars=self.bars,market_manifest=self.manifest,
             market_manifest_digest=digest(self.manifest),observations=self.observations,
-            state_dir=self.state_dir,recovery_only=self.recovery_only)
+            state_dir=self.state_dir,recovery_only=self.recovery_only,decision_only=self.decision_only,
+            runtime_binding=self.runtime_binding)
         pd.testing.assert_frame_equal(actual.predictions["rows"],self.predictions["rows"])
         return row
 
@@ -289,7 +292,8 @@ class VerifiedRegisteredInputs:
 
 
 def verify_registered_candidate_inputs(service, registration_id, *, content_digest, account_identity_hash,
-        adapter_id, bars, market_manifest, market_manifest_digest, observations, state_dir, recovery_only=False):
+        adapter_id, bars, market_manifest, market_manifest_digest, observations, state_dir, recovery_only=False,
+        decision_only=False, runtime_binding=None):
     """Validate before any replay constructor, state directory or economic write."""
     _require_trusted_service(service)
     from pathlib import Path
@@ -301,13 +305,15 @@ def verify_registered_candidate_inputs(service, registration_id, *, content_dige
     row = resolve(registration_id,content_digest=content_digest,
         account_identity_hash=account_identity_hash,adapter_id=adapter_id)
     p, b, m = row["package"], row["binding"], market_manifest
-    runtime=b.get("offline_runtime",{})
-    if recovery_only and not (Path(state_dir)/"runtime").is_dir():
+    runtime=dict(runtime_binding if decision_only else b.get("offline_runtime",{}))
+    if recovery_only and not decision_only and not (Path(state_dir)/"runtime").is_dir():
         raise DeliveryError("registered_recovery_existing_state_required")
     if adapter_id != CAPABILITY or row["target"] != "offline": raise DeliveryError("registered_offline_adapter_required")
-    if (runtime.get("schema_version")!="delivery_offline_runtime_v1"
+    expected_schema="delivery_offline_runtime_v3" if decision_only else "delivery_offline_runtime_v1"
+    if (runtime.get("schema_version")!=expected_schema
         or runtime.get("simulated_venue_identity_hash") != offline_simulated_account_identity()
-        or runtime.get("account_ref")!=b["account_ref"]
+        or (not decision_only and runtime.get("account_ref")!=b["account_ref"])
+        or (decision_only and runtime.get("adapter_ids") != ["btc_donchian_history_offline_v1","factory_lgbm_ast_v1"])
         or runtime.get("contract_digest")!=digest({k:v for k,v in runtime.items() if k!="contract_digest"})
         or runtime.get("state_directory_sha256") != state_directory_digest(state_dir)):
         raise DeliveryError("registered_simulated_account_identity_mismatch")
@@ -368,9 +374,97 @@ def verify_registered_candidate_inputs(service, registration_id, *, content_dige
     elif any(observation.funding_settlements for observation in observations):
         raise DeliveryError("registered_funding_v2_requires_market_v2")
     predictions = infer_package(p,bars,data_version=p["data_version"],visible_through=observations[-1].event_time_utc+pd.Timedelta(hours=1))
-    verified = VerifiedRegisteredInputs(service=service,row=row,bars=bars,manifest=m,observations=observations,predictions=predictions,state_dir=state_dir,recovery_only=recovery_only,_issuer=_ISSUE_KEY)
+    verified = VerifiedRegisteredInputs(service=service,row=row,bars=bars,manifest=m,observations=observations,
+        predictions=predictions,state_dir=state_dir,recovery_only=recovery_only,decision_only=decision_only,
+        runtime_binding=runtime_binding,_issuer=_ISSUE_KEY)
     for i in range(len(observations)): verified.forecast(i)
     return verified
+
+
+def registered_candidate_cohort_decision(*, verified, index, controller, venue, member_contracts, member_state):
+    """Evaluate the registered model and unchanged frozen policy for one member share."""
+    require_registered_context(verified)
+    if not verified.decision_only: raise DeliveryError("registered_cohort_decision_context_required")
+    from dataclasses import replace
+    from decimal import Decimal
+    import math
+    from integrations.qlib_adapter.candidate_policy import (CandidateExitObservation, CandidateExitPolicy,
+        CandidateExitState, CandidatePolicyFacts, CandidatePolicyVersions, POLICY_VERSION)
+    from quant_crypto.application.qlib_offline_replay import evaluate_candidate_step
+    from quant_crypto.portfolio.forecast import BTCRiskBudget, BTCRiskState
+    from quant_crypto.portfolio.order_intent import BTCExecutionCostEstimate
+    from quant_crypto.risk import CombinedLossAssessment, RiskConstitution
+    from quant_crypto.risk.liquidation import BTCReferencePriceState
+    from quant_crypto.trading_contracts import Signal, SignalDirection
+    forecast=verified.forecast(index); observation=verified.observations[index]
+    contracts=verified.package["contracts"]
+    position_policy,exit_policy,cost=contracts["position"],contracts["exit"],contracts["cost"]
+    member_btc=float(Decimal(str(member_contracts))*Decimal("0.01"))
+    common_btc=float(Decimal(str(venue.state["position"]))*Decimal("0.01"))
+    equity=float(venue.state["equity"])
+    if not math.isfinite(equity) or equity<=0: raise DeliveryError("registered_cohort_equity_invalid")
+    risk=controller._state.get("risk_control",{})
+    exit_raw=member_state.get("exit_state") or {"quantity":member_btc,"average_price":0.0,
+        "favorable_price":None,"holding_bars":0}
+    try: exit_state=CandidateExitState(**exit_raw)
+    except (TypeError,ValueError) as exc: raise DeliveryError("registered_cohort_member_exit_state_invalid") from exc
+    constitution=RiskConstitution(max_abs_position=equity/observation.mark_price,
+        max_quantity=equity/observation.mark_price,max_notional=equity*position_policy["max_weight"],max_leverage=1.0,
+        min_liquidation_buffer_bps=1000,max_daily_loss=equity*.03,max_drawdown=.12,
+        max_combined_loss=equity*.12,protection_required=True)
+    facts=CandidatePolicyFacts(decision_id=digest({"verified":verified.digest,"index":index,"member_state":member_state}),
+        forecast=forecast,expected_source_signal_id=forecast.source_signal_id,
+        risk_budget=BTCRiskBudget(max_btc_exposure=position_policy["max_weight"],
+            strategy_risk_budget=position_policy["risk_budget_fraction"],
+            target_volatility=position_policy["volatility_target_annual_configured"],
+            current_weight=member_btc*observation.mark_price/equity,min_cash_fraction=1-position_policy["max_weight"],
+            max_turnover=position_policy["max_weight"],max_daily_loss_pct=.03,max_drawdown_pct=.12,
+            max_abs_funding_rate=1.0,require_funding_rate=True),
+        risk_state=BTCRiskState(cash_fraction=1-abs(common_btc*observation.mark_price/equity),
+            daily_loss_pct=float(risk.get("daily_loss_pct",0)),current_drawdown_pct=float(risk.get("drawdown_ratio",0)),
+            funding_rate=observation.funding_rate,data_anomaly=bool(observation.blockers)),
+        account_equity=equity,mark_price=observation.mark_price,current_quantity=member_btc,
+        reference_prices=lambda proposed: BTCReferencePriceState(observed_at_utc=forecast.timestamp_utc,
+            signal_price=observation.close_price,execution_price=observation.close_price*(1+math.copysign(.0006,
+                float(proposed.target_quantity or 0)-member_btc)),mark_price=observation.mark_price,
+            index_price=observation.index_price,current_mark_price=observation.mark_price,
+            primary_mid=observation.close_price,spread_bps=2.0,data_age_ms=0,
+            source="registered_cohort_common_observation"),constitution=constitution,
+        combined_loss=CombinedLossAssessment(0.0,0.0,0.0,(),0.0,0.0,observation.funding_cashflow_usdt,0.0,0.0,0.0),
+        protection_before=None if not member_btc else {"present":True,"quantity":abs(member_btc),
+            "side":"sell" if member_btc>0 else "buy","trigger_price":observation.mark_price*(1-float(exit_policy["hard_stop_fraction"]))},
+        protection_after=lambda q: None if abs(q)<1e-12 else {"present":True,"quantity":abs(q),
+            "side":"sell" if q>0 else "buy","trigger_price":observation.mark_price*(
+                1-float(exit_policy["hard_stop_fraction"]) if q>0 else 1+float(exit_policy["hard_stop_fraction"]))},
+        cost_estimate=BTCExecutionCostEstimate(fee_bps=2*cost["fee_bps_per_side"],
+            spread_bps=2*cost["spread_bps_per_side"],slippage_bps=2*cost["slippage_bps_per_side"],
+            impact_bps=2*cost["impact_bps_per_side"],funding_bps=abs(observation.funding_rate)*20000,
+            source="registered_frozen_cost_matches_offline_simulator"),min_quantity=.00001,
+        blockers=observation.blockers,exit_state=exit_state,
+        exit_observation=CandidateExitObservation(observation.close_price,forecast.expected_return_bps/10000,True,observation.end_of_window),
+        exit_policy=CandidateExitPolicy(exit_policy["hard_stop_fraction"],exit_policy["trailing_stop_fraction"],exit_policy["maximum_holding_bars"]),
+        versions=CandidatePolicyVersions(POLICY_VERSION,*(digest(contracts[name]) for name in ("position","exit","cost"))))
+    step=evaluate_candidate_step(facts,venue={"contract_value_btc":"0.01","lot_size_contracts":"0.01",
+        "minimum_size_contracts":"0.01","maximum_absolute_contracts":str(equity/observation.mark_price/0.01)})
+    if step.execution_blockers or step.conversion is None:
+        raise DeliveryError("registered_cohort_policy_conversion_blocked")
+    target_metadata={**step.policy.target.metadata,"quantity_unit":"btc","registered_source":True}
+    quantity=Decimal(str(step.policy.target.target_quantity or 0))
+    direction=SignalDirection.LONG if quantity>0 else SignalDirection.SHORT if quantity<0 else SignalDirection.FLAT
+    signal=Signal(timestamp_utc=forecast.timestamp_utc,strategy_id=forecast.strategy_id,symbol=forecast.symbol,
+        direction=direction,strength=forecast.score,horizon=forecast.horizon,
+        reason="registered_forecast_through_original_frozen_policy",metadata={"source_kind":"forecast",
+            "forecast_id":forecast.forecast_id,"registered_source":True},signal_id=forecast.source_signal_id)
+    target_identity=digest({"schema_version":"registered_cohort_qlib_target_identity_v1",
+        "verified_digest":verified.digest,"index":index,"member_state_sha256":member_state.get("sha256"),
+        "forecast_id":forecast.forecast_id,"signal_id":signal.signal_id,
+        "target_weight":step.policy.target.target_weight,"target_quantity":step.policy.target.target_quantity,
+        "metadata":target_metadata})
+    target=replace(step.policy.target,signal_id=signal.signal_id,
+        target_position_id="tgt_"+target_identity[:16],metadata=target_metadata)
+    return {"signal":signal,"forecast":forecast,"target":target},{"exit_state":step.policy.exit_state.__dict__,
+        "approved":step.policy.approved,"policy_reasons":list(step.policy.reasons),
+        "exit_reasons":list(step.policy.exit_reasons)}
 
 
 def open_btc_registered_candidate_offline(service, registration_id, *, content_digest,

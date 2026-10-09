@@ -1,0 +1,94 @@
+{
+  "base_commit": "8d6fcb21bb682229a011f4d08f4012ea2ded63cb",
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_by_contract",
+    "canonical_service_and_demo_runtime_execution_deferred_by_ticket_scope",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-21T18:06:15Z",
+  "deliverable_commit": "ea98f15b1be5d292ff8abb2f73fc0f0045c90bf2",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "a89859bc5044c6ed5ed5e7ca83f3605266822f669e1b9513c12e930652415b5d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "4d50920657881baaa5d77b67eaa5b826d6dc30bf378b2c17ce4bb14ab865e6a8",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-02/published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "018808358acfa1ad17039dbeb052d5aa6dc0b87b0bc1ca967a81ed9acac6ad43",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246",
+    "integrated-btc-demo-durable-start-control-plane-01-correction-01-01d7d57cb"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-durable-start-control-plane-01-correction-02-ea98f15b1",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-durable-start-corr02-int",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate on committed correction envelope; base->deliverable->handoff ancestry; exact two-file touch set and committed Git raw SHA checks",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-02/published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-corr02-focused backend/tests/test_backend_current_main_launcher.py tests/contracts/test_btc_okx_demo_paper_runtime.py -k windows_vault_backend_identity or null_or_non_windows_backend or keyring_backend_failure or missing_local_keyring_capability",
+      "evidence_path": "C:/tmp/qsx-durable-corr02-focused (5 passed, 447 deselected)",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:\\tmp\\qsx-durable-corr02-full tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "C:/tmp/qsx-durable-corr02-full (425 passed in 59.55s)",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "touched Python source and contract test",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check; scoped safe_status on the two authorized paths",
+      "evidence_path": "git and scoped safe_status",
+      "result": "passed"
+    },
+    {
+      "command": "backend/frontend service or Demo execution, artifact rebuild, private/order/live/transfer/withdraw access, secret access",
+      "evidence_path": "deferred_by_ticket_scope_and_security_boundary",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-DURABLE-START-CONTROL-PLANE-01-CORRECTION-02",
+  "transition_for": "published-btc-demo-durable-start-control-plane-01-correction-02-87e23d246"
+}

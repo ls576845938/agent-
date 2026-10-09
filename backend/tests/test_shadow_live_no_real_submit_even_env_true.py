@@ -183,7 +183,7 @@ class TestShadowLiveNoRealSubmitEnvTrue:
         proxy = ReadOnlyBrokerProxy(
             inner,
             audit_context={
-                "api_key": "PKLIVE12345678",
+                "api_key": "REDACTED_CREDENTIAL_LITERAL",
                 "api_secret": "secret987654321",
                 "base_url": "https://api.alpaca.markets",
                 "endpoint_kind": "live",

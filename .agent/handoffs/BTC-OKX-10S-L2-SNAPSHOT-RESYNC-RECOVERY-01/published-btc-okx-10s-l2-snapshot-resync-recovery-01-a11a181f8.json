@@ -1,0 +1,101 @@
+{
+  "base_commit": "dc95a75ce2afe5205fa20bc1c06246c8e6c2c50b",
+  "blockers": [
+    "independent_integrator_required_change_risk_unclassified",
+    "new_public_only_current_head_capture_and_immutable_publication_required_after_integration",
+    "current_head_artifact_and_read_model_rebuild_required_after_new_data_publication",
+    "l2_ess_depth_fill_funding_private_ws_25h_and_manual_approval_evidence_remain_incomplete"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "data_steward"
+  ],
+  "created_at": "2026-09-01T09:12:44Z",
+  "deliverable_commit": "a11a181f8bc44212a4f991212f1d63ce303a915f",
+  "deliverables": [
+    {
+      "path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1",
+      "sha256": "727272053d2dfd770a5b8e9e40432c1ea99bca1def49a091c155cce92d32d446",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_microstructure_immutable_feed_runner_v1_contract_tests",
+      "sha256": "cb655dbc32e81cf3918637a54f1bb18a32d058a41e92421585bbf0712253d1aa",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_10s_l2_snapshot_resync_recovery_ticket_v1",
+      "sha256": "9b668ac14c82c573ef9003f4948cc4578e0ccce22689c9a811805be597842d40",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-10s-l2-snapshot-resync-recovery-01-a11a181f8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-10s-l2-snapshot-resync-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "preflight: sparse=true; base=dc95a75ce2afe5205fa20bc1c06246c8e6c2c50b; declared_touch_set_initially_clean; change_risk=unclassified; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "result": "passed"
+    },
+    {
+      "command": "failure-first: py -3 -m pytest -q tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py::test_continuous_l2_snapshot_resync_uses_new_slice_and_new_capture -> 1 failed; old result continuous_terminal_blocked",
+      "evidence_path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q exact snapshot-resync regression plus sequence/checksum/mixed/unknown terminal cases -> 5 passed",
+      "evidence_path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py -> 26 passed in 3.63s",
+      "evidence_path": "tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_okx_10s_microstructure_immutable_feed.py -> 107 passed in 11.93s",
+      "evidence_path": "tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile runner and contract test; git diff --check on declared business touch set",
+      "evidence_path": "scripts/run_btc_okx_10s_microstructure_immutable_feed.py",
+      "result": "passed"
+    },
+    {
+      "command": "network/public collection not run in producer; only offline injected fakes were authorized",
+      "evidence_path": "docs/handoffs/BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01.md",
+      "result": "not_run"
+    },
+    {
+      "command": "promotion artifact/read model rebuild and backend restart not run before independent integration",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-10S-L2-SNAPSHOT-RESYNC-RECOVERY-01",
+  "transition_for": ""
+}

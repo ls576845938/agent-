@@ -1,0 +1,88 @@
+{
+  "base_commit": "0c10b253a974eca246e6705fd049975187e42ca7",
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "runtime_and_adjacent_full_pytest_runs_terminated_after_no_new_output; focused contracts passed",
+    "promotion_artifact_read_model_not_rebuilt",
+    "no_private_order_live_endpoint_or_secret_access_per_ticket",
+    "promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-11T11:30:00Z",
+  "deliverable_commit": "9e4916720744cd9759114019176e117953e6905c",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_v1",
+      "sha256": "019bca28a578fa63a7ac3f56e77955cb27d0ded74b4c93bd790828655618fd14",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_runtime_tests_v1",
+      "sha256": "525399214c200c1c574e553d55be8536c8f315d76d6d6ed8467b868aec016d3b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_execution_watchdog.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_authoritative_liveness_deadman_watchdog_tests_v1",
+      "sha256": "49b5e1385618ed033cf47af678c5e49d6c7c444b20e20303e9b661bd17fdefd2",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-authoritative-liveness-deadman-01-9e4916720",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-authoritative-liveness-deadman-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first focused selection before implementation [observed: 3 failed, 2 passed, 324 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=<temp> tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_heartbeat_failure_freezes_and_emits_critical_alert tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_expiry_freezes_before_any_renewal_attempt tests/contracts/test_btc_okx_demo_paper_runtime.py::test_status_derives_fail_closed_from_stale_durable_liveness_without_writing tests/contracts/test_btc_okx_demo_paper_runtime.py::test_worker_liveness_progress_is_persisted_before_loop_exits tests/contracts/test_btc_okx_demo_paper_runtime.py::test_status_event_projection_deduplicates_event_identity_in_order tests/contracts/test_btc_okx_demo_paper_runtime.py::test_authoritative_liveness_mismatch_never_restores_old_ack tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_ack_event_or_checkpoint_failure_stays_frozen tests/contracts/test_btc_okx_demo_paper_runtime.py::test_repeated_dead_man_ack_and_status_preserve_event_chain_bytes tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_empty_ack_never_marks_write_path_trusted tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_disarms_only_for_exact_terminal_durable_intent_statuses tests/contracts/test_btc_okx_demo_paper_runtime.py::test_dead_man_disarm_blocks_every_non_whitelisted_durable_intent tests/contracts/test_btc_okx_demo_execution_watchdog.py [observed: 39 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q --basetemp=<temp> tests/contracts/test_btc_okx_demo_private_ws.py::test_startup_probe_disconnects_reconnects_and_rest_reconciles tests/contracts/test_btc_okx_demo_private_ws.py::test_probe_preserves_startup_snapshot_exception_diagnostic tests/contracts/test_btc_okx_demo_private_ws.py::test_probe_preserves_reconnect_exception_diagnostic tests/contracts/test_btc_okx_demo_private_ws.py::test_runtime_disconnect_retries_with_backoff_until_current_reconciliation tests/contracts/test_btc_okx_demo_fault_drill.py::test_canonical_binding_owner_marker_must_retain_incident_source_head tests/contracts/test_btc_okx_demo_fault_drill.py::test_terminal_receipt_persists_valid_dead_man_expiry_evidence tests/contracts/test_btc_okx_demo_fault_drill.py::test_terminal_receipt_blocks_incomplete_dead_man_expiry_evidence tests/contracts/test_btc_okx_demo_fault_drill.py::test_terminal_receipt_blocks_armed_dead_man_without_expiry_markers [observed: 11 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_execution_watchdog.py [observed: passed]",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_execution_watchdog.py [observed: passed]",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-AUTHORITATIVE-LIVENESS-DEADMAN-01",
+  "transition_for": ""
+}

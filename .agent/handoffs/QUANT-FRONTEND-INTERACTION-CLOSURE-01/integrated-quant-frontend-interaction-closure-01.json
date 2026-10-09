@@ -1,0 +1,91 @@
+{
+  "base_commit": "be67ef70d9af4cf518a25e4a1933459f6b9d7a46",
+  "blockers": [
+    "current_head_domain_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false",
+    "classification:frontend_interactions_are_local_read_only_feedback_only",
+    "classification:integration_does_not_unlock_promotion_paper_or_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-07-26T07:05:59Z",
+  "deliverable_commit": "58a0efea004e62163d8546530c1f320e6e5ab2bc",
+  "deliverables": [],
+  "depends_on": [
+    "published-quant-frontend-interaction-closure-01-87e37827"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-quant-frontend-interaction-closure-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/quant-frontend-interaction-closure-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/QUANT-FRONTEND-INTERACTION-CLOSURE-01/published-quant-frontend-interaction-closure-01-87e37827.json [observed: valid; 6 of 6 committed-byte SHA-256 values matched]",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-INTERACTION-CLOSURE-01/published-quant-frontend-interaction-closure-01-87e37827.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check be67ef70d9af4cf518a25e4a1933459f6b9d7a46 HEAD -- frontend .agent/handoffs/QUANT-FRONTEND-INTERACTION-CLOSURE-01 [observed: exit 0]",
+      "evidence_path": "frontend",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd ci --offline (cwd=frontend) [observed: 117 packages installed; 0 vulnerabilities; package-lock remained clean]",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend) [observed: tsc --noEmit passed]",
+      "evidence_path": "frontend/src/components/workbench/Workbench.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: Vite build passed; 5203 modules transformed]",
+      "evidence_path": "frontend/src/main.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/system-workbench.spec.ts (cwd=frontend) [observed: 8 passed]",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npx.cmd playwright test (cwd=frontend) [observed: 30 passed]",
+      "evidence_path": "frontend/e2e",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend) [observed: frontend smoke checks passed]",
+      "evidence_path": "frontend/scripts/smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend) [observed: CN operations workspace smoke passed]",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend) [observed: 6 of 6 markers true]",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QUANT-FRONTEND-INTERACTION-CLOSURE-01",
+  "transition_for": "published-quant-frontend-interaction-closure-01-87e37827"
+}

@@ -1,0 +1,95 @@
+{
+  "base_commit": "827a4d1d8bc547cb048c7e2f6d44d0ff8011860f",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator frontend_identity_update_and_current_main_e2e_pending",
+    "owner:integrator current_head_artifact_and_read_model_rebuild_pending",
+    "owner:architect handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-13T09:22:57Z",
+  "deliverable_commit": "e0a651ad729843cecbf1d4f52d3caf27f23f447e",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_readmodel_frontend_contract_v1",
+      "sha256": "d5cff8964e74753307fabcbc4af82127ab501388026c149398ce5335cd4c5c94",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_readmodel_frontend_e2e_v1",
+      "sha256": "7e22d2ba1e3779c27c1bfd25a2cc49b36f6bbe81402379a2eaad20be77a4981c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_readmodel_frontend_fixture_v1",
+      "sha256": "be0ac073aa49d025cdaa7ae82486f9954814e6e2d1acf16bccc972e0bd8d4712",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-btc-current-head-readmodel-contract.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_readmodel_frontend_static_guard_v1",
+      "sha256": "0f71d0c3d589cdd92b38679b03b12ad456adcf0522e6805931604c67db3c090f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/btc-readmodel-ui-contract-20260913.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_readmodel_ui_contract_acceptance_v1",
+      "sha256": "11f97a1c2ac3febd8c3876d2aec98f25560be1defc2bda91615097ea2da13ea8",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-readmodel-ui-contract-20260913-e0a651ad7",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-readmodel-ui-contract-20260913",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-current-head-reader-ui-binding.spec.ts --reporter=line",
+      "evidence_path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/test-btc-current-head-readmodel-contract.mjs",
+      "evidence_path": "frontend/scripts/test-btc-current-head-readmodel-contract.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint -- --pretty false",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-READMODEL-UI-CONTRACT-20260913",
+  "transition_for": ""
+}

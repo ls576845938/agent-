@@ -1,0 +1,106 @@
+{
+  "base_commit": "58b4fafdafbd0861c3706691839ec846ba3c92bd",
+  "blockers": [
+    "backend_api_and_shared_boundary_suite_blocked_by_sparse_missing_quant_cn_and_quant_us",
+    "independent_integrator_required_by_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_and_promotion_remains_blocked",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-24T03:49:41Z",
+  "deliverable_commit": "7a1bb3d8b3fc3cdefab9a471fd9a2ebc20f13c73",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_contract_v2_restart_recovery_v1",
+      "sha256": "990dd8b0353fe8afc7afed54a12adf895ad684cc443de5a0c00a2446f293a0ab",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_v2_current_head_adapter_v1",
+      "sha256": "1590e559cfa456b37a4eb305718290001edbacf5e22dcfdba4adaef3bc173243",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_v2_restart_recovery_contract_tests_v1",
+      "sha256": "be1b7fd528f77599f9361745ca680f65987902646899b757a4ec872f396f9b3e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t6-9b7df3417"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-demo-operator-v2-restart-recovery-01-correction-01-7a1bb3d8b",
+  "event_type": "superseded",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-operator-v2-restart-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-demo-operator-v2-restart-recovery-01-4781d6e22"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-op-v2-correction-red",
+      "evidence_path": "failure-first: 36 passed, 1 failed; ready=true with capability_snapshot_contradictory was incorrectly allowed at tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py:737",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-op-v2-correction-green-final",
+      "evidence_path": "38 passed in 2.88s; contradictory, invalid-shape, queued, and running recovery admissions covered",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-op-v2-correction-service-final",
+      "evidence_path": "77 passed in 5.52s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-op-v2-correction-runtime-final -k \"durable_start_operation or unfinished_start_operation_restarts_interrupted or start_requires_explicit_hash_bound_server_side_protection_policy or start_rejects_self_hashed or demo_start_safety_flags_never_enable_live_money\"",
+      "evidence_path": "5 passed, 422 deselected in 3.20s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_control_center_operator_contract.py -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-op-v2-correction-full",
+      "evidence_path": "collection blocked by sparse baseline ModuleNotFoundError: quant_cn and quant_us in backend/tests/test_btc_demo_runtime_api.py, tests/contracts/test_btc_application_service_boundary.py, and tests/contracts/test_btc_control_center_operator_contract.py",
+      "result": "failed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=C:\\tmp\\qsx-op-v2-correction-pyc-final py -3 -m py_compile quant_crypto/application/btc_operator_contract_v2.py backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "evidence_path": "three scoped Python paths compiled",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "correction worktree",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path quant_crypto/application/btc_operator_contract_v2.py --path backend/app/services/btc_demo_runtime.py --path tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py --path .agent/handoffs/BTC-DEMO-OPERATOR-V2-RESTART-RECOVERY-01",
+      "evidence_path": "scoped status clean after deliverable commit",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-OPERATOR-V2-RESTART-RECOVERY-01",
+  "transition_for": ""
+}

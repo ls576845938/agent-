@@ -1,0 +1,63 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cohort-entry-recovery-final-doc-correction-20261004-3d4d88413",
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-cohort-entry-recovery-closeout-20261004",
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "deliverable_commit": "3d4d8841385c80cec12e9ae793232b4fad597528",
+  "created_at": "2026-10-04T12:34:42.1517466Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-cohort-independent-clock-middleware-20261004-6ff5aec49"],
+  "supersedes": ["published-btc-cohort-entry-recovery-time-correction-20261004-52664527c"],
+  "transition_for": "",
+  "deliverables": [
+    {"type":"schema","path":"quant_shared/strategy_delivery/offline_contract.py","sha256":"660e3aea5f37ea4e722a67e1504c30002b08b9a956d17b88180497739f1a5a36","schema_version":"candidate_offline_cohort_identity_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/api/candidate_offline.py","sha256":"8d5c891eab7e1f56441b212542c978679fd53f9b4bcdf641879878c5a06d2cac","schema_version":"candidate_offline_cohort_api_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/services/candidate_delivery_accounts.py","sha256":"e381b7f6f386aa5b84c9e3ae6820e3d93416f4e16e759360f3b5e0f3175682c2","schema_version":"delivery_offline_runtime_v3","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/services/candidate_offline_inputs.py","sha256":"a007d89ea41a18b8e27dded7eb9197a120febe51de5d28eb44a6436b4ede9511","schema_version":"candidate_offline_input_lookup_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/services/candidate_offline_service.py","sha256":"3fe326f88122fc208ba783e6442b08194d173936ddf1ffdd1df0623b07ff850e","schema_version":"candidate_offline_cohort_service_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"backend/app/services/candidate_offline_views.py","sha256":"3b89bfaa650d13cf84352668a2fa914c0cb85719f20157e0389b122c606f9901","schema_version":"candidate_offline_cohort_result_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/application/btc_registered_cohort.py","sha256":"2325ddc84bc20f8b21afa819cad49d9df4731c6efc1ecc5a062b32030fb1f791","schema_version":"btc_registered_two_member_cohort_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/application/btc_registered_donchian.py","sha256":"cbd0f89ee55b1c5e9f8cee9157d8a0f39edab40e4ff2739b32f6a2edfb7d48ae","schema_version":"btc_registered_donchian_decision_source_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/application/btc_registered_candidate.py","sha256":"a710c87d22fdfbf10af0ce8109769eda4b7d8072a645a3541c92f62e893bbaf0","schema_version":"btc_registered_candidate_cohort_decision_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/candidate-offline-api.ts","sha256":"6895f81e13d7d5e515d9c2c23d57acb8da66021d513e07e068690138f6f5252b","schema_version":"candidate_offline_cohort_frontend_contract_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx","sha256":"b25ce57849e3022d1f9188636384b02d6e53e94e4265cb38372167d755bf2d1c","schema_version":"candidate_offline_cohort_controls_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/RegisteredCandidateOfflineEvidence.tsx","sha256":"ebf7a02b2a232944d654b933ba2b1af4704de7dff0e50626c67512d83827acfd","schema_version":"candidate_offline_cohort_evidence_view_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/research/CandidateDelivery.tsx","sha256":"fc5f0e0844442ebd31174da3e1b78ca775472b287037fe98dd6a2b0d7b295be2","schema_version":"candidate_offline_cohort_readonly_entry_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/contracts/test_candidate_offline_access.py","sha256":"8390ff5e645547d57499ccdcca57b73ee9c19089cac9f807f6d6e31f1623c84c","schema_version":"candidate_offline_cohort_contract_tests_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/integrations/test_registered_cohort_recovery.py","sha256":"5b60f4649c9a5751a538c469925360537bf15ab65454cc4a9ac6aa722c135f47","schema_version":"candidate_offline_cohort_recovery_seam_tests_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/integrations/test_btc_cohort_entry_independent_acceptance.py","sha256":"0bc96daa380dd8c68fabfdeebf3cb10e420e40691f9baa90775f577688a94550","schema_version":"btc_cohort_independent_acceptance_v1","readiness_class":"quality_checked"},
+    {"type":"document","path":"docs/architecture/btc-cohort-entry-recovery-closeout-20261004.md","sha256":"8eda83652ee617b5b89243b1a81a38d1d9ae69166222e920271e8d419f9d0f3b","schema_version":"btc_cohort_entry_architecture_v1","readiness_class":"quality_checked"},
+    {"type":"report","path":"docs/acceptance/btc-cohort-entry-recovery-closeout-20261004.md","sha256":"7010158620e24c0f40b087fe5a893dbe6305388ce2e48b99940c54611301a386","schema_version":"btc_cohort_entry_acceptance_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"canonical main .venv pytest latest independent acceptance plus producer cohort recovery seams","result":"passed","evidence_path":"9 passed, 1 warning in 30.24s"},
+    {"command":"canonical main .venv pytest impacted cohort proposal/review/start contracts","result":"passed","evidence_path":"3 passed, 1 warning in 38.21s"},
+    {"command":"main installed esbuild candidate-offline SSR suite and TypeScript compiler API noEmit","result":"passed","evidence_path":"SSR 5 passed; TypeScript no diagnostics"},
+    {"command":"final deliverable exact five long candidate-offline lifecycle nodes","result":"not_run","evidence_path":"assigned to independent integrator on fixed final deliverable"},
+    {"command":"actual two-real-member common-account economic execution and post-ledger crash recovery","result":"not_run","evidence_path":"current registered pair is structurally blocked before economics"},
+    {"command":"limited research_readonly integration publication, main merge, deployment, backend restart, formal browser acceptance, real training","result":"not_run","evidence_path":"readonly publication is authorized but producer performed none"}
+  ],
+  "blockers": [
+    "owner:integrator independent demo_execution_semantics review and fixed-final-commit regression are required before readonly integration",
+    "owner:execution current Donchian t+1 and frozen Qlib t+2 delayed-open plus signed cost contracts are incompatible with one common order",
+    "owner:protection current Donchian and registered Qlib full policy hashes differ",
+    "owner:real_candidate no eligible real Qlib final package exists; independent effective sample remains below 30 and has no deterministic attainment date",
+    "owner:recovery full actual two-real-member economic recovery is not completed because the pair is blocked before economics",
+    "owner:deployment limited research_readonly publication is authorized but not performed; all write, Demo, private/order/live capabilities remain disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

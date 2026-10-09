@@ -1,0 +1,52 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-frontend-readability-report-resizable-layout-01-17385eb0d",
+  "ticket_id": "FRONTEND-READABILITY-REPORT-RESIZABLE-LAYOUT-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/frontend-readability-report-resizable-layout-01",
+  "base_commit": "3c1a28564f2dc2db338f88054f87f875c1e7861a",
+  "deliverable_commit": "17385eb0de1287ff326edf7c83c01c08d887528d",
+  "created_at": "2026-08-02T00:40:16Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/components/workbench/Workbench.tsx", "sha256": "f158c250926c1ecb3e6bf703c8c58f071eb977a4be68eb49ac5a5611e2554099", "schema_version": "frontend_readability_resizable_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/CryptoWorkspace.tsx", "sha256": "75d6945e2635f4135167f99b911a9ff85379432e24dc2c844c3049317217d753", "schema_version": "frontend_readability_resizable_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/user-backtest-strategy-catalog.ts", "sha256": "6f8719bdcbf3cff3b7c44c10fcda34e0874ffbf3f7ead32a8a68ac8b90955cc4", "schema_version": "btc_local_backtest_snapshot_adapter_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/demo-types.ts", "sha256": "f07ab8189c7023ce6ed4c615bfb39c1382549cc62f9e45c22df19f2f09e7f257", "schema_version": "btc_local_backtest_snapshot_adapter_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "sha256": "8250355036b0bbd90f969bcb3e64b7d4307cf7969b9d00e550c0aa0bf019aad6", "schema_version": "btc_local_backtest_snapshot_adapter_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/index.css", "sha256": "90a883d7b3928943770218e6ce04e902d94d5c148018ff9ca69f0e3778ff766a", "schema_version": "frontend_readability_resizable_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/terminal-workbench.css", "sha256": "bb1c0077ae86ad825296535de941653d445b693b71c148dbddd736e50d2c1023", "schema_version": "frontend_readability_resizable_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/system-workbench.spec.ts", "sha256": "8224a489a984898aa2f10e11a3dde2cd5c33aaee4e9e513e8ec6b39c1c37cf90", "schema_version": "frontend_readability_resizable_layout_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-demo-console.spec.ts", "sha256": "8f6d2f10956288b1e320c3325a97d2b5313da6003aa423e700871eecd21d88ed", "schema_version": "frontend_readability_resizable_layout_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-strategy-history-report.spec.ts", "sha256": "5d1cf302f8393a7cc0fcdb920e73bbea9d8c87c1829e5d8e3c5239481ce6f6c6", "schema_version": "frontend_readability_resizable_layout_e2e_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "preflight receipt: sparse=true; base=3c1a28564f2dc2db338f88054f87f875c1e7861a; initial_touch_set_dirty=clean; change_risk=unclassified; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c; pitfalls=BACKTEST-COST-001,GOV-CONCURRENCY-001,GOV-DIRTY-001,GOV-HANDOFF-001,GOV-ROOT-001,GOV-STORAGE-001,GOV-WORKTREE-001,QSYS-GATE-001,QSYS-SECURITY-001,REPLAY-ISOLATION-001,RESEARCH-HOLDOUT-001 plus selected conditional/advisory rules", "result": "passed", "evidence_path": "docs/agent_playbooks/shared_pitfalls.md"},
+    {"command": "npm.cmd run lint (initial attempt before dependency junction)", "result": "failed", "evidence_path": "frontend/package.json"},
+    {"command": "npm.cmd run lint", "result": "passed", "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command": "npm.cmd run build", "result": "passed", "evidence_path": "frontend/package.json"},
+    {"command": "npm.cmd run check:btc-tradingview", "result": "passed", "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"},
+    {"command": "Playwright browser E2E: updated system-workbench.spec.ts, btc-demo-console.spec.ts, btc-strategy-history-report.spec.ts; CLI not run because selected in-app browser policy disallows substitution without user selection", "result": "not_run", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "independent_integrator_required:change_risk=unclassified",
+    "team_context_unavailable:ModuleNotFoundError_quant_crypto_in_planner_sparse_worktree",
+    "browser_e2e_not_executed:selected_in_app_browser_policy"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

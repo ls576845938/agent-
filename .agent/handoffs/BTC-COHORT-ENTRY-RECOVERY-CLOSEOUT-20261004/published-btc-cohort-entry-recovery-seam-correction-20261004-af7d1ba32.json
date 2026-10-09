@@ -1,0 +1,136 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cohort-entry-recovery-seam-correction-20261004-af7d1ba32",
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-cohort-entry-recovery-closeout-20261004",
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "deliverable_commit": "af7d1ba3222bc60fa44032ee70f63b8615248d45",
+  "created_at": "2026-10-04T13:16:52.1340964Z",
+  "expires_at": "",
+  "depends_on": [
+    "acknowledged-btc-cohort-independent-cumulative-ledger-test-20261004-af7d1ba32",
+    "published-btc-cohort-entry-recovery-final-doc-correction-20261004-3d4d88413"
+  ],
+  "supersedes": [
+    "published-btc-cohort-entry-recovery-final-doc-correction-20261004-3d4d88413"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "backend/app/services/candidate_offline_service.py",
+      "type": "code",
+      "schema_version": "candidate_offline_cohort_service_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "dd624436dd233524892fb22c6bc7cbd43cdbc238ae396353580eb035053d1ea8"
+    },
+    {
+      "path": "quant_crypto/application/btc_registered_cohort.py",
+      "type": "code",
+      "schema_version": "btc_registered_two_member_cohort_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "8f97a3ea254288b5fd0a32c02bb5b7a065046d812e4266ef3ce360d1f695c942"
+    },
+    {
+      "path": "frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx",
+      "type": "code",
+      "schema_version": "registered_candidate_cohort_controls_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "db02d4d578834b44b35e45d901b25a428c18b7fa879031fff8ea228c3cfbeafd"
+    },
+    {
+      "path": "tests/contracts/test_candidate_offline_access.py",
+      "type": "test_evidence",
+      "schema_version": "candidate_offline_access_contract_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "d5ce804d10dbf2f2b508a1ed95caf8972374f9d1cb7696ba9c82c001ac4023ac"
+    },
+    {
+      "path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "type": "test_evidence",
+      "schema_version": "btc_cohort_independent_acceptance_v2",
+      "readiness_class": "quality_checked",
+      "sha256": "e4b2e2c1c72c6eb581f1b25109ae018f7b2379a2aafeee31720f3f065debf730"
+    },
+    {
+      "path": "tests/integrations/test_registered_cohort_recovery.py",
+      "type": "test_evidence",
+      "schema_version": "btc_registered_cohort_recovery_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "a12139d9232cf01bae16a02e9fea6af875d003c215fa7cc587ed9ee1b5bccf61"
+    },
+    {
+      "path": "docs/architecture/btc-cohort-entry-recovery-closeout-20261004.md",
+      "type": "report",
+      "schema_version": "btc_cohort_entry_recovery_architecture_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "508819160d316495cd6ca10221db6601f9a926d2d83e941792c49863de2cf053"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/integrations/test_btc_cohort_entry_independent_acceptance.py tests/integrations/test_registered_cohort_recovery.py -q --tb=short",
+      "result": "passed",
+      "evidence_path": "11 passed in 15.10s"
+    },
+    {
+      "command": "PYTHONUTF8=1 NODE_PATH=<registered-main>/frontend/node_modules py -3 -m pytest tests/contracts/test_candidate_offline_access.py -q --tb=short",
+      "result": "passed",
+      "evidence_path": "59 passed in 457.02s"
+    },
+    {
+      "command": "py -3 -m pytest tests/integrations/test_btc_cohort_entry_independent_acceptance.py tests/integrations/test_registered_cohort_recovery.py tests/contracts/test_candidate_offline_access.py -q --tb=short",
+      "result": "failed",
+      "evidence_path": "69 passed, 1 failed in 518.49s; only failure was missing esbuild in sparse worktree before applying the approved read-only main NODE_PATH"
+    },
+    {
+      "command": "TypeScript Compiler API noEmit using registered-main read-only dependencies",
+      "result": "passed",
+      "evidence_path": "117 source files"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_registered_cohort.py backend/app/services/candidate_offline_service.py tests/integrations/test_registered_cohort_recovery.py tests/integrations/test_btc_cohort_entry_independent_acceptance.py tests/contracts/test_candidate_offline_access.py",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "git diff --check 3d4d8841385c80cec12e9ae793232b4fad597528 af7d1ba3222bc60fa44032ee70f63b8615248d45",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "fixed-version five long candidate-offline lifecycle nodes",
+      "result": "not_run",
+      "evidence_path": "delegated to independent integrator; producer did not duplicate the long run"
+    },
+    {
+      "command": "actual two-real-member nonzero common-account execution and recovery",
+      "result": "not_run",
+      "evidence_path": "fail-closed before binding/job persistence because original execution and protection contracts are incompatible"
+    }
+  ],
+  "blockers": [
+    "current registered Donchian t+1 execution and registered Qlib t+2 delayed-open/cost contracts are incompatible",
+    "current registered Donchian and Qlib protection-policy hashes are incompatible",
+    "real common nonzero execution, hosted-protection attribution, and economic recovery remain unsupported",
+    "no eligible real Qlib final package exists; the independent effective sample remains below 30 and no deterministic readiness date is claimed",
+    "independent integrator fixed-version long lifecycle verification remains pending",
+    "no merge, deployment, service restart, private endpoint, order endpoint, paper, live, or promotion action was performed by this producer"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

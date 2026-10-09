@@ -1,0 +1,83 @@
+{
+  "base_commit": "bd3e259a97a86685d86e5c7243dff5e6da039841",
+  "blockers": [
+    "canonical identity:check --canonical and identity:test deferred until registered main fast-forward; integrator worktree is intentionally noncanonical and fail-closed",
+    "no service restart, Demo action, endpoint, secret, artifact, or promotion action in this correction",
+    "promotion=false,paper_or_live=false,private=false,order=false,real_order=false,transfer=false,withdraw=false,secret=false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-19T02:05:00Z",
+  "deliverable_commit": "bf8945c607b8816e4ba6408d33da35a7c267d658",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "5835d1e8856e0b52fc449e8e9dfd9ab7ac06d89174a289823784b5273d175b33",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-demo-stop-flatten-position-visibility-01-correction-01-b5e13b3"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-demo-stop-flatten-position-visibility-01-correction-01-b5e13b3",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-stop-flatten-vis-corr01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "quant-agent-preflight: base=bd3e259a97a86685d86e5c7243dff5e6da039841; correction touch set=frontend/public/frontend-identity.json plus append-only handoff; initial scoped dirty=clean",
+      "evidence_path": "tools/agent_governance/context_packet.py;tools/agent_governance/worktree_plan.py",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate producer correction event",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-STOP-FLATTEN-POSITION-VISIBILITY-01-CORRECTION-01/published-btc-okx-demo-stop-flatten-position-visibility-01-correction-01-b5e13b3.json",
+      "result": "passed"
+    },
+    {
+      "command": "base_to_deliverable_to_handoff ancestry, correction blob SHA, and exact touch-set validation",
+      "evidence_path": "frontend/public/frontend-identity.json;git diff bd3e259a97a86685d86e5c7243dff5e6da039841..bf8945c607b8816e4ba6408d33da35a7c267d658",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent baseline/object-id/fingerprint assertions via frontend-identity-lib.mjs",
+      "evidence_path": "frontend/scripts/frontend-identity-lib.mjs;frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check bd3e259a97a86685d86e5c7243dff5e6da039841..bf8945c607b8816e4ba6408d33da35a7c267d658",
+      "evidence_path": "git diff",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-STOP-FLATTEN-POSITION-VISIBILITY-01-CORRECTION-01",
+  "transition_for": "published-btc-okx-demo-stop-flatten-position-visibility-01-correction-01-b5e13b3"
+}

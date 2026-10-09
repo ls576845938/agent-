@@ -1,0 +1,88 @@
+{
+  "base_commit": "0f95d2b973fb4a2508a1640ff2056d657375bb65",
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "canonical_main_integration_required_before_runtime_use",
+    "actual_private_read_observation_requires_separate_private_true_order_false_task",
+    "25_hour_natural_demo_observation_not_started",
+    "backend_restart_not_run_for_unintegrated_producer",
+    "promotion_paper_live_private_order_real_order_remain_blocked"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-29T16:46:26Z",
+  "deliverable_commit": "2a501c2a84d0382f803747b0cacdbdf95e27e016",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_runner_v1",
+      "sha256": "6a5b7debea85641d753c311ccc7b7697e76450ac05a1f944cdad4c78029c0bdf",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_cli_v1",
+      "sha256": "544ad02f0a689203cd90536059da5ad6171dbb08efdec7cef09ab1126c8372d7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_contract_tests_v1",
+      "sha256": "613eddd032cc61538a4b1f0de4122bb9cdc48fde21a3fce9871ead8d8fd23bde",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-private-readonly-observation-runner-01-2a501c2a8",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-private-readonly-observation-runner-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first: py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py -q (failed during collection with ModuleNotFoundError before implementation)",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_demo_observation_accumulator.py -q (112 passed in 2.70s)",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_demo_private_readonly_observation.py scripts/run_btc_demo_private_readonly_observation.py tests/contracts/test_btc_demo_private_readonly_observation.py; git diff --check -- scoped touch set",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "actual private REST/WS connection, credential read, order/cancel/live endpoints, 25-hour natural observation, backend restart and browser E2E",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PRIVATE-READONLY-OBSERVATION-RUNNER-01",
+  "transition_for": ""
+}

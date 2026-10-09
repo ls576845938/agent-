@@ -1,0 +1,87 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-terminal-ack-handler-01-47bda0b4c",
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-terminal-ack-handler-01",
+  "base_commit": "922c663a75366cfaa0bf7122e4a872965ecc5105",
+  "deliverable_commit": "47bda0b4c3a89f92292fd8538d6afed55e37a29a",
+  "created_at": "2026-08-25T02:57:20Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "372f6d535090f822082bada3672ec268f185a6b43c5fbf073da1c701d24ead5d",
+      "schema_version": "btc_demo_operator_contract_v2_terminal_ack_handler_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "b70b7c549adeddae181787675045215ca007d2737c52189f43ac4e92dd95c400",
+      "schema_version": "btc_demo_operator_contract_terminal_ack_handler_test_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first on base 922c663a75366cfaa0bf7122e4a872965ecc5105: node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "failed",
+      "evidence_path": "real hook handler assertion at test line 261: durable terminal operation must be acknowledged by the real handler (false !== true); no acknowledgement POST"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "real hook handler terminal acknowledgement, exact operation/action/state_revision fence, terminal/pending/read-failure matrix, and manual rejection/unknown semantics"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "btc_demo_operator_attempt_state_v1"
+    },
+    {
+      "command": "node frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed",
+      "evidence_path": "BTC TradingView entry markers and fail-closed copy"
+    },
+    {
+      "command": "tsc --noEmit --project frontend/tsconfig.json using registered-main frontend/node_modules",
+      "result": "passed",
+      "evidence_path": "67 files, no diagnostics; producer sparse worktree reused dependency runtime read-only"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "producer worktree canonical=false as expected, main_head/source_head=922c663a75366cfaa0bf7122e4a872965ecc5105, identity manifest match=true"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "deliverable source/test diff whitespace check"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "producer_worktree_identity_canonical_false_until_integration",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

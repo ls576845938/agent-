@@ -1,0 +1,197 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-p0-drill-supervisor-frontend-01-d70146cd5",
+  "ticket_id": "BTC-OKX-P0-DRILL-SUPERVISOR-FRONTEND-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-p0-drill-supervisor-frontend-01",
+  "base_commit": "3299df3c8d376ab07bffa2a1fb8745ea31715099",
+  "deliverable_commit": "d70146cd50383d6de9e84efa52f6e1529dad142e",
+  "created_at": "2026-08-05T13:32:26Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "sha256": "afe68741fa0ebd800594436ba90f6a8f2518ba24e27804d4885c1222a32d492b",
+      "schema_version": "playwright_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "9d84de6b666286452a1559192d61124b52790a01825db5c9306c3b19884b995e",
+      "schema_version": "btc_demo_start_payload_p0_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "64ada6fda99f1afbfdf4ce0924fafb6a4ad1a509e8c28fc085a9a6ba2c3c31d3",
+      "schema_version": "btc_okx_demo_fault_drill_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/monitoring/okx_demo_execution_watchdog.py",
+      "sha256": "d05a502cc14ece1a0f152729cf0f77eefbb53e69673b096aebac06ce32434f32",
+      "schema_version": "btc_okx_demo_execution_watchdog_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/monitoring/okx_demo_remote_supervisor.py",
+      "sha256": "f18d403680c0f39ec6c0a1498c599416f2f959390ff1c27a52c25ba3765933c3",
+      "schema_version": "btc_okx_demo_remote_supervisor_receipt_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo.py",
+      "sha256": "f22c1ca1aa6dd4fb19139a192b85354f84923e0dfcbfbb7e80a3d57f6372aecd",
+      "schema_version": "okx_demo_adapter_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "eb63f3f5f54e28617b0e4da99a1b1e2511392057e8125d8299d670fa2acb9c5f",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_fault_drill.py",
+      "sha256": "05bab62d5d8ab924fb316e147eda05b51b74b193bbd0429c2ab8d6682260e3d7",
+      "schema_version": "btc_okx_demo_fault_drill_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/run_btc_okx_demo_remote_supervisor.py",
+      "sha256": "b4d0ba59e31d56ac2689ca903a0bb7598c653001fc390d70fbd55097612e72b9",
+      "schema_version": "btc_okx_demo_remote_supervisor_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "sha256": "189ccc78024e8ba5e8e085701a2d3d308abcb50a77edc4fb96186b2f9f2d41c0",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_execution_watchdog.py",
+      "sha256": "750efcde95f9ce7f4870c237cc41cb4141e735833aebf11bbc996fb5d908df48",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "7365bc0b37fda6974aefabe9e1692748b2803004438f06d40b157ec2b7f9cc83",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "9eb1a828837d9ca069b6dc35db4b05f4d1e874480d00bee0ed9e3e95a1150aab",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_remote_supervisor.py",
+      "sha256": "c22d7db2fda15f866b88a7488a050361bc58dce13de5c15bdcda0dbefb0bafd0",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_remote_supervisor.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp <unique> [failure-first observed: 3 expected collection errors for missing new modules/classes]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_remote_supervisor.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_execution_watchdog.py tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill or remote_supervisor or fault_injected_response_loss or read_only_client or stale_reconciliation_and_unknown' --basetemp <unique> [observed: 13 passed, 146 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp <unique> [observed: 150 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git archive HEAD quant_us to a temporary read-only dependency root; py -3 -m pytest -q -p no:cacheprovider backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_okx_demo_private_ws.py --basetemp <unique> [observed: 28 passed]",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py"
+    },
+    {
+      "command": "frontend/node_modules/.bin/tsc.cmd --noEmit --pretty false [observed: exit 0]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx"
+    },
+    {
+      "command": "npm run build [observed: exit 0; 5207 modules; existing chunk-size warning only]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx"
+    },
+    {
+      "command": "playwright test btc-demo-console.spec.ts --list [observed: 4 tests in 1 file]",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"
+    },
+    {
+      "command": "playwright test btc-demo-console.spec.ts [not run: ticket prohibited starting services and writer-worktree frontend serving is fail-closed]",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"
+    },
+    {
+      "command": "run_btc_okx_demo_fault_drill.py partial_fill_disconnect without --execute-demo [observed: exit 0; blocked_by_venue_lot_and_risk_cap; simulation_only=true; orders_posted=0]",
+      "result": "passed",
+      "evidence_path": "scripts/run_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m compileall -q <ticket Python touch set> [observed: exit 0]",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --cached --check [observed: exit 0]",
+      "result": "passed",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_integration",
+    "owner:operator six_actual_okx_demo_fault_drills_not_executed",
+    "owner:operator remote_supervisor_second_host_deployment_not_performed",
+    "owner:operator independent_host_verified_remains_false_until_distinct_host_observation",
+    "frontend_focused_e2e_not_executed_no_service_started",
+    "no_promotion_artifact_no_read_model_no_frontend_identity_refresh",
+    "demo_fault_drill_evidence_is_not_promotion_or_live_evidence",
+    "no_private_no_order_no_live_no_transfer_no_withdraw_access_during_development"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

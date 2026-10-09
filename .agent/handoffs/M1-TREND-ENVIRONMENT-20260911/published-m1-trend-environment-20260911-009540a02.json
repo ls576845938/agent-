@@ -1,0 +1,212 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-m1-trend-environment-20260911-009540a02",
+  "ticket_id": "M1-TREND-ENVIRONMENT-20260911",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/m1-trend-environment-20260911",
+  "base_commit": "c1d11987d28f06bb0fe89b2c289e88d07522790d",
+  "deliverable_commit": "009540a025d4f5f0f509463a3d50245a713a9cb9",
+  "created_at": "2026-09-11T15:45:30.681Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-m1-observation-evidence-20260911-ce9fa4685"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+      "sha256": "2aab7e1e031acf094ce7a827d324102050344d27246443cac7acb574dd5c3f2a",
+      "type": "data_manifest",
+      "schema_version": "shared_dataset_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/m1-observation-evidence-20260911.md",
+      "sha256": "6e7776ffb3cab4e22498f3cca32576d57af87bb10aec069e7f34230f52f8eda7",
+      "type": "document",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/m1-trend-environment-20260911.md",
+      "sha256": "2b88c468812e7bf6db68b0487de811df0459eb26433270eda509bc9a31ae3a2d",
+      "type": "document",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-trend-environment.mjs",
+      "sha256": "63fd8ec80ab417b7f937e6f73bd8341aa5098fedbca6eeb6e5cfd6560d219ff9",
+      "type": "test_evidence",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/AlphaFactoryConsole.tsx",
+      "sha256": "277b96d9522569df6cb3335669dacd75325cd6fd5f522b820ddee64d9b14e22f",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/QlibDecisionTrace.tsx",
+      "sha256": "27513b6e0d53fc7bbbdf34c3a88344d3a200591277a310c2b08cbd006fe34f30",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/research/TrendEnvironmentEvidence.tsx",
+      "sha256": "4cc419dfc50fd43839887983273cb0123278a2a1d5dab9a081fa1d3723222bde",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "integrations/qlib_adapter/factory_data.py",
+      "sha256": "b4235da4099e310d6b0cc6040407f1e2c83e6294ce26e04342b8a06a8268bcb6",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "integrations/qlib_adapter/factory_trainer.py",
+      "sha256": "6ca8a2ab5c4e185ba86bc2e8cd97f5b94cd3f55a9a2aa6981e4532f2c1467bed",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_pipeline.py",
+      "sha256": "43a5ba50740f948badfa1125ef467fbdffbf5119a86d032f4d5af6b8d1604940",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "integrations/qlib_adapter/trend_environment.py",
+      "sha256": "3c5b5f5c1bdf4537dd3171ce3e7449c61a40a8be7dec1a0987e72847973a4a84",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_shared/trend_environment/README.md",
+      "sha256": "d44e9f3e0ae8ba8133fb09456916d0d522a7b07da64c6b179c7319734cda256f",
+      "type": "document",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_shared/trend_environment/__init__.py",
+      "sha256": "6035ce5b0d9f905f75c0130e6e788733f08709ef10270c34b5956042895ff417",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_shared/trend_environment/model.py",
+      "sha256": "17dadb422106acbf143e5691e49fd30dc0832f1d9fe25ee333cc513e86f44f6d",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "scripts/run_m1_research_acceptance.py",
+      "sha256": "b4a6679323e2ea0838886ad81bfd3902ab257f6d352959f7c1436c8c3b3f3c4e",
+      "type": "code",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_m1_btc_behavior_freeze.py",
+      "sha256": "7643c0b640eba748d96822032f6979f5a21b7d2980f19310ce56635421a39c0d",
+      "type": "test_evidence",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/integrations/test_trend_environment_sidecar.py",
+      "sha256": "e86108592c04fb43063fb046271eb53e8be3c56d26d21755332fd17dc2d9a306",
+      "type": "test_evidence",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/research/test_trend_environment.py",
+      "sha256": "7e4d016b83e23576253f71774798d4874906a603c7ed3f23dd314026b248cca5",
+      "type": "test_evidence",
+      "schema_version": "m1_observation_sidecar_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_strategy_decision_context_v1.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md; 169 before and 169 after"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md; 25 passed"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/integrations/test_qlib_time_series.py tests/integrations/test_qlib_alpha_factory.py tests/api/test_qlib_pipeline.py tests/api/test_alpha_factory.py tests/research/test_alpha_factory.py",
+      "result": "failed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md; first attempt 96 passed, 10 missing quant_cn sparse imports"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/api/test_qlib_pipeline.py tests/api/test_alpha_factory.py tests/integrations/test_trend_environment_sidecar.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md; after sparse quant_cn addition, 22 passed"
+    },
+    {
+      "command": "node frontend/scripts/test-trend-environment.mjs && node frontend/scripts/test-research-rollback.mjs && node frontend/scripts/test-strategy-history-provenance.mjs; npm.cmd run lint; npm.cmd run build",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md"
+    },
+    {
+      "command": "python -B scripts/run_m1_research_acceptance.py --output <new external directory>",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json"
+    },
+    {
+      "command": "existing FastAPI TestClient GET /api/integrations/qlib/runs/<ordinary and four fold IDs>",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md; 5/5 HTTP200 and exact sealed sidecar validation"
+    },
+    {
+      "command": "canonical browser deployment, runtime e2e, current-HEAD promotion gate",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-trend-environment-20260911.md"
+    }
+  ],
+  "blockers": [
+    "independent_acceptance_pending",
+    "canonical_publication_and_browser_acceptance_pending",
+    "historical_reconstructed_availability",
+    "factory_candidate_rejected_no_alpha_effectiveness_claim",
+    "not_runtime_or_promotion_evidence",
+    "BTC parity is component/plan/ledger comparison plus existing composition contracts, not a new private dispatch run",
+    "unclassified strict publication remains subject to existing missing BTC runtime artifact root; no bypass",
+    "immutable projection excludes declared ancillary MLflow databases and cannot resume them"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

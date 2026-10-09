@@ -1,0 +1,53 @@
+{
+  "base_commit": "c90af609178cc11393f852eeb445afba306f5f6c",
+  "blockers": [
+    "owner:main_sync canonical_mocked_playwright_deferred_until_current_main_server_after_ff",
+    "owner:main_sync backend_restart_pending_after_ff",
+    "owner:btc_operations promotion_artifact_rebuild_required_by_unclassified_change_risk"
+  ],
+  "consumer_roles": ["architect", "integrator"],
+  "created_at": "2026-08-18T01:58:32Z",
+  "deliverable_commit": "0bbbd0ce6d39540c5624c4577acc648eb57356f5",
+  "deliverables": [
+    {"path": "frontend/src/workspaces/CryptoWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_workspace_research_backtest_gate_v2", "sha256": "53c161b208e6343c90ce6241116d0b3bf4d2c252fa282e9adf13f38c3b982ed5", "type": "code"},
+    {"path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_research_backtest_gate_v2", "sha256": "6d7228ce9381f58e61ccbfa9b2fff37f748ed867c1c9b6b34504bd37d74d94f6", "type": "code"},
+    {"path": "frontend/e2e/btc-backtest-workbench.spec.ts", "readiness_class": "quality_checked", "schema_version": "crypto_strategy_editor_freshness_independence_e2e_v1", "sha256": "54824bbbb5d478b91b0ccab541e0951330dde4c31b29c81f1d6991b5de326a9d", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "quant_frontend_identity_v1", "sha256": "24c55515a56d1e832393db7568724b51aa9dec08ef32b2f399b88e61e8076540", "type": "document"}
+  ],
+  "depends_on": [
+    "published-btc-crypto-strategy-editor-backtest-flow-01-correction-02-03f0643e7",
+    "integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-01-561639a2b"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-02-0bbbd0ce6",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-strategy-editor-corr02-int01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["integrated-btc-crypto-strategy-editor-backtest-flow-01-correction-01-561639a2b"],
+  "ticket_id": "BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01-INTEGRATION",
+  "tests": [
+    {"command": "correction-02 handoff.py validate; ancestry/touch/blob validation", "evidence_path": ".agent/handoffs/BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01/published-btc-crypto-strategy-editor-backtest-flow-01-correction-02-03f0643e7.json", "result": "passed"},
+    {"command": "git cherry-pick correction-02 deliverable, identity, superseding handoff; zero conflicts", "evidence_path": ".agent/handoffs/BTC-CRYPTO-STRATEGY-EDITOR-BACKTEST-FLOW-01/published-btc-crypto-strategy-editor-backtest-flow-01-correction-02-03f0643e7.json", "result": "passed"},
+    {"command": "npm.cmd run lint (tsc --noEmit)", "evidence_path": "frontend/package.json", "result": "passed"},
+    {"command": "npm.cmd run build (Vite 5214 modules transformed; chunk-size warning only)", "evidence_path": "frontend/package.json", "result": "passed"},
+    {"command": "npm.cmd exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --list (5 tests)", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "passed"},
+    {"command": "canonical mocked Playwright execution (current registered server is base; no restart/worktree server authorized)", "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts", "result": "not_run"},
+    {"command": "npm.cmd run identity:refresh (approved identity-only integration binding)", "evidence_path": "frontend/public/frontend-identity.json", "result": "passed"},
+    {"command": "npm.cmd run identity:check (final registered-main check after ff)", "evidence_path": "frontend/public/frontend-identity.json", "result": "not_run"},
+    {"command": "npm.cmd run identity:test (final registered-main test after ff)", "evidence_path": "frontend/public/frontend-identity.json", "result": "not_run"},
+    {"command": "git diff --check c90af609178cc11393f852eeb445afba306f5f6c..0bbbd0ce6d39540c5624c4577acc648eb57356f5", "evidence_path": "", "result": "passed"}
+  ],
+  "transition_for": "published-btc-crypto-strategy-editor-backtest-flow-01-correction-02-03f0643e7"
+}

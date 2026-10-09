@@ -1,0 +1,72 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-protection-parent-join-independent-review-20260915-cd6b37d59",
+  "ticket_id": "BTC-PROTECTION-PARENT-JOIN-INTEGRATION-20260915",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-protection-parent-join-integration-20260915",
+  "base_commit": "16ac7184dd2b30d2de1972a2d66dc2fd53974957",
+  "deliverable_commit": "cd6b37d59cfbec8162571841393c0dee15d96320",
+  "created_at": "2026-09-15T12:14:43Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-protection-parent-join-20260915-cd211003f"],
+  "supersedes": [],
+  "transition_for": "published-btc-protection-parent-join-20260915-cd211003f",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/btc-protection-parent-join-independent-review-20260915.md",
+      "sha256": "508d6f14493b2ce638bf636ce047c8e93391c0fa04e21881aa1f6ef561757072",
+      "schema_version": "btc_protection_parent_join_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; <venv-python> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/contracts/test_btc_hosted_protection_facts.py",
+      "result": "passed",
+      "evidence_path": "15 passed in 0.69s; docs/operations/btc-protection-parent-join-independent-review-20260915.md"
+    },
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; <venv-python> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/contracts/test_btc_demo_production_composition.py",
+      "result": "passed",
+      "evidence_path": "19 passed in 2.81s; docs/operations/btc-protection-parent-join-independent-review-20260915.md"
+    },
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; <venv-python> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/contracts/test_strategy_v1_donchian_offline.py",
+      "result": "passed",
+      "evidence_path": "11 passed in 153.97s; docs/operations/btc-protection-parent-join-independent-review-20260915.md"
+    },
+    {
+      "command": "AST compare base and source for existing V1 test function bodies",
+      "result": "passed",
+      "evidence_path": "changed_existing=[] removed=[] and one added parentless E2E"
+    },
+    {
+      "command": "handoff schema and committed Git-object validation; exact four-path source diff; Guardian blob identity",
+      "result": "passed",
+      "evidence_path": "validation=[]; Guardian base/candidate c8e2f74751803a3a466bf6881681011a1adf6d4a"
+    },
+    {
+      "command": "actual OKX Demo/private/order/live endpoints, OS-level hard-crash, UI/API/service startup, Qlib, M1, M3-M4, promotion and main publication",
+      "result": "not_run",
+      "evidence_path": "outside this source-contract integration ticket"
+    }
+  ],
+  "blockers": [
+    "owner:runtime_acceptance actual OKX Demo response shapes and OS-level abrupt-process hard-crash were not exercised by this source-contract ticket",
+    "owner:release this integrated event exists only on the isolated integrator branch; main merge, service restart, readonly page, Demo, paper, private, order, live and promotion remain not started or disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

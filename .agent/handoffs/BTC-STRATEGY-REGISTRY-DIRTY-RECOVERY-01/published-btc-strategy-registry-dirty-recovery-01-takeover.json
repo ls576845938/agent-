@@ -1,0 +1,64 @@
+{
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "blockers": [
+    "original_author_task_019f4a57-1512-7633-abff-2ff963d3ad2e",
+    "original_recovery_sparse_repair_failed_no_commit_or_handoff",
+    "integrator_takeover_preservation_not_code_authorship",
+    "recovery_semantics_classification_pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-24T03:00:28Z",
+  "deliverable_commit": "0f34fd295b1f381279ee0695d81ca05cd29aac3f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_recovery_bytes_v1",
+      "sha256": "65007bcc45aecbcaf46ba7385894b826ab47cd30939c46dba632257d01b1e545",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_recovery_test_bytes_v1",
+      "sha256": "9d633f81452ba539790ca862ca71b779b7471af70b0fd2c39b3112c85bbb6452",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-strategy-registry-dirty-recovery-01-takeover",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-strategy-registry-dirty-recovery-20260724",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "git rev-parse 0f34fd295b1f381279ee0695d81ca05cd29aac3f:quant_crypto/application/btc_strategy_registry.py == 30e98fc8a0c73df1a46fd42287146dbb9ab5960a",
+      "evidence_path": "quant_crypto/application/btc_strategy_registry.py",
+      "result": "passed"
+    },
+    {
+      "command": "git rev-parse 0f34fd295b1f381279ee0695d81ca05cd29aac3f:tests/contracts/test_btc_strategy_registry.py == c52943aca7183ef13f4445ea82f22d1a16d82427",
+      "evidence_path": "tests/contracts/test_btc_strategy_registry.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-REGISTRY-DIRTY-RECOVERY-01",
+  "transition_for": ""
+}

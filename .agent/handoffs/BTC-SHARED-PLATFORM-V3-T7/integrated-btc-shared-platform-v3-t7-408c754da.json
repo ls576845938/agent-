@@ -1,0 +1,145 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-shared-platform-v3-t7-408c754da",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T7",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-shared-platform-v3-t7",
+  "base_commit": "b4f8612603ac27df4eafa6faae8ecdc48c189061",
+  "deliverable_commit": "408c754da3fb57d67fa716084e37988b15f440d6",
+  "created_at": "2026-08-23T05:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t1-0be95b352",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99",
+    "integrated-btc-shared-platform-v3-t4-659b3bd4c",
+    "integrated-btc-shared-platform-v3-t5-3ed37d0fa",
+    "integrated-btc-shared-platform-v3-t6-9b7df3417"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-shared-platform-v3-t7-correction-02-9d9f51434-20260822",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "93c7a45510ec02819595edc67c0940db1130032b5a19193cbf19ebd9d9216f9d",
+      "schema_version": "btc_shared_platform_v3_t7_crypto_workspace_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "606151a23811e95380e5ef20dd0ea5fe706c3c7ab3a3300e536ea0e7cfe8c8ff",
+      "schema_version": "btc_shared_platform_v3_t7_demo_console_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "fc2ec07760006b5f32887c0b62018aae5500aa2501ac4e49026a797f4d2392aa",
+      "schema_version": "btc_shared_platform_v3_t7_operator_decoder_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "a809fbef2d53820ce961553c7536a22f52d1da2075e8be3c170f428c53b202f9",
+      "schema_version": "btc_shared_platform_v3_t7_operator_contract_tests",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "3002db2da8bdbc073d86dfa0ee2a7334b4776f9f93dbbc23da9cce85b6c5232b",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T7/published-btc-shared-platform-v3-t7-2bf6935e5-20260822.json",
+      "sha256": "c442463210990510d39aa9aee8d70ed8bfa749fae542bda025779acb7bde7c26",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T7/published-btc-shared-platform-v3-t7-correction-01-8bc89653c-20260822.json",
+      "sha256": "bc148aee201dcac3d2801bc08234940c56f086f673b72d73e4fde7228e4367cb",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T7/published-btc-shared-platform-v3-t7-correction-02-9d9f51434-20260822.json",
+      "sha256": "04f719ac6bf96ab8096326fa5f7e92d002470901c35c97a0c770273843483d64",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "{\"ok\":true,\"actions\":6,\"contract\":\"btc_demo_operator_contract_v2\",\"read_model\":\"btc_demo_operation_read_model_v2\"}"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "result": "passed",
+      "evidence_path": "tsc --noEmit exit 0 in candidate integrator worktree"
+    },
+    {
+      "command": "npm.cmd run build -- --logLevel error",
+      "result": "passed",
+      "evidence_path": "vite build exit 0 in candidate integrator worktree"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "result": "passed",
+      "evidence_path": "cryptoRoute=true, chartImported=true, chartRendered=true, chartEngine=true, chartDependency=true, failClosedCopy=true"
+    },
+    {
+      "command": "npm.cmd run identity:refresh",
+      "result": "passed",
+      "evidence_path": "baseline_commit=6f1e4114a027a20e1d409822f18a83b7c40a6def; fingerprint=df4491cb8943d3e793b8bbf1e8636045526b58363023feb85ce36c2e5e334eb7; packaging commit=408c754da3fb57d67fa716084e37988b15f440d6"
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "result": "passed",
+      "evidence_path": "candidate branch, canonical=false by design, fingerprint=df4491cb8943d3e793b8bbf1e8636045526b58363023feb85ce36c2e5e334eb7"
+    },
+    {
+      "command": "git diff --check b4f8612603ac27df4eafa6faae8ecdc48c189061..408c754da3fb57d67fa716084e37988b15f440d6",
+      "result": "passed",
+      "evidence_path": "authorized T7 source paths plus frontend identity only"
+    },
+    {
+      "command": "handoff.py validate all three T7 published events; ancestry/blob/touch set; scoped safe_status",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-SHARED-PLATFORM-V3-T7/ and authorized T7 paths"
+    },
+    {
+      "command": "Playwright/browser current-main runtime, backend/frontend restart, artifact/read-model rebuild, private/order/live endpoint access",
+      "result": "not_run",
+      "evidence_path": "T8/browser and operational follow-up explicitly deferred; no service, secret, or trading endpoint accessed"
+    }
+  ],
+  "blockers": [
+    "promotion_artifact_rebuild_required_by_unclassified_policy_deferred_to_t8",
+    "backend_restart_required_by_unclassified_policy_deferred_to_t8",
+    "browser_current_head_evidence_deferred_to_t8",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

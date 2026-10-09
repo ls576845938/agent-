@@ -1,0 +1,73 @@
+{
+  "base_commit": "3a3b0cee3b0fb6b62b0813b09daeb3b4ec14fc89",
+  "blockers": [
+    "owner:integrator change_risk_demo_execution_semantics_requires_independent_integration",
+    "owner:frontend_operator canonical_registered_main_frontend_restart_and_mocked_playwright_acceptance_pending",
+    "owner:backend_operator demo_execution_semantics_policy_requires_demo_quasi_live_backend_restart_without_demo_start_or_private_order_access"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-15T22:02:54Z",
+  "deliverable_commit": "b2c761a3110f54ecf8def99d37ff0b85deb0cf3e",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_frontend_recovery_admission_v1",
+      "sha256": "eeb0d88b5732b16935035c707204f6853f57592fbad45303028c5bed1e1f48fe",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_frontend_recovery_admission_contract_v1",
+      "sha256": "8220eb885d54b99481be70fcadf62d663dce50ac96ef2098368cb6db9c69851f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-frontend-recovery-admission-01-b2c761a31",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-frontend-recovery-admission-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (passed; existing Vite chunk-size warning only)",
+      "evidence_path": "frontend/dist/index.html",
+      "result": "passed"
+    },
+    {
+      "command": "npx playwright test e2e/btc-demo-console.spec.ts --grep inactive_safe-flat_blocked_runtime_offers --reporter=line against pre-change canonical main",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check -- frontend/src/workspaces/crypto/DemoTradingConsole.tsx frontend/e2e/btc-demo-console.spec.ts",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-FRONTEND-RECOVERY-ADMISSION-01",
+  "transition_for": ""
+}

@@ -1,0 +1,95 @@
+{
+  "base_commit": "f3d08b1b8372da695439e2a4d8bc72fb0f9a6a02",
+  "blockers": [
+    "owner:integrator correction_02_deliverable_not_integrated_to_registered_main",
+    "independent_integrator_required:demo_execution_semantics",
+    "mocked_playwright_execution_requires_post_integration_registered_main_frontend_server",
+    "promotion_artifact_and_read_model_rebuild_deferred",
+    "producer_validation_no_key_no_network_no_private_no_order_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-16T15:39:01Z",
+  "deliverable_commit": "18b5aa6700aecdcb799fec56333728920cd172db",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_pnl_provenance_ui_v3",
+      "sha256": "07f3d3818a1f4114c02c6934e0b8c347ada50d2ad36a552bda0e4221a92ad57c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "3b7325a60eae476bbc616af00abcfcdb1b313b7f9540a1b3c5d79f3b3d50f27d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_pnl_provenance_e2e_v3",
+      "sha256": "cd2a59ca32206f38d2caa69e969de1b04d3101d43a8eb15dc75859c9df60484f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-minute-market-recovery-ux-01-correction-02-18b5aa670",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-minute-market-recovery-ux-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-demo-minute-market-recovery-ux-01-correction-6fa317f12"
+  ],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run lint [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build [observed: passed; chunk-size warning only]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/node_modules/.bin/playwright.cmd test e2e/btc-demo-console.spec.ts --grep '(realized net PnL|untrusted realised|start POST timeout|unclean frozen|market view)' --list [observed: source discovery passed; no service started]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check [observed: passed]",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-equivalent frontend identity assertion: git rev-parse HEAD:frontend/src == frontend-identity.object_ids.frontend_src_tree [observed: b86ed32d720a4e889a0e9998f76c3e894570018a]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/node_modules/.bin/playwright.cmd test e2e/btc-demo-console.spec.ts --grep '(realized net PnL|untrusted realised|start POST timeout|unclean frozen|market view)' [not run against worktree: canonical frontend serve guard intentionally serves registered main only; post-integration integrator action]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01",
+  "transition_for": ""
+}

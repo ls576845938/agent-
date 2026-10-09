@@ -1,0 +1,117 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-m1-readonly-release-20260912-d63591838",
+  "ticket_id": "M1-READONLY-RELEASE-INTEGRATION-20260912",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/integrator/m1-readonly-release-20260912",
+  "base_commit": "c1d11987d28f06bb0fe89b2c289e88d07522790d",
+  "deliverable_commit": "d63591838468950528f1d87d5653ed5a28af2d76",
+  "created_at": "2026-09-12T02:42:50Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-research-readonly-release-governance-20260912-bfa5966c9",
+    "integrated-research-readonly-release-governance-review-20260912-37e2baadf",
+    "published-m1-readonly-publication-20260912-7211bef9f"
+  ],
+  "supersedes": [],
+  "transition_for": "published-m1-readonly-publication-20260912-7211bef9f",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/m1-research-readonly-release-integration-20260912.md",
+      "sha256": "9b871f1dd13853afa4b482018e4b966af8a1cf9ee174c818bd659cdc369fa654",
+      "schema_version": "m1_research_readonly_release_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/alpha_factory.py",
+      "sha256": "d9c0c3119a6a9750d9250b04fc36c191db4d671828d4d4c45a488b769b5c8a27",
+      "schema_version": "alpha_factory_service_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/research_archive_discovery.py",
+      "sha256": "72989d018ab9905c1e585a75d9c6148db65e82d82b0c89d07e7bb97a911c9870",
+      "schema_version": "research_archive_discovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/api/test_m1_research_readonly_archive.py",
+      "sha256": "be150db3204f6ac863e64dcbb2d26d998e9f0206f09793608fe1d4b1c96070e0",
+      "schema_version": "m1_research_readonly_archive_tests_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "282e3be9ba3d07f27c205687acdd4a19951ac973c6e1c8070f81a82c1b7aaa90",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --basetemp <external-new-dir> tests/api/test_m1_research_readonly_archive.py tests/api/test_qlib_pipeline.py tests/api/test_alpha_factory.py tests/research/test_alpha_factory.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md; 76 passed in 32.77s"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --basetemp <external-new-dir> tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md; 25 passed in 20.72s"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --basetemp <external-new-dir> tests/contracts/test_strategy_decision_context_v1.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md; 169 passed in 5.68s"
+    },
+    {
+      "command": "node frontend/scripts/test-trend-environment.mjs; npm.cmd run lint; npm.cmd run build; npm.cmd run identity:check",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md; SSR PASS, TypeScript passed, build 5258 modules, identity passed"
+    },
+    {
+      "command": "shared_data.py resolve full hash verification plus handoff.py validate and exact Git deliverable hash verification",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md"
+    },
+    {
+      "command": "registered main controlled publication, research_readonly restart, canonical identity/listener/browser acceptance and final release receipt",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-research-readonly-release-integration-20260912.md"
+    }
+  ],
+  "blockers": [
+    "registered_main_integration_pending",
+    "backend_restart_pending",
+    "current_main_identity_pending",
+    "canonical_browser_acceptance_pending",
+    "demo_control_disable_runtime_verification_pending",
+    "final_release_receipt_pending",
+    "historical_reconstructed_availability",
+    "computation_source_head_59f5eb861_is_stale",
+    "factory_candidate_rejected_no_alpha_effectiveness_claim",
+    "btc_runtime_artifact_root_unavailable_preserved",
+    "not_runtime_or_promotion_evidence",
+    "M2_M3_M4_not_authorized"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

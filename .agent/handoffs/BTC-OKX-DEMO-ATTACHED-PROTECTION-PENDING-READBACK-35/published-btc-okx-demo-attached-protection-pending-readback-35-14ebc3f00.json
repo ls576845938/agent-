@@ -1,0 +1,73 @@
+{
+  "base_commit": "1ac1fe8d25886c1f473088eba1d7c14791979545",
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-12T10:03:04Z",
+  "deliverable_commit": "14ebc3f00f5c3574ac86a7c3bbcf595d250ff414",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "bd128af3fb8cdec12feac1e324cd362c013740474181e6bfc3dba79e9bb271fb",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "3ebcd9f511c74a0649daad577b8f9a148148c10b5a8a1e4180c74cdc1a58c233",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-attached-protection-pending-readback-35-14ebc3f00",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-attach-pending-35",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k reconciles_51603_exact_readback_from_unique_live_pending_oco",
+      "evidence_path": "failure-first baseline: 1 failed, 357 deselected; direct order-algo GET returned 51603 and raised before pending-list GET",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k attached_protection and (51603 or conflict_readback or strict_exchange_ack or empty_parent_fail_code)",
+      "evidence_path": "48 passed, 327 deselected",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-ATTACHED-PROTECTION-PENDING-READBACK-35",
+  "transition_for": ""
+}

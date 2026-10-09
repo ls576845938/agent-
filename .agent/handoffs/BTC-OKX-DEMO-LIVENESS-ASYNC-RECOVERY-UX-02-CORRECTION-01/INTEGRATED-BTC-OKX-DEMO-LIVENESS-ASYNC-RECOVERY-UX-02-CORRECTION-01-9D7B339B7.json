@@ -1,0 +1,80 @@
+{
+  "base_commit": "8c785ee4298623dda3de739cc98a8385f374dd4f",
+  "blockers": [
+    "owner:architect registered_main_not_yet_fast_forwarded",
+    "owner:architect canonical_current_main_identity_postcheck_pending",
+    "no_business_code_css_backend_artifact_manifest_or_ledger_changed",
+    "no_secret_or_private_order_live_transfer_withdraw_endpoint_access_performed"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-17T10:19:42Z",
+  "deliverable_commit": "9d7b339b7911fc42f73daeeb48333404e25d0f22",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "573ad55be701a223e535ffe2902a2e798e3f204eaaffa35891c53efb03372d60",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "52dc262dabfb536bf5ac464cd936b3dd3430181982a9c8a2061e235a482122b6",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "PUBLISH-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01-B34D4E366"
+  ],
+  "domain": "btc",
+  "event_id": "INTEGRATED-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01-9D7B339B7",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-liveness-async-ux02-corr01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "playwright test e2e/btc-demo-console.spec.ts against existing canonical current-main server [22 passed in 1.7m]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint [tsc --noEmit passed]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check [manifest_match=true, baseline_ancestor=true]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:test [passed, object_targets=4]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 8c785ee4298623dda3de739cc98a8385f374dd4f..9d7b339b7911fc42f73daeeb48333404e25d0f22 -- declared touch set",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01",
+  "transition_for": "PUBLISH-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01-B34D4E366"
+}

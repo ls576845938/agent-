@@ -1,0 +1,147 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-start-attempt-policy-binding-01-correction-02-b70ef2f32",
+  "ticket_id": "BTC-DEMO-START-ATTEMPT-POLICY-BINDING-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-start-attempt-policy-binding-01",
+  "base_commit": "88775d1c160fd7af7771bc38557658ef08acebe8",
+  "deliverable_commit": "b70ef2f32ff34ecec787488f30b8e629bbb0cce7",
+  "created_at": "2026-08-25T06:24:13Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-01-529ae01ad"
+  ],
+  "supersedes": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-01-529ae01ad"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_demo_start_attempt.py",
+      "sha256": "8cafee03ea150bc41e37b4bbc10c1385083f9d986ad36429a66ac627bf1dfebb",
+      "schema_version": "btc_demo_authoritative_account_identity_projection_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "a943338f554f033d27b8197568226e30fef8e92b3bed1d2616b557497b832d39",
+      "schema_version": "btc_demo_authoritative_account_snapshot_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "c35c9faef770b44810a6222c60c310f84370ab11ce64016b48e27170a87d904a",
+      "schema_version": "btc_demo_dynamic_account_identity_policy_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "sha256": "dbd8fc775a6d74c1c66d093ac4d1854482c90ebc606b220e9cbd9c16c7302920",
+      "schema_version": "btc_demo_operator_control_read_model_types_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "e3019d5f23955fdcccee4133af822e60c56177ae795c4e9828c073eb2de34166",
+      "schema_version": "btc_demo_account_identity_failure_first_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "sha256": "2616b1d1928ab78dc205c991349309ef197a3d7ac2ec0e2cb018cf4ab4d9baa6",
+      "schema_version": "btc_demo_outer_account_identity_binding_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "git show 88775d1c160fd7af7771bc38557658ef08acebe8:quant_crypto/oms/okx_demo_paper_runtime.py and frontend/src/workspaces/crypto/demo-types.ts failure-first static contract check",
+      "result": "failed",
+      "evidence_path": "old correction-01 reproduced pseudo account_identity_hash(credential_service:instrument) fallback and DemoOperatorControl lacked start_attempt/historical_start_attempts; exact output recorded before fix"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp D:\\tmp\\btc-corr02-runtime-final2",
+      "result": "passed",
+      "evidence_path": "436 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py --basetemp D:\\tmp\\btc-corr02-shared-final",
+      "result": "passed",
+      "evidence_path": "56 passed, including missing-identity-before-begin and dynamic-controller-hash regressions"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp D:\\tmp\\btc-corr02-backend-final",
+      "result": "passed",
+      "evidence_path": "43 passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_demo_start_attempt.py --basetemp D:\\tmp\\btc-corr02-aggregate-final",
+      "result": "passed",
+      "evidence_path": "4 passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_demo_start_attempt.py quant_crypto/oms/okx_demo_paper_runtime.py backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "all touched Python modules and contract tests compiled"
+    },
+    {
+      "command": "npm.cmd run lint (frontend; temporary ignored node_modules junction to registered-main frontend/node_modules)",
+      "result": "passed",
+      "evidence_path": "tsc --noEmit exit 0; junction removed after run"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "actions=8; executable handler_harness executed=true; fenced_ack_posts=1; payload_asserted=true"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "btc_demo_operator_attempt_state_v1 contract passed"
+    },
+    {
+      "command": "node scripts/check-btc-tradingview-entry.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy all true"
+    },
+    {
+      "command": "node scripts/check-frontend-identity.mjs (cwd=frontend)",
+      "result": "failed",
+      "evidence_path": "expected producer-worktree governance block: canonical=false; source_head=88775d1c160fd7af7771bc38557658ef08acebe8; main_head=61ac122bdba2efe954f1f22c0131a9b2b531ed3e; manifest_match=false; dirty_paths=[]"
+    },
+    {
+      "command": "git diff --check; scoped data/manifests, data/paper_ledger/paper_runtime_audit.jsonl, and artifacts status/diff check",
+      "result": "passed",
+      "evidence_path": "diff-check clean; no data/manifests, paper ledger, or artifact changes"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "real_demo_execution_not_run",
+    "producer_worktree_identity_not_canonical_until_integration",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

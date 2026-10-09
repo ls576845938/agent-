@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-system-intake-lifecycle-review-20261001-d36bab407",
+  "ticket_id": "INTEGRATE-BTC-SYSTEM-INTAKE-ACCEPTANCE-20261001",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-system-intake-acceptance-20261001",
+  "base_commit": "c5a9570bd40a5ce5243c4d61320a2fd5860dd8c5",
+  "deliverable_commit": "d36bab4074d2e033128de21f82ae99a2ab56100f",
+  "created_at": "2026-10-01T06:48:19Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-system-intake-v1-fixture-fix-20261001-8511500b5"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-system-intake-v1-fixture-fix-20261001-8511500b5",
+  "deliverables": [
+    {
+      "type": "test_evidence",
+      "path": "tests/integrations/test_candidate_offline_lifecycle.py",
+      "sha256": "32d0e8246a3307c5a2c86593fb8a0a49b79ab105b4795beb9f59e57604cac131",
+      "schema_version": "btc_system_intake_synthetic_v1_fixture_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/acceptance/btc-system-intake-fixture-schema-20261001.md",
+      "sha256": "54ae4853c96e838112b5a9cd33b9fb582899301b76dbbca1e3d01da979c7b70d",
+      "schema_version": "btc_system_intake_fixture_schema_notes_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/acceptance/btc-system-intake-independent-review-20261001.md",
+      "sha256": "e406c17096ed24cc68224318aeea86519df58ef7046ce3fe9acb612637a64ffd",
+      "schema_version": "btc_system_intake_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pre-fix current-main five-file pytest matrix, root session 83816",
+      "result": "failed",
+      "evidence_path": "D:/quantstation-runtime/btc-system-intake-tests-20261001-8ef569e7955f43959c8d4b2a49f2d51e/junit.xml; SHA-256 5d8546ca2d4823523aa9faf7da86b3feb056d2b135311d815734dd7c090ab7d3; 4 failed, 146 passed, 1 warning in 1781.67s"
+    },
+    {
+      "command": "producer focused schema regression",
+      "result": "passed",
+      "evidence_path": "producer chunk 7ccb02; 2 passed, 1 warning in 6.85s"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -B -m pytest tests/integrations/test_candidate_offline_lifecycle.py -q -p no:cacheprovider --basetemp D:/codex-test-tmp/btc-system-intake-lifecycle-independent-20261001-6d7f3a/basetemp --junitxml D:/codex-test-tmp/btc-system-intake-lifecycle-independent-20261001-6d7f3a/junit.xml",
+      "result": "passed",
+      "evidence_path": "session 30875, final chunk 8268ac, exit 0; 6 passed, 3 warnings in 1033.96s; JUnit SHA-256 26db90a301a401b72c4030aa21d9d8c5f4c140c550a001e3b9f45b7195d10114"
+    },
+    {
+      "command": "verify c5a957..d36bab production directories and the four inherited matrix test blobs",
+      "result": "passed",
+      "evidence_path": "production directory diff empty; inherited test blobs 3fb7538, 90b0f4b, 7ad7962, 35ede996 unchanged"
+    },
+    {
+      "command": "repeat the unchanged 146 passing cases as a new matrix run",
+      "result": "not_run",
+      "evidence_path": "unchanged committed blobs inherit the original passing evidence; combined evidence is not represented as a new one-shot full-matrix pass"
+    },
+    {
+      "command": "real R2 candidate, genuine historical acceptance, formal UI48/browser, service activation, account, Demo, private/order/paper/live actions",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "synthetic_fixture_only_not_candidate_effectiveness_or_research_evidence",
+    "real_r2_candidate_remains_rejected_no_v3_candidate",
+    "formal_ui48_and_browser_acceptance_not_run",
+    "no_runtime_registration_demo_account_or_trading_acceptance",
+    "not_promotion_paper_or_live_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

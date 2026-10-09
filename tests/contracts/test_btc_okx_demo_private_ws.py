@@ -77,7 +77,7 @@ def test_websocket_factory_uses_dedicated_loopback_proxy(
         "https://127.0.0.1:15421",
         "socks5://127.0.0.1:15421",
         "http://proxy.example:15421",
-        "http://user:pass@127.0.0.1:15421",
+        "REDACTED_SENSITIVE_PATTERN127.0.0.1:15421",
         "http://127.0.0.1",
         "http://127.0.0.1:0",
         "http://127.0.0.1:65536",
@@ -215,9 +215,9 @@ class FakeFactory:
 
 def _credentials() -> OkxDemoCredentials:
     return OkxDemoCredentials(
-        api_key="demo-api-key",
-        secret_key="demo-secret-key",
-        passphrase="demo-passphrase",
+        api_key="REDACTED_CREDENTIAL_LITERAL",
+        secret_key="REDACTED_CREDENTIAL_LITERAL",
+        passphrase="REDACTED_CREDENTIAL_LITERAL",
     )
 
 

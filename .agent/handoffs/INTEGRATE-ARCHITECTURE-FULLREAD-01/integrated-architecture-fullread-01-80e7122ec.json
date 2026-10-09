@@ -1,0 +1,172 @@
+{
+  "base_commit": "f3a78afe0b59d432820dc8f50510038df6c00754",
+  "blockers": [
+    "owner:root non-fastpath main publication, final current-main frontend identity check, canonical browser regression and frontend restart pending",
+    "owner:environment backend official check remains fail-closed on btc_runtime_artifact_root_env_missing; no artifact bootstrap and no DEMO_CONTROL/private/action enablement in this ticket",
+    "source atlas certifies fixed baseline 7403c533 and separately reviewed main delta only; it is not runtime, promotion, paper or live evidence",
+    "rollback ref codex/architecture-before-fullread-20260911 points to f3a78afe0b59d432820dc8f50510038df6c00754",
+    "M1 implementation remains paused in this ticket; M2-M4 are not started"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-10T23:22:26Z",
+  "deliverable_commit": "80e7122ec9cddf3d55f409433b1f5e971c994669",
+  "deliverables": [
+    {
+      "path": "docs/architecture/system-code-map/DELIVERY.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "ebd84aa514aba898da011efbbc14f296fc770d113363bec015c6b925255db56d",
+      "type": "document"
+    },
+    {
+      "path": "docs/architecture/system-code-map/PRODUCER-ACCEPTANCE.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "14d7a7915497c262c7c7b4c9489fc563d0a4a62840be8437da2651dc2e17a08d",
+      "type": "document"
+    },
+    {
+      "path": "docs/architecture/system-code-map/README.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "c95b5ef6a9a85bad6cdd79ed4a34135e15430e9b789b71056bf1f8324c52e3a3",
+      "type": "document"
+    },
+    {
+      "path": "docs/architecture/system-code-map/REASSESSMENT.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "368126d8e264d3ed8ce839d06bbbec9fa79d759576efe399c7c45ee33a3c26d6",
+      "type": "document"
+    },
+    {
+      "path": "docs/architecture/system-code-map/REVIEW-NOTES.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "663262dbdefeb4a66d348bc6590a7e10fe5730ce9bbdac4061fc5af3df950f2b",
+      "type": "document"
+    },
+    {
+      "path": "frontend/e2e/architecture-map.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "87e5d9c4c6d14d61b8821f62ec7b7a355de318d11b335c8ce12345471f1158d1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-architecture-map.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "d20c4edf16bd1199cfe5c6daca5e432eb0df082a5cd58101287b1e5b5dfb2ab2",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_delivery_v1",
+      "sha256": "7d5df453fe894a8fe77e6f8160ce84e4f29eda9739ca87bec3cdea22154d9e93",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/catalog.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_code_map_v1",
+      "sha256": "c393793ef39114e071f36551428ce22e64a2eaf9911b711f10443b085e48ef1e",
+      "type": "artifact"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "cb37156c1e7ec0b75e1b93bc4d908b8619039780dccb0946af2e3763080adbcb",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-architecture-codemap-fullread-bfbbe9d87"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-fullread-01-80e7122ec",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-architecture-fullread-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-architecture-codemap-fullread-bfbbe9d87.json",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-CODEMAP-01/published-architecture-codemap-fullread-bfbbe9d87.json",
+      "result": "passed"
+    },
+    {
+      "command": "git object comparison for nine approved paths between bfbbe9d87 and 2843c621a; exact integrated touch set from f3a78afe",
+      "evidence_path": ".agent/handoffs/ARCHITECTURE-CODEMAP-01/published-architecture-codemap-fullread-bfbbe9d87.json",
+      "result": "passed"
+    },
+    {
+      "command": "D:/New Folder/node.exe --test frontend/scripts/test-architecture-map.mjs",
+      "evidence_path": "frontend/scripts/test-architecture-map.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "D:/New Folder/node.exe frontend/scripts/architecture-review.mjs --ref=7403c5331057cbba21b9c013b8d6c0ee4c517d91; 2515/2515 EOF, catalog_errors=[], unchanged=true",
+      "evidence_path": "docs/architecture/system-code-map/PRODUCER-ACCEPTANCE.md",
+      "result": "passed"
+    },
+    {
+      "command": "typescript --noEmit -p frontend/tsconfig.json using temporary read-only dependency Junction; Junction removed",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build; 5250 modules transformed, build succeeded with existing large-chunk warning",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs before refresh; manifest_match=false as expected failure-first",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "failed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs after refresh; manifest_match=true, baseline_ancestor=true",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs inside sandbox; blocked only by Windows script execution policy",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "failed"
+    },
+    {
+      "command": "same node frontend/scripts/test-frontend-identity.mjs under platform-approved execution; passed, no ExecutionPolicy change and no Bypass",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main Playwright browser validation and official service restart",
+      "evidence_path": "owner:root after publishing integration commit to main",
+      "result": "not_run"
+    },
+    {
+      "command": "BTC promotion/runtime artifact rebuild and private/order/live validation",
+      "evidence_path": "prohibited and not applicable to architecture source atlas integration",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-ARCHITECTURE-FULLREAD-01",
+  "transition_for": "published-architecture-codemap-fullread-bfbbe9d87"
+}

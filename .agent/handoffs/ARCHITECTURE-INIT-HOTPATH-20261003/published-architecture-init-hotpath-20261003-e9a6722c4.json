@@ -1,0 +1,92 @@
+{
+  "base_commit": "8407236769b52088ec2483fc5bfeb9e7c8653c31",
+  "blockers": [
+    "owner:integrator full TypeScript check must complete in the independent integration worktree; producer tsc was terminated after sustained low-progress with no diagnostics or exit",
+    "owner:integrator committed diff, hashes, execution-semantics-unchanged boundary and rollback point require independent verification",
+    "owner:root canonical-main frontend fingerprint, restart, unchanged 29-case browser matrix, timing and ELK-load-failure acceptance remain pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-10-03T02:04:49Z",
+  "deliverable_commit": "e9a6722c46d7af060adf09ca83cb87fbff7bc69f",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_init_hotpath_v1",
+      "sha256": "03e0632edca7f471d81cd67bed36a4be2ab6e8b644beafe2f0de6172a02cf6c2",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/architecture/btcPanoramaLayout.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_init_hotpath_v1",
+      "sha256": "1dfb644126401aba22990356faeb9b01c38e470be5b6d93fba68016fb9b81c7c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-architecture-initialization.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_init_hotpath_regression_v1",
+      "sha256": "74f839006e4607c0efdbf19235859a7482503c1350f4f8ef055733b958ee7cc9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/ARCHITECTURE-INIT-HOTPATH-20261003.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_init_hotpath_acceptance_v1",
+      "sha256": "1511c509b47e64de4bf7f28001a5ad1d8dd9d14a181117a7ccd72c362dd36cea",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-architecture-init-hotpath-20261003-e9a6722c4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/architecture-init-hotpath-20261003",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "$env:ARCHITECTURE_INIT_BASE_REF='8407236769b52088ec2483fc5bfeb9e7c8653c31'; node --experimental-strip-types ./scripts/test-architecture-initialization.mjs -> expected 2 failures and 1 pass",
+      "evidence_path": "docs/acceptance/ARCHITECTURE-INIT-HOTPATH-20261003.md",
+      "result": "passed"
+    },
+    {
+      "command": "node --experimental-strip-types ./scripts/test-architecture-initialization.mjs -> 3 passed",
+      "evidence_path": "frontend/scripts/test-architecture-initialization.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node --experimental-strip-types ./scripts/test-btc-system-panorama.mjs -> 7 passed",
+      "evidence_path": "frontend/scripts/test-btc-system-panorama.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint -> producer dependency-recovery rerun did not complete and was terminated after sustained low-progress",
+      "evidence_path": "docs/acceptance/ARCHITECTURE-INIT-HOTPATH-20261003.md",
+      "result": "failed"
+    },
+    {
+      "command": "canonical main unchanged 29-case browser matrix, timing and ELK-load-failure acceptance",
+      "evidence_path": "docs/acceptance/ARCHITECTURE-INIT-HOTPATH-20261003.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-INIT-HOTPATH-20261003",
+  "transition_for": ""
+}

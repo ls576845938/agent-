@@ -1,0 +1,110 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-ibkr-offline-paper-foundations-current-main-01-648d98aba",
+  "ticket_id": "INTEGRATE-US-IBKR-OFFLINE-PAPER-FOUNDATIONS-CURRENT-MAIN-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "researcher", "super_developer"],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-us-ibkr-offline-paper-foundations-current-main-01",
+  "base_commit": "615b80b1a98d7c4f7b9dc56afbb2c6a55009e331",
+  "deliverable_commit": "648d98aba2c245bb5c2f573e360eaac405e72d6a",
+  "created_at": "2026-08-06T15:28:39Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-ibkr-offline-paper-foundations-01-c3c33b39b"
+  ],
+  "supersedes": [],
+  "transition_for": "integrated-us-ibkr-offline-paper-foundations-01-c3c33b39b",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": ".agent/handoffs/INTEGRATE-US-IBKR-OFFLINE-PAPER-FOUNDATIONS-01/integrated-us-ibkr-offline-paper-foundations-01-c3c33b39b.json",
+      "sha256": "245d326187cd29287fa4b4352a90c5038ad6d2e3f24f69524acfeb67f2e4b417",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "preflight at registered main 615b80b1a98d7c4f7b9dc56afbb2c6a55009e331: main contains 9fa8c975335fc1e74257ff39505dfb19794ea7e5; candidate d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6..bb869a84ae13bf7148222839b4ac1bacb03a644c has exactly 18 paths; current-main overlap count 0",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/INTEGRATE-US-IBKR-OFFLINE-PAPER-FOUNDATIONS-01/integrated-us-ibkr-offline-paper-foundations-01-c3c33b39b.json"
+    },
+    {
+      "command": "validated nine exact single-parent commit objects in strict order 7016e6dabaef1657bda3cd01cd8391b94a472989,73f31bca3dd46e5a0d7784db365ecef902b9f176,c11aa1520af49d24b98d34b11ab0ac5dac795d6e,503d683f38da5561cb345a46f22ce4f95c362610,c76683333f317f30e6c5015717a844992c486827,6104931f78f3cb069cc9ced67d9b4a76f7c987f4,e94ef9275357978f6c30e5eb6923932c5a2c9f72,c3c33b39b4733bfa501f3cdbcf62b3b203ccf9ab,bb869a84ae13bf7148222839b4ac1bacb03a644c; cherry-picked without conflicts; successor 18/18 blobs equal candidate final",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/INTEGRATE-US-IBKR-OFFLINE-PAPER-FOUNDATIONS-01/integrated-us-ibkr-offline-paper-foundations-01-c3c33b39b.json"
+    },
+    {
+      "command": "A: py -3 -B -m pytest tests/live/test_us_etf_26_ibkr_no_submit_shadow.py tests/live/test_ibkr_paper_adapter_foundation.py tests/live/test_runtime_paper_worker_safety.py tests/contracts/test_no_broker_import_in_evidence_builders.py backend/tests/test_order_routing.py -p no:cacheprovider -q --basetemp <unique-system-temp> [109 passed]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "B: py -3 -B -m pytest tests/live/test_ibkr_paper_execution_adapter.py -p no:cacheprovider -q --basetemp <unique-system-temp> [12 passed]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_execution_adapter.py"
+    },
+    {
+      "command": "C: py -3 -B -m pytest tests/live/test_ibkr_paper_reconciliation.py tests/live/test_ibkr_paper_adapter_foundation.py tests/live/test_paper_runtime_reconciliation_hard_gate.py -p no:cacheprovider -q --basetemp <unique-system-temp> [25 passed]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_reconciliation.py"
+    },
+    {
+      "command": "D: py -3 -B -m pytest tests/contracts/test_us_ibkr_paper_observation.py tests/live/test_ibkr_paper_adapter_foundation.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_paper_live_locked.py tests/contracts/test_us_equity_final_paper_readiness.py -p no:cacheprovider -q --basetemp <unique-system-temp> [43 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_ibkr_paper_observation.py"
+    },
+    {
+      "command": "combined four-module plus IBKR foundation, runtime safety, reconciliation hard gate, no-broker import, paper-live lock, final readiness and order-routing regression with unique basetemp [164 passed]",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_order_routing.py"
+    },
+    {
+      "command": "focused no-submit zero-write plus import/constructor no-network node IDs [4 passed]; submit/cancel/globalCancel call, attempt and delta assertions all 0",
+      "result": "passed",
+      "evidence_path": "tests/live/test_us_etf_26_ibkr_no_submit_shadow.py"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/api/test_research_only_boundaries.py -p no:cacheprovider -q --basetemp <unique-system-temp> [8 passed]",
+      "result": "passed",
+      "evidence_path": "tests/api/test_research_only_boundaries.py"
+    },
+    {
+      "command": "compile 10 Python touch files with external PYTHONPYCACHEPREFIX; Draft202012 validate three schemas; AST forbidden network import scan empty; git diff --check; five upstream handoff validators valid",
+      "result": "passed",
+      "evidence_path": "schemas/us_ibkr_paper_observation_report.schema.json"
+    },
+    {
+      "command": "successor fake audit hashes c9f368a228d7df2bfe22a3e5d9d6fea609b485bf and b460a73f50cedfb90fb2092e80b25e9e9104d36e restored only in successor to HEAD blob b3c39107d86d53bc465d1ce28346d9d4d86eb3ab; sparse reapply removed materialized file; registered dirty hash 8d5be206c1895d93e2dc570139a9ace56bc90cec length 2746 mtime 2026-08-06T07:45:46.6560870Z unchanged before handoff commit",
+      "result": "passed",
+      "evidence_path": "data/paper_ledger/paper_runtime_audit.jsonl"
+    },
+    {
+      "command": "network access, backend start/restart, IB Gateway, secret read, private/order/paper/live endpoints, submit/cancel/globalCancel, real ledger/observation, promotion artifact/read-model/gate rebuild, push",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_unclassified_integration_not_run_and_forbidden_by_ticket",
+    "offline_foundations_only_no_gateway_or_private_account_sync_performed",
+    "paper_execution_adapter_not_wired_into_paper_runtime_by_ticket_scope",
+    "no_real_ibkr_paper_order_fill_position_cash_ledger_evidence",
+    "no_real_observation_receipt_and_forward_paper_observation_not_started",
+    "current_head_promotion_artifact_read_model_and_gate_rebuild_forbidden_and_not_performed",
+    "manual_paper_live_promotion_authorization_missing",
+    "all_trading_safety_permissions_remain_disabled"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

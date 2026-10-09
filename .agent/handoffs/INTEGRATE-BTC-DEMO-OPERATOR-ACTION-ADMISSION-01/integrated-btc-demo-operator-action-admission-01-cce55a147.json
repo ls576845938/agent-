@@ -1,0 +1,138 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-action-admission-01-cce55a147",
+  "ticket_id": "INTEGRATE-BTC-DEMO-OPERATOR-ACTION-ADMISSION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-operator-action-admission-01-integrate",
+  "base_commit": "c8ffa7f3efe261edcf97a145fefab8878e6eea3b",
+  "deliverable_commit": "cce55a1479359af3dfe4be66e7902798462d4a20",
+  "created_at": "2026-08-21T04:12:24Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-operator-action-admission-01-1c4b3d995"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-operator-action-admission-01-1c4b3d995",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "e687105e8adef0212a22bfd6154e82b8c1e1b4633530248dff38fc327dc6de1c",
+      "schema_version": "btc_demo_operator_control_service_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "2d2327650db6a5ec61e3f16896e820bc8f07077d71676ec03e9043780c61dd8f",
+      "schema_version": "btc_demo_operator_control_service_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "sha256": "23904e3d7d71591f862311582f1590c7fbf6646ee192e738beee8955ff159e21",
+      "schema_version": "btc_demo_operator_action_admission_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "c6f6db165d59d1cb530656c2528f35d584756ed8530621f2a50c6d1976f8f398",
+      "schema_version": "btc_demo_operator_action_admission_ui_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "sha256": "1f4b8118187a2f07dfdac58cefb39228a6b3551af0eb568a0e01bf348e46e63a",
+      "schema_version": "btc_demo_operator_control_types_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "dce3b8de17d4a1621ad023a045da5c683c3bb79aa66c9c2f3682097e644b4421",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-OPERATOR-ACTION-ADMISSION-01/published-btc-demo-operator-action-admission-01-1c4b3d995.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-OPERATOR-ACTION-ADMISSION-01/published-btc-demo-operator-action-admission-01-1c4b3d995.json"
+    },
+    {
+      "command": "git merge-base --is-ancestor c8ffa7f3efe261edcf97a145fefab8878e6eea3b 1c4b3d9958ab67580a0cff67f3a663d26bf5a75b; git merge-base --is-ancestor 1c4b3d9958ab67580a0cff67f3a663d26bf5a75b 6c2f73ef57594811042925ead3e4173b2c78a908",
+      "result": "passed",
+      "evidence_path": "producer ancestry and exact five-file touch set"
+    },
+    {
+      "command": "py -3 -m pytest -q backend/tests/test_btc_demo_runtime_service.py --basetemp C:\\tmp\\qsx_operator_backend",
+      "result": "passed",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py [36 passed in 6.14s]"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=C:\\tmp\\qsx_operator_compile_20260821_0412 py -3 -m py_compile backend/app/services/btc_demo_runtime.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "backend/app/services/btc_demo_runtime.py"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx [tsc --noEmit; temporary read-only registered-main node_modules junction]"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx [Vite 5217 modules transformed; existing chunk-size warning]"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts [32 tests listed; no webServer started]"
+    },
+    {
+      "command": "npm.cmd run identity:refresh && npm.cmd run identity:check && npm.cmd run identity:test",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json [candidate canonical=false; manifest_match=true; baseline_ancestor=true; object_targets=4]"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "candidate integration tree"
+    },
+    {
+      "command": "git diff --name-status c8ffa7f3efe261edcf97a145fefab8878e6eea3b..HEAD",
+      "result": "passed",
+      "evidence_path": "candidate integration tree [five business paths, identity packaging path, and append-only handoff only]"
+    },
+    {
+      "command": "frontend mocked Playwright execution on canonical registered-main port 3000",
+      "result": "not_run",
+      "evidence_path": "ticket forbids service restart; old canonical server requires current-main restart"
+    }
+  ],
+  "blockers": [
+    "owner:main_session backend_restart_required_after_integration",
+    "owner:main_session canonical_mocked_playwright_deferred_until_current_main_frontend_restart",
+    "promotion_artifact_not_rebuilt_and_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

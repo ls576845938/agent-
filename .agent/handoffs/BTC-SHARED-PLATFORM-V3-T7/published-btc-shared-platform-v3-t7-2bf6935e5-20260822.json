@@ -1,0 +1,114 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-shared-platform-v3-t7-2bf6935e5-20260822",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T7",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-shared-platform-v3-t7",
+  "base_commit": "b4f8612603ac27df4eafa6faae8ecdc48c189061",
+  "deliverable_commit": "2bf6935e5835abdc71d1ce7325590130e969a391",
+  "created_at": "2026-08-22T19:46:20Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t1-0be95b352",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99",
+    "integrated-btc-shared-platform-v3-t4-659b3bd4c",
+    "integrated-btc-shared-platform-v3-t5-3ed37d0fa",
+    "integrated-btc-shared-platform-v3-t6-9b7df3417"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "93c7a45510ec02819595edc67c0940db1130032b5a19193cbf19ebd9d9216f9d",
+      "schema_version": "btc_shared_platform_v3_t7_workspace_composition_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "316c29666f99747bbb00ee64d7fbc14bc3e3f6322b2b692c1797bfe138e92430",
+      "schema_version": "btc_shared_platform_v3_t7_demo_console_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "0e844e3114a89ecc8b0c3556dbf7a5946f3a284bb1f45dcac741c06115656320",
+      "schema_version": "btc_demo_operator_contract_v2_decoder_controller",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "0f62e24c576d6553e7ca2494f327b71c2de3c254c36eff6902a3ac78a42a6d08",
+      "schema_version": "btc_shared_platform_v3_t7_frontend_contract_tests",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "6 actions; decoder/controller/UI fail-closed static contract"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "result": "passed",
+      "evidence_path": "crypto route/chart/fail-closed markers"
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "result": "passed",
+      "evidence_path": "producer branch canonical=false as expected; committed object targets=4"
+    },
+    {
+      "command": "node typescript/bin/tsc --noEmit -p frontend/tsconfig.json --typeRoots <registered-main-frontend-node_modules/@types>",
+      "result": "not_run",
+      "evidence_path": "changed files produced no type diagnostics; repository-wide check cannot resolve absent producer-worktree frontend dependencies"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "result": "not_run",
+      "evidence_path": "producer worktree has no frontend/node_modules; tsc is not recognized"
+    },
+    {
+      "command": "npm.cmd run build",
+      "result": "not_run",
+      "evidence_path": "producer worktree has no frontend/node_modules; vite is not recognized"
+    },
+    {
+      "command": "Playwright browser execution / current-main runtime smoke",
+      "result": "not_run",
+      "evidence_path": "producer worktree is non-canonical and has no Playwright dependency; T8/current-main evidence required"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "producer worktree"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_by_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "frontend_dependency_installation_missing_in_producer_worktree",
+    "current_main_browser_and_runtime_v2_evidence_deferred_to_t8",
+    "promotion_artifact_rebuild_not_required_by_demo_execution_semantics_but_no_promotion_claim",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

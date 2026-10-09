@@ -1,0 +1,74 @@
+{
+  "base_commit": "b1b6b0980217a28651ab24bd7afd28a160089342",
+  "blockers": [
+    "owner:integrator-agent9 independent integration required for demo_execution_semantics",
+    "owner:integrator canonical full mocked Playwright deferred_to_integrated_current_main; prior current-main evidence was 31_passed_1_failed at historical transport diagnostics",
+    "frontend_identity_refresh_deferred_to_integrator:frontend/public/frontend-identity.json is outside this correction touch set",
+    "promotion_artifact_not_rebuilt_and_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-21T04:41:36Z",
+  "deliverable_commit": "27ece7cd6413d965c1c7b379c7290a0076d4508f",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_operator_historical_error_presentation_v1",
+      "sha256": "8f3378ff84993b9a83bdb7122636dc7c4448924b65b2b73b90346e06bb791b0c",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-operator-action-admission-01-correction-01-27ece7cd6",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-operator-admission-01-corr01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-demo-operator-action-admission-01-1c4b3d995"
+  ],
+  "tests": [
+    {
+      "command": "current-main mocked Playwright evidence: frontend/e2e/btc-demo-console.spec.ts 31 passed / 1 failed at line 835 before correction",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-OPERATOR-ACTION-ADMISSION-01-CORRECTION-01",
+  "transition_for": ""
+}

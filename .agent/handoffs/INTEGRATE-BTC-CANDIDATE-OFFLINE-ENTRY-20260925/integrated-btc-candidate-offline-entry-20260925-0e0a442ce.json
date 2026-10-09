@@ -1,0 +1,109 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-candidate-offline-entry-20260925-0e0a442ce",
+  "ticket_id": "INTEGRATE-BTC-CANDIDATE-OFFLINE-ENTRY-20260925",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-btc-candidate-offline-entry-20260925",
+  "base_commit": "c3a6fb0bd4e06ebcfa8e42b0090617796f5f729a",
+  "deliverable_commit": "0e0a442ce657e4e7b8e758f182b61aed2ba99dc2",
+  "created_at": "2026-09-25T09:25:08.381Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-candidate-offline-entry-20260925-6987c757c",
+    "published-btc-candidate-package-runtime-20260925-3950f16ca",
+    "rejected-btc-candidate-offline-entry-20260925-47a2dca48"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-candidate-offline-entry-20260925-6987c757c",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md",
+      "sha256": "b95e2f5d3520f1c0a8449c355a8026b894b17538809be1eeb0d21c8b93bcd898",
+      "schema_version": "btc_candidate_offline_entry_independent_acceptance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "validate corrected producer and dependency handoffs; ancestry, ten-path correction review, 32 Git-object SHA-256 checks, and 34 explicit scoped clean checks",
+      "result": "passed",
+      "evidence_path": "docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "independent exact-source identity review and read-only missing/foreign evidence probes",
+      "result": "passed",
+      "evidence_path": "missing seal rejected; foreign paged decision and recomputed-hash foreign result rejected; valid bound evidence accepted; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "B de-duplicated identity selectors plus remaining access and CLI contracts",
+      "result": "passed",
+      "evidence_path": "52 passed total: 2 focused plus 50 remainder; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "node canonical frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "exit 0; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "A tests/contracts/test_candidate_offline_entry.py tests/contracts/test_registered_candidate_execution.py",
+      "result": "passed",
+      "evidence_path": "28 passed in 1083.42s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "C tests/integrations/test_candidate_offline_lifecycle.py",
+      "result": "passed",
+      "evidence_path": "4 passed, 3 dependency warnings in 843.09s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "D1 candidate package runtime and inference",
+      "result": "passed",
+      "evidence_path": "53 passed in 28.13s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "D2 V0 freeze and V1 Donchian offline",
+      "result": "passed",
+      "evidence_path": "34 passed, 1 existing opt-in archive skip in 16.30s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "D3 legacy Qlib policy and V3 Qlib offline",
+      "result": "passed",
+      "evidence_path": "26 passed in 311.30s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "D4 exact IOC and OMS compatibility selectors",
+      "result": "passed",
+      "evidence_path": "17 passed in 4.81s; docs/integration_reviews/btc-candidate-offline-entry-20260925-6987c757c.md"
+    },
+    {
+      "command": "full repository, production deployment, current-main artifact rebuild, browser visual QA, real candidate/data qualification, annual replay, protection-trigger fills, legal registered partial opening",
+      "result": "not_run",
+      "evidence_path": "outside this bounded source-integration and offline-acceptance ticket"
+    }
+  ],
+  "blockers": [
+    "owner:main_integration corrected source is accepted only on the integrator branch; no main merge, deployment, backend restart, or canonical browser acceptance",
+    "owner:factory_evidence no qualifying real frozen candidate or observations; synthetic fixture results are not real-market or promotion evidence",
+    "owner:compatibility old or incomplete offline identity envelopes fail closed; no automatic migration, evidence rewrite, reseal, or ledger reset",
+    "owner:capability registered protection trigger fills remain unsupported and sampled touch durably blocks while preserving state; no intrainterval guarantee or legal registered partial opening",
+    "owner:operator P2 PID reuse conservatively reports foreign worker active; no scope expansion",
+    "owner:release current-main promotion artifact and read model were not rebuilt; promotion, paper, private, order, and live remain disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

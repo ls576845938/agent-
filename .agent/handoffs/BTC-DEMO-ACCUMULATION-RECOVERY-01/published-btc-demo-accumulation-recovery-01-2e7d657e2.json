@@ -1,0 +1,116 @@
+{
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "blockers": [
+    "independent_integrator_required:change_risk=demo_execution_semantics",
+    "frontend_lint_not_completed:tsc_exceeded_120s_with_shared_dependency_junction",
+    "focused_browser_e2e_not_run:worktree_frontend_canonical_guard_and_existing_port_3000_listener",
+    "promotion_artifact_not_rebuilt:demo_recovery_observability_fix_only",
+    "demo_not_started_in_producer_worktree"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-06T14:48:14Z",
+  "deliverable_commit": "2e7d657e21b0aa94ff5d1581239149ca64cbef4d",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_accumulation_recovery_v1",
+      "sha256": "2db5a18a15baabfea0f32757a60a3668980365911c5456b6075e7ef10d320432",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_accumulation_recovery_contract_v1",
+      "sha256": "dfc44ed2c5de2bd93355a5b113946ffb39ad64c77c235ed198c68258074f5481",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_v1",
+      "sha256": "227a6018b2b0cfdd8c5143434cb5beb1b981d1fcf908bf189ec6299289185d01",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_v1",
+      "sha256": "85b95f511e68e747ba037503e8de86de670f1d01ebe2c52034bcb61a1eea0c35",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_status_retry_e2e_v1",
+      "sha256": "a4aa7ad7df5b4b5578a9faa8bd7ed832a6633e2877986e38ae02840710738932",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-accumulation-recovery-01-2e7d657e2",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-accumulation-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "preflight: base=d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6; initial scoped dirty paths=clean; change_risk=demo_execution_semantics; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/btc_developer_pitfalls.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (frontend worktree; temporary node_modules junction to canonical dependency tree)",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint (frontend worktree)",
+      "evidence_path": "frontend/package.json",
+      "result": "failed"
+    },
+    {
+      "command": "Playwright focused status-retry test",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-ACCUMULATION-RECOVERY-01",
+  "transition_for": ""
+}

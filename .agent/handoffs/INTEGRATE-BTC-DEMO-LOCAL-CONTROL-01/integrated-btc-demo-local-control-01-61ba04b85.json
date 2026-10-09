@@ -1,0 +1,106 @@
+{
+  "base_commit": "d28094b5a9111d9e3920802cf59d88b10796215d",
+  "blockers": [
+    "okx_demo_paper_leverage_boundary_breached",
+    "owner:operator current_okx_demo_isolated_leverage_is_3x_requires_manual_change_or_separate_account_setting_write_authorization",
+    "owner:btc_operations private_ws_runtime_reconciliation_observation_incomplete",
+    "baseline_main_test_failure:backend/tests/test_btc_runtime_artifact_wiring.py::test_valid_external_root_returns_only_logical_paths_and_remains_read_only",
+    "not_promotion_evidence_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "super_developer"
+  ],
+  "created_at": "2026-07-29T15:10:30Z",
+  "deliverable_commit": "61ba04b85161a2e2a2e3b506cf44bb2c057b157b",
+  "deliverables": [
+    {
+      "path": "backend/app/core/config.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_settings_btc_demo_control_v1",
+      "sha256": "f2ab6d43909be2c9ca520beceb179a1e8a2603353d20c282f3530bdeaa2f59d0",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_app_factory_btc_demo_control_wiring_v1",
+      "sha256": "142cc69088902b3dad513c085b9975faf2f67f047c3d08e5f1daf6e3aabc211a",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_one_x_composition_v1",
+      "sha256": "01dbbf6bc5211d243a6521d42fe567502ca573fb27d8159ac0147e1eae3cdc25",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_api_control_contract_v1",
+      "sha256": "a0f3249c1d4fb54b88f7780253ece981ff8745178dcedbc335e26f8f62ec3bdd",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_runtime_service_composition_contract_v1",
+      "sha256": "0031535f91fb53180ad8203b029ff632cbc6bde4782aa48cd7d0a81dd2bff008",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-DEMO-LOCAL-CONTROL-01/published-btc-demo-local-control-01-de5e4ccab.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "e89fdc8974761ad12b44df81221e69eb888b4754af843ddb4585076af5d2e2cb",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-local-control-01-de5e4ccab"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-local-control-01-61ba04b85",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-local-control-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_api.py backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-system-temp> [observed: 20 passed in 5.83s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-LOCAL-CONTROL-01/published-btc-demo-local-control-01-de5e4ccab.json",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-LOCAL-CONTROL-01/published-btc-demo-local-control-01-de5e4ccab.json",
+      "result": "passed"
+    },
+    {
+      "command": "producer real OKX Demo full read-only start preflight with 1x cap [observed: all checks pass except configured leverage=3x]",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "extended producer regression [observed: 54 passed, 1 base-main-reproduced failure]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-LOCAL-CONTROL-01",
+  "transition_for": "published-btc-demo-local-control-01-de5e4ccab"
+}

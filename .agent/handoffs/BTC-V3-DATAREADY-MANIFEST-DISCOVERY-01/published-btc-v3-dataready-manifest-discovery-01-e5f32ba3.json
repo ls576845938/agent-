@@ -1,0 +1,90 @@
+{
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "blockers": [
+    "current_head_dataready_artifact_not_rebuilt_at_deliverable_commit",
+    "approved_real_immutable_snapshot_manifest_selection_not_attested_by_this_ticket",
+    "approved_real_immutable_l2_manifest_selection_not_attested_by_this_ticket",
+    "owner:data_steward real_data_quality_and_freshness_evidence_remains_external",
+    "research_ready_false",
+    "backtest_ready_false",
+    "promotion_evidence_ready_false",
+    "promotion_paper_live_private_order_broker_withdraw_network_secret_demo_paper_queue_real_order_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-26T16:21:48Z",
+  "deliverable_commit": "e5f32ba3c4ddc230fe22d1b1d85df66df09669ee",
+  "deliverables": [
+    {
+      "path": "scripts/build_btc_dataready_consumption_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_committed_manifest_discovery_v2",
+      "sha256": "05addf133f843e5ac5c06a1f9ed0891ca75e8d1971e2ad0e92ead77d0daa2a56",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_dataready_consumer_contract_v2",
+      "sha256": "abec95ae436a1b0486834d8f4331d4c927e3db1a04ac03a5b7cbb0f4019ea363",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/tickets/BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_v3_dataready_manifest_discovery_ticket_v1",
+      "sha256": "265e740d61824b58f99d08d455274b3737459fb8c4acd8be98f126fb7072779c",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-dataready-manifest-discovery-01-e5f32ba3",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-dataready-manifest-discovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py -k manifest_discovery --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_dataready_consumer.py --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "tests/contracts/test_btc_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest DataReady consumer, K-line exporter, OKX L2 exporter, and public collector contracts --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile builder and contract test; builder --help; scoped git diff --check",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "current-HEAD DataReady artifact rebuild using a real approved immutable manifest selection",
+      "evidence_path": "docs/tickets/BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-DATAREADY-MANIFEST-DISCOVERY-01",
+  "transition_for": ""
+}

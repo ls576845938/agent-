@@ -1,0 +1,74 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-strategy-v2-frozen-qlib-independent-review-20260915-b7335c272",
+  "ticket_id": "STRATEGY-V2-FROZEN-QLIB-INTEGRATION-20260915",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "researcher", "super_developer", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/strategy-v2-frozen-qlib-integration-20260915",
+  "base_commit": "a315f1169d9b628e9a4acd70100f188076c32560",
+  "deliverable_commit": "b7335c272a2186af3821eb18fff75d289594b65d",
+  "created_at": "2026-09-15T14:47:55Z",
+  "expires_at": "",
+  "depends_on": ["published-strategy-v0-freeze-20260915-e0b7a08f8", "published-strategy-v2-frozen-qlib-correction-20260915-c8a8c8d7d"],
+  "supersedes": [],
+  "transition_for": "published-strategy-v2-frozen-qlib-correction-20260915-c8a8c8d7d",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v2-frozen-qlib-independent-review-20260915.md",
+      "sha256": "d92010a3d3db97fdd041b03712efa8ac3f11cf797c3b10ae958521fb0bdaa917",
+      "schema_version": "strategy_v2_frozen_qlib_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; $env:MLFLOW_DISABLE_AGENT_HINT='1'; <venv-python> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/integrations/test_qlib_frozen_inference.py",
+      "result": "passed",
+      "evidence_path": "28 passed in 45.30s; docs/operations/strategy-v2-frozen-qlib-independent-review-20260915.md"
+    },
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; $env:QS_V0_VERIFY_ARCHIVE='1'; $env:MLFLOW_DISABLE_AGENT_HINT='1'; <venv-python> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-temp> tests/contracts/test_strategy_v0_freeze.py::test_exact_qlib_archive_and_model_are_frozen tests/contracts/test_strategy_v1_donchian_offline.py::test_continuous_open_hold_reverse_reopen_exit_is_economically_replayable tests/contracts/test_strategy_v1_donchian_offline.py::test_identity_input_and_time_mismatches_fail_before_new_order tests/contracts/test_strategy_v1_donchian_offline.py::test_evidence_v2_binds_input_and_v1_remains_readable_but_not_v1_qualified",
+      "result": "passed",
+      "evidence_path": "4 passed in 89.45s; docs/operations/strategy-v2-frozen-qlib-independent-review-20260915.md"
+    },
+    {
+      "command": "initial independent negative controls: symbolic HEAD manifest and calibration clip_fraction=0.5",
+      "result": "failed",
+      "evidence_path": "both were accepted by the initial candidate; corrected source adds fail-closed immutable-SHA and calibration-evidence binding"
+    },
+    {
+      "command": "pure approved base a315f116: tests/contracts/test_m1_btc_behavior_freeze.py::test_m1_history_stays_frozen_with_only_reviewed_post_m1_safety_fixes",
+      "result": "failed",
+      "evidence_path": "1 failed in 4.99s; inherited post-M1 static allowlist failure predates V2 and is recorded in the independent report"
+    },
+    {
+      "command": "handoff committed-object validation, exact four-path source scope, ancestry, static no-fit/no-write review and git diff --check",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v2-frozen-qlib-independent-review-20260915.md"
+    },
+    {
+      "command": "training/search, target/exit parity, Portfolio/Risk, OMS/fills/ledger, services/API/UI, actual account, OKX Demo, private/order/live, main release and V3",
+      "result": "not_run",
+      "evidence_path": "outside this isolated source-contract integration ticket"
+    }
+  ],
+  "blockers": [
+    "owner:baseline the inherited M1 post-M1 static file allowlist test still fails on the approved V2 base; V2 did not modify the allowlist or golden",
+    "owner:research m1-okx-qlib retains negative test IC, zero simulated fills and no_simulated_fills; deterministic inference parity is not alpha or promotion evidence",
+    "owner:architecture target-position and exit parity are outside V2; V3 remains not authorized and was not started",
+    "owner:release this integrated event exists only on an isolated integrator branch; main merge, service/UI publication, Demo, paper, private, order, live and promotion remain not started or disabled"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-event-ordering-final-20260920-6c13319ec",
+  "ticket_id": "BTC-V3-EVENT-ORDERING-20260920",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-event-ordering-20260920",
+  "base_commit": "9dad24a4a9467a126a8692737409f776db4bd69f",
+  "deliverable_commit": "6c13319ecf4d7035f234d30f24a6154562c63eba",
+  "created_at": "2026-09-20T06:58:56Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-event-ordering-recovery-20260920-8a17c1814"
+  ],
+  "supersedes": [
+    "published-btc-v3-event-ordering-recovery-20260920-8a17c1814"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/qlib_offline_replay.py",
+      "sha256": "934c709a24152a0c9753fce764df7515bb5819d3ebc603cc4071af832150a5b4",
+      "schema_version": "qlib_offline_event_order_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_strategy_v3_event_ordering.py",
+      "sha256": "a6370912c4aacbdfa0af97e4cf60fb1aa9dede9882673096cd10481b4b31a9ce",
+      "schema_version": "qlib_offline_event_order_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tests/fixtures/strategy_v3/offline_contract.json",
+      "sha256": "2f63fc55a5284c1345aa5d80f91913a7827fe63f41f5cd0fdc0d6b63aadf323c",
+      "schema_version": "strategy_v3_qlib_offline_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-event-ordering-20260920.md",
+      "sha256": "353eee985f39e72acbe0227e47082bd83686053d628ac0867644d58585d24eef",
+      "schema_version": "qlib_offline_event_order_final_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest initial event ordering failure-first (7 failed /8.32s), then original short + first seven tests (8 passed /90.95s)",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"
+    },
+    {
+      "command": "pytest initial fixed matrix source 1b56263c8 (51 passed /592.83s; superseded by later source)",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"
+    },
+    {
+      "command": "pytest scheduled-slot interruption failure-first (1 failed /54.85s), revised (1 passed /106.78s)",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"
+    },
+    {
+      "command": "pytest final 52-case matrix source blobs 8a17c1814 (51 passed, 1 failed /708.67s; HEAD changed by handoff-only commit 0c555e20d mid-run, failing dispatch source_head_mismatch; fixed-HEAD independent rerun separately required)",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"
+    },
+    {
+      "command": "python -B -m quant_crypto.application.qlib_offline_replay --state-dir C:/Users/LOCAL_USER/AppData/Local/Temp/qs-v3-order-cli-final-0c555e20d (first and repeat: 1392 logical,22 batches,0 approvals,0 fills,same evidence hash)",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-event-ordering-20260920.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator formal independent acceptance required; independent reviewer reports fixed-HEAD 0c555e20d five-case rerun passed including the sole HEAD-polluted nonzero restart case, scheduled-slot interruption, expired ACK and torn batch; do not count producer mixed-HEAD matrix as 52/52",
+    "owner:release source-only; main b920d131 remains unchanged; no main merge, service restart, UI release or deployment authorized by this ticket",
+    "owner:research fixed historical candidate remains zero approvals/zero simulated fills, not evidence of strategy profitability or trade readiness",
+    "safety: runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all false; production risk Guardian OMS ledger strategy params costs untouched; no secrets or real network/account/exchange access",
+    "freshness: final CLI binds 0c555e20d, source/test/contract blobs equal 8a17c1814; final report/handoff commits do not change these blobs; no current-main promotion artifacts published",
+    "governance: one producer and one independent integration ticket; scoped initial dirty empty and no overwritten other writers; catalog 6ea783731473604875c962acc6338fd868f95b13e2230d62254ef79c0a67f3af"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "base_commit": "8c785ee4298623dda3de739cc98a8385f374dd4f",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_registered_main",
+    "producer_started_no_worktree_vite_and_used_only_mocked_routes_against_existing_canonical_frontend",
+    "no_business_code_css_backend_artifact_manifest_or_ledger_changed",
+    "no_secret_or_private_order_live_transfer_withdraw_endpoint_access_performed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-17T10:13:20Z",
+  "deliverable_commit": "b34d4e36601e6642418fb293d87949026c2b73a8",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_contract_v1",
+      "sha256": "573ad55be701a223e535ffe2902a2e798e3f204eaaffa35891c53efb03372d60",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "bdeb5e68cc46687fb8f18780123089873b255c9b7f66662547a3179399c897ff",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01-B34D4E366",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-details-e2e-corr-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-demo-console.spec.ts [failure-first on canonical main page: 20 passed, 2 failed; exact failures were collapsed details progressbar assertions at prior lines 607 and 719]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-demo-console.spec.ts [after correction: 22 passed in 1.7m; start POST timeout cases 2/2 passed]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint [observed: tsc --noEmit passed]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check [observed: passed, manifest_match=true, baseline_ancestor=true]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 8c785ee4298623dda3de739cc98a8385f374dd4f..b34d4e36601e6642418fb293d87949026c2b73a8 -- frontend/e2e/btc-demo-console.spec.ts frontend/public/frontend-identity.json",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIVENESS-ASYNC-RECOVERY-UX-02-CORRECTION-01",
+  "transition_for": ""
+}

@@ -1,0 +1,88 @@
+{
+  "base_commit": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "blockers": [
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "legacy_scheduler_writer_incident_quarantined",
+    "btc_okx_tail_merge_target_bundle_missing",
+    "not_promotion_evidence",
+    "btc_okx_selected_bundle_dir_missing",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "owner:btc_developer public_ws_fixture_runtime_artifact_root_env_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "btc_developer",
+    "researcher"
+  ],
+  "created_at": "2026-07-26T20:59:41.657Z",
+  "deliverable_commit": "bfa91f77da8b145487124a087a909258a910683b",
+  "deliverables": [],
+  "depends_on": [
+    "published-data-btc-public-immutable-scheduler-migration-01-bfa91f77",
+    "integrated-btc-v3-runtime-artifact-source-identity-contract-01-integration-01"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-data-btc-public-immutable-scheduler-migration-01-source-data-batch-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-source-identity-public-data-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "source and data handoff full-Git validation, exact ancestry, source 12/12 and data 4/4 raw committed-object SHA-256 checks",
+      "evidence_path": ".agent/handoffs/DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01/published-data-btc-public-immutable-scheduler-migration-01-bfa91f77.json",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD source identity focused suite [97 passed]",
+      "evidence_path": "tests/contracts/test_btc_artifact_source_identity.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD data publication core suite [94 passed]",
+      "evidence_path": "tests/agent_governance/test_shared_data.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD expanded data suite [130 passed, 1 failed: test_okx_public_ws_l2_segment_capture_execute_builds_isolated_reports; non-Git tmp repo causes BTCArtifactSourceIdentityError: btc_artifact_source_identity_git_head_unavailable]",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "failed"
+    },
+    {
+      "command": "both committed manifests full physical resolve, per-file hash verification, declared aggregate recomputation, and schema validation",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e.json",
+      "result": "passed"
+    },
+    {
+      "command": "three source builder CLI help checks, shared-data resolve help, and nine-file in-memory compile without cache or bytecode writes",
+      "evidence_path": "docs/handoffs/BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "read-only external baselines: D main remains approved base with 21/21 working blobs, partial runtime root 5/5 SHA-256 unchanged, and three ScheduledTasks Disabled",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01",
+  "transition_for": "published-data-btc-public-immutable-scheduler-migration-01-bfa91f77"
+}

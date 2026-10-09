@@ -1,0 +1,111 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-private-readonly-turn-id-injection-01-correction-01-8e8c9b36e",
+  "ticket_id": "BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/btc-private-readonly-turn-id-injection-01",
+  "base_commit": "532325ab0bc7f611465b0128efc78068d2721925",
+  "deliverable_commit": "8e8c9b36e0113228b7bb1e1b81e86d1dd9b13bcc",
+  "created_at": "2026-09-01T12:28:43Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-private-readonly-turn-id-injection-01-44919a4b4"
+  ],
+  "supersedes": [
+    "published-btc-private-readonly-turn-id-injection-01-44919a4b4"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "eb378837dc63c5a68b688ae3860f03e09fcfa60cb23ba90533550c53b1bba3cb",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "4967c125d3f9d6433628e5f8fba31252eac93c3a503d265584304b2546cdab84",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_private_readonly_permission_profile.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "cda231e2d142169cbb1c71b98ba4dcad6a6edb72dd5db69e0d86526929d9e6b7",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "994ed151245970f29b36c4c252af4a93af255cae667755a0b8c7b0f5f59a0c74",
+      "type": "document"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first isolated session winner-claim recovery test before correction",
+      "result": "failed",
+      "evidence_path": "AttributeError: module had no _claim_binding_for_exact_runner; 1 failed"
+    },
+    {
+      "command": "20 external pytest-process repetitions of test_concurrent_exact_runner_claim_binds_only_one_turn",
+      "result": "passed",
+      "evidence_path": "CONCURRENCY_RUNS=20 FAILURES=0; loser reason distribution contained only private_readonly_capability_bound_to_other_turn"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py::test_session_claim_concurrency_is_stable_for_100_trials -q",
+      "result": "passed",
+      "evidence_path": "1 passed in 14.37s; 100 independent temp roots, 100 unique winners, 100 stable other-turn losers"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q",
+      "result": "passed",
+      "evidence_path": "39 passed in 56.77s"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q",
+      "result": "passed",
+      "evidence_path": "123 passed in 319.19s"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/private_readonly_permission.py .codex/hooks/private_readonly_capability.py .codex/hooks/pre_tool_guard.py tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py",
+      "result": "passed",
+      "evidence_path": "scoped governance modules compiled without diagnostics"
+    },
+    {
+      "command": "git diff --check -- frozen correction touch set",
+      "result": "passed",
+      "evidence_path": "exit=0"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_for_governance_control_correction",
+    "canonical_main_integration_and_hook_retrust_required",
+    "existing_tasks_do_not_hot_load_hook_changes_new_task_required",
+    "new_external_receipt_must_bind_new_task_session_and_integrated_main_head",
+    "existing_R1_through_R7_receipts_are_not_reusable",
+    "private_remains_false_until_exact_runner_pretool_atomically_claims_and_launches",
+    "hosted_tools_computer_use_and_existing_write_stdin_transport_require_task_layer_disablement",
+    "promotion_paper_live_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

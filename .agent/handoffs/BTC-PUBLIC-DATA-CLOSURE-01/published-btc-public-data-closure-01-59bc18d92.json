@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-public-data-closure-01-59bc18d92",
+  "ticket_id": "BTC-PUBLIC-DATA-CLOSURE-01",
+  "event_type": "published",
+  "producer_role": "data_steward",
+  "consumer_roles": ["architect", "btc_developer", "integrator", "researcher"],
+  "domain": "btc",
+  "producer_branch": "agent/data_steward/btc-public-data-closure-01",
+  "base_commit": "b5ac9b45ff47136aaef8919bedd11ab030f4bffd",
+  "deliverable_commit": "59bc18d9218ba29503babec37d178006138ceb53",
+  "created_at": "2026-08-26T10:38:36.847Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "data_manifest",
+      "path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json",
+      "sha256": "785acf4ca2fd5ce38b7f89e058577c8b9dbb9f45be13e857da6579d19f713164",
+      "schema_version": "btc_public_data_closure_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/research/BTC_PUBLIC_DATA_CLOSURE_01.md",
+      "sha256": "eda2ad286ff5a936f1a7bcf2481d1258c6e7d956d84981e560d17bc5c31cd9e5",
+      "schema_version": "btc_public_data_closure_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve all seven known manifests with full hash verification",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json"
+    },
+    {
+      "command": "streaming immutable 5m quality and post-cutoff delta audit",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py -q",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/shared_data.py",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json"
+    }
+  ],
+  "blockers": [
+    "timestamp_aligned_l2_latest_physical_version_missing",
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_okx_l2_sequence_two_sided_coverage_incomplete",
+    "btc_execution_latency_queue_order_to_fill_model_missing",
+    "btc_private_ws_fill_ledger_evidence_missing",
+    "btc_open_interest_liquidation_history_incomplete",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "btc_paper_live_manual_approval_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "owner_integrator_required_for_unclassified_change_risk",
+    "promotion_artifact_rebuild_required_by_unclassified_policy",
+    "backend_restart_required_after_integration"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

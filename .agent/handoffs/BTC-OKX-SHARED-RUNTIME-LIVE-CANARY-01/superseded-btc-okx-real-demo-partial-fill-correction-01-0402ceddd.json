@@ -1,0 +1,99 @@
+{
+  "base_commit": "ab577a408fd3b2943d38932f72818321eaa2f68b",
+  "blockers": [
+    "owner=integrator; independent agent9 integrator must verify and integrate 0402ceddd4e798c5e9940d06d5be870bbf9368da from a clean worktree",
+    "owner=operations; no real OKX Demo/private/order endpoint was used in this producer task; no live Demo receipt was generated",
+    "owner=gate-review; current-main integration, backend restart, browser acceptance, real paper ledger/forward observation, and gate/read-model rebuild remain pending",
+    "owner=producer; Team Context had no valid ready upstream handoff and no upstream uncommitted files were consumed"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-08T14:50:59Z",
+  "deliverable_commit": "0402ceddd4e798c5e9940d06d5be870bbf9368da",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_fault_drill_application_v1",
+      "sha256": "9293f391388ba8efae4e19462c668f1d7a96f7841ba9b46f666624183b7849ac",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "505c0f9b9e5d7c5fa9863d45c45f89193a09efbc59959fc011991f80c69fb524",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_fault_drill_contract_tests_v1",
+      "sha256": "685a54faf3e3945d1fe876bc24e612863eb88d3d3f3779b5ecf3154f164b1dc6",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_contract_tests_v1",
+      "sha256": "211e14a8a3d3d5f79028d72c9efc80dd9a188dd32de58acdb8512da7669bfc6e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "superseded-btc-okx-real-demo-partial-fill-correction-01-0402ceddd",
+  "event_type": "superseded",
+  "expires_at": "2026-09-07T14:50:59Z",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-real-demo-partial-fill-correction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-real-demo-partial-fill-01-ab577a408"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Users/LOCAL_USER/AppData/Local/Temp/codex-btc-partial-correction-attack-app-20260808-2 tests/contracts/test_btc_okx_demo_fault_drill.py -k 'partial_fill_agent8_attack_shape or partial_fill_incomplete_fixture or partial_fill_contract_boundary or partial_fill_zero_or_full'",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Users/LOCAL_USER/AppData/Local/Temp/codex-btc-partial-correction-attack-runtime-20260808-2 tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'duplicate_fill_identity or duplicate_order_identity'",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Users/LOCAL_USER/AppData/Local/Temp/codex-btc-partial-correction-adjacent-20260808-2 tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "tests/contracts",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01",
+  "transition_for": ""
+}

@@ -1,0 +1,96 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-25224c792",
+  "ticket_id": "BTC-CUMULATIVE-25H-COMPATIBILITY-01-IDENTITY-BOUND-RUN-PUBLISHER-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-owned-id-publisher-01",
+  "base_commit": "e7e10054b53608f316a82ff03df918e8eceda454",
+  "deliverable_commit": "25224c79210c2afe35ff818d5bed3de515e7a33b",
+  "created_at": "2026-08-09T12:30:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-btc-cumulative-25h-compatibility-01-identity-bound-run-publisher-01-07527f2ef"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_owned_id_restore_archive.py",
+      "sha256": "80cb4c8eb62066d75086f5a5f1d99c078001eb59947a8b31b62b79ca226a6ae5",
+      "schema_version": "btc_owned_id_restore_archive_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/build_btc_owned_id_restore_archive.py",
+      "sha256": "cd5ecc6a42ad3488199bc8ee56033455b2b9e581b2c077e711fb833c09636530",
+      "schema_version": "btc_owned_id_restore_archive_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_owned_id_restore_archive.py",
+      "sha256": "95abf7e57835538151529c3892301a2460b50ae542db60abe0e3a2162132a937",
+      "schema_version": "btc_owned_id_restore_archive_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_owned_id_restore_archive.py -q --basetemp=<external-unique-basetemp> [observed: 17 passed in 8.52s on deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_owned_id_restore_archive.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_demo_adapter.py -q --basetemp=<external-unique-basetemp> [observed: 294 passed in 42.07s on deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_private_ws.py -q --basetemp=<external-unique-basetemp> [observed: 90 passed in 9.28s on deliverable HEAD]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_owned_id_restore_archive.py scripts/build_btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "git diff --check e7e10054b53608f316a82ff03df918e8eceda454..HEAD -- quant_crypto/application/btc_owned_id_restore_archive.py scripts/build_btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_owned_id_restore_archive.py"
+    },
+    {
+      "command": "py -3 -m ruff check quant_crypto/application/btc_owned_id_restore_archive.py scripts/build_btc_owned_id_restore_archive.py tests/contracts/test_btc_owned_id_restore_archive.py",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_registered_main",
+    "external_archive_must_be_built_only_by_explicit_demo_private_read_admission_and_is_not_committed",
+    "old_archive_24_compatible_plus_1_conditional_strict14_promotion_blocked_fact_preserved",
+    "identity_only_restore_admission_not_25_hour_observation_or_promotion_evidence",
+    "no_real_demo_private_get_or_secret_loading_run_in_producer_validation",
+    "ruff_unavailable:python_module_ruff_not_installed"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+  "blockers": [
+    "funding_history_available_only_from_2026-04-29T16:00:00Z",
+    "open_interest_history_not_verified_diagnostic_partial",
+    "liquidation_snapshots_missing_diagnostic_only",
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-29T14:31:59Z",
+  "deliverable_commit": "7daed151a00d51b831909202683d07ff6a81c455",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "0d513cbbd690604ac8f0c707f08bdf5c1905151bc68d7767bdfbf917cc770581",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/DATA-BTC-LEAN-CANARY-SIGNAL-01/quality-checked-receipt-20260729T135354Z.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "data_ticket_delivery_receipt_v1",
+      "sha256": "c1284b028a639f37e35da761d17b109a49fb4f0c181194124aa4d50171a0c77f",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "BTC-LEAN-MICROLIVE-PRODUCER-01-published-01",
+    "published-btc-backtest-parity-producer-01-6e9fdf1c8",
+    "published-data-btc-lean-canary-signal-01-9e328534",
+    "published-btc-lean-microlive-producer-01-correction-02-0842770e5"
+  ],
+  "domain": "data",
+  "event_id": "integrated-integrate-btc-demo-backtest-fastpath-01-data",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-backtest-fastpath-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "data direct: 52 passed; shared-data and demo reader: 15 passed; full-hash shared_data resolve consumer_read_only",
+      "evidence_path": ".agent/data_manifests/DATA-BTC-LEAN-CANARY-SIGNAL-01/quality-checked-receipt-20260729T135354Z.json",
+      "result": "passed"
+    },
+    {
+      "command": "actual current-HEAD reader eligible integrity freshness true; 5280 confirmed bars dup0 gap0 mark index funding present physical root redacted promotion false",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-lean-canary-220d-20260729T1352Z-src211699644.json",
+      "result": "passed"
+    },
+    {
+      "command": "compact integration receipt sha256=d897104817d84b0baee987df3e698f519ffd7c633be03108ba59c536cbcb8399",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/runtime-artifacts/integrator-integrate-btc-demo-backtest-fastpath-01-7daed151a/compact-integration-receipt.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-BACKTEST-FASTPATH-01",
+  "transition_for": "published-data-btc-lean-canary-signal-01-9e328534"
+}

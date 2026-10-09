@@ -1,0 +1,72 @@
+{
+  "base_commit": "7915359be04acd880e581df7a2e9bc24f45a9d31",
+  "blockers": [
+    "owner:integrator change_risk_demo_execution_semantics_requires_independent_integration",
+    "owner:backend_operator backend_restart_required_after_integration",
+    "owner:architect promotion_evidence_not_rebuilt_or_unlocked",
+    "owner:btc_operations private_order_live_endpoint_validation_not_authorized_or_run"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-05T17:09:48Z",
+  "deliverable_commit": "805f7eb93086b3bb115cbaf3bb68560f2f6be6a0",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_operability_v4",
+      "sha256": "38c0865b7935dd5adbbcd646ae4782c52ea9a40e85753168f8a395b4df762a2f",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_contract_v4",
+      "sha256": "55fc46c1a7c5614eee5c3e623698431391358b3192c6e54b4f7bffc57df5db11",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-p0-drill-operability-03-correction-01-805f7eb93",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-p0-drill-operability-03-correction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-p0-drill-operability-03-4e6c91317"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_explicit_demo_start_runs_private_ws_reconnect_probe_before_opening tests/contracts/test_btc_okx_demo_paper_runtime.py::test_start_persists_complete_monitoring_status_for_durable_opening_gate tests/contracts/test_btc_okx_demo_paper_runtime.py::test_start_fails_closed_when_monitoring_status_is_incomplete_or_false tests/contracts/test_btc_okx_demo_paper_runtime.py::test_startup_failure_after_dead_man_arm_stops_ws_and_disarms -q --basetemp <unique-external-temp>",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-external-temp>",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-P0-DRILL-OPERABILITY-03",
+  "transition_for": ""
+}

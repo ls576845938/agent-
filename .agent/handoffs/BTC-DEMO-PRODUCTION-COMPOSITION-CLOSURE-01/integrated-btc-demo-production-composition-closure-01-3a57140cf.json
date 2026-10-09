@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-production-composition-closure-01-3a57140cf",
+  "ticket_id": "BTC-DEMO-PRODUCTION-COMPOSITION-CLOSURE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-production-composition-closure-01-int-01",
+  "base_commit": "bbcf59810e51d109a68e7e6c046f9fb35b8c98b3",
+  "deliverable_commit": "3a57140cfa36361a987539552f156ede849f8e5b",
+  "created_at": "2026-08-24T08:20:49Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-production-composition-closure-01-correction-04-4b6710ffe",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99",
+    "integrated-btc-shared-platform-v3-t4-659b3bd4c",
+    "integrated-btc-shared-platform-v3-t5-3ed37d0fa",
+    "integrated-btc-shared-platform-v3-t6-9b7df3417",
+    "integrated-btc-demo-operator-v2-restart-recovery-01-8948ae713"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-production-composition-closure-01-correction-04-4b6710ffe",
+  "deliverables": [
+    {"type":"code","path":"backend/app/services/btc_demo_runtime.py","sha256":"ebf29916e53a3c22bb23401099c57616b296b37795a82b7e7c86747fe463aea4","schema_version":"btc_demo_runtime_service_v1","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"backend/tests/test_btc_demo_runtime_service.py","sha256":"09a98f419e14b3ed943be66e514ed56452928bd0cd19de3dc5ae028022c36b48","schema_version":"btc_demo_runtime_service_tests_v4","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/scripts/test-btc-operator-v2-contract.mjs","sha256":"11a9cb5c0787270d094b956b8d5ed3382ca2c437de31e7a354a0532f6d5ae479","schema_version":"btc_operator_v2_contract_runner_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/src/workspaces/crypto/demo-operator-v2.ts","sha256":"03741c3113c10245bbbba0a42dc8b35aca35fc9323996910512b594ad58e69e9","schema_version":"btc_demo_operator_v2_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/application/__init__.py","sha256":"f9f04af82003bd8f67f1fa7b9a79a2a58a355d1ebecaf738698a82ec1c949b60","schema_version":"python_module_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/application/btc_demo_production_composition.py","sha256":"408804d8755b65f3a8e1ddf7f9cdcd54c4c3b419c25e725db99ad61d1995bfe1","schema_version":"btc_demo_production_composition_v4","readiness_class":"quality_checked"},
+    {"type":"code","path":"quant_crypto/oms/okx_demo_paper_runtime.py","sha256":"2dc5812dc5f74c49954b44d5f265232942535ff323a60c344cb93c32ebcc294d","schema_version":"btc_demo_paper_runtime_v4","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/contracts/test_btc_demo_production_composition.py","sha256":"7e8e9b2ac4bd1db65988f1c7fbf9c04ade9eff2498d2f43785eb17b1be754df4","schema_version":"btc_demo_production_composition_tests_v4","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/contracts/test_btc_okx_demo_paper_runtime.py","sha256":"12cbc9b01cfcb2e666c2be881983ea63ce3d6205b834f285e93e0eb70fcfc4bb","schema_version":"btc_demo_paper_runtime_tests_v4","readiness_class":"quality_checked"},
+    {"type":"test_evidence","path":"tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py","sha256":"72e29db53f28be7ca354d1376f1b7ffca7c22aa65793aca6a0e8817a9cb01056","schema_version":"btc_shared_operator_contract_v2_tests_v1","readiness_class":"quality_checked"},
+    {"type":"code","path":"frontend/public/frontend-identity.json","sha256":"3d879a2bce3b5b6b633a38364f8d11a00b81e136f8fdc544af7a3446e1745768","schema_version":"frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"handoff.py validate on all five committed producer envelopes; full ancestry/touch/blob checks","result":"passed","evidence_path":"five producer envelopes valid; base..4b6710ffe linear; producer tree equals candidate business tree"},
+    {"command":"py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-pcomp-int-c tests/contracts/test_btc_demo_production_composition.py backend/tests/test_btc_demo_runtime_service.py","result":"passed","evidence_path":"56 passed in 6.08s"},
+    {"command":"py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-pcomp-int-h tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_okx_demo_paper_runtime.py","result":"passed","evidence_path":"540 passed in 73.02s"},
+    {"command":"py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-pcomp-int-i tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py","result":"passed","evidence_path":"40 passed in 5.05s"},
+    {"command":"py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qsx-pcomp-int-api backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_control_center_operator_contract.py","result":"passed","evidence_path":"23 passed in 10.99s"},
+    {"command":"node frontend/scripts/test-btc-operator-v2-contract.mjs","result":"passed","evidence_path":"ok=true; actions=6; btc_demo_operator_contract_v2; btc_demo_operation_read_model_v2"},
+    {"command":"npm.cmd --prefix frontend run lint","result":"passed","evidence_path":"tsc --noEmit exit 0"},
+    {"command":"npm.cmd --prefix frontend run build -- --logLevel error","result":"passed","evidence_path":"vite build exit 0"},
+    {"command":"npm.cmd --prefix frontend run check:btc-tradingview","result":"passed","evidence_path":"cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy all true"},
+    {"command":"npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test","result":"passed","evidence_path":"baseline_commit=62fc98a2ccde8e341f2454e9f6e662f3cdfe0c77; fingerprint=00e026a7a469f77cfd0fbb93fd7532011250645db8d485c11ebaac718475e21d; manifest_match=true"},
+    {"command":"py -3 -m py_compile touched Python sources","result":"passed","evidence_path":"eight touched Python sources compiled with external pyc prefix"},
+    {"command":"git diff --check; scoped safe_status","result":"passed","evidence_path":"candidate scoped status clean"},
+    {"command":"frontend/e2e/btc-demo-console.spec.ts and service/browser restart","result":"not_run","evidence_path":"deferred by ticket scope; no service or browser was started"},
+    {"command":"promotion artifact/read-model rebuild and private/order/live/transfer/withdraw access","result":"not_run","evidence_path":"forbidden/deferred by ticket scope"}
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "producer_playwright_deferred_to_registered_current_main",
+    "promotion_artifact_rebuild_not_run_by_scope",
+    "readiness_at_most_quality_checked_not_promotion_ready",
+    "safety_flags_false_promotion_paper_live_private_order_real_order_transfer_withdraw"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

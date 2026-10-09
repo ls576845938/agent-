@@ -1,0 +1,88 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-minute-market-recovery-ux-01-test-evidence-correction-01-6c63a9873",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-DEMO-MINUTE-MARKET-RECOVERY-UX-01-TEST-EVIDENCE-CORRECTION-01",
+  "domain": "btc",
+  "created_at": "2026-08-16T16:18:41Z",
+  "expires_at": "",
+  "producer_role": "super_developer",
+  "producer_branch": "agent/super_developer/btc-okx-minute-ux-evidence-c1",
+  "base_commit": "377b293baf6118b3ff59d686886e8b52b1b675fb",
+  "deliverable_commit": "6c63a9873ddc0c55945ef12341489681fd0197f4",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "consumer_roles": ["architect", "integrator", "btc_developer"],
+  "deliverables": [
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "sha256": "18e27c6b1364969d6521a130abc908067e800ed6f9cfba3fd0f4eb2ddd841b33",
+      "schema_version": "btc_demo_market_recovery_ux_e2e_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "sha256": "114372fba3e2fadb780fe7d7b08957d47d5e73d2c4cf4740ca49dac9328a7699",
+      "schema_version": "btc_trading_chart_marker_accessibility_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "f351220422739ef8098457c82edafd4de7f3d770da561d7fc84b36585a49a549",
+      "schema_version": "frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "canonical_playwright_execution_deferred_to_registered_main",
+    "promotion_artifact_and_read_model_rebuild_not_authorized",
+    "producer_validation_no_service_no_key_no_network_no_private_no_order_no_live"
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd --prefix frontend run lint [observed: passed with temporary read-only dependency junction removed after verification]",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build [attempted in sparse worktree; Vite did not reach emitted dist summary, so not asserted as passed]",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "not_run"
+    },
+    {
+      "command": "frontend/node_modules/.bin/playwright.cmd test e2e/btc-demo-console.spec.ts --list [observed: 16 tests including unique fill-marker summary]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh && npm.cmd --prefix frontend run identity:check [manifest_match=true; frontend_src_tree=1ea9560913ab19aaac6b638e44b6e4fbd03f3ff8]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- frontend/e2e/btc-demo-console.spec.ts frontend/src/workspaces/crypto/TradingViewChart.tsx frontend/public/frontend-identity.json [observed: passed]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/node_modules/.bin/playwright.cmd test e2e/btc-demo-console.spec.ts [not run: canonical frontend serve guard requires registered main; no service started]",
+      "evidence_path": "frontend/e2e/btc-demo-console.spec.ts",
+      "result": "not_run"
+    }
+  ]
+}

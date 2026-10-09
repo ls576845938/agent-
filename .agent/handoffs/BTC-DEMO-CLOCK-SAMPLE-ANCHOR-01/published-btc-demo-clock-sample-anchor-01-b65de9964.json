@@ -1,0 +1,87 @@
+{
+  "base_commit": "135e0f154677b433628f5022e91a2d5c2463a0a1",
+  "blockers": [
+    "independent_integrator_required_for_demo_execution_semantics",
+    "backend_restart_required_after_main_integration",
+    "current_main_browser_acceptance_required_after_restart",
+    "real_demo_start_not_rerun_private_order_permissions_false",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T11:10:50Z",
+  "deliverable_commit": "b65de9964f6bfba8ff3556755e60179b6c5b7b56",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "cec59a6597b5dea29f47943c6b6e72828b5da6b9f2f761927614d579eb0072f7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "54807ac4c0dc9d3effa5fa8c238979dbff675b1220c24deaf75682ef45383d66",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-demo-refresh-operation-protocol-01-4ee7af944"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-demo-clock-sample-anchor-01-b65de9964",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-clock-sample-anchor-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest <two adjacent server-time sample tests> -q (pre-fix)",
+      "evidence_path": "pytest stdout: 1 failed, 1 passed; missing server_time_local_midpoint_ms",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest <four demo clock guard tests> -q",
+      "evidence_path": "pytest stdout: 4 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "pytest stdout: 441 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py -q",
+      "evidence_path": "pytest stdout: 120 passed after adding committed quant_cn and quant_us to sparse checkout",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- <declared touch set>",
+      "evidence_path": "git diff --check exited 0; Windows LF-to-CRLF advisory only",
+      "result": "passed"
+    },
+    {
+      "command": "real Demo authoritative preflight/start, private/order/live endpoint, backend restart, current-main browser acceptance",
+      "evidence_path": "not_run_by_producer_scope_and_private_order_live_prohibition",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-CLOCK-SAMPLE-ANCHOR-01",
+  "transition_for": ""
+}

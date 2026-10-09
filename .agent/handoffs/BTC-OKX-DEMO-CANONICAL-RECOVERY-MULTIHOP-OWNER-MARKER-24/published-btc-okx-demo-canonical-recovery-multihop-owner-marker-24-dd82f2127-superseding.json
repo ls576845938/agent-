@@ -1,0 +1,76 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-canonical-recovery-multihop-owner-marker-24-dd82f2127-superseding",
+  "ticket_id": "BTC-OKX-DEMO-CANONICAL-RECOVERY-MULTIHOP-OWNER-MARKER-24",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-multihop-owner-marker-24",
+  "base_commit": "9bd1f1cdbb6a69e0ee6f253cdaf14c36b7329a2a",
+  "deliverable_commit": "dd82f212789f16193477f3f612e5209e6332088d",
+  "created_at": "2026-08-11T21:55:22Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-okx-demo-hosted-oco-cross-head-ownership-23-a632362e9"
+  ],
+  "supersedes": [
+    "published-btc-okx-demo-canonical-recovery-multihop-owner-marker-24-dd82f2127"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "type": "code",
+      "sha256": "cb118f49cff3e6e693eb743c2a14c54dac64aa52ef424eb16f4ae7cb8b9cce54",
+      "schema_version": "btc_okx_demo_recovery_binding_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "type": "test_evidence",
+      "sha256": "35ad7e84fa8eff67474a40b506fd177000322a48ff176fc55137435157d11eb1",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k 'accepts_multihop_ancestor_owner_marker' --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "failure-first base result: 1 failed, 124 deselected; final result: 1 passed, 124 deselected"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k 'multihop_owner_marker or cross_head_owner_marker or accepts_ancestor_incident_owner_marker or bounded_recovery_ancestry_probe' --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "8 passed, 121 deselected in 6.71s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "129 passed in 42.95s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py; git diff --check -- <touch-set>",
+      "result": "passed",
+      "evidence_path": "offline sparse producer worktree"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "canonical_held_position_recovery_not_executed_by_this_offline_ticket",
+    "promotion_artifact_not_rebuilt",
+    "private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

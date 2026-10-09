@@ -1,0 +1,123 @@
+{
+  "base_commit": "73d1fbd25820bed186ddc5f88be58a5f14ded747",
+  "blockers": [
+    "owner:integrator independent_integration_of_final_cascade_correction_required",
+    "owner:root merge_corrected_integrator_commit_into_registered_main_with_non_fast_forward_history_preserved",
+    "owner:root rerun_identity_checks_and_canonical_main_mock_playwright_after_final_main_merge",
+    "owner:root restart_canonical_frontend_and_backend_after_final_main_merge",
+    "owner:root promotion_artifact_rebuild_required_by_unclassified_delivery_policy",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_and_secret_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-03T12:43:41Z",
+  "deliverable_commit": "7d812c400fe09ebfc0d98f6ff048b331a28def5b",
+  "deliverables": [
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "4a9aeeb97144748c2ab4fadf466f48838443d368fcc758c8dd47ddae5a19e7de",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "e9a2e70cfc5a2de69754194969a01fa67437b460be53d8beaa592f66fe24d205",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "static_regression_v1",
+      "sha256": "d75efe2900dc87fb15fa00b353e8c689b40f1065e389e7b21e175fcbd77e086a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "d8a9f57041dfaa44af65e5bf7574e5b02fd382ec9fbc4aef4d95a7001d331350",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "cde79ac57404a9e2064b88f7fbd9e47d6306fbb0dfd11e754f9663c728f93a52",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-chart-narrow-height-01-7d812c400-v3",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-chart-narrow-height-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-chart-narrow-height-01-778d25fbc-v2"
+  ],
+  "tests": [
+    {
+      "command": "npx.cmd playwright test e2e/crypto.spec.ts --grep responsive-market-layout --reporter=line on canonical main before height fix (chart height 0; expected >120)",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "canonical-main Playwright after first integration (chart height assertion passed; compact font remained 15px because terminal-workbench.css loaded last)",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "failed"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview after final cascade correction",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (tsc --noEmit) after final cascade correction",
+      "evidence_path": "frontend/src/terminal-workbench.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build after final cascade correction (5219 modules; existing chunk-size warning only)",
+      "evidence_path": "frontend/src/terminal-workbench.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check (manifest_match=true; baseline_ancestor=true; dirty_paths=[])",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test final correction (12 scenarios)",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright frontend/e2e/crypto.spec.ts after corrected independent integration",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CHART-NARROW-HEIGHT-01",
+  "transition_for": ""
+}

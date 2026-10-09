@@ -1,0 +1,52 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-guardian-operator-recovery-closure-01-identity-correction-01-77aca4635",
+  "ticket_id": "BTC-DEMO-GUARDIAN-OPERATOR-RECOVERY-CLOSURE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-guardian-id-corr01-int",
+  "base_commit": "02afd1635e13fc0dcbbac67d773853ebf7d12ec5",
+  "deliverable_commit": "77aca4635bdc9c80a734d4bbaffbd92598288b36",
+  "created_at": "2026-08-24T12:59:01Z",
+  "expires_at": "",
+  "depends_on": ["integrated-btc-demo-guardian-operator-recovery-closure-01-e572161785"],
+  "supersedes": ["integrated-btc-demo-guardian-operator-recovery-closure-01-e572161785"],
+  "transition_for": "integrated-btc-demo-guardian-operator-recovery-closure-01-e572161785",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "ad0e4cb93a29922c3d489f2fd91e030bb02b38eeb8be2ca6ff32ac0f3e7137fd",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {"command": "node frontend/scripts/update-frontend-identity.mjs", "result": "passed", "evidence_path": "baseline_commit=02afd1635e13fc0dcbbac67d773853ebf7d12ec5; fingerprint=3ca0e9fe249fb09e6e2b0812b8627cd8ddcd81256fb499e799a0622e295539c6"},
+    {"command": "node frontend/scripts/check-frontend-identity.mjs", "result": "passed", "evidence_path": "manifest_match=true; baseline_ancestor=true; safety flags false; canonical=false because integrator branch"},
+    {"command": "node frontend/scripts/test-frontend-identity.mjs", "result": "failed", "evidence_path": "expected integrator guard: FRONTEND_CANONICAL_GUARD_FAILED fingerprint_or_object_ids_mismatch while registered main still has prior identity; exit=1"},
+    {"command": "node frontend/scripts/start-current-main.mjs --check", "result": "failed", "evidence_path": "expected guard: FRONTEND_CANONICAL_GUARD_FAILED branch=agent/integrator/btc-demo-guardian-id-corr01-int, worktree=sibling integrator, expected registered main"},
+    {"command": "node frontend/scripts/check-frontend-identity.mjs --canonical", "result": "failed", "evidence_path": "expected canonical=false on integrator branch; manifest_match=true and baseline_ancestor=true"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "identity-only correction worktree"},
+    {"command": "scoped safe_status.py frontend/public/frontend-identity.json .agent/handoffs/BTC-DEMO-GUARDIAN-OPERATOR-RECOVERY-CLOSURE-01", "result": "passed", "evidence_path": "clean after identity and handoff commits"},
+    {"command": "registered-main canonical identity/test/launcher acceptance", "result": "not_run", "evidence_path": "deferred until this correction is consumed on registered main; no service started"}
+  ],
+  "blockers": [
+    "canonical_identity_test_and_launcher_check_deferred_until_registered_main_consumes_identity_correction",
+    "backend_restart_and_current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_and_promotion_remains_blocked",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

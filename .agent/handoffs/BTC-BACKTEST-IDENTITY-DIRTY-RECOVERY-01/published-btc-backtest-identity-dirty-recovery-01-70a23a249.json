@@ -1,0 +1,85 @@
+{
+  "base_commit": "030fed02ab90fc4780ab03e71da6166388a00cfa",
+  "blockers": [
+    "quality_checked_recovery_only_not_promotion_evidence",
+    "current_head_gate_artifacts_not_rebuilt",
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "paper_live_private_order_broker_real_order_network_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-28T04:59:40Z",
+  "deliverable_commit": "70a23a249ca7a7e1e83525d545290906a3ec1f79",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_backtest_identity.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_backtest_run_manifest_v1",
+      "sha256": "20da658792535c7c7e4dcbb888edf0cc5e683b2a2e6f0724e490a6da52dba23a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_registry_contract_tests_v1",
+      "sha256": "34335fe4a1311931aa33ea2d990faf31fef7c924ad743b202a650612d38fae13",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-backtest-identity-dirty-recovery-01-70a23a249",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-backtest-identity-dirty-recovery-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_backtest_identity.py tests/contracts/test_btc_strategy_registry.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py --basetemp %TEMP%/btc-backtest-identity-contract-980a1281651745978e606f10e69e1bbd -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_api_contract.py tests/contracts/test_no_broker_import_in_evidence_builders.py --basetemp %TEMP%/btc-backtest-identity-minimum-retry-21cec367a0064c0d9ec3eb74c9ddf106 -q",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_api_contract.py tests/contracts/test_no_broker_import_in_evidence_builders.py --basetemp %TEMP%/btc-backtest-identity-minimum-final-6ca1e67859f6479498afc75e5090a502 -q",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_api_contract.py tests/contracts/test_no_broker_import_in_evidence_builders.py --basetemp %TEMP%/btc-backtest-identity-minimum-final-retry-8a32d9c1fd1b46bd9afcf3dd88eed7be -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check -- quant_crypto/application/btc_backtest_identity.py tests/contracts/test_btc_strategy_registry.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-BACKTEST-IDENTITY-DIRTY-RECOVERY-01",
+  "transition_for": ""
+}

@@ -1,0 +1,146 @@
+{
+  "base_commit": "833f165cb338aead32123f50624a460ab3478898",
+  "blockers": [
+    "owner=main_sync; registered main fast-forward to this final handoff commit is intentionally performed after this append-only event is committed",
+    "owner=gate_review; promotion artifact/read-model rebuild, backend restart, and browser acceptance remain required by live_execution policy",
+    "owner=operations; no real OKX network, private endpoint, order endpoint, live transport, transfer, withdraw, Demo start, or secret evidence was used",
+    "owner=architect; composition is quality_checked only and is not promotion evidence",
+    "paper_live_promotion_private_order_live_transfer_withdraw_real_order_and_secret_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-08T18:11:29Z",
+  "deliverable_commit": "f7f5915cba6814e84d1dc24969d66da0832c02ea",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/shared_runtime_live.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_shared_runtime_live_canary_composition_v3",
+      "sha256": "e95f6a035ff26a91de5c1c5b687aa8b6d5b7951f44fecd6cb2d536372bac7f94",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_shared_runtime_live_canary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_shared_runtime_live_canary_contract_tests_v3",
+      "sha256": "d5af2845bef67d8211bae13fb75e2220b64c19bd0c71362111ca5385550895ac",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-COMPOSITION-01/published-btc-okx-shared-runtime-live-canary-01-correction-composition-01-ad8bc8a4f.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "6f112b951756990893add4a8fbddf02d0e5420d18664f59f228122cec078fd4f",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-COMPOSITION-02/published-btc-okx-shared-runtime-live-canary-01-correction-composition-02-b56fd5082.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "8178ab54d9c4fd249cde0fab3744821d671b54f7447930161b0071aec3bbda62",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-COMPOSITION-03/published-btc-okx-shared-runtime-live-canary-01-correction-composition-03-5bc03b160.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "214d797a378593f95a4f2f21d696cb8dd46e8b523d287a6a8b43b9f4f92fae83",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-shared-runtime-live-canary-01-correction-composition-01-ad8bc8a4f",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-composition-02-b56fd5082",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-composition-03-5bc03b160"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-shared-runtime-live-canary-01-composition-integration-02-f7f5915cb",
+  "event_type": "integrated",
+  "expires_at": "2026-09-07T18:11:29Z",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-composition-integration-02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "context_packet.py --role integrator --scope btc-okx-shared-runtime-live-canary-composition-integration-02 --change-risk live_execution; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/shared_pitfalls.md",
+      "result": "passed"
+    },
+    {
+      "command": "handoff.py validate C1/C2/C3 plus producer commit/blob/touch/ancestry/clean checks",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick ad8bc8a4 5e5a0890 b56fd508 09d445e2 5bc03b16 bf80b923 in exact order [no conflict]",
+      "evidence_path": "quant_crypto/oms/shared_runtime_live.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest --import-mode=importlib tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q -p no:cacheprovider --basetemp=C:\\Temp\\codex-agent9-composition-34-20260809-1 [34 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_shared_runtime_live_canary.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest --import-mode=importlib tests/contracts/test_btc_okx_shared_runtime_live_canary.py tests/contracts/test_okx_live_preflight.py tests/contracts/test_btc_okx_live_transport.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_lean_microlive_canary.py tests/live/test_btc_okx_shared_runtime_live_canary.py -q -p no:cacheprovider --basetemp=C:\\Temp\\codex-agent9-composition-170-20260809-1 [170 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_shared_runtime_live_canary.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q -p no:cacheprovider --basetemp=C:\\Temp\\codex-agent9-composition-prev-a309-20260809-1 [309 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py -q -p no:cacheprovider --basetemp=C:\\Temp\\codex-agent9-composition-prev-b71-20260809-1 [71 passed]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py tests/contracts/test_btc_okx_live_transport.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_lean_microlive_canary.py tests/live/test_btc_okx_shared_runtime_live_canary.py -q -p no:cacheprovider --basetemp=C:\\Temp\\codex-agent9-composition-prev-b136-20260809-1 [136 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_live_transport.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=C:\\Temp\\codex-agent9-composition-pyc-20260809-1 py -3 -m py_compile quant_crypto/oms/shared_runtime_live.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py; git diff --check 833f165cb338aead32123f50624a460ab3478898..candidate",
+      "evidence_path": "quant_crypto/oms/shared_runtime_live.py",
+      "result": "passed"
+    },
+    {
+      "command": "safe_status.py on the two business paths and three handoff directories; changed-path inventory exact five paths; integration worktree clean",
+      "evidence_path": ".agent/handoffs/INTEGRATE-BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-COMPOSITION-INTEGRATION-02",
+      "result": "passed"
+    },
+    {
+      "command": "protected data manifest and paper ledger Git blobs compared with base 833f165cb338aead32123f50624a460ab3478898",
+      "evidence_path": "data/paper_ledger/paper_runtime_audit.jsonl",
+      "result": "passed"
+    },
+    {
+      "command": "registered-main fast-forward to final handoff commit",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\agent-",
+      "result": "not_run"
+    },
+    {
+      "command": "artifact/read-model rebuild, backend/frontend restart, Demo start, private/order/live/transfer/withdraw endpoint, network, secret access, paper/live order, promotion unlock",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-COMPOSITION-INTEGRATION-02",
+  "transition_for": "INTEGRATE-BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-COMPOSITION-INTEGRATION-02"
+}

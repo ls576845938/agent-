@@ -1,0 +1,114 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-start-attempt-policy-binding-01-correction-04-4683f1462",
+  "ticket_id": "BTC-DEMO-START-ATTEMPT-POLICY-BINDING-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-start-attempt-corr04",
+  "base_commit": "b59577180c8880d254adb18bb13ceb3fe67b620b",
+  "deliverable_commit": "4683f146258f7493453ad3e7bf8e760bf27b4b4e",
+  "created_at": "2026-08-25T07:30:43Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-03-bd99cd36c"
+  ],
+  "supersedes": [
+    "published-btc-demo-start-attempt-policy-binding-01-correction-03-bd99cd36c"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "b3553e52c6141a74573e59d0c475d69caea23cbb121bc4bac0372a038e07dc61",
+      "schema_version": "btc_demo_start_attempt_historical_blocker_projection_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "ccaff3aed701a41d35d84d0f4443387869c3ec921080dcfde694a5337d91d90f",
+      "schema_version": "btc_demo_operator_account_identity_projection_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "7cdff2ccacfa5840b82ba50ddf5cef11a46525f6156f0e3bc9e482dfe888d19b",
+      "schema_version": "btc_demo_start_attempt_historical_blocker_failure_first_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "450a4d1b693cdc7a1fccda07566f269cae9cd431f9f1c3f23d3f9b10b6788a45",
+      "schema_version": "btc_demo_operator_account_identity_failure_first_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k policy_switch_historical_start_blocker_is_not_current_but_independent_safety_remains --basetemp D:\\temp\\btc-demo-corr04-first-runtime",
+      "result": "failed",
+      "evidence_path": "Failure-first on base b595771: recovered runtime.blockers still contained okx_demo_private_ws_startup_reconnect_probe_failed alongside the independent safety blocker."
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q -k account_identity_incident_and_historical_start_blocker --basetemp D:\\temp\\btc-demo-corr04-first-backend",
+      "result": "failed",
+      "evidence_path": "Failure-first on base b595771: account incident was projected as local_environment instead of account_identity."
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k policy_switch_historical_start_blocker_is_not_current_but_independent_safety_remains --basetemp D:\\temp\\btc-demo-corr04-runtime-after-helper",
+      "result": "passed",
+      "evidence_path": "1 passed; exact historical start blocker removed from serving runtime while independent safety blocker and generic cancel-only restore blocker remained."
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q -k account_identity_incident_and_historical_start_blocker --basetemp D:\\temp\\btc-demo-corr04-backend-after",
+      "result": "passed",
+      "evidence_path": "1 passed; account stage was not ready, account_identity incident was explicit, historical blocker was omitted, refresh remained allowed and start remained blocked."
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp D:\\temp\\btc-demo-corr04-full-runtime",
+      "result": "passed",
+      "evidence_path": "439 passed in 73.51s; prior 438 runtime contracts plus the new historical-blocker regression."
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q --basetemp D:\\temp\\btc-demo-corr04-full-backend",
+      "result": "passed",
+      "evidence_path": "44 passed in 6.06s; prior backend projection contracts plus the new account-identity/historical-blocker regression."
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "All touched Python modules and contract tests compiled."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "No whitespace errors before deliverable commit."
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "real_demo_execution_not_run",
+    "producer_worktree_identity_not_canonical_until_integration",
+    "promotion_artifact_rebuild_not_run",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

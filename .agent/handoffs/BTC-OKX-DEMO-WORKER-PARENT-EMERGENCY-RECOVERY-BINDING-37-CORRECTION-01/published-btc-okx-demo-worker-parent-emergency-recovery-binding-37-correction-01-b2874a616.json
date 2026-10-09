@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-correction-01-b2874a616",
+  "ticket_id": "BTC-OKX-DEMO-WORKER-PARENT-EMERGENCY-RECOVERY-BINDING-37-CORRECTION-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-worker-parent-37-corr1",
+  "base_commit": "33e4a53569caaebfdf2e68ae78834f7889b13013",
+  "deliverable_commit": "b2874a61687dbc9c21adbc52e35d04883213526c",
+  "created_at": "2026-08-12T12:45:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-worker-parent-emergency-recovery-binding-37-01f92712c-corr1"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "458786b4edea4448e8c66c78215377a154440783764a63dd845c729f3b9d40f9",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "ff31cb56307af5a3a9c83de3bdc190b6d70dbcb9ad0d50294275b1ffcc82d7a0",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k derives_only_durable_identity --basetemp <external-temp>",
+      "result": "failed",
+      "evidence_path": "failure-first: real parent_waiting disposition was rejected as fault_drill_worker_parent_emergency_owner_mismatch"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -q -k worker_parent_emergency_binding --basetemp <external-temp>",
+      "result": "passed",
+      "evidence_path": "9 passed, 146 deselected; real parent_waiting accepted and exact_child_exited plus other dispositions fail closed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed",
+      "evidence_path": "exit=0"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "exit=0 before producer commit"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

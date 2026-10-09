@@ -1,0 +1,121 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-flat-readonly-recovery-01-6c63c2926",
+  "ticket_id": "BTC-OKX-DEMO-FLAT-READONLY-RECOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-flat-readonly-recovery-01",
+  "base_commit": "95e78889755880652c34e0ea52366df508d88d03",
+  "deliverable_commit": "6c63c2926c6bf079125f583a8bd143a7b614949d",
+  "created_at": "2026-08-06T10:33:57Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-flat-readonly-recovery-01-a44d9d895",
+    "integrated-btc-okx-demo-incident-recovery-and-receipt-05-correction-01-f214ab7c7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-flat-readonly-recovery-01-a44d9d895",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "02874955ffa7516e55f9e2104488a1e5765c6edaa15b9f11bd9ea49314d854ed",
+      "schema_version": "btc_okx_demo_fault_drill_flat_receipt_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "e256314f03b6fb3fa6659ecddc0dd6f437195953a1a373cfe2a9df462d72ef4a",
+      "schema_version": "btc_okx_demo_paper_runtime_flat_readonly_recovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "cc76329b58204013860664d5fb9e18ec3871ff31b7a4ed1ccfa2d1f6d1ef2c11",
+      "schema_version": "btc_okx_demo_fault_drill_flat_receipt_recovery_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "cb4e2746a66b8765ddcbe6d85912bcf032660faac88e33e49a52e9ee9e0773f9",
+      "schema_version": "btc_okx_demo_paper_runtime_flat_readonly_recovery_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "committed-object validation for producer a44d9d895e50e4bf4bcd2e06679913a370f8d96e and published handoff 6c7099ea00352eb86241f22d1f11be2b827400e3: direct base ancestry, exact four-path business touch set plus one append-only envelope, four-of-four raw Git blob SHA-256 closure, schema, dependency, blockers, guardrails, and producer test evidence",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-FLAT-READONLY-RECOVERY-01/published-btc-okx-demo-flat-readonly-recovery-01-a44d9d895.json"
+    },
+    {
+      "command": "failure-first semantic review: base required a live matching OCO and rejected a flat superseding receipt; producer adds exact immutable flat receipt binding plus identity-drift zero-POST regression",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "git cherry-pick a44d9d895e50e4bf4bcd2e06679913a370f8d96e then git cherry-pick 6c7099ea00352eb86241f22d1f11be2b827400e3; integration commits 6c63c2926c6bf079125f583a8bd143a7b614949d and e75645f329d4fac25869b03dec1c6e44399521ec; no conflicts",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3.14 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k flat_readonly_targeted --basetemp unique; 3 passed, 242 deselected in 3.79s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3.14 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp unique; 245 passed in 44.46s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3.14 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check 95e78889755880652c34e0ea52366df508d88d03 HEAD -- approved touch set",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "static zero-POST closure: already-flat recovery uses _read_only_client and contains no submit_order, cancel_algo_orders, cancel_all_after, order-capable client, or cancel-capable client call",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "artifact or manifest rebuild, backend restart, service start, actual OKX Demo/private/order/live execution, network access, secret access, transfer, and withdraw",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:backend_operator backend_restart_required_after_integration",
+    "owner:btc_operations okx_native_data_must_be_fresh_and_eligible_before_demo_start",
+    "owner:architect promotion_evidence_not_rebuilt_or_unlocked",
+    "registered_main_not_advanced_integration_branch_only",
+    "no_artifact_no_manifest_no_ledger_no_replay_no_promotion_evidence_built",
+    "quality_checked_source_is_not_promotion_evidence",
+    "no_service_start_no_network_no_secret_no_demo_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

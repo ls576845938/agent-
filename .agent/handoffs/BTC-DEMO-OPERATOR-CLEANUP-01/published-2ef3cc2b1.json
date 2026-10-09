@@ -1,0 +1,126 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-cleanup-01-2ef3cc2b1",
+  "ticket_id": "BTC-DEMO-OPERATOR-CLEANUP-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-cleanup-01",
+  "base_commit": "3ab3c023e1bedbda1a4d063dc71cf9513df86999",
+  "deliverable_commit": "2ef3cc2b104a646d96af716b1d1b32e23c9dc46c",
+  "created_at": "2026-09-06T14:19:30.926Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "8f5fff1c1c222e07bd36ff28a0ff9a5de4ae116f84c0cd6b3bee14bb376bd352",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_operation_diagnostics.py",
+      "sha256": "a3a7638bda6de2040bee40ec9f96a7afde36d6e2bd7ceff9c526ccc7a945974c",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/reports/BTC-DEMO-OPERATOR-CLEANUP-01.md",
+      "sha256": "b276c30411e9578520931b1b9bc69a3f014c7ca890290b3f8126cec5c73c20a4",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "d7181e0e7721ace5aca5fac2bb9a86604390a77bf0f042c23c032de3748d9718",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "sha256": "03072151f80cec2cc4afff931dcac09a60d8b2baf84dbaf268bf618de7cba760",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-operator-cleanup.mjs",
+      "sha256": "443777f562bf7f4129da3232ecddf26d5e9e625b0526feec8b64331066d2adcd",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "sha256": "72d39cfa95bcf06fb99287f4280c3b8068ad526e2761c3112f9885c8ea7c993d",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "sha256": "d24ab9814e9d3ef149c4a73cd7668b579bec513fe5e584eb1d61c94d1c3e4718",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "60eb58cf34c25070555b99f8f0b0bd0e1c9d80a23c59c266f8ec6d4c6342e151",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "sha256": "430e200914cfd9dfb961dd64052a73bf767cf835d421df2ef64cde4b4e6178fc",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-start-feedback.ts",
+      "sha256": "6d73717ca57333ddfa1f101e42a675a39f85da695ec43e4c4e04539f107cea34",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "113 Python tests; four frontend regression scripts; npm run lint; npm run build",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-OPERATOR-CLEANUP-01.md"
+    },
+    {
+      "command": "Authorized actual Demo start / private execution",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-OPERATOR-CLEANUP-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent integration required, change_risk=demo_execution_semantics",
+    "owner:root inactive canonical restart and browser QA pending",
+    "owner:operator runtime writer lock source unresolved; actual authorized Demo startup remains unverified; do not delete locks",
+    "promotion paper live private order remain false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

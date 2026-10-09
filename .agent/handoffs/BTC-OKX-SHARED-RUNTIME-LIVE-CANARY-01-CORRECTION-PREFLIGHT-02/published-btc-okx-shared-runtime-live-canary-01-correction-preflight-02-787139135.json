@@ -1,0 +1,89 @@
+{
+  "base_commit": "9f611bc053022774324ccc5b81697c96ca7df5fd",
+  "blockers": [
+    "independent_integrator_current_main_integration_required",
+    "promotion_artifact_and_read_model_rebuild_required_by_live_execution_delivery_policy",
+    "backend_restart_required_after_current_main_integration",
+    "no_private_endpoint_no_order_endpoint_no_live_transport_no_real_order_no_secret_access",
+    "opaque_receipt_requires_provider_issuance_identity_and_capability_registry",
+    "opaque_read_only_receipt_is_quality_checked_offline_fixture_not_live_attestation",
+    "data_readonly_receipt_cannot_unlock_order_capability",
+    "fixed_ip_observed_egress_and_provider_authority_require_real_authorized_verifier_before_live_use",
+    "default_all_paper_live_promotion_flags_false",
+    "no_live_network_provider_registered"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-08T15:53:44Z",
+  "deliverable_commit": "787139135bf529589a7d3b822898617f3b020b81",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_live_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_live_read_only_preflight_v1",
+      "sha256": "a9e470d5b4106a8fcc592b7da9766edb9fe02803653526fa3f9983d100b27f35",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_okx_live_preflight.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "c80b16c96acd62fffdff340e529fcbca4c91efe88b505c99df663314682eb267",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-shared-runtime-live-canary-01-correction-preflight-01-9f611bc05"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-okx-shared-runtime-live-canary-01-correction-preflight-02-787139135",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-live-preflight-correction-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-shared-runtime-live-canary-01-correction-preflight-01-9f611bc05"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py -q [observed: 71 passed in 0.49s; 53 baseline tests plus 18 correction regressions]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_okx_live_preflight.py tests/contracts/test_btc_okx_live_transport.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_lean_microlive_canary.py tests/live/test_btc_okx_shared_runtime_live_canary.py -q [observed: 136 passed in 3.34s; 118 baseline tests plus 18 correction regressions]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_live_preflight.py tests/contracts/test_okx_live_preflight.py [observed: exit 0]",
+      "evidence_path": "tests/contracts/test_okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 9f611bc053022774324ccc5b81697c96ca7df5fd [observed: exit 0 before deliverable commit]",
+      "evidence_path": "quant_crypto/oms/okx_live_preflight.py",
+      "result": "passed"
+    },
+    {
+      "command": "real OKX endpoint/private/order/live/transfer/withdraw access, key or secret read, POST provider registration, artifact/read-model build, main integration, or push",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-SHARED-RUNTIME-LIVE-CANARY-01-CORRECTION-PREFLIGHT-02",
+  "transition_for": ""
+}

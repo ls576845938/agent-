@@ -1,0 +1,109 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-shared-platform-v3-t7-correction-02-9d9f51434-20260822",
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T7",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-shared-platform-v3-t7",
+  "base_commit": "cf0e4cdcfaf10664299a48253d0c91d8c471c921",
+  "deliverable_commit": "9d9f514349f9b07cbc1f00bc49d3a9ea0e61e251",
+  "created_at": "2026-08-22T20:12:36Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-shared-platform-v3-t1-0be95b352",
+    "integrated-btc-shared-platform-v3-t2-ef035e0e0",
+    "integrated-btc-shared-platform-v3-t3-2a57cad99",
+    "integrated-btc-shared-platform-v3-t4-659b3bd4c",
+    "integrated-btc-shared-platform-v3-t5-3ed37d0fa",
+    "integrated-btc-shared-platform-v3-t6-9b7df3417"
+  ],
+  "supersedes": ["published-btc-shared-platform-v3-t7-correction-01-8bc89653c-20260822"],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "93c7a45510ec02819595edc67c0940db1130032b5a19193cbf19ebd9d9216f9d",
+      "schema_version": "btc_shared_platform_v3_t7_workspace_composition_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "606151a23811e95380e5ef20dd0ea5fe706c3c7ab3a3300e536ea0e7cfe8c8ff",
+      "schema_version": "btc_shared_platform_v3_t7_demo_console_v2_correction_02",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "fc2ec07760006b5f32887c0b62018aae5500aa2501ac4e49026a797f4d2392aa",
+      "schema_version": "btc_demo_operator_contract_v2_decoder_controller_correction_02",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "a809fbef2d53820ce961553c7536a22f52d1da2075e8be3c170f428c53b202f9",
+      "schema_version": "btc_shared_platform_v3_t7_frontend_contract_tests_correction_02",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "Executable decoder/controller tests preserve all prior contracts and prove concurrent start+emergency claims, same-action second claim rejection, start-only release, and emergency busy preservation."
+    },
+    {
+      "command": "npm.cmd run lint",
+      "result": "passed",
+      "evidence_path": "frontend producer worktree using a temporary exact Junction to registered-main frontend/node_modules; tsc completed successfully."
+    },
+    {
+      "command": "npm.cmd run build -- --logLevel error",
+      "result": "passed",
+      "evidence_path": "Vite build exited 0 with the exact dependency Junction; link removed and dependency target remained intact."
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview",
+      "result": "passed",
+      "evidence_path": "Crypto route/chart/fail-closed static markers."
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "result": "failed",
+      "evidence_path": "Producer identity remains fail-closed at test-frontend-identity.mjs:241 with manifest_match=false; no identity manifest was modified."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "Correction diff has no whitespace errors; initial and final scoped safe_status were clean outside declared edits."
+    },
+    {
+      "command": "Playwright browser execution / current-main runtime smoke",
+      "result": "not_run",
+      "evidence_path": "Producer worktree is non-canonical; browser/current-main evidence remains T8/integrator scope."
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_by_demo_execution_semantics",
+    "producer_frontend_identity_manifest_mismatch_fail_closed_until_current_main_integration",
+    "backend_restart_required_after_integration",
+    "current_main_browser_and_runtime_v2_evidence_deferred_to_t8",
+    "promotion_artifact_rebuild_not_required_by_demo_execution_semantics_but_no_promotion_claim",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "base_commit": "22a4421737985a0b9a9c0c852522437c9d7440aa",
+  "blockers": [
+    "requested_change_risk_frontend_test_correction_not_supported_by_delivery_policy_enum; preflight_used_strict_unclassified",
+    "team_context_discovery_has_blocked_dependencies_and_invalid_handoffs; no uncommitted delivery was consumed",
+    "backend_restart_and_promotion_artifact_rebuild_not_performed_for_test_only_correction",
+    "paper_live_private_order_real_order_transfer_withdraw_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-20T02:53:32Z",
+  "deliverable_commit": "6b2ec9eebac80c3134bf1035b767904b57018038",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_e2e_v1",
+      "sha256": "23a3aeb85bf16a4cbcdadc4c57e42aab5b96f1e24a317338ee5ab8812a043097",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "af0339396c1e3373995799a44734449886a46aa2236c80c0326629f3a4d6067a",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-unified-operator-control-01-correction-01-6b2ec9eeb",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-operator-control-corr01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "PUBLISH-BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01-8DCDA722A"
+  ],
+  "tests": [
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- frontend/e2e/btc-demo-console.spec.ts frontend/public/frontend-identity.json",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-UNIFIED-OPERATOR-CONTROL-01-CORRECTION-01",
+  "transition_for": ""
+}

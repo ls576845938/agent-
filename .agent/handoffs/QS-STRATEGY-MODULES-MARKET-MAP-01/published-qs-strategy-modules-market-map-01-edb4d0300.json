@@ -1,0 +1,95 @@
+{
+  "base_commit": "060c11a04c7f5a5ef646f61c7c946009adb84240",
+  "blockers": [
+    "owner:integrator independent_frontend_integration_required_for_unclassified_change_risk",
+    "owner:integrator canonical_registered_main_strategy_modules_playwright_and_visual_acceptance_pending",
+    "owner:policy producer_worktree_frontend_preview_prohibited",
+    "owner:policy promotion_artifact_and_read_model_not_rebuilt",
+    "owner:policy backend_restart_not_performed_in_frontend_only_producer_scope",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-19T10:50:46Z",
+  "deliverable_commit": "edb4d030038cb6c15a82033fcaebb368cf92fa87",
+  "deliverables": [
+    {
+      "path": "frontend/src/App.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_route_v1",
+      "sha256": "0a6f173cb459d359ee7195187411a54f67f72c76bd417f78224cd57aa0c94308",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_map_v1",
+      "sha256": "8f47008177f1192ace03bdda8b434c8ba3012d5c79bcccdac3ba9b0afca130a9",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_styles_v1",
+      "sha256": "c65532b4ad507cbe99be27125f08d5b92644e8068257c8bac7aff4fa7b03ea1f",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_playwright_contract_v1",
+      "sha256": "dde8f3a3dc34aaf7176d7dc05e12ca856d7da15e84f053b2db797a978361e2f7",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-market-map-01-edb4d0300",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-modules-market-map-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "producer sparse worktree; temporary registered-main dependency junction removed",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "producer sparse worktree; Vite 6.4.2 build, existing large-chunk warning only",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json unchanged; manifest_match=true",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "evidence_path": "declared frontend touch set",
+      "result": "passed"
+    },
+    {
+      "command": "canonical registered-main mocked Playwright strategy-modules E2E",
+      "evidence_path": "deferred_to_integrated_current_main; producer worktree must not start Vite",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-MARKET-MAP-01",
+  "transition_for": ""
+}

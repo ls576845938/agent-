@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-unified-offline-readonly-compat-c01-02bfe4617",
+  "ticket_id": "INTEGRATE-BTC-UNIFIED-OFFLINE-READONLY-20261004",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-unified-ro-compat-integrate-c01",
+  "base_commit": "837246619a6e79c0d4481da61950cae2fa6bab2c",
+  "deliverable_commit": "02bfe46178e4077178360ade016035ebfe4d1a63",
+  "created_at": "2026-10-04T09:41:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-unified-offline-readonly-20261004-cd1dbb72b",
+    "integrated-btc-unified-offline-readonly-governance-correction-01-validated-91b725a8b"
+  ],
+  "supersedes": [
+    "integrated-btc-unified-offline-readonly-20261004-cd1dbb72b"
+  ],
+  "transition_for": "integrated-btc-unified-offline-readonly-governance-correction-01-validated-91b725a8b",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md",
+      "type": "report",
+      "schema_version": "btc_unified_offline_readonly_integration_v1",
+      "sha256": "28afbe35c7c55492346de1c9783195a04c92269793cdf5f6875fa46e88303dca",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input <CORRECTION-01 producer and independent-review envelopes>",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md"
+    },
+    {
+      "command": "py -3 tools/agent_governance/btc_unified_offline_readonly_delivery_20261004.py --verify-source",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/agent_governance/test_btc_unified_offline_readonly_delivery_20261004.py -k <five compatibility selectors> --basetemp <independent OS TEMP>",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md"
+    },
+    {
+      "command": "npm run identity:check",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md"
+    },
+    {
+      "command": "unchanged business matrices, research/training/worker, services, final current-main browser acceptance and promotion artifact",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/btc-unified-offline-readonly-integration-20261004.md"
+    }
+  ],
+  "blockers": [
+    "corrected_candidate_requires_registered_main_fast_forward_and_canonical_restart",
+    "final_corrected_current_main_listener_identity_health_and_browser_deployment_acceptance_pending",
+    "registry_conflict_and_management_route_not_reviewed_for_readonly_must_remain_truthfully_blocked",
+    "existing_real_model_calibration_candidate_research_and_promotion_gates_remain_blocked",
+    "all_16_readonly_and_trading_safety_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

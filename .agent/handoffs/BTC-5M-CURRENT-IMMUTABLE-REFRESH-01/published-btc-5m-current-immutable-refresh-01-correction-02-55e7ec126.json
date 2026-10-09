@@ -1,0 +1,125 @@
+{
+  "base_commit": "64e20af8867370d29cfbdb0d8798a78d9c3c5a95",
+  "blockers": [
+    "immutable_manifest_consumer_readiness_blocked",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "okx_timestamp_aligned_l2_manifest_not_published",
+    "backend_restart_required_after_main_integration",
+    "promotion_artifact_rebuild_required_after_main_integration",
+    "qc2_invalid_source_head_orphaned"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T14:10:00Z",
+  "deliverable_commit": "55e7ec126dd7493de6e6cf596b1439cca456cb3c",
+  "deliverables": [
+    {
+      "path": "quant_crypto/data/immutable_kline_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_v1",
+      "sha256": "09dc6c2f0aa97cff5c6122abb4da560d4f6f910a47e95d83ed0184b656c50add",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_kline_immutable_export.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_kline_immutable_export_contract_v1",
+      "sha256": "42a41ba712aa62521584ba2265215f9b093515d6da1cf33d54df990da9b5b385",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260826T115959999Z-decimal18-v2-src40741d39-main64e20af8-qc2r1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "ad6981dc7c8d5124b594ff4212192e5e94ff87c965bd3e3470f247da56efa9ee",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "mutable_runtime_storage_pointer_v1",
+      "sha256": "5defe57174a9d6767edfbb83fa23456be124349bd0fb50aefa06e08867ad7a84",
+      "type": "data_manifest"
+    },
+    {
+      "path": "docs/research/BTC_5M_CURRENT_IMMUTABLE_REFRESH_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_5m_current_immutable_refresh_report_v1",
+      "sha256": "8186a04af02e1db418ec94c1bc768e63ae0d15d6175dbc6311fa294852f2fb82",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-5m-current-immutable-refresh-01-correction-01-3edb7e90"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-5m-current-immutable-refresh-01-correction-02-55e7ec126",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-5m-current-immutable-refresh-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-5m-current-immutable-refresh-01-correction-01-3edb7e90"
+  ],
+  "tests": [
+    {
+      "command": "failure-first old exporter on 0.0012000000000000001; raw JSON exceeded decimal18 and was rejected by consumer",
+      "evidence_path": "old-base evidence: raw volume token 0.0012000000000000001; correction canonicalizes to 0.0012",
+      "result": "passed"
+    },
+    {
+      "command": "pytest -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_kline_immutable_export.py::test_export_canonicalizes_float_tails_and_boundary_ohlcv_values -q",
+      "evidence_path": "1 passed in 0.94s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> tests/contracts/test_btc_short_interval_data_refresh.py tests/contracts/test_btc_kline_immutable_export.py tests/agent_governance/test_shared_data.py tests/contracts/test_btc_dataready_consumer.py -q",
+      "evidence_path": "77 passed in 10.08s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest <qcv2r1 published manifest> --shared-root <shared-data>",
+      "evidence_path": "status=resolved; qcv2r1 physical manifest and all five file hashes matched",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest-git-spec HEAD:<qcv2r1 Git manifest> --shared-root <shared-data>",
+      "evidence_path": "status=resolved; Git-tracked qcv2r1 selector resolved exact immutable version",
+      "result": "passed"
+    },
+    {
+      "command": "full _validate_kline_attestation plus immutable JSONL payload scan on qcv2r1",
+      "evidence_path": "status=pass; blockers=[]; 4 intervals; common_end=2026-08-26T11:59:59.999000Z",
+      "result": "passed"
+    },
+    {
+      "command": "canonical .venv Python 3.11 py_compile/compileall exporter and contract test; git diff --check",
+      "evidence_path": "Python 3.11.15; exit=0; no diff-check errors",
+      "result": "passed"
+    },
+    {
+      "command": "scoped safe_status for exporter/test/manifests/pointer/docs/handoff",
+      "evidence_path": "all declared scopes clean; no active SQLite lease/WAL/SHM after release",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-5M-CURRENT-IMMUTABLE-REFRESH-01",
+  "transition_for": ""
+}

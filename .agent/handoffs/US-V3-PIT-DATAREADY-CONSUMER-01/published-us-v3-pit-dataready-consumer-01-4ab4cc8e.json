@@ -1,0 +1,114 @@
+{
+  "base_commit": "9f5fb84f77d5e85bef6e94203e186560c19bc78f",
+  "blockers": [
+    "production_pit_bundle_missing_owner_data_steward",
+    "production_pit_seven_file_immutable_handoff_missing",
+    "etf26_adjustment_visibility_replay_missing",
+    "etf26_source_splice_equivalence_unproven",
+    "etf26_calendar_contract_missing"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "data_steward"
+  ],
+  "created_at": "2026-07-24T08:40:53Z",
+  "deliverable_commit": "4ab4cc8eb44a08c5acf5b1eff0acee3ae8240839",
+  "deliverables": [
+    {
+      "path": "quant_us/data/pit_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_pit_dataready_consumption_report_v1",
+      "sha256": "e789183da2d06dc9e9ef9b9058d8acb47136083a970d43ed816fea7ac2e5a702",
+      "type": "code"
+    },
+    {
+      "path": "configs/data/us_equity_pit_dataready_consumer_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_pit_dataready_consumer_config_v1",
+      "sha256": "7ed2a3d406ddf690dce2db21a4e5ab19951dc293de726ceb9f0ee0164d95a45d",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_pit_dataready_consumption_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_pit_dataready_consumption_report_v1",
+      "sha256": "47de2effda4bb05d85c193cf9a92148c675c930a816dab9e1c00f753fb93e2ba",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/build_us_equity_pit_dataready_consumption_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_pit_dataready_consumer_cli_v1",
+      "sha256": "add743f063058a2d327d3c661ae9b6bfb8ccc6ead82173d8d6ecc945324914d8",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_pit_dataready_consumer.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "53a201d92ac146e3276606a9a5c564a359ae5f3a5bc2eaa718f8a537dad9fd7d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_pit_dataready_consumer.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_pit_dataready_consumer_contract_v1",
+      "sha256": "f384c4ab645ce1bd1fefb4602d0b5f702d602bfc31943c0230548944297671dd",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/us_equity_pit_dataready_consumption_report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_pit_dataready_consumption_report_v1",
+      "sha256": "0dcae0d5c827e4a270a510af51185d2d1d96ba538185040df92ff3e4d7d58c76",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-application-service-boundary-01-goal5-batch-01",
+    "data-ready-hf-etf26-1min-6d6b07e77962"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-pit-dataready-consumer-01-4ab4cc8e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-pit-dataready-consumer-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_pit_dataready_consumer.py -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-pit-dataready-consumer-01-target-20260724-03",
+      "evidence_path": "tests/contracts/test_us_equity_pit_dataready_consumer.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <11 US PIT contract files> -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-pit-dataready-consumer-01-pit-suite-20260724-02",
+      "evidence_path": "docs/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/us_equity_pit_dataready_consumption_report.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <US data and ETF26 contract files> -q -p no:cacheprovider --basetemp C:\\tmp\\pytest-us-v3-pit-dataready-consumer-01-us-data-20260724-01",
+      "evidence_path": "tests/contracts/test_us_etf_26_canonical_backtest.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest-git-spec 9f5fb84f77d5e85bef6e94203e186560c19bc78f:.agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json --fast",
+      "evidence_path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "US-V3-PIT-DATAREADY-CONSUMER-01",
+  "transition_for": ""
+}

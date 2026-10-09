@@ -1,0 +1,66 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-v3-recovery-lifecycle-independent-review-20260920-10d358ca4",
+  "ticket_id": "BTC-V3-RECOVERY-LIFECYCLE-INTEGRATION-20260920",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer", "researcher"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-v3-recovery-lifecycle-integration-20260920",
+  "base_commit": "50c03234cb8d2d87105fbccfd99e72b7f23b8b01",
+  "deliverable_commit": "10d358ca44256e5a78779abc7fa7f35aa4eae36d",
+  "created_at": "2026-09-20T04:51:27Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-v3-recovery-lifecycle-partial-blocked-20260920-0c7317ce8"],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-recovery-lifecycle-partial-blocked-20260920-0c7317ce8",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-recovery-lifecycle-independent-review-20260920.md",
+      "sha256": "dd41e047556d52ad0b9ad6b21e6af083ae58fdf0bd11022b38770fc11129a369",
+      "schema_version": "strategy_v3_recovery_lifecycle_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "<canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-short-temp> tests/contracts/test_strategy_v3_qlib_offline.py::test_explicit_short_fixture_uses_same_policy_and_original_hard_exit",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-independent-review-20260920.md; qlib_fixture_ledger_not_current; 1 failed in 50.64s"
+    },
+    {
+      "command": "<canonical-venv-python-3.11> -B -m pytest -q -p no:cacheprovider --tb=short --basetemp <isolated-safety-temp> <eight exact V3 safety selectors in report>",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-independent-review-20260920.md; 8 passed in 28.05s"
+    },
+    {
+      "command": "producer handoff validate; base ancestry, final changed paths, three deliverable SHA-256 Git object hashes, final strict code/test blob identity, module import-origin probe",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-recovery-lifecycle-independent-review-20260920.md"
+    },
+    {
+      "command": "full V3/V2/V1/no-live matrix, fixed CLI first run and same-state-dir resume, OS hard crash, service/API/UI/current-main release, network/account/private/order/live",
+      "result": "not_run",
+      "evidence_path": "bounded source-only independent review stopped at frozen short business-chain failure"
+    }
+  ],
+  "blockers": [
+    "owner:architecture same-timestamp post-fill and next short decision observations have different market/account economics; account drawdown fact remains unknown with observation_timestamp_conflict; a separately reviewed time/input contract is required before V3 can pass",
+    "owner:btc_developer final strict V3 short hard-exit test fails qlib_fixture_ledger_not_current at decision_snapshot; no risk_eligible bypass is accepted",
+    "owner:integrator only eight targeted recovery/lease tests pass; full V3 and CLI acceptance were not run and this source candidate is rejected for V3 completion",
+    "owner:research sealed candidate remains zero-approved/zero-fill with negative IC; fixture fills are not candidate effectiveness",
+    "owner:release main merge, service restart, UI and Demo/paper/live acceptance were not performed; current main remains b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+    "safety: runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all remain false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

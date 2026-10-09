@@ -132,7 +132,7 @@ def _client(transport: FakeTransport) -> OkxDemoClient:
         credentials=OkxDemoCredentials(
             api_key="demo-key",
             secret_key="demo-secret",
-            passphrase="demo-passphrase",
+            passphrase="REDACTED_CREDENTIAL_LITERAL",
         ),
         transport=transport,
     )
@@ -156,7 +156,7 @@ def _retrying_client(
         credentials=OkxDemoCredentials(
             api_key="demo-key",
             secret_key="demo-secret",
-            passphrase="demo-passphrase",
+            passphrase="REDACTED_CREDENTIAL_LITERAL",
         ),
         transport=transport,
         sleeper=sleepers.append,
@@ -212,7 +212,7 @@ def test_private_get_retries_transport_error_in_place_then_succeeds() -> None:
         credentials=OkxDemoCredentials(
             api_key="demo-key",
             secret_key="demo-secret",
-            passphrase="demo-passphrase",
+            passphrase="REDACTED_CREDENTIAL_LITERAL",
         ),
         transport=transport,
         sleeper=sleepers.append,
@@ -233,7 +233,7 @@ def test_private_get_transport_error_stops_after_bounded_retry_budget() -> None:
         credentials=OkxDemoCredentials(
             api_key="demo-key",
             secret_key="demo-secret",
-            passphrase="demo-passphrase",
+            passphrase="REDACTED_CREDENTIAL_LITERAL",
         ),
         transport=transport,
         sleeper=sleepers.append,

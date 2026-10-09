@@ -1,0 +1,212 @@
+{
+  "base_commit": "030fed02ab90fc4780ab03e71da6166388a00cfa",
+  "blockers": [
+    "owner:integrator deliverable_not_integrated_to_refs_heads_main",
+    "owner:integrator playwright_current_main_route_validation_not_run_in_writer",
+    "owner:btc_operations accepted_external_runtime_root_not_live_verified_in_writer_environment",
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T15:07:46Z",
+  "deliverable_commit": "9a1496f6f44b361918ffb43b5ac7d669624dd5ea",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_service_v1",
+      "sha256": "f166bd2d52fa9d7c9f23c18287b76b08758ec885a6137ee5c32867aed97de874",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_repository_v1",
+      "sha256": "bad8974c862b6660d881e07ca3f5d783a7e768839e3038326ee6953564f18579",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_api_wiring_v1",
+      "sha256": "f485086156d70cbabe133e828f4a80c3aed15a1cda17369d5882ef662cf02a13",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_contract_v1",
+      "sha256": "b0f7158056156594ec1959c143555d7627ab6d98cbb2e82845f4ad13212237aa",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_api_wiring_contract_v1",
+      "sha256": "ed92567f2e6d01ab8a1086a4c3f8247f2cdb866307ccac39cb84728ab5c36aac",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_v1",
+      "sha256": "90b75ac1e06df480139d24322c0f441c224387163741aaff42dbfab8e77e60da",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_fixture_v1",
+      "sha256": "b2baac3aec15500e6836adf3a2d9bd5882d8bf2a6334a365f24883f8c06004c5",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_reader_ui_e2e_v1",
+      "sha256": "55f8c4887f9418713d402d7ed793982693521a4be47a7c41337a2b03b6a96705",
+      "type": "test_evidence"
+    },
+    {
+      "path": "start-backend.cmd",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_cmd_v1",
+      "sha256": "b66a720d311c1fd67ff9e5d98522b13df1936773389b942480b2ad4e4489e8a8",
+      "type": "code"
+    },
+    {
+      "path": "scripts/start_backend_current_main.ps1",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_powershell_v1",
+      "sha256": "65e8dbdfad37b4ef216341da36cdceeebe78fd818defd5049dbb93d6cccde323",
+      "type": "code"
+    },
+    {
+      "path": "scripts/start_backend_current_main.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_v1",
+      "sha256": "800c1894b8e9df7a32a4e58cae5eea190afa88090102a1aac8eb667cd9e34d71",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_current_main_launcher_contract_v1",
+      "sha256": "2aa10b8c3c304f11e1b1bea99e99c48a177dd5186ca5bc31b1e1f853de3a8402",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tools/agent_governance/team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_team_context_v1",
+      "sha256": "bbc2676dfc5a7ecf22e2590b3d1bf7ba68d9f11b4b2d008189bf84ea42fbe7a8",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_team_context.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_team_context_contract_v1",
+      "sha256": "0713961be4dc1abc016d82723f0be9f05de52d47f3f4b43c67a71c8fac100851",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-v3-next-stage-current-head-orchestrator-01"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-current-head-reader-ui-binding-01-9a1496f6f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-current-head-reader-ui-binding-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_backend_current_main_launcher.py tests/agent_governance/test_team_context.py -q --basetemp <unique-system-temp> -p no:cacheprovider [initial collection blocked: ModuleNotFoundError quant_cn]",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "git sparse-checkout add quant_cn quant_us [test dependency expansion only; core.sparseCheckout remained true]",
+      "evidence_path": "backend/app/api/app_factory.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_backend_current_main_launcher.py tests/agent_governance/test_team_context.py backend/tests/test_btc_outbound_path_redaction.py tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q --basetemp <unique-system-temp> -p no:cacheprovider [final: 143 passed in 39.91s]",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -m pytest backend/tests/test_api_contract.py -q -k btc_domain_read_model --basetemp <unique-system-temp> -p no:cacheprovider [final: 1 passed, 29 deselected]",
+      "evidence_path": "backend/tests/test_api_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -B -m py_compile <9 approved Python implementation/test files>",
+      "evidence_path": "scripts/start_backend_current_main.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd ci --offline --ignore-scripts [writer dependency restore; 0 vulnerabilities]",
+      "evidence_path": "frontend/package-lock.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint [final: tsc --noEmit passed]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build [final: 5204 modules transformed; existing >500 kB chunk warning preserved]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright btc-current-head-reader-ui-binding.spec.ts on registered current main",
+      "evidence_path": "frontend/e2e/btc-current-head-reader-ui-binding.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "backend process start, Vite/Playwright server start, runtime artifact rebuild, public/network collection, private/order/live endpoint, paper queue, real order, or secret action",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path <each exact approved business path>; git diff --check -- <declared-touch-set>; frontend identity diff check",
+      "evidence_path": "tools/agent_governance/team_context.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-CURRENT-HEAD-READER-UI-BINDING-01",
+  "transition_for": ""
+}

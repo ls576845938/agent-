@@ -1,0 +1,79 @@
+{
+  "base_commit": "57b523fbd0b2c094468d1104cfd3fa5ec03de3b1",
+  "blockers": [
+    "btc_lean_microlive:account_hash_invalid",
+    "btc_lean_microlive:reviewer_missing",
+    "btc_lean_microlive:approval_ticket_missing",
+    "btc_lean_microlive:permission_conclusion_missing",
+    "btc_lean_microlive:external_proof_id_missing",
+    "btc_lean_microlive:reviewed_at_utc_missing",
+    "btc_lean_microlive:single_strategy_id_missing",
+    "btc_lean_microlive:real_private_ws_observation_missing",
+    "btc_lean_microlive:runtime_account_snapshot_missing",
+    "btc_lean_microlive:operator_live_session_not_started",
+    "btc_lean_microlive:live_order_capability_not_enabled_by_ticket",
+    "btc_lean_microlive:human_approval_proof_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-29T14:31:59Z",
+  "deliverable_commit": "7daed151a00d51b831909202683d07ff6a81c455",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_paper_runtime_v1",
+      "sha256": "883b6fc6c43c439f985b3a80f08259249ad35c8a795d946e750b41a70ccfab0a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "c043f0751daa4743bef94e47b4d48e474ed7a8dafa07f61ed4dde90dec066de8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "BTC-LEAN-MICROLIVE-PRODUCER-01-published-01",
+    "published-btc-backtest-parity-producer-01-6e9fdf1c8",
+    "published-data-btc-lean-canary-signal-01-9e328534",
+    "published-btc-lean-microlive-producer-01-correction-02-0842770e5"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-integrate-btc-demo-backtest-fastpath-01-runtime-correction",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-backtest-fastpath-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "generic shared bundle reader correction regression included in final 55 passed; actual reader full 5280-row read passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "compact integration receipt sha256=d897104817d84b0baee987df3e698f519ffd7c633be03108ba59c536cbcb8399",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/runtime-artifacts/integrator-integrate-btc-demo-backtest-fastpath-01-7daed151a/compact-integration-receipt.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-BACKTEST-FASTPATH-01",
+  "transition_for": "published-btc-lean-microlive-producer-01-correction-02-0842770e5"
+}

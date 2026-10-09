@@ -6,27 +6,60 @@ import {humanizeError} from './lib/view-model';
 import {apiGet} from './lib/api';
 import {frontendIdentity, frontendFingerprintShort} from './frontendIdentity';
 import {ErrorBoundary} from './components/ErrorBoundary';
-import CryptoWorkspace from './workspaces/CryptoWorkspace';
-import CNEquityWorkspace from './workspaces/CNEquityWorkspace';
-import USEquityWorkspace from './workspaces/USEquityWorkspace';
-import ExecutionSafetyRoute from './workspaces/ExecutionSafetyRoute';
-import StrategyExplorer from './workspaces/StrategyExplorer';
-import StrategyModulesWorkspace from './workspaces/StrategyModulesWorkspace';
-import ResearchDashboard from './workspaces/ResearchDashboard';
-import PortfolioMonitor from './workspaces/PortfolioMonitor';
 
-function ArchitectureRoute() {
-  const [MapPage, setMapPage] = useState<typeof import('./workspaces/ArchitectureMapWorkspace').default | null>(null);
+const loadCryptoWorkspace = () => import('./workspaces/CryptoWorkspace');
+const loadCNEquityWorkspace = () => import('./workspaces/CNEquityWorkspace');
+const loadUSEquityWorkspace = () => import('./workspaces/USEquityWorkspace');
+const loadExecutionSafetyRoute = () => import('./workspaces/ExecutionSafetyRoute');
+const loadStrategyExplorer = () => import('./workspaces/StrategyExplorer');
+const loadStrategyModulesWorkspace = () => import('./workspaces/StrategyModulesWorkspace');
+const loadResearchDashboard = () => import('./workspaces/ResearchDashboard');
+const loadPortfolioMonitor = () => import('./workspaces/PortfolioMonitor');
+const loadArchitectureMapWorkspace = () => import('./workspaces/ArchitectureMapWorkspace');
+
+type WorkspaceComponent<Props extends object> = (props: Props) => any;
+
+type LazyWorkspaceProps<Props extends object> = {
+  key?: string;
+  load: () => Promise<{default: WorkspaceComponent<Props>}>;
+  componentProps: Props;
+  componentKey?: string;
+  label: string;
+  loadingMessage?: string;
+  errorMessage?: string;
+};
+
+function LazyWorkspace<Props extends object>({
+  load,
+  componentProps,
+  componentKey,
+  label,
+  loadingMessage,
+  errorMessage,
+}: LazyWorkspaceProps<Props>) {
+  const [Workspace, setWorkspace] = useState<WorkspaceComponent<Props> | null>(null);
   const [loadError, setLoadError] = useState(false);
+
   useEffect(() => {
     let active = true;
-    void import('./workspaces/ArchitectureMapWorkspace')
-      .then(module => {if (active) setMapPage(() => module.default);})
+    void load()
+      .then(module => {if (active) setWorkspace(() => module.default);})
       .catch(() => {if (active) setLoadError(true);});
     return () => {active = false;};
-  }, []);
-  if (loadError) return <p role="alert">架构地图加载失败，请刷新页面重试。</p>;
-  return MapPage ? <MapPage /> : <p role="status">正在加载源码地图…</p>;
+  }, [load]);
+
+  if (loadError) {
+    return (
+      <div className="panel error-panel app-error-panel" role="alert">
+        <div className="panel-header"><h2>{label}加载失败</h2></div>
+        <p>{errorMessage ?? '页面模块未能下载。请检查连接后刷新页面重试。'}</p>
+        <button type="button" onClick={() => window.location.reload()}>刷新页面重试</button>
+      </div>
+    );
+  }
+  return Workspace
+    ? <Workspace key={componentKey} {...componentProps} />
+    : <p role="status">{loadingMessage ?? `正在加载${label}…`}</p>;
 }
 
 type HealthState = {
@@ -143,15 +176,15 @@ function AppShell() {
 
         <div className="workspace-content">
           <Routes>
-            <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} health={health} /></ErrorBoundary>} />
-            <Route path="/cn-equity" element={<ErrorBoundary><CNEquityWorkspace /></ErrorBoundary>} />
-            <Route path="/crypto" element={<ErrorBoundary><CryptoWorkspace key={`${health?.evidence_profile ?? 'unknown'}:${health?.read_only}:${health?.controls_disabled}`} health={health} strategies={strategies} onToggleSidebar={() => setCryptoSidebarCollapsed((value) => !value)} /></ErrorBoundary>} />
-            <Route path="/live" element={<ErrorBoundary><ExecutionSafetyRoute /></ErrorBoundary>} />
-            <Route path="/strategies" element={<ErrorBoundary><StrategyExplorer strategies={strategies} /></ErrorBoundary>} />
-            <Route path="/strategy-modules" element={<ErrorBoundary><StrategyModulesWorkspace /></ErrorBoundary>} />
-            <Route path="/research" element={<ErrorBoundary><ResearchDashboard /></ErrorBoundary>} />
-            <Route path="/portfolio" element={<ErrorBoundary><PortfolioMonitor /></ErrorBoundary>} />
-            <Route path="/architecture" element={<ErrorBoundary><ArchitectureRoute /></ErrorBoundary>} />
+            <Route path="/" element={<ErrorBoundary><LazyWorkspace key="route-us-equity" load={loadUSEquityWorkspace} componentProps={{strategies, health}} label="美股量化工作区" /></ErrorBoundary>} />
+            <Route path="/cn-equity" element={<ErrorBoundary><LazyWorkspace key="route-cn-equity" load={loadCNEquityWorkspace} componentProps={{}} label="A 股量化工作区" /></ErrorBoundary>} />
+            <Route path="/crypto" element={<ErrorBoundary><LazyWorkspace key="route-crypto" load={loadCryptoWorkspace} componentKey={`${health?.evidence_profile ?? 'unknown'}:${health?.read_only}:${health?.controls_disabled}`} componentProps={{health, strategies, onToggleSidebar: () => setCryptoSidebarCollapsed((value) => !value)}} label="加密策略工作区" /></ErrorBoundary>} />
+            <Route path="/live" element={<ErrorBoundary><LazyWorkspace key="route-execution-safety" load={loadExecutionSafetyRoute} componentProps={{}} label="执行安全中心" /></ErrorBoundary>} />
+            <Route path="/strategies" element={<ErrorBoundary><LazyWorkspace key="route-strategy-explorer" load={loadStrategyExplorer} componentProps={{strategies}} label="策略浏览工作区" /></ErrorBoundary>} />
+            <Route path="/strategy-modules" element={<ErrorBoundary><LazyWorkspace key="route-strategy-modules" load={loadStrategyModulesWorkspace} componentProps={{}} label="策略模块工作区" /></ErrorBoundary>} />
+            <Route path="/research" element={<ErrorBoundary><LazyWorkspace key="route-research" load={loadResearchDashboard} componentProps={{}} label="研究工作区" /></ErrorBoundary>} />
+            <Route path="/portfolio" element={<ErrorBoundary><LazyWorkspace key="route-portfolio" load={loadPortfolioMonitor} componentProps={{}} label="投资组合工作区" /></ErrorBoundary>} />
+            <Route path="/architecture" element={<ErrorBoundary><LazyWorkspace key="route-architecture" load={loadArchitectureMapWorkspace} componentProps={{}} label="架构地图" loadingMessage="正在加载源码地图…" errorMessage="架构地图加载失败，请刷新页面重试。" /></ErrorBoundary>} />
           </Routes>
         </div>
       </section>

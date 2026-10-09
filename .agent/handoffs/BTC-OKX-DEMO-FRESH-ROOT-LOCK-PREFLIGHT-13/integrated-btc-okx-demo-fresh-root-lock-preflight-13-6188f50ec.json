@@ -1,0 +1,81 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fresh-root-lock-preflight-13-6188f50ec",
+  "ticket_id": "BTC-OKX-DEMO-FRESH-ROOT-LOCK-PREFLIGHT-13",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-fresh-root-lock-preflight-13-int",
+  "base_commit": "06b3fdc364f842c00f884465667f2eb7011c5b54",
+  "deliverable_commit": "6188f50ec347f74c59140b6af022e423f53cab93",
+  "created_at": "2026-08-11T14:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-fresh-root-lock-preflight-13-d58fa37af"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fresh-root-lock-preflight-13-d58fa37af",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "c2d344dc728e1f62bc5f75485c5eaf319d4d5b42e4a19550bb2e9d94cc36237b",
+      "schema_version": "okx_demo_fresh_root_lock_preflight_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "c314efc1887b7c51b3d6367c8a6784b2d0c0b0e1a2e5f2c6baa7a92ae9974e24",
+      "schema_version": "okx_demo_fresh_root_lock_preflight_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "test_btc_okx_demo_paper_runtime.py -k flat_hosted_exit_lock_accepts_only_current_empty_bootstrap_marker --basetemp <external> -q (1 passed, 316 deselected)",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-fresh-root-lock-preflight-13-int-tests/focused"
+    },
+    {
+      "command": "test_btc_okx_demo_paper_runtime.py -k flat_hosted_exit or writer_lock or incident_recovery or canonical_recovery_session --basetemp <external> -q (52 passed, 265 deselected)",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-fresh-root-lock-preflight-13-int-tests/selection"
+    },
+    {
+      "command": "test_btc_okx_demo_fault_drill.py -k flat_hosted_exit or incident_recovery --basetemp <external> -q (21 passed, 82 deselected)",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-fresh-root-lock-preflight-13-int-tests/fault-regression"
+    },
+    {
+      "command": "test_btc_okx_demo_runtime_hardening.py test_btc_okx_demo_adapter.py test_btc_okx_demo_execution_watchdog.py --basetemp <external> -q (73 passed)",
+      "result": "passed",
+      "evidence_path": "C:/Users/LOCAL_USER/AppData/Local/Temp/agent9-fresh-root-lock-preflight-13-int-tests/adjacent"
+    },
+    {
+      "command": "py_compile runtime/test contract; git diff --check; published handoff validate",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_advanced_or_pushed",
+    "backend_restart_deferred_by_ticket_until_private_ws_admission_and_final_artifact_stage",
+    "promotion_artifact_read_model_not_rebuilt",
+    "no_endpoint_secret_or_demo_start_access_per_ticket",
+    "promotion_paper_live_private_order_real_order_flags_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

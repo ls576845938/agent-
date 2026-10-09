@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-handoff-discovery-ref-cap-recovery-01-correction-01-a2169e01e",
+  "ticket_id": "HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01-CORRECTION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/integrate-handoff-refcap-corr01",
+  "base_commit": "d1650f2237efb453a6fd09a1014f4d3f16f9b8f2",
+  "deliverable_commit": "a2169e01ef22961070d556877f05e2cb403ee254",
+  "created_at": "2026-08-17T15:04:52Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-handoff-discovery-ref-cap-recovery-01-599d875fd",
+    "published-handoff-discovery-ref-cap-recovery-01-correction-01-4b81af61e"
+  ],
+  "supersedes": [],
+  "transition_for": "published-handoff-discovery-ref-cap-recovery-01-correction-01-4b81af61e",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "tools/agent_governance/handoff.py",
+      "sha256": "1b9ad220b8886f76b02fdf7601d24b7527813dc24382ef0d86ef3b0ebed07be2",
+      "schema_version": "bounded_handoff_discovery_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_handoff.py",
+      "sha256": "e25cb1deaf7a242d769f5676627e27ce04e512fa4cf7f527f0aa6bdf446920c8",
+      "schema_version": "bounded_handoff_discovery_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/agent_governance/test_hooks.py",
+      "sha256": "baa37d2e063b52a0d4a099d7ce9741ecc87f9cbfbecb7cce365858be9bb9a360",
+      "schema_version": "governance_hooks_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published original and correction events",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01/"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py tests/agent_governance/test_hooks.py tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py tests/agent_governance/test_context_scalability.py -q -p no:cacheprovider [46 passed]",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "alias/provenance and committed cross-branch visibility selection [4 passed]",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_handoff.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q -p no:cacheprovider [85 passed, 1 known registered-main baseline failure: test_post_checkout_hook_runs_sparse_backstop_before_lfs]",
+      "result": "failed",
+      "evidence_path": "tests/agent_governance/test_disk_guard.py"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py tests/agent_governance/test_hooks.py; git diff --check",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/handoff.py"
+    },
+    {
+      "command": "team_context.py discovery-only and real hook smoke [discovery_only; invalid_handoffs=13; no ref_cap_exceeded; no team_context_unavailable]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01/"
+    }
+  ],
+  "blockers": [
+    "full_governance_suite_single_registered_main_baseline_failure:post_checkout_hook_missing_worktree_storage_bootstrap",
+    "registered_main_not_yet_fast_forwarded_to_integrated_commit",
+    "invalid_handoffs_reported_by_discovery_only_context:13"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

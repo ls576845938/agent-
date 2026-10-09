@@ -552,6 +552,7 @@ class BTCRuntimeStore:
         funding: Mapping[str, Any],
         risk_context: Mapping[str, Any],
         account_drawdown_fact: Mapping[str, Any] | None = None,
+        allocation_payload: Mapping[str, Any] | None = None,
         state_after: Mapping[str, Any],
         safety: Mapping[str, Any],
     ) -> dict[str, Any]:
@@ -579,6 +580,24 @@ class BTCRuntimeStore:
             raise BTCRuntimeStoreError(
                 "btc_runtime_account_drawdown_fact_state_mismatch"
             )
+        allocation = dict(allocation_payload or {})
+        state_allocation_value = state_after.get("strategy_allocations")
+        if state_allocation_value is None:
+            state_allocation: dict[str, Any] = {}
+        elif isinstance(state_allocation_value, Mapping):
+            state_allocation = dict(state_allocation_value)
+        else:
+            raise BTCRuntimeStoreError(
+                "btc_runtime_strategy_allocation_state_mismatch"
+            )
+        # Allocation facts are optional, but when present they are hashed in
+        # the same UOW payload and must exactly match the recovered state in
+        # both directions.  Empty legacy callers retain identical payloads and
+        # therefore identical semantic hashes.
+        if allocation != state_allocation:
+            raise BTCRuntimeStoreError(
+                "btc_runtime_strategy_allocation_state_mismatch"
+            )
         payload = {
             "order_ledger": dict(order),
             "fill_ledger": [dict(fill) for fill in fills],
@@ -591,6 +610,8 @@ class BTCRuntimeStore:
             # Keep legacy event hashes stable when no versioned account fact is
             # supplied, while binding fact changes to the UOW semantic hash.
             payload["account_drawdown_fact"] = drawdown_fact
+        if allocation:
+            payload["strategy_allocation"] = allocation
         return self.append(
             event_type="ledger_uow_committed",
             payload=payload,

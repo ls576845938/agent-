@@ -1,0 +1,170 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-backtest-identity-dirty-recovery-01-combined-int-01",
+  "ticket_id": "BTC-BACKTEST-IDENTITY-DIRTY-RECOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-backtest-identity-reader-ui-combined-int-01",
+  "base_commit": "030fed02ab90fc4780ab03e71da6166388a00cfa",
+  "deliverable_commit": "003918e34ac8925ac1bbbe661ee3e4368ec7c123",
+  "created_at": "2026-07-28T06:10:12Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-v3-current-head-reader-ui-binding-01-architecture-correction-int-01"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-backtest-identity-dirty-recovery-01-70a23a249",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_backtest_identity.py",
+      "sha256": "20da658792535c7c7e4dcbb888edf0cc5e683b2a2e6f0724e490a6da52dba23a",
+      "schema_version": "btc_strategy_backtest_run_manifest_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_strategy_registry.py",
+      "sha256": "34335fe4a1311931aa33ea2d990faf31fef7c924ad743b202a650612d38fae13",
+      "schema_version": "btc_strategy_registry_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "eaca201e26cefe0c6db38aa4758eb34388f59c0f43ca7d97225d45897cdb36c3",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <recovery-published-and-reader-ui-four-event-commit-archives> [5/5 valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-BACKTEST-IDENTITY-DIRTY-RECOVERY-01/published-btc-backtest-identity-dirty-recovery-01-70a23a249.json"
+    },
+    {
+      "command": "git merge --ff-only 5e95531f161af846c737212cf5164ffb07de05dd",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-BACKTEST-IDENTITY-DIRTY-RECOVERY-01/published-btc-backtest-identity-dirty-recovery-01-70a23a249.json"
+    },
+    {
+      "command": "git merge --no-ff --no-edit 9d1f6ae2dfe5ca4b3c90055cd95ead37f1606621 [merge commit ff1ca09e6463b3986a9cf2a377033fdddfe29360; zero conflicts]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-CURRENT-HEAD-READER-UI-BINDING-01/integrated-btc-v3-current-head-reader-ui-binding-01-architecture-correction-int-01.json"
+    },
+    {
+      "command": "git ls-tree + binary-safe git cat-file verify quant_crypto/application/btc_backtest_identity.py [blob a4031dfbcf5bf20e36b992ecde10156766a9e61d; raw sha256 20da658792535c7c7e4dcbb888edf0cc5e683b2a2e6f0724e490a6da52dba23a]",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_backtest_identity.py"
+    },
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_api_contract.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q --basetemp <unique-system-temp> -p no:cacheprovider [wrapper timed out after 184.1s; no pytest summary; no residual child process]",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_strategy_registry.py tests/backtest/test_crypto_event_backtest.py backend/tests/test_api_contract.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q --basetemp <new-unique-system-temp> -p no:cacheprovider [64 passed in 150.07s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_strategy_registry.py"
+    },
+    {
+      "command": "py -3 -B -m pytest backend/tests/test_backend_current_main_launcher.py tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py tests/agent_governance/test_team_context.py backend/tests/test_btc_outbound_path_redaction.py tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q --basetemp <unique-system-temp> -p no:cacheprovider [150 passed in 139.95s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -m py_compile <16 relevant Python implementation/test/governance files>",
+      "result": "passed",
+      "evidence_path": "quant_crypto/application/btc_backtest_identity.py"
+    },
+    {
+      "command": "npm.cmd run identity:refresh; only frontend/public/frontend-identity.json changed; committed separately as 003918e34ac8925ac1bbbe661ee3e4368ec7c123",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:test [canonical=false; object_targets=4]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:check [manifest_match=true; baseline_ancestor=true; dirty_paths=[]]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd ci --offline --ignore-scripts [117 packages; 0 vulnerabilities]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run lint [preflight attempt did not invoke tsc because node_modules was absent: 'tsc' is not recognized; resolved by offline npm ci]",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run lint [wrapper timed out after 184.0s; orphan tsc observed and allowed to exit naturally; no trustworthy summary]",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "npm.cmd run lint [tsc --noEmit; exit 0]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"
+    },
+    {
+      "command": "npm.cmd run build [5204 modules transformed; built in 1m54s; existing >500 kB chunk warning preserved]",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"
+    },
+    {
+      "command": "Playwright/current-main runtime; backend/frontend process start or stop; runtime artifact rebuild; accepted-root bootstrap; public/network collection; private/order/live endpoint; paper queue; real order; secret action; refs/heads/main update",
+      "result": "not_run",
+      "evidence_path": ""
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <this-integrated-event>; py -3 tools/agent_governance/team_context.py --repo-root . --role integrator --format json [recovery=integrated; correction=integrated; old=superseded; invalid_handoffs=0]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-BACKTEST-IDENTITY-DIRTY-RECOVERY-01/integrated-btc-backtest-identity-dirty-recovery-01-combined-int-01.json"
+    }
+  ],
+  "blockers": [
+    "owner:main_sync combined_deliverable_not_integrated_to_refs_heads_main",
+    "owner:main_sync playwright_current_main_route_validation_not_run_until_main_sync",
+    "owner:btc_operations accepted_external_runtime_root_not_live_verified_in_integrator_environment",
+    "current_head_gate_artifacts_not_rebuilt",
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

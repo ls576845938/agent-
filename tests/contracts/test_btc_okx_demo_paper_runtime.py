@@ -205,6 +205,7 @@ def test_hosted_protection_projection_is_redacted_and_does_not_mutate_snapshot()
     assert "private_note" not in projection["owned_attached_algos"]["parentA"]
     assert "policy" not in projection["active_protection"]
     assert "outcome_probe" not in projection["parent_order_intents"]["parent"]
+    assert "offline_residual_protection_revision" not in projection
 from quant_crypto.research.btc_demo_observation_accumulator import (
     append_hourly_observation_receipt,
     build_hourly_observation_receipt,
@@ -1063,6 +1064,8 @@ def test_submit_delegates_explicit_authoritative_t2_t3_bundle_to_oms(
     assert delegated and delegated[0]["intent"].client_order_id == order_plan["client_order_id"]
     assert len(client.submit_calls) == 1
     assert result["orders_posted"] == 1
+    ordinary_order_record = controller.status()["audit"][0]
+    assert "offline_residual_protection_revision" not in ordinary_order_record
 
 
 def _install_order_followup(
@@ -3680,9 +3683,9 @@ def test_private_ws_factory_failure_redacts_exception_status_blocker_and_event(
         raise RuntimeError(
             json.dumps(
                 {
-                    "apiKey": "FACTORY_API_SENTINEL",
-                    "secretKey": "FACTORY_SECRET_SENTINEL",
-                    "passphrase": "FACTORY_PASS_SENTINEL",
+                    "apiKey": "REDACTED_CREDENTIAL_LITERAL",
+                    "secretKey": "REDACTED_CREDENTIAL_LITERAL",
+                    "passphrase": "REDACTED_CREDENTIAL_LITERAL",
                     "accountId": "FACTORY_ACCOUNT_SENTINEL",
                     "proxy": {
                         "url": "http://proxy.sentinel:17309",
@@ -16154,9 +16157,9 @@ def test_fresh_state_bootstrap_probe_exception_persists_structured_diagnostics(
                 json.dumps(
                     {
                         "stage": "login",
-                        "apiKey": "BOOTSTRAP_API_SENTINEL",
-                        "secretKey": "BOOTSTRAP_SECRET_SENTINEL",
-                        "passphrase": "BOOTSTRAP_PASS_SENTINEL",
+                        "apiKey": "REDACTED_CREDENTIAL_LITERAL",
+                        "secretKey": "REDACTED_CREDENTIAL_LITERAL",
+                        "passphrase": "REDACTED_CREDENTIAL_LITERAL",
                         "accountId": "BOOTSTRAP_ACCOUNT_SENTINEL",
                         "proxy": "http://bootstrap.proxy.sentinel:17309",
                     }

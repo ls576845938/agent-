@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-v1-closeout-candidate-20260915-69ef575f7",
+  "ticket_id": "STRATEGY-V1-CLOSEOUT-INTEGRATION-20260915",
+  "event_type": "published",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/strategy-v1-closeout-integration-20260915",
+  "base_commit": "b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+  "deliverable_commit": "69ef575f709609f36f754f86040822bc6eeca1c6",
+  "created_at": "2026-09-15T06:21:53Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-strategy-v0-freeze-20260915-e0b7a08f8",
+    "published-strategy-v1-reduce-mode-final-20260915-7ec632f93",
+    "acknowledged-strategy-v1-reduce-mode-review-df9689529",
+    "published-strategy-v1-readonly-delivery-20260915-3d64b5c43",
+    "acknowledged-strategy-v1-readonly-delivery-projection-review-4d4661983"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md",
+      "sha256": "42b3eec6aa57d9cf7448331088686be04e978e2bc24ffe3bdb61680b411a7d7b",
+      "schema_version": "strategy_v1_closeout_candidate_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "validate_handoff_against_git for V0, V1 business, V1 governance and both independent acknowledgement envelopes",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md"
+    },
+    {
+      "command": "verify producer base ancestry, V0-to-V1 ancestry and committed deliverable hashes",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md"
+    },
+    {
+      "command": "git diff --check b920d131e41ecbfe7f76f0709affbe22c8b35f5e 2fe7bf8729e306f1c89b8728976f1b005eb54892",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md"
+    },
+    {
+      "command": "complete V1 technical acceptance matrix on a final producer commit",
+      "result": "not_run",
+      "evidence_path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md"
+    },
+    {
+      "command": "readonly frontend association, canonical browser acceptance and current-main publication",
+      "result": "not_run",
+      "evidence_path": "docs/operations/strategy-v1-closeout-acceptance-20260915.md"
+    }
+  ],
+  "blockers": [
+    "owner:btc_developer complete the frozen offline replay consistency, identity and recovery acceptance scope on this candidate",
+    "owner:integrator run one final complete technical review after the producer publishes one committed final handoff",
+    "owner:release readonly page association and formal publication remain separate pending states after technical acceptance"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

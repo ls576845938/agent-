@@ -1,0 +1,252 @@
+{
+  "schema_version": "btc_okx_public_swap_research_bundle_attestation_v1",
+  "ticket_id": "DATA-BTC-PUBLIC-IMMUTABLE-SCHEDULER-MIGRATION-01",
+  "dataset_id": "btc-okx-public-swap-research-bundle",
+  "dataset_version": "btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e",
+  "producer_role": "data_steward",
+  "source_head": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "generated_at": "2026-07-26T20:34:00.037Z",
+  "timezone": "UTC",
+  "status": "quality_checked_with_research_only_warnings",
+  "decision": "preserve_quarantined_public_bytes_as_immutable_research_receipt",
+  "venue": "okx",
+  "instrument_id": "BTC-USDT-SWAP",
+  "source_incident": {
+    "classification": "legacy_scheduler_writer_touched_registered_main_worktree",
+    "quarantined": true,
+    "input_mutated_by_this_ticket": false,
+    "original_writer_task": "Quant_BTC_L2_Collector",
+    "original_writer_last_run_time": "2026-07-26T20:10:01.0000000Z",
+    "original_writer_last_result": 2
+  },
+  "scheduler_receipt": {
+    "captured_at": "2026-07-26T20:34:00.037Z",
+    "definition_hash_encoding": "UTF-16LE",
+    "tasks": [
+      {
+        "task_name": "Quant_BTC_Daily_Orchestrator",
+        "state": "Disabled",
+        "enabled": false,
+        "last_run_time": "2026-07-26T00:30:01.0000000Z",
+        "last_task_result": 2,
+        "next_run_time_reported": "2026-07-27T00:30:00.0000000Z",
+        "definition_sha256": "7b2a34398d9fe9e4c09c12696efb4c2c7c1b75d739ea49acbe69ab3b392c43d0"
+      },
+      {
+        "task_name": "Quant_BTC_L2_Collector",
+        "state": "Disabled",
+        "enabled": false,
+        "last_run_time": "2026-07-26T20:10:01.0000000Z",
+        "last_task_result": 2,
+        "next_run_time_reported": "2026-07-26T21:10:00.0000000Z",
+        "definition_sha256": "0989ee445cb134c957d3775c04f48aca79dda50bfc7fe9093ccf236c05d14334"
+      },
+      {
+        "task_name": "Quant_BTC_Micro_Observer",
+        "state": "Disabled",
+        "enabled": false,
+        "last_run_time": "2026-07-26T16:25:01.0000000Z",
+        "last_task_result": 0,
+        "next_run_time_reported": "2026-07-27T04:25:00.0000000Z",
+        "definition_sha256": "a82259ca15629411702f2ac1ae57dd715b1947ed1bdb6ec55c117d0a83a3b55c"
+      }
+    ]
+  },
+  "source_inventory": [
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/agg_trades.csv",
+      "bytes": 22776,
+      "mtime_utc": "2026-07-26T20:10:37.9733627Z",
+      "sha256": "5757be096c8ec6db8f9e8c4be824cc7fbda8190bbbbeea8775d91c9c5770e7f2"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/btc_perpetual_bundle_manifest.json",
+      "bytes": 14459,
+      "mtime_utc": "2026-07-26T20:10:41.8339654Z",
+      "sha256": "f2901099a5104e2c5f7dadd239ac9c9b33ad6a822846b8c1033292ea521ef35a"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/exchange_info.json",
+      "bytes": 2265,
+      "mtime_utc": "2026-07-26T20:10:35.7311672Z",
+      "sha256": "7d12cf120fd0d9161dc1cb84eb36e54579557d65023326255d71d8088869d14c"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/funding_info.json",
+      "bytes": 1621,
+      "mtime_utc": "2026-07-26T20:10:35.7270907Z",
+      "sha256": "bdd9996a243d8d081493ee79df95d6fd05d0ba9f1c13140904430ec008db562e"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/funding_rate.csv",
+      "bytes": 1054,
+      "mtime_utc": "2026-07-26T20:10:35.7125998Z",
+      "sha256": "cf6bf17cbf6e532a761b8f3c3f61b59fb824aaa3f493ffab16ec4c63dfac34a2"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/klines_15m.csv",
+      "bytes": 22236,
+      "mtime_utc": "2026-07-26T20:10:35.5989424Z",
+      "sha256": "e43313b4e66c5593f410315c8131d4d463bd0446bd87b4eb483bceefe98ca145"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/klines_1d.csv",
+      "bytes": 632,
+      "mtime_utc": "2026-07-26T20:10:35.6532659Z",
+      "sha256": "29fa17ff85bf3d8d6c9000da63ff62f67129e89cab715e454d8788eb652e27f0"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/klines_1h.csv",
+      "bytes": 6059,
+      "mtime_utc": "2026-07-26T20:10:35.6114062Z",
+      "sha256": "5488c6a03ba954f31a9f858845ddc2f11c630a995a297aed5497d064b216c707"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/klines_4h.csv",
+      "bytes": 2002,
+      "mtime_utc": "2026-07-26T20:10:35.6274661Z",
+      "sha256": "8c3dc92c39b8adf9585df6b82f08cb86c59e61befc1dd5ed7d7e54d7128eea6b"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/klines_5m.csv",
+      "bytes": 64865,
+      "mtime_utc": "2026-07-26T20:10:35.5533012Z",
+      "sha256": "a30ff1fc07085eb1174a9df2e047ca02d60bde92e4c682158c9fc626dc1ef9c5"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/mark_price_klines_1h.csv",
+      "bytes": 5280,
+      "mtime_utc": "2026-07-26T20:10:35.6756876Z",
+      "sha256": "e8e27d5ad9dcfb0297eedf002536b87bdd07b61a3d9befdb2fe6114c3ff67fc6"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/open_interest_current.json",
+      "bytes": 278,
+      "mtime_utc": "2026-07-26T20:10:35.7341313Z",
+      "sha256": "bd7e61ee332b188953d03aa538c361f9e61ca99fc0d1faf05cbda6f520399c04"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/order_book_depth.csv",
+      "bytes": 23304,
+      "mtime_utc": "2026-07-26T20:10:41.4673393Z",
+      "sha256": "cbeeed3314c9981b8fad2c2f96c5d7be5ca5d9bc72d33af7176714ac3fde9fc6"
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_tail_10d_v1/premium_index_klines_1h.csv",
+      "bytes": 5618,
+      "mtime_utc": "2026-07-26T20:10:35.6986271Z",
+      "sha256": "fdc0ea670a4c55824eeaf5f701545c1392a5304808ab84e37d0e2faccf5f7368"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_raw.json",
+      "bytes": 1591,
+      "mtime_utc": "2026-07-26T20:10:10.7305324Z",
+      "sha256": "b4e03713b11f929db5475c98af64bf736833013ff48ec5183e88377aff8eef2e"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_raw.json",
+      "bytes": 712,
+      "mtime_utc": "2026-07-26T20:10:10.7344289Z",
+      "sha256": "a4d32567b89789d64d26af7771959bf6126f6b5d847f55e6e78c59661b3a8b2f"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_http_status.txt",
+      "bytes": 5,
+      "mtime_utc": "2026-07-26T20:10:10.7364369Z",
+      "sha256": "74234df06346be5b8fcd66762a3d7b105d9946191845a22fc531097e7e68565c"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_http_status.txt",
+      "bytes": 5,
+      "mtime_utc": "2026-07-26T20:10:10.7364369Z",
+      "sha256": "74234df06346be5b8fcd66762a3d7b105d9946191845a22fc531097e7e68565c"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json",
+      "bytes": 1942,
+      "mtime_utc": "2026-07-26T20:10:41.8980522Z",
+      "sha256": "bf8c418db71252a9a9e4ce769786f563bc4b3e26848d592dc5c184dedd767083",
+      "working_git_blob": "8fb7401856f2d7a0560b81fa33caf6e5cf85e54a"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/btc_okx_public_bundle_capture_report.json",
+      "bytes": 2143,
+      "mtime_utc": "2026-07-26T20:10:41.9159365Z",
+      "sha256": "675c23c306a70e92a7d641faafc71194a75925beb0a96cebcbb6a038066c25bf",
+      "working_git_blob": "1acb7b329e173cb0b86ed0a7370e2908d79944f2"
+    },
+    {
+      "path": "artifacts/btc_data_status/latest/btc_okx_tail_bundle_merge_report.json",
+      "bytes": 1092,
+      "mtime_utc": "2026-07-26T20:10:43.4840068Z",
+      "sha256": "1e1c38c724f3d0f4e584d52283dfece75a4ef2451916270659205df931557c2a"
+    }
+  ],
+  "bundle_manifest_verification": {
+    "manifest_sha256": "f2901099a5104e2c5f7dadd239ac9c9b33ad6a822846b8c1033292ea521ef35a",
+    "declared_file_count": 13,
+    "verified_file_count": 13,
+    "all_declared_hashes_match": true,
+    "manifest_sample_start": "2026-07-25T16:00:00Z",
+    "manifest_sample_end": "2026-07-26T16:00:00Z",
+    "history_days_reported": 1
+  },
+  "publication": {
+    "storage_relative_path": "datasets/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e",
+    "aggregate_sha256": "833126e7eaa4b2e95cf49a2727b538b3d1308bb05c3225f3382b90063a6ebf81",
+    "file_count": 21,
+    "total_bytes": 179939
+  },
+  "coverage": {
+    "start": "2026-07-25T16:00:00Z",
+    "end": "2026-07-26T16:00:00Z",
+    "history_days": 1
+  },
+  "quality": {
+    "status": "pass_with_research_only_warnings",
+    "bundle_manifest_hashes_match": true,
+    "http_status_receipts_present": true,
+    "public_rest_only_reported": true,
+    "open_interest_history_verified": false,
+    "liquidation_snapshots_present": false,
+    "sequence_validated_l2_present": false
+  },
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false
+  },
+  "known_gaps": [
+    "history_coverage_one_day_only",
+    "open_interest_history_missing",
+    "liquidation_snapshots_missing",
+    "sequence_l2_missing",
+    "target_90d_bundle_missing"
+  ],
+  "blockers": [
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "legacy_scheduler_writer_incident_quarantined",
+    "btc_okx_tail_merge_target_bundle_missing",
+    "not_promotion_evidence"
+  ],
+  "guardrails": {
+    "source_bytes_mutated": false,
+    "public_network_called_by_this_ticket": false,
+    "api_key_used_by_this_ticket": false,
+    "secret_read": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_call_used": false,
+    "promotion_unlock_allowed": false,
+    "paper_unlock_allowed": false,
+    "live_unlock_allowed": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false
+  }
+}

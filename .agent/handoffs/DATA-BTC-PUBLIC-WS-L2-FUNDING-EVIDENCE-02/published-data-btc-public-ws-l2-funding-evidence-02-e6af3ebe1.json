@@ -1,0 +1,96 @@
+{
+  "base_commit": "1c2d545cf7a91dfd597de3ea9dd112184bb11c66",
+  "blockers": [
+    "btc_okx_public_ws_tls_or_runtime_path_connection_reset",
+    "btc_okx_public_ws_endpoint_not_configurable_for_bounded_fallback_probe",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-28T08:31:00Z",
+  "deliverable_commit": "e6af3ebe13b5eafe5ec3bf54273aaa0efa8c6184",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "ea87a31cfd15ab134803750c3c6e52035d3d1d8cc2594731afd6c0c75bb37694",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_ws_l2_funding_quality_report_v1",
+      "sha256": "9b3cfa92c61dd166f52176c3573e4782b109c6601726bcd854204e88f1299d6d",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-v3-immutable-public-market-evidence-01-14080d3d"
+  ],
+  "domain": "btc",
+  "event_id": "published-data-btc-public-ws-l2-funding-evidence-02-e6af3ebe1",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-btc-public-ws-l2-funding-evidence-02",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1.json",
+      "result": "passed"
+    },
+    {
+      "command": "isolated-python -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py -q",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "passed"
+    },
+    {
+      "command": "public OKX books WebSocket bounded capture",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "failed"
+    },
+    {
+      "command": "immutable OKX L2 export of captured segment",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "failed"
+    },
+    {
+      "command": "public OKX funding history bounded capture",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "passed"
+    },
+    {
+      "command": "public OKX server-time seven-sample preflight",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "failed"
+    },
+    {
+      "command": "30-natural-day sequence-valid WebSocket L2 observation",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-ws-l2-funding-evidence/evidence/btc-okx-public-evidence-20260728T081955Z-main1c2d545c-corr1/btc_okx_public_ws_l2_funding_quality_report.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "DATA-BTC-PUBLIC-WS-L2-FUNDING-EVIDENCE-02",
+  "transition_for": ""
+}

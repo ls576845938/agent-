@@ -1,0 +1,116 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-start-feedback-01-065d158ba",
+  "ticket_id": "BTC-DEMO-START-FEEDBACK-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-start-feedback-01-integration-01",
+  "base_commit": "f7862301933777145f2934790afcb141925e15b1",
+  "deliverable_commit": "065d158ba4325cf7c58f9981da714453ae4eefc8",
+  "created_at": "2026-09-06T13:05:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-start-feedback-01-2c089e79a"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-start-feedback-01-2c089e79a",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "0c51bf556640c46bccbd721ec846c1fb44ca6152c8455016ff0d119b2653a652",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-start-feedback.ts",
+      "sha256": "a2dde81819339df914a4bd61ebf9ed101320cc72e630b50a4d3ac02d5b2ab1c2",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "sha256": "520da8052817ee90e30c6df6ab767c19091d778f781682541d4da124b19a59ee",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "6e2c771bcf61e0049a04a0fac028e3f492163622b45b84dadb608dc9f7066f00",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md",
+      "sha256": "046a5e86bdc27ce737b0389f454a9c888fc3b90e5d7506652aceadfb10a5d34a",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node scripts/test-btc-demo-start-feedback.mjs [observed: PASS]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-demo-start-feedback.mjs"
+    },
+    {
+      "command": "node scripts/test-btc-operator-attempt-state.mjs [observed: ok=true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-operator-attempt-state.mjs"
+    },
+    {
+      "command": "node scripts/test-btc-operator-v2-contract.mjs [observed: 8 actions; handler harness executed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-operator-v2-contract.mjs"
+    },
+    {
+      "command": "npm run lint [observed: tsc --noEmit exit 0 in 24s]",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "npm run build [observed: 5220 modules; built in 51.25s; existing chunk-size advisory only]",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs [observed: passed; manifest_match=true; baseline_ancestor=true; dirty_paths=[]]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "Canonical-main browser verification and inactive backend restart after main integration",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    },
+    {
+      "command": "Private/account refresh/start/ack/order end-to-end",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-START-FEEDBACK-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:root integration branch not yet merged to refs/heads/main; canonical-main browser verification and inactive backend restart pending",
+    "owner:operator verify OKX Demo BTC-USDT-SWAP isolated long and short 1x leverage evidence, acknowledge the blocked operation, refresh account snapshot and manually retry authoritative preflight",
+    "promotion paper live private order remain blocked; no readiness claim"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

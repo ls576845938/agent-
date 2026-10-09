@@ -1,0 +1,61 @@
+{
+  "base_commit": "07367599220d303b45f83b35076ef996c8664963",
+  "blockers": [],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-14T16:55:40Z",
+  "deliverable_commit": "6ef7fdc5cd63c03f0870bf8409a6640531be01ec",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "88e43e143200c8d70d236017ed4aa3c6aaddd48749b045f5be8b6818b7cd1f67",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "0b6c6eb4fa02c3d559d1294128969f3fc561e1bce579ccec91a0f533ed3b0606",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "INTEGRATE-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-FEB34AB6"
+  ],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01-6EF7FDC5",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-lifecycle-namespace-01-correction-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_slow_private_ws_probe_refreshes_boundary_projection_before_dead_man -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_shared_runtime_live_canary.py -q --basetemp=C:\\tmp\\pytest-btc-lifecycle-correction-20260815",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-LIFECYCLE-NAMESPACE-01-CORRECTION-01",
+  "transition_for": ""
+}

@@ -1,0 +1,163 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-readonly-workspace-integration-20260923-09e0ae664",
+  "ticket_id": "BTC-READONLY-WORKSPACE-INTEGRATION-20260923",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/btc-readonly-workspace-integration-20260923",
+  "base_commit": "a2bbae85077bc4a580e5d3915648669308e31996",
+  "deliverable_commit": "09e0ae66421f1df93f55bfb940f81c409d246a93",
+  "created_at": "2026-09-23T02:55:32Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-readonly-workspace-54fe43e36"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-readonly-workspace-54fe43e36",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "22e8ad8b00aadd13b94f0008075a1059e28352236c4e425394ca7f6dc894f6d5",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/api/btc_public_market.py",
+      "sha256": "6e273dc95355f0cf1e52bc2a1b56ec356b92da7825c04ee3a812d64eb4d05885",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/core/backend_access_policy.py",
+      "sha256": "31ba7b010b327a40c801e7ed6f61a86ea4bdc2c1f387dc3edaa5d01ed60d5b64",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/services/btc_public_market_view.py",
+      "sha256": "5f897f9bd8eaa03bc3d4214f4b7575d356dca402dee2517830a84656b836ba27",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/btc-readonly-workspace-fix-20260922.md",
+      "sha256": "a5b06749e1b8eadd582bc25d036460a65248eff35186832f991a6e658c951707",
+      "type": "report",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "780a6cbc3ff148b80102ad6767f48b4f30362c81e5c1fad94aaf19edf31a9278",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "sha256": "36cf0096c8b28ed2cc854a19908bbd0f741e4524590451614abd23bc39dad3a8",
+      "type": "test_evidence",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "sha256": "ea09a7cfbf168e4085428667f7045543f47d6acefe4c02d7a79a0809ea3b948b",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "sha256": "141d06632bae0cc8e9a0539f34767e3acc02af99969aea9b29a6e3b07bb59c58",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "edcd96bfeb9050c22bd8346aceb55527aa7699119abe3ba536195bfb0879832f",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "886fd7efc396c9723835f54f1de7d877ab95ef0d017134e44a485ec7045213db",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/workspace-access.ts",
+      "sha256": "f95d34fd65a5312e7414e0435859f9687df7a4dfe2be94959c0c58c9d4bd0d60",
+      "type": "code",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/api/test_btc_public_market_readonly.py",
+      "sha256": "e580cc47e4d1f36773835ba34af969db72440658b8601e70f5947853d216609e",
+      "type": "test_evidence",
+      "schema_version": "btc_readonly_workspace_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/btc-readonly-workspace-integration-20260923.md",
+      "sha256": "ca8806f4287a67aed82de4432078a5666680bb07d48ea7de7a0a86d8bc448b1a",
+      "type": "report",
+      "schema_version": "btc_readonly_workspace_integration_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate plus base/source/deliverable/handoff ancestry and 13 Git-blob SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-READONLY-WORKSPACE-FIX-20260922/published-btc-readonly-workspace-54fe43e36.json"
+    },
+    {
+      "command": "pytest readonly public market, OKX public display client, research release policy: 57 passed in 8.91s",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-readonly-workspace-integration-20260923.md"
+    },
+    {
+      "command": "eight Node readonly/operator/account/missing-evidence/depth/chart suites",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-readonly-workspace-integration-20260923.md"
+    },
+    {
+      "command": "tsc --noEmit, frontend identity check, vite build",
+      "result": "passed",
+      "evidence_path": "docs/operations/btc-readonly-workspace-integration-20260923.md"
+    },
+    {
+      "command": "canonical current-main 8765/3000 restart and browser /crypto acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/btc-readonly-workspace-integration-20260923.md"
+    }
+  ],
+  "blockers": [
+    "canonical main research_readonly publication and /crypto browser acceptance pending",
+    "production BTC runtime evidence and private account remain unavailable; annual evaluation remains paused"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "base_commit": "870ca75f5a2fad57fba1a73571020308b302328b",
+  "blockers": [
+    "independent_integrator_review_pending",
+    "current_main_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_twelve_request_and_browser_acceptance_pending",
+    "intermittent_team_context_handoff_discovery_timeout",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T15:51:21.486Z",
+  "deliverable_commit": "ab9a5103ee4fdc2092d59ba8cefe664023ff38b4",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "5b21c32aa146b078fd0333b08b38e7ef7f491125007f97a74a79e7bb6b9e18bc",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "91fa17f4aab7c0f1d72c432b09d4ee90b12b7a78b14b8c7e15a14f95ef3dee3a",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "46fef3f2d9f84ba53ac4eb976f2a550ae6d6445b2dc7e94ba9c9dfe5766efd1a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_research_registry_summary_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "62c9587c2443f1eb72e3badcab061efcb0ffa70be696c688d3427091f6460600",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "e00e29098150c3ec73b228140f017c47e73c6a56f59fd57ef7b886fc482b7fdc",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "published-research-registry-request-chain-20260928-ab9a5103e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-registry-request-chain-20260928",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first request-local scandir metadata reuse, fixed discovery metadata reuse, full ASGI disconnect, and Qlib detail scheduling",
+      "evidence_path": "producer console; three expected pre-fix failures and full ASGI disconnect already fail-closed",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest evidence registry, actual summary route, and Qlib pipeline suites",
+      "evidence_path": "producer console; 45 passed, 1 existing Windows symlink-permission skip",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest M1 readonly archive and backend research-readonly suites",
+      "evidence_path": "producer console; 51 passed; one cold-import stderr decoding environment failure passed on exact retry with PYTHONUTF8=1",
+      "result": "passed"
+    },
+    {
+      "command": "research-release governance regression",
+      "evidence_path": "producer console; 72 passed, 2 hook failures from handoff_git_timeout/handoff_discovery_timeout; exact retry 1 passed, 1 repeated discovery timeout; no governance delta",
+      "result": "failed"
+    },
+    {
+      "command": "py_compile all five changed Python files and git diff --check",
+      "evidence_path": "producer console",
+      "result": "passed"
+    },
+    {
+      "command": "same canonical data direct and TestClient registry before/after profile",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/producer-report-ab9a5103e.md; TestClient 9.620s to 3.464s; byte-identical CONFLICT/57-note response",
+      "result": "passed"
+    },
+    {
+      "command": "full-app TestClient concurrent 12 overview GETs plus Qlib detail on canonical data",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/producer-report-ab9a5103e.md; before 24.410s all over budget, after 8.847s all 13 HTTP 200 below 12s",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main 8765/3000 after-fix and canonical browser acceptance",
+      "evidence_path": "pending independent integration, canonical restart and fixed 12-second browser matrix",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": ""
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-candidate-offline-diagnostic-admission-20260926-0e3d8ae539",
+  "event_type": "integrated",
+  "ticket_id": "CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "domain": "shared",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "deliverable_commit": "0e3d8ae5391e8a904e2ba40fce7167db8ec94eff",
+  "depends_on": [
+    "published-candidate-offline-diagnostic-admission-20260926-3b28b9c00"
+  ],
+  "supersedes": [],
+  "transition_for": "published-candidate-offline-diagnostic-admission-20260926-3b28b9c00",
+  "created_at": "2026-09-27T02:38:06.942Z",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "quant_shared/strategy_delivery/admission.py",
+      "type": "code",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "9f10dd365e08ab512f0cee478fd426e2fd2a490afa600e16e052e8a5e2bd82ab"
+    },
+    {
+      "path": "quant_shared/strategy_delivery/service.py",
+      "type": "code",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "fd18d2fea6b7a1b603a4a1208c61e360b727b42a0bb533fda144ff6a9d85b215"
+    },
+    {
+      "path": "backend/app/services/candidate_offline_service.py",
+      "type": "code",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "0a9b47dd8fb10b360a2d73959f8ef60321a80db28c5dafe032524c1dd53a8e02"
+    },
+    {
+      "path": "frontend/src/workspaces/research/candidate-delivery-api.ts",
+      "type": "code",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "b19ec3f78de9fb459e228b68f00c726b7efc7d3a16bb3f08043e4c838860df53"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "type": "code",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "c76dd33a9d2ebaa145fc4e2f3cf3e42930c416624e1d887af62581dbfa2ea18d"
+    },
+    {
+      "path": "frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx",
+      "type": "code",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "e5e2cdf5c3f1de5bf6456d08f8afe33d363c3c18404a595055d04842883fd213"
+    },
+    {
+      "path": "frontend/e2e/candidate-diagnostic-admission.spec.ts",
+      "type": "test_evidence",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "236b5a8d5e9e106e1ce7d8d15ffaa2619b534c00886f079a6a72998104b29ced"
+    },
+    {
+      "path": "tests/contracts/test_strategy_delivery.py",
+      "type": "test_evidence",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "f482e15410452db0ba5c416c81715d2444b2cc1f80f02204f5f92829f13b9e21"
+    },
+    {
+      "path": "tests/contracts/test_candidate_delivery_api.py",
+      "type": "test_evidence",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "13d1bbf2bbde9b484f795bab098757c482d0555ec5f9689effb15e0b8cbad377"
+    },
+    {
+      "path": "tests/contracts/test_candidate_offline_access.py",
+      "type": "test_evidence",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "aa1b2c3687cd674db395e7b99e0dae4a001e215a44febaeca96f6280cf52eb55"
+    },
+    {
+      "path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "type": "document",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "d32558755fe716e938e1e4dfe6f86b42cda1548b8dd42cb979e3c93b25960719"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; base-to-deliverable-to-handoff ancestry; exact 11-path touch set and binary-safe SHA-256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926/published-candidate-offline-diagnostic-admission-20260926-3b28b9c00.json"
+    },
+    {
+      "command": "pytest test_strategy_delivery.py targeted diagnostic admission cases",
+      "result": "passed",
+      "evidence_path": "9 passed, 30 deselected in 1.03s"
+    },
+    {
+      "command": "esbuild bundle plus node --test frontend/e2e/candidate-diagnostic-admission.spec.ts",
+      "result": "passed",
+      "evidence_path": "3 passed in 112ms"
+    },
+    {
+      "command": "pytest tests/contracts/test_strategy_delivery.py tests/contracts/test_candidate_delivery_api.py tests/contracts/test_candidate_offline_access.py",
+      "result": "passed",
+      "evidence_path": "120 passed; one frontend dependency environment case initially failed because sparse worktree had no local esbuild, then passed independently with canonical NODE_PATH and PYTHONUTF8=1"
+    },
+    {
+      "command": "TypeScript tsc --noEmit using canonical dependency root",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "Python py_compile and git diff --check",
+      "result": "passed",
+      "evidence_path": "exit 0"
+    },
+    {
+      "command": "actual candidate creation, account binding, replay start, service restart, main merge, browser publication, promotion artifact rebuild, private/order/live access",
+      "result": "not_run",
+      "evidence_path": "outside this source-only integration ticket"
+    }
+  ],
+  "blockers": [
+    "owner:root integrated source candidate is not merged to registered main and no service restart or browser acceptance was authorized",
+    "owner:scope btc_frozen_qlib_offline_v1 remains management-and-diagnostic-only because the current worker supports factory_lgbm_ast_v1 only",
+    "owner:scope registered protection-price execution remains unsupported and this ticket does not complete the full trading lifecycle",
+    "owner:scope old records and old idempotent receipts remain strict and are not migrated or auto-promoted",
+    "owner:gate current-HEAD promotion artifact or read-model rebuild was not authorized or performed; this source-only result is not promotion evidence",
+    "promotion_paper_live_private_order_real_order_transfer_and_withdraw_permissions_remain_false"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

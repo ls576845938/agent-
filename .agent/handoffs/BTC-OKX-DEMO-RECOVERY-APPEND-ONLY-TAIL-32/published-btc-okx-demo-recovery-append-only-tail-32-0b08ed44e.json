@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-recovery-append-only-tail-32-0b08ed44e",
+  "ticket_id": "BTC-OKX-DEMO-RECOVERY-APPEND-ONLY-TAIL-32",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-recovery-append-only-tail-32",
+  "base_commit": "4a7d6702dad4ae068abe122ded10fef2ce6c7711",
+  "deliverable_commit": "0b08ed44e62c25cec68ab8ce9e5b33776429fce7",
+  "created_at": "2026-08-12T06:30:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-recovery-runtime-source-provenance-31-corr1-ad9c9035b"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "sha256": "e13bb87d85f6aa576c1bf0d85ba823236b4f61ecc70f605f9ce66a3fa27ac777",
+      "schema_version": "btc_okx_demo_fault_drill_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "d3515049537a0de82cd04b6e90a6b09544e51edf068d87d8fade4d99e242fe51",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "sha256": "24320505084270e8ed64b8db765451b72509c2622f1f8fc283b95b5e7e156734",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "8eb003de4c8844f6342accbba447bf1332fde1533a2100f4e70763d440d1e8f4",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k \"canonical_binding_accepts_current_recovery_append_only_source_tail or canonical_binding_rejects_zero_order_transport_receipt or canonical_binding_ignores_owned_id_restore_applied_archive_source_provenance or canonical_binding_rejects_archive_source_in_ordinary_runtime_event\" -q",
+      "result": "passed",
+      "evidence_path": "4 passed, 141 deselected"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k \"append_only_current_recovery_tail or intermediate_terminal_not_current or source_chain_ignores_owned_id_restore_archive_provenance or source_chain_rejects_archive_source_in_ordinary_event\" -q",
+      "result": "passed",
+      "evidence_path": "4 passed, 334 deselected"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k canonical_binding -q; py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k append_only_current_recovery_tail -q",
+      "result": "not_run",
+      "evidence_path": "Windows process wrapper omitted terminal summary; the exact spawned test PIDs were terminated by engineering circuit breaker and were not restarted"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "PYCOMPILE_EXIT=0"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/application/btc_okx_demo_fault_drill.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "DIFF_CHECK_EXIT=0"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_deferred",
+    "wide_selector_terminal_summary_unavailable_windows_wrapper",
+    "all_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

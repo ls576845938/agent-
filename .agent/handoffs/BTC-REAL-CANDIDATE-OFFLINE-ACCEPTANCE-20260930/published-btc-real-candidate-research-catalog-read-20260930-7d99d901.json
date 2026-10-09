@@ -1,0 +1,103 @@
+{
+  "base_commit": "d1e7d7ef83b711a7fad57035fff423d70bb9ac34",
+  "blockers": [
+    "owner:integrator independent_review_and_integration_of_commit_7d99d9018_pending",
+    "owner:architect real_candidate_bounded_fit_and_same_run_page_acceptance_not_completed",
+    "owner:btc_developer formal_48_decision_v2_replay_remains_blocked_at_2026-06-17T11:52:30Z",
+    "owner:security_governance risk_evidence_proof_failure_dimension_remains_unresolved",
+    "research_catalog_read_integration_is_quality_checked_only_and_does_not_validate_candidate_effectiveness",
+    "no_candidate_package_approved_no_account_bound_no_candidate_registered_no_offline_job_started",
+    "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-30T11:37:43Z",
+  "deliverable_commit": "7d99d90181b2edcb6994fff8be6c57f6f48a6940",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_research_catalog_read_v1",
+      "sha256": "93b6d715e249d0d22bbf5bedc4763e64e09f5e29e9a5972ca90b74bcaef1a525",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/candidate_delivery_bootstrap.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_research_catalog_read_v1",
+      "sha256": "3bbdf120eac149dc7b5a4db281f26dc6f6bd374a3e368f396393f90973dcc333",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_api_contract_v1",
+      "sha256": "24875bdde431685ed91a50fbeaeced71a886cff15479ec0baaf41e810c4d6484",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/api/test_alpha_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_api_contract_v1",
+      "sha256": "0c32c1ccf67da887671f579f1dccf60fa318769857a6876925b79985b6571c62",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-real-candidate-offline-cache-wall-roles-20260930-ff13ccdf",
+    "published-btc-real-candidate-offline-acceptance-20260930-edad609a0",
+    "data_manifest_commit_314c440ac2fc20c958472da14ff68265351ce0b0"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-real-candidate-research-catalog-read-20260930-7d99d901",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-real-candidate-20260930",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-real-candidate-offline-cache-wall-roles-20260930-ff13ccdf"
+  ],
+  "transition_for": "",
+  "tests": [
+    {
+      "command": "canonical Python focused candidate catalogue GET integration: 4 tests; initial result 3 passed and 1 failed because the test incorrectly excluded the required existing M1 archive; product code unchanged for that failure",
+      "evidence_path": "tests/api/test_alpha_factory.py",
+      "result": "failed"
+    },
+    {
+      "command": "canonical Python corrected Alpha external catalogue GET test; 1 passed in 54.76s",
+      "evidence_path": "tests/api/test_alpha_factory.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python 8 focused and existing API regressions for Qlib/Alpha read roots, selector ownership, seal handling, readonly no-create and unknown run; 8 passed in 144.58s",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python final 4 new external catalogue API tests; 4 passed in 64.83s",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python py_compile for four touched files and git diff --check; passed",
+      "evidence_path": "backend/app/services/candidate_delivery_bootstrap.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930"
+}

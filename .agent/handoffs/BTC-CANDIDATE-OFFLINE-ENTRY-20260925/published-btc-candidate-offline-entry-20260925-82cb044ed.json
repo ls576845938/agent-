@@ -1,0 +1,333 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-candidate-offline-entry-20260925-82cb044ed",
+  "ticket_id": "BTC-CANDIDATE-OFFLINE-ENTRY-20260925",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/btc-candidate-offline-entry-20260925",
+  "base_commit": "15b2ea256de08c37e5d6cf15f1d5d0ece4178221",
+  "deliverable_commit": "82cb044ed9eaa2e7619d3ada5639f3bc5a96c091",
+  "created_at": "2026-09-25T08:04:27.818Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-candidate-package-runtime-20260925-3950f16ca",
+    "acknowledged-btc-candidate-offline-entry-upstream-20260925"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "b0dacb90cc9ada5a06c38f30ef1003debf6491d830ae6cd0397e07f2211bf052",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/candidate_offline.py",
+      "sha256": "5ae1f7b2c0ea9b3ec74bd3fe991a84e2b61482b51d45012741a849443bb8e920",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/cli/__init__.py",
+      "sha256": "76e8f7c6521351e9d7864b361fc064ea2fa51dfee8b5c7f8784c28e3d60906f8",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/cli/candidate_offline.py",
+      "sha256": "9f25bd095865c111d27f995d22ecf0140f6f11ed525f0321fee0b8e9aa1d20b6",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/core/backend_access_policy.py",
+      "sha256": "43df89c06a4f16d87c1c6f477bad5251a29b6c9e54817a8885024cd5a1f47468",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/core/config.py",
+      "sha256": "897fd6bc380246b60f0e6995db09c3d3c9acaae15a7772f8149da69e466a0c50",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_delivery_accounts.py",
+      "sha256": "41cdfc24841b3a3ddab2f1966b17637ebc0ce92a98aad7d93b6db4b9ee0b8d84",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_delivery_bootstrap.py",
+      "sha256": "5583c7191cf197d46a5892b7c7c01b6f6669be9b6b5b94d24baea1145e7ce210",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_delivery_index.py",
+      "sha256": "5bc7281f797dfdcef25430a0afa9223535eb62cb223a9bec3aa242a34a1a04c0",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_delivery_sources.py",
+      "sha256": "ac27781c2b9482ca53797ddcab41371d922e49baffb06b5348659120e678c1de",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_offline_inputs.py",
+      "sha256": "890a0f6eb1dd41e6c1799853171d4e2de563554edd848d180545d4bc64602eef",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_offline_service.py",
+      "sha256": "09dd41f3931e158ee245b1665f974a1cb405bbc8631a66dd93931623069899c6",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_offline_store.py",
+      "sha256": "dbb5c596bf13d1c9ad1419fbcc0cf62dec87957a850a3a0bbe24d45b3980ac43",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/candidate_offline_views.py",
+      "sha256": "a9f5782e16ad043be6beee16626d83202db5253b79a2cf4e1ad90647b70bbce2",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/btc-candidate-offline-entry-20260925.md",
+      "sha256": "237115ba5bef49ae9bd2874bd2e6ccba40e78f21a9dd5debcb019cf272b6cf50",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/btc-candidate-offline-entry-20260925.md",
+      "sha256": "3c87afe8108fbc8c785f77bd3973ac4743a965f89caae6cda85609e9d0a7173e",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/candidate-offline.spec.ts",
+      "sha256": "ed98bcc7f45829f98fcc39585ab31a4d4160cd8ca9e8ed7dc136f2dbe026fed0",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "sha256": "c4012ffd8540fb724b6f1d2a9e37d42c24e669d41d04c24ffd2af1aa72d75fb2",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/RegisteredCandidateOfflineEvidence.tsx",
+      "sha256": "83b2c4c5cb768d36e0e892f605097bfc3afe6bfe90fdc6454933c2ffd080eb9e",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx",
+      "sha256": "f2cefc6de7d561e96092f265032febe0cfcca32cadc4a6b6660b5eeb40e9f238",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/ResearchRunDetails.tsx",
+      "sha256": "679e950136e1626905b4169c5a5d9b8a3c662fb170f11526fb3cc8ef3eb1561b",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/candidate-offline-api.ts",
+      "sha256": "45e199f4c14bf31a594fa6ee32ea6b30cadfbad7a82c1f493fbb666bc362d520",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "integrations/qlib_adapter/factory_delivery.py",
+      "sha256": "cd531c8f8e5ec1a22f69eeb645107123c7e248a4dc6611ede93a9c222ed99b84",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_registered_candidate.py",
+      "sha256": "8dd4c5db14e43cca2923291412a5c75b45440017d8316f928495b7ab47526538",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/qlib_offline_replay.py",
+      "sha256": "11b91c8cd7e88d9fd75cd606995c197de2a6d84c9b96ff0a1c7642d18a031877",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/offline_contract.py",
+      "sha256": "e77cb1d273a86c3d7bf31c58ca6f312cb0ea4eb5b58f43edf16f668fdd181b18",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_shared/strategy_delivery/service.py",
+      "sha256": "50ce7f0c0e2e7fff215af4d481786a1c0721697e8a7281d8941ef0dd05062cb5",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cli/test_candidate_offline_cli.py",
+      "sha256": "50614b41ea0a1d77cc174ae7eda4e27e7a85783df0a63aea93cc5f3d18078c3f",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_candidate_offline_access.py",
+      "sha256": "6ca6eecafd3f5214b1dd02b69599f0d0567c3c098dcc463bccc128418f716f14",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_candidate_offline_entry.py",
+      "sha256": "635e4e9d0cda44b66710e4386e16343317621a4055a0464df538856198a95b77",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_registered_candidate_execution.py",
+      "sha256": "25e9b8b91c87cba707d76da77489d6f763db5464c9bee809f9710ec6fa57a28e",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/integrations/test_candidate_offline_lifecycle.py",
+      "sha256": "8f9005bfba48e8d99cfedc5dcaf3aa8e3a64dad876fbab0349e80946849587f6",
+      "schema_version": "candidate_offline_entry_source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/integrations/test_candidate_offline_lifecycle.py -> 4 passed/1116.63s; real default composition, two models, CLI via loopback TCP, held-position stop/resume, authority-commit projection-crash and same-job recovery",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/integrations/test_candidate_offline_lifecycle.py -k worker_crash -x -> post-close-ordering hardening: 1 passed, 3 deselected/313.46s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_offline_access.py tests/cli/test_candidate_offline_cli.py -> final 10 passed/76.61s; includes Node SSR contracts, not browser visual QA",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_offline_entry.py -k 'actual_registered or unrepresentable or legacy_missing' -> 10 passed, 5 deselected/402.98s; protection trigger blocks, protection fills unsupported",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_offline_entry.py tests/contracts/test_registered_candidate_execution.py -> first checkpoint 18 passed/1087.23s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_offline_access.py tests/cli/test_candidate_offline_cli.py tests/contracts/test_candidate_offline_entry.py -k 'not actual_registered' -> 19 passed, 4 deselected/151.76s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/cli/test_candidate_offline_cli.py tests/contracts/test_candidate_delivery_api.py tests/contracts/test_strategy_delivery.py -> 60 passed/77.74s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_package_runtime.py tests/integrations/test_candidate_package_inference.py -> 53 passed/53.23s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "PYTHONUTF8=1; canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider tests/contracts/test_candidate_offline_access.py tests/cli/test_candidate_offline_cli.py tests/integrations/test_qlib_candidate_policy.py tests/contracts/test_strategy_v3_qlib_offline.py -> 36 passed/493.89s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "V0/V1 freeze plus exact existing IOC/OMS selectors listed in acceptance item 8 -> 51 passed, 1 existing opt-in archive skip/33.88s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json; py -3 -B -m compileall -q declared Python paths; scoped git diff --cached --check -> exit0",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "Failure-first tests/contracts/test_candidate_offline_entry.py -k review_p1 -> initial 5 failed/71.64s, after correction 5 passed/67.11s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "Full repository suite, real sealed source publication/training and market-data qualification, annual replay, protection trigger fill execution, legal partial opening, production deployment/current-main artifact rebuild/backend restart and browser visual QA",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/btc-candidate-offline-entry-20260925.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator INTEGRATE-BTC-CANDIDATE-OFFLINE-ENTRY-20260925 independent review of upstream and this source/shared contracts required; no main integration",
+    "owner:factory_evidence real frozen candidate/observation inputs must qualify independently; sealed synthetic acceptance is not real-market or promotion evidence",
+    "owner:capability Qlib registered adapter cannot execute protection triggers; sampled SL/TP touch or missing/ambiguous protection is durably blocked, positions/fills/ledger preserved; no intrainterval guarantee",
+    "owner:capability registered 0.01-contract FOK envelope does not support legal partial opening; isolated IOC compatibility is not that acceptance",
+    "owner:operator default-off remains; no deployment/env enablement/service restart/canonical browser acceptance/current-main promotion artifact rebuild; independent authorization and fresh identity/gates required"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

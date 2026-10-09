@@ -1,0 +1,72 @@
+{
+  "base_commit": "6cea196b44511024912bc064cdd4c024d7ba60de",
+  "blockers": [
+    "funding_history_available_only_from_2026-04-29T16:00:00Z",
+    "open_interest_history_not_verified_diagnostic_partial",
+    "liquidation_snapshots_missing_diagnostic_only",
+    "existing_tail_merge_entry_requires_corrected_manifest_semantics_for_current_demo_reader",
+    "not_research_ready_not_backtest_ready_not_promotion_evidence_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-07-30T11:51:24Z",
+  "deliverable_commit": "ec7499b4ff67ce63c8817c951cb138cf822b8629",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "6c5dd8036da320062002b839792852c1aa53971fecdd20b1ba7ae3ec6c2260c9",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/quality-checked-receipt-20260730T114940Z.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "data_ticket_delivery_receipt_v1",
+      "sha256": "eec4a3b265a4712ca42cc274dbe28fff54cc3357419d8fc8cdebb9d00ede76d2",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-lean-canary-signal-01-9e328534"
+  ],
+  "domain": "data",
+  "event_id": "published-data-btc-demo-25h-public-tail-01-ec7499b4f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-btc-demo-25h-public-tail-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -B -m pytest tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_tail_bundle_merge.py tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": ".agent/data_manifests/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/quality-checked-receipt-20260730T114940Z.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <new-manifest>",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+      "result": "passed"
+    },
+    {
+      "command": "inspect_okx_native_demo_signal_data using committed manifest 5fc808125:<new-manifest>",
+      "evidence_path": ".agent/data_manifests/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/quality-checked-receipt-20260730T114940Z.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "DATA-BTC-DEMO-25H-PUBLIC-TAIL-01",
+  "transition_for": ""
+}

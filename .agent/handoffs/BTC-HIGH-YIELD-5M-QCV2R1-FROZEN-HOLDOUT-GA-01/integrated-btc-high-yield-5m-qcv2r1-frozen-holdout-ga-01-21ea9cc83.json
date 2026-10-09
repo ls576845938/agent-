@@ -1,0 +1,146 @@
+{
+  "base_commit": "bdd589a965bbde900a063a7b64911da3708c9cfd",
+  "blockers": [
+    "btc_high_yield_5m_no_candidate_passed_frozen_research_gates",
+    "btc_high_yield_5m_unseen_holdout_preserved_not_revealed",
+    "btc_high_yield_5m_l2_spread_depth_market_impact_not_proven",
+    "btc_high_yield_5m_latency_queue_and_unfilled_order_model_not_proven",
+    "btc_high_yield_5m_perpetual_mark_index_funding_parity_not_proven",
+    "btc_high_yield_5m_liquidation_buffer_is_not_mark_price_replay",
+    "btc_high_yield_5m_paper_fill_position_cash_ledger_not_observed",
+    "btc_high_yield_5m_runtime_adapter_not_implemented",
+    "btc_high_yield_5m_manual_promotion_review_not_started",
+    "producer_artifact_is_preregistered_run_commit_5f21c25d98a1_not_current_integration_head",
+    "current_head_research_artifact_rebuild_required_after_registered_main_integration",
+    "backend_restart_required_after_registered_main_integration",
+    "registered_main_merge_pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T21:58:10Z",
+  "deliverable_commit": "21ea9cc8317da4207db6a0392738ccdb837237c2",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/high_yield_5m_ga_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_high_yield_5m_ga_mining_v2",
+      "sha256": "79692d2f64241d3a4c36b76a0567b6d78cbe21635128c55e029775ef96b74e37",
+      "type": "code"
+    },
+    {
+      "path": "scripts/research/run_btc_high_yield_5m_ga_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_high_yield_5m_ga_mining_cli_v2",
+      "sha256": "763d0ff22b8602913bfbdf8e4bdd639104f8275c68bfe5c29c033b2c4c99358f",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_high_yield_5m_ga_mining.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_high_yield_5m_ga_mining_contract_tests_v2",
+      "sha256": "4faaf2c43eb37729c715a137c8c91076629f141839ea9a9203708a87fdee3e16",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_HIGH_YIELD_5M_QCV2R1_FROZEN_HOLDOUT_GA_01_PREREG.json",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_high_yield_5m_frozen_holdout_preregistration_v1",
+      "sha256": "369376c5d6d604a15f9a9d16036a81fc5211de7e8e2b65827d585be204c8d1bb",
+      "type": "report"
+    },
+    {
+      "path": "docs/research/BTC_HIGH_YIELD_5M_QCV2R1_FROZEN_HOLDOUT_GA_01.md",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_high_yield_5m_frozen_holdout_research_report_v1",
+      "sha256": "22af6d7cf9df3bd29b2c70f1eea937ddc92f7e6593f74c620190c47ff4d2b9c3",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-0b2665cbf"
+  ],
+  "domain": "research",
+  "event_id": "integrated-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-21ea9cc83",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-hy5m-qcv2r1-holdout-ga-i1",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input published-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-0b2665cbf.json",
+      "evidence_path": ".agent/handoffs/BTC-HIGH-YIELD-5M-QCV2R1-FROZEN-HOLDOUT-GA-01/published-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-0b2665cbf.json",
+      "result": "passed"
+    },
+    {
+      "command": "verify base ancestry, producer tip and five deliverable Git blob SHA-256 values",
+      "evidence_path": ".agent/handoffs/BTC-HIGH-YIELD-5M-QCV2R1-FROZEN-HOLDOUT-GA-01/published-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-0b2665cbf.json",
+      "result": "passed"
+    },
+    {
+      "command": "read-only official artifact file and semantic hash verification including preserved-unseen schema, empty definitions, false safety flags and lock-before-report physical ordering",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research_artifacts/btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01/official-5f21c25d98a1",
+      "result": "passed"
+    },
+    {
+      "command": "initial independent replay one-line harness before data load",
+      "evidence_path": "local integrator command output",
+      "result": "failed"
+    },
+    {
+      "command": "independent locked-champion four-fold selection-only replay against exactly 248270 rows",
+      "evidence_path": "holdout_rows_simulated=0; numeric_fields_compared=85; max_abs_difference=0.0",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/tmp/qs-yield5m-integrator-ticket-20260827 tests/contracts/test_btc_high_yield_5m_ga_mining.py (20 passed in 27.93s)",
+      "evidence_path": "tests/contracts/test_btc_high_yield_5m_ga_mining.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/tmp/qs-yield5m-integrator-joint-20260827 tests/contracts/test_btc_high_yield_5m_ga_mining.py tests/contracts/test_btc_intraday_ga_strategy_mining.py tests/contracts/test_btc_high_yield_v2_confirmation.py tests/contracts/test_btc_high_yield_v2_followup.py tests/contracts/test_btc_strategy_registry.py tests/contracts/test_no_broker_import_in_evidence_builders.py (47 passed in 45.40s)",
+      "evidence_path": "tests/contracts/test_btc_high_yield_5m_ga_mining.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/research/high_yield_5m_ga_mining.py scripts/research/run_btc_high_yield_5m_ga_mining.py tests/contracts/test_btc_high_yield_5m_ga_mining.py",
+      "evidence_path": "quant_crypto/research/high_yield_5m_ga_mining.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/research/run_btc_high_yield_5m_ga_mining.py --help",
+      "evidence_path": "scripts/research/run_btc_high_yield_5m_ga_mining.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check bdd589a965bbde900a063a7b64911da3708c9cfd..HEAD",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "official genetic search rerun or unseen holdout strategy metrics read",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "full repository regression, registered-main merge, artifact rebuild, services or browser validation",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-HIGH-YIELD-5M-QCV2R1-FROZEN-HOLDOUT-GA-01",
+  "transition_for": "published-btc-high-yield-5m-qcv2r1-frozen-holdout-ga-01-0b2665cbf"
+}

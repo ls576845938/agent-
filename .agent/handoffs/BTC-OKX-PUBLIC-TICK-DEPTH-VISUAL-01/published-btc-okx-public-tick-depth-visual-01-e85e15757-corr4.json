@@ -1,0 +1,45 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-public-tick-depth-visual-01-e85e15757-corr4",
+  "ticket_id": "BTC-OKX-PUBLIC-TICK-DEPTH-VISUAL-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-public-tick-depth-visual-01",
+  "base_commit": "c0cdf82d2fac1a90ee30b4573a4ed9fe1caf5dbc",
+  "deliverable_commit": "e85e15757749ff96f25d8dff26087e2580380584",
+  "created_at": "2026-08-17T04:32:55Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-btc-okx-public-tick-depth-visual-01-0e936ea0b-corr3"],
+  "transition_for": "",
+  "deliverables": [
+    {"type":"code","path":"frontend/src/workspaces/CryptoWorkspace.tsx","sha256":"0f1ca494ffe68fa38dc12873aa98f97d816745e869cfa63f2026bde9e3d64eda","schema_version":"btc_public_visual_candle_merge_v2","readiness_class":"quality_checked"},
+    {"type":"document","path":"frontend/public/frontend-identity.json","sha256":"3a1ec7f7c2699d1f1cf4d48b97c3af70d4c5907d2e14b5dbb5b679e90496f711","schema_version":"frontend_identity_v1","readiness_class":"quality_checked"}
+  ],
+  "tests": [
+    {"command":"npm --prefix frontend run lint -- --baseUrl <registered-main-node_modules> --typeRoots <registered-main-node_modules/@types>","result":"passed","evidence_path":"frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command":"npm --prefix frontend run build in sparse worktree","result":"failed","evidence_path":"frontend/vite.config.ts"},
+    {"command":"direct Vite build with registered-main read-only node_modules path","result":"passed","evidence_path":"frontend/package.json"},
+    {"command":"git diff --check","result":"passed","evidence_path":"frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command":"node scripts/update-frontend-identity.mjs; node scripts/check-frontend-identity.mjs; canonical-equivalent frontend_src_tree=bc6810df9241fe858f8a3f7fb7ba932e7972e6d5","result":"passed","evidence_path":"frontend/public/frontend-identity.json"},
+    {"command":"Playwright was prohibited for this correction","result":"not_run","evidence_path":"frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "owner:integrator canonical-main backend_restart_required_for_demo_transport_hotfix",
+    "owner:integrator canonical-main mocked_playwright_deferred_producer_may_not_start_nonmain_frontend",
+    "owner:integrator rerun_npm_build_with_canonical_main_node_modules",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

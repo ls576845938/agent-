@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-snapshot-fence-stability-01-05c72850a",
+  "ticket_id": "BTC-DEMO-SNAPSHOT-FENCE-STABILITY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-snapshot-fence-stability-01-integration",
+  "base_commit": "95435588ca562545d30574885fedc00908eb9f18",
+  "deliverable_commit": "05c72850a6c9917ea65b71ca966d1a47a3c95724",
+  "created_at": "2026-08-25T08:25:21Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-snapshot-fence-stability-01-1002dc332"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-snapshot-fence-stability-01-1002dc332",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "f883ef30cb76db49788a4b8bc941ea58c245d7147d4674b0dc8a5c86094048b5",
+      "schema_version": "source_file_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "5cf92a5e6269f7635dfab34ccfc4e18974255e8db94459a5e9e46e1e9b7b23df",
+      "schema_version": "test_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-SNAPSHOT-FENCE-STABILITY-01/published-btc-demo-snapshot-fence-stability-01-1002dc332.json",
+      "sha256": "4f3b1ba7f93a7c2ac075b36e2676cf02ac6740b1f8e6fe81e326b83a6ad6c746",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; exact base, deliverable, handoff ancestry; exact diff touch set; committed Git-object SHA-256",
+      "result": "passed",
+      "evidence_path": "published-btc-demo-snapshot-fence-stability-01-1002dc332; validator status=valid"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py::test_operator_contract_snapshot_fence_is_stable_after_legacy_start_is_historicalized -q --basetemp .tmp/pytest-snapshot-fence-int-new-regression-20260825",
+      "result": "failed",
+      "evidence_path": "pytest setup failed before test body: WinError 3 because ticket-local .tmp parent did not yet exist"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py::test_operator_contract_snapshot_fence_is_stable_after_legacy_start_is_historicalized -q --basetemp .tmp/pytest-snapshot-fence-int-new-regression-20260825-2",
+      "result": "passed",
+      "evidence_path": "1 passed in 1.79s"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q --basetemp .tmp/pytest-snapshot-fence-int-suite-20260825",
+      "result": "passed",
+      "evidence_path": "116 passed in 16.00s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_start_attempt.py -q --basetemp .tmp/pytest-snapshot-fence-start-attempt-20260825",
+      "result": "passed",
+      "evidence_path": "4 passed in 0.73s"
+    },
+    {
+      "command": "git diff --check 95435588ca562545d30574885fedc00908eb9f18..05c72850a6c9917ea65b71ca966d1a47a3c95724 -- ticket touch set",
+      "result": "passed",
+      "evidence_path": "no whitespace errors"
+    },
+    {
+      "command": "backend/frontend service start or restart; private/order/live verification",
+      "result": "not_run",
+      "evidence_path": "forbidden by integration scope; backend restart deferred until registered main receives integration"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_updated_fast_forward_main_disallowed",
+    "backend_restart_required_after_main_integration",
+    "canonical_current_main_runtime_and_browser_acceptance_not_run",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-current-main-hard-lock-02",
+  "ticket_id": "QUANT-FRONTEND-CURRENT-MAIN-HARD-LOCK-02",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/frontend-main-hard-lock-02",
+  "base_commit": "8bc235e9f9c5a42bf852ef24a4f89b12b6a1a682",
+  "deliverable_commit": "41f3203da4e284131d7ab25bbcf056b3edf73a26",
+  "created_at": "2026-07-26T11:29:41Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-current-main-hard-lock-02-9bfca17f"
+  ],
+  "supersedes": [],
+  "transition_for": "published-quant-frontend-current-main-hard-lock-02-9bfca17f",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <producer-worktree>/.agent/handoffs/QUANT-FRONTEND-CURRENT-MAIN-HARD-LOCK-02/published-quant-frontend-current-main-hard-lock-02-9bfca17f.json",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-CURRENT-MAIN-HARD-LOCK-02/published-quant-frontend-current-main-hard-lock-02-9bfca17f.json"
+    },
+    {
+      "command": "git merge --ff-only agent/super_developer/frontend-main-hard-lock-02 [observed: exact descendant of frozen main 8bc235e9f9c5a42bf852ef24a4f89b12b6a1a682]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd ci --offline (cwd=frontend) [observed: 117 packages installed; 0 vulnerabilities]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run identity:test && npm.cmd run identity:check (cwd=frontend) [observed: 8 targets; manifest_match=true; baseline_ancestor=true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, integrator worktree) [observed: expected fail-closed exit 2 before any listener bind]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend) [observed: first combined wrapper left one exact orphan tsc without diagnostics; orphan PID stopped; isolated rerun passed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: 5204 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run smoke && npm.cmd run check:btc-tradingview (cwd=frontend) [observed: smoke passed; 6 of 6 TradingView markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    }
+  ],
+  "blockers": [
+    "exact_main_runtime_identity_and_playwright_e2e_are_post_fast_forward_acceptance_checks",
+    "historical_pre_hard_lock_worktrees_are_unsupported_and_must_not_be_used_as_launch_surfaces",
+    "current_head_domain_runtime_and_canonical_trading_evidence_not_bundled_by_frontend_ticket",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

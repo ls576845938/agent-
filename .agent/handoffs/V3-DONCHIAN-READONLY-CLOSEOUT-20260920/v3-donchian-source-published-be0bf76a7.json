@@ -1,0 +1,100 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "v3-donchian-source-published-be0bf76a7",
+  "ticket_id": "V3-DONCHIAN-READONLY-CLOSEOUT-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/super_developer/v3-donchian-readonly-closeout-20260920",
+  "base_commit": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+  "deliverable_commit": "be0bf76a739c848662055c9dec249e2d24529e22",
+  "created_at": "2026-09-20T13:01:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "artifact",
+      "path": ".agent/offline_evidence/donchian-v3-closeout-20260920.json",
+      "sha256": "a5d6b1b07060d92e965d7b08d245c3ea2165e01d17be3a77a6ecac8bb63ea15c",
+      "schema_version": "donchian_offline_closeout_seal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/donchian_offline_views.py",
+      "sha256": "a57ac068e8cfa7118932a746958da67641e322a56e31e2a240e3005cef16a9ee",
+      "schema_version": "donchian_offline_closeout_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/DonchianOfflineEvidence.tsx",
+      "sha256": "c3adb8bcd27bb7c48c148b227520add1cd31cf4ececf1b4c0ee429a56bd77b26",
+      "schema_version": "donchian_offline_evidence_ui_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/ResearchRunDetails.tsx",
+      "sha256": "09c96a06ff4b8f2420453b927d8e4305b0b137d3f720cdb7661ac2646d753ab1",
+      "schema_version": "research_run_details_offline_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/v3-final-closeout-20260920.json",
+      "sha256": "818fb09b4d8056c65395e58e2b60cc5aa546c8f3a13f485fb6b7fd58771183a3",
+      "schema_version": "v3_final_closeout_matrix_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_donchian_offline_views.py backend/tests/test_offline_execution_views.py -q (21 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "node frontend/scripts/test-donchian-offline-evidence.mjs (3 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "node frontend/scripts/test-strategy-delivery-map.mjs (3 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint (passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build (passed; existing large-chunk warning)",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-final-closeout-20260920.md"
+    },
+    {
+      "command": "frontend/e2e/research-run-details.spec.ts (canonical main server required)",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/research-run-details.spec.ts"
+    }
+  ],
+  "blockers": [
+    "independent_source_review_pending",
+    "canonical_research_readonly_page_acceptance_pending"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

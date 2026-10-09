@@ -1,0 +1,130 @@
+{
+  "base_commit": "c17f15434c56562ad1da3b6905ffeff3280807b4",
+  "blockers": [
+    "owner:main_sync registered_main_not_advanced_to_integrated_head",
+    "owner:main_sync canonical_mocked_playwright_deferred_to_current_main_port_3000",
+    "owner:backend_operator backend_restart_required_after_integration_not_run_per_request",
+    "promotion_artifact_rebuild_required_by_unclassified_change_risk",
+    "integrator_lint_build_not_revalidated_in_sparse_worktree; producer_lint_build_evidence_retained",
+    "quality_checked_source_is_not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-08-18T03:39:21.558Z",
+  "deliverable_commit": "b3b1cc907eae5ebd726dd5af5bc87cc0aaf37180",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "crypto_workspace_storage_quota_safe_restore_v1",
+      "sha256": "8d91180167ac6975002a968fe8573d7ff3dc0c9de874ef1651dcb34f33025db4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_backtest_snapshot_pointer_v1",
+      "sha256": "c43f554547fa448d2601919f6b4b77c58aecca54b7421e1b888e4ddaea1c8502",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/user-backtest-strategy-catalog.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_storage_compaction_v1",
+      "sha256": "6a7c3bd611026abf1969c7d06d19fba3e243b0a2925fabf5194cf1713e99956e",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_editor_storage_quota_e2e_v1",
+      "sha256": "fb8c100ca89588e4a40d5f26f82793aa33e28131cc4dd2e37919df1a2ffd2ead",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "5e20835d3bc72d33067c614c9e0515925b17c8434b0d4f1e4a0a9b9df74fdeab",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-crypto-editor-quota-01-88a3ddfa0"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-crypto-editor-quota-01-b3b1cc907",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-crypto-editor-quota-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "published handoff.py validate; base→deliverable→handoff ancestry; 4/4 producer touch/blob SHA-256 matched",
+      "evidence_path": ".agent/handoffs/BTC-CRYPTO-EDITOR-QUOTA-01/published-btc-crypto-editor-quota-01-88a3ddfa0.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick deliverable 88a3ddfa0017da21361cc9db3ba899587331ed50 then published handoff ce9126fbb9892b4e8803000364d84fa2d321a946; zero conflicts",
+      "evidence_path": ".agent/handoffs/BTC-CRYPTO-EDITOR-QUOTA-01/published-btc-crypto-editor-quota-01-88a3ddfa0.json",
+      "result": "passed"
+    },
+    {
+      "command": "producer npm.cmd run lint",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "producer npm.cmd run build",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "Node compact write/read round-trip with omitted chart/diagnostics and simulated QuotaExceededError",
+      "evidence_path": "frontend/src/workspaces/crypto/user-backtest-strategy-catalog.ts",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/update-frontend-identity.mjs",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/check-frontend-identity.mjs; node scripts/test-frontend-identity.mjs (canonical=false; manifest_match=true; baseline_ancestor=true; dirty_paths=[]; object_targets=4)",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check c17f15434c56562ad1da3b6905ffeff3280807b4..b3b1cc907eae5ebd726dd5af5bc87cc0aaf37180",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "integrator npm.cmd run lint/build",
+      "evidence_path": "frontend/package.json",
+      "result": "not_run"
+    },
+    {
+      "command": "canonical mocked Playwright on registered main port 3000",
+      "evidence_path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CRYPTO-EDITOR-QUOTA-01",
+  "transition_for": "published-btc-crypto-editor-quota-01-88a3ddfa0"
+}

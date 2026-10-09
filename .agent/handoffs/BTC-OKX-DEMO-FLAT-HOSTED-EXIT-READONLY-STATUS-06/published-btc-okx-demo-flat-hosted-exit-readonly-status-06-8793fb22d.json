@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-flat-hosted-exit-readonly-status-06-8793fb22d",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-DEMO-FLAT-HOSTED-EXIT-READONLY-STATUS-06",
+  "domain": "btc",
+  "producer_role": "btc_developer",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-flat-hosted-exit-readonly-status-06",
+  "base_commit": "50559b7daf628eec28b0f830764729d4e8af0dc2",
+  "deliverable_commit": "8793fb22d350783fa5ead65a7d6c10f2f271d0c5",
+  "created_at": "2026-08-11T00:00:00Z",
+  "expires_at": "",
+  "consumer_roles": ["architect", "integrator"],
+  "depends_on": ["published-btc-okx-demo-flat-hosted-exit-binding-05-8245fde2e"],
+  "supersedes": [],
+  "transition_for": "",
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "type": "code",
+      "schema_version": "btc_okx_demo_flat_hosted_exit_binding_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "53fb5f106fbbc61cd014b3ef15754c53207a2235910aac8fbb41c2e705efe175"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "type": "test_evidence",
+      "schema_version": "btc_okx_demo_flat_hosted_exit_readonly_status_contract_tests_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "c854cc90552e42a6dc682cc2f6aa2a90e7f98b105c93702248fc65c5ad180b06"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py -k flat_hosted_exit_bundle",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'hosted_oco_terminal_exit or incident_recovery_already_flat'",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_private_ws.py",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_okx_demo_fault_drill.py && git diff --check",
+      "evidence_path": "quant_crypto/application/btc_okx_demo_fault_drill.py",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required:demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "runtime_must_still_reperform_fresh_private_rest_private_ws_funding_and_ledger_reconciliation",
+    "no_endpoint_or_secret_access_in_producer_validation",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "all_promotion_paper_live_private_order_real_order_transfer_withdraw_flags_remain_false"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "base_commit": "83e470404eed8f22f21fe2cddd685aae782b8f4c",
+  "blockers": [
+    "current_head_artifact_and_read_model_rebuild_required_after_integration",
+    "backend_restart_required_after_current_main_integration",
+    "current_main_domain_read_model_api_verification_required_after_rebuild",
+    "btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "btc_okx_native:effective_sample_regime_coverage_prereg_evidence_incomplete",
+    "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "btc_okx_native:25_hour_demo_observation_window_incomplete",
+    "btc_okx_native:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-29T05:38:23.197624Z",
+  "deliverable_commit": "f5aeb4c78068e48c83345e8a51195370356d820f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_read_model_dynamic_blockers_v1",
+      "sha256": "b1cdac93973696301907be17624c04d709056761de596c4513bf70ce24853f07",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_dynamic_gate_binding_v1",
+      "sha256": "b2c7f6815f72ef2cbb2179a6233bd954a49b2013bb938702e5a30b07611b7178",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_exact_blocker_contract_tests_v1",
+      "sha256": "070311a7a96547783c0f7efc5c4936236b6b0286804164a4206eb99cb897126b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_tamper_contract_tests_v1",
+      "sha256": "5f6fa4086b3a8c2cf9ee3fc71912f7cabf7bd43d0707af07d51ccd390259492a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_backend_dynamic_read_model_fixture_tests_v1",
+      "sha256": "2651702638a0e2d347a3a015c89ff75b2ef15920b6648831e50cbf12a59bd1b7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01-CORRECTION-02.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_promotion_gate_active_criteria_normalization_correction_02_v1",
+      "sha256": "c4be1c3f92139b52fab6e51f5963256496287da59e6ccd2391496c94190f68d9",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-promotion-gate-active-criteria-normalization-01-correction-02-f9d55767a"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-promotion-gate-active-criteria-normalization-01-correction-02-f5aeb4c7",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-gate-norm-corr02-int-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "pre-merge committed-object correction contract plus independent Gate/read-model canonical equality: exact ordered 7 blockers; 11 legacy stale blockers absent; 49 safety flags false",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "independent tamper matrix: missing/extra/change/reorder/duplicate/hash plus requested-head/pointer-batch/gate-file/gate-head/gate-batch all rejected fail-closed",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py -q -> 48 passed in 57.21s",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_authoritative_data_pointer.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_10s_microstructure_data_contract_report.py tests/contracts/test_btc_runtime_artifact_store.py -q -> 52 passed in 25.43s",
+      "evidence_path": "tests/contracts/test_btc_current_head_authoritative_data_pointer.py",
+      "result": "passed"
+    },
+    {
+      "command": "compileall correction Python touch set; parse btc_domain_read_model and two legacy schemas; git diff --check; static no REQUIRED/QUALITY_L2 import; legacy orchestrator/schema unchanged; published handoff valid",
+      "evidence_path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression not run; bounded promotion-evidence matrix used",
+      "evidence_path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01-CORRECTION-02.md",
+      "result": "not_run"
+    },
+    {
+      "command": "artifact publication, registered-main mutation, backend restart, browser E2E, network, credentials, private/order/paper/live actions not run",
+      "evidence_path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01-CORRECTION-02.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01",
+  "transition_for": "published-btc-promotion-gate-active-criteria-normalization-01-correction-02-f9d55767a"
+}

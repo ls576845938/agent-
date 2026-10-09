@@ -236,6 +236,176 @@ def test_tree_discovery_reuses_root_object_without_second_git_batch(monkeypatch)
     assert parse_calls == [root_raw]
 
 
+def test_tree_root_lookup_uses_captured_commit_specs_with_bounded_batch(monkeypatch) -> None:
+    refs = [
+        "agent/data_steward/one",
+        "agent/super_developer/two",
+        "main",
+    ]
+    shared_head = "1" * 40
+    main_head = "2" * 40
+    captured_heads = {
+        refs[0]: shared_head,
+        refs[1]: shared_head,
+        refs[2]: main_head,
+    }
+    shared_root = "a" * 40
+    main_root = "b" * 40
+    shared_raw = _raw_tree(("100644", "shared.json", "c" * 40))
+    main_raw = _raw_tree(("100644", "main.json", "d" * 40))
+    expected_specs = [
+        f"{shared_head}:{handoff_module.HANDOFF_ROOT.as_posix()}",
+        f"{shared_head}:{handoff_module.HANDOFF_ROOT.as_posix()}",
+        f"{main_head}:{handoff_module.HANDOFF_ROOT.as_posix()}",
+    ]
+    batch_calls: list[tuple[tuple[str, ...], dict[str, object]]] = []
+
+    def read_roots(repo_root, specs, **kwargs):
+        batch_calls.append((tuple(specs), kwargs))
+        return {
+            expected_specs[0]: (shared_root, "tree", shared_raw),
+            expected_specs[2]: (main_root, "tree", main_raw),
+        }
+
+    monkeypatch.setattr(handoff_module, "_git_batch_records", read_roots)
+    monkeypatch.setattr(
+        handoff_module,
+        "_git_batch_tree_objects",
+        lambda *args, **kwargs: pytest.fail("leaf roots must not trigger a child-tree batch"),
+    )
+
+    root_by_ref, parsed = handoff_module._git_tree_handoff_index(
+        Path("unused"),
+        refs,
+        captured_heads=captured_heads,
+        deadline=handoff_module.time.monotonic() + 1.0,
+    )
+
+    assert [call[0] for call in batch_calls] == [tuple(expected_specs)]
+    assert batch_calls[0][1]["max_single_bytes"] == handoff_module.MAX_DISCOVERY_MATERIALIZED_BYTES
+    assert batch_calls[0][1]["max_total_bytes"] == handoff_module.MAX_DISCOVERY_MATERIALIZED_BYTES
+    assert root_by_ref == {
+        refs[0]: shared_root,
+        refs[1]: shared_root,
+        refs[2]: main_root,
+    }
+    assert parsed == {
+        shared_root: [("100644", "shared.json", "c" * 40)],
+        main_root: [("100644", "main.json", "d" * 40)],
+    }
+
+
+@pytest.mark.parametrize(
+    ("header", "error"),
+    [
+        (b"malformed\n", "handoff_git_batch_object_invalid"),
+        ((b"g" * 40) + b" tree 0\n", "handoff_git_batch_object_invalid"),
+        ((b"a" * 40) + b" tree nope\n", "handoff_git_batch_size_invalid"),
+        ((b"a" * 40) + b" tree -1\n", "handoff_git_batch_size_invalid"),
+    ],
+)
+def test_captured_root_batch_rejects_malformed_headers(
+    monkeypatch,
+    header: bytes,
+    error: str,
+) -> None:
+    monkeypatch.setattr(
+        handoff_module,
+        "_run_git",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=0, stdout=header, stderr=b""),
+    )
+
+    with pytest.raises(handoff_module.HandoffError, match=error):
+        handoff_module._git_batch_records(
+            Path("unused"),
+            [f"{'1' * 40}:{handoff_module.HANDOFF_ROOT.as_posix()}"],
+            deadline=handoff_module.time.monotonic() + 1.0,
+        )
+
+
+def test_captured_root_lookup_preserves_missing_and_type_failures(monkeypatch) -> None:
+    ref = "agent/data_steward/one"
+    head = "1" * 40
+    spec = f"{head}:{handoff_module.HANDOFF_ROOT.as_posix()}"
+
+    monkeypatch.setattr(
+        handoff_module,
+        "_git_batch_records",
+        lambda *args, **kwargs: {spec: ("", "missing", None)},
+    )
+    roots, parsed = handoff_module._git_tree_handoff_index(
+        Path("unused"),
+        [ref],
+        captured_heads={ref: head},
+        deadline=handoff_module.time.monotonic() + 1.0,
+    )
+    assert roots == {}
+    assert parsed == {}
+
+    monkeypatch.setattr(
+        handoff_module,
+        "_git_batch_records",
+        lambda *args, **kwargs: {spec: ("a" * 40, "blob", b"{}")},
+    )
+    with pytest.raises(handoff_module.HandoffError, match="handoff_git_tree_root_invalid"):
+        handoff_module._git_tree_handoff_index(
+            Path("unused"),
+            [ref],
+            captured_heads={ref: head},
+            deadline=handoff_module.time.monotonic() + 1.0,
+        )
+
+
+def test_captured_root_materialization_honors_existing_byte_cap(monkeypatch) -> None:
+    refs = ["agent/super_developer/one", "agent/super_developer/two"]
+    captured_heads = {ref: f"{index + 1:040x}" for index, ref in enumerate(refs)}
+    root_id = "a" * 40
+    raw = _raw_tree(("100644", "event.json", "b" * 40))
+    output = (f"{root_id} tree {len(raw)}\n".encode("ascii") + raw + b"\n") * len(refs)
+    monkeypatch.setattr(
+        handoff_module,
+        "_run_git",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=0, stdout=output, stderr=b""),
+    )
+
+    monkeypatch.setattr(handoff_module, "MAX_DISCOVERY_MATERIALIZED_BYTES", len(raw) * len(refs) - 1)
+    with pytest.raises(handoff_module.HandoffError, match="handoff_discovery_materialized_bytes_exceeded"):
+        handoff_module._git_tree_handoff_index(
+            Path("unused"),
+            refs,
+            captured_heads=captured_heads,
+            deadline=handoff_module.time.monotonic() + 1.0,
+        )
+
+    monkeypatch.setattr(handoff_module, "MAX_DISCOVERY_MATERIALIZED_BYTES", len(raw) * len(refs))
+    roots, parsed = handoff_module._git_tree_handoff_index(
+        Path("unused"),
+        refs,
+        captured_heads=captured_heads,
+        deadline=handoff_module.time.monotonic() + 1.0,
+    )
+
+    assert len(roots) == len(refs)
+    assert list(parsed) == [root_id]
+
+
+def test_scan_fails_closed_when_captured_ref_changes(tmp_path: Path, monkeypatch) -> None:
+    repo, _, deliverable, _ = _repo(tmp_path)
+    initial = [{"branch": "agent/data_steward/dataset", "head": deliverable}]
+    changed = [{"branch": "agent/data_steward/dataset", "head": "f" * 40}]
+    snapshots = iter((initial, changed))
+    monkeypatch.setattr(handoff_module, "list_agent_ref_heads", lambda _: next(snapshots))
+    monkeypatch.setattr(handoff_module, "_merged_agent_refs", lambda *args, **kwargs: set())
+    monkeypatch.setattr(
+        handoff_module,
+        "_git_tree_handoff_index",
+        lambda *args, **kwargs: ({}, {}),
+    )
+
+    with pytest.raises(handoff_module.HandoffError, match="handoff_discovery_ref_heads_changed"):
+        scan_handoffs(repo, verify_git=False)
+
+
 def test_tree_discovery_groups_alias_root_users_without_reparsing(monkeypatch) -> None:
     root_id = "a" * 40
     blob_id = "b" * 40
@@ -684,6 +854,7 @@ def test_discovery_deduplicates_alias_refs_before_ref_cap(tmp_path: Path, monkey
         repo_root: Path,
         refs: list[str],
         *,
+        captured_heads,
         deadline: float,
         enforce_ref_cap: bool,
     ):
@@ -716,7 +887,7 @@ def test_discovery_keeps_ref_cap_for_distinct_commit_roots(tmp_path: Path, monke
     monkeypatch.setattr(
         handoff_module,
         "_git_tree_handoff_index",
-        lambda _, refs, *, deadline, enforce_ref_cap: (
+        lambda _, refs, *, captured_heads, deadline, enforce_ref_cap: (
             {
                 ref: f"{index + 1:040x}"
                 for index, ref in enumerate(refs)
@@ -750,6 +921,7 @@ def test_discovery_deduplicates_distinct_commit_heads_with_same_handoff_tree(tmp
         repo_root: Path,
         refs: list[str],
         *,
+        captured_heads,
         deadline: float,
         enforce_ref_cap: bool,
     ):
@@ -785,7 +957,7 @@ def test_full_scan_deduplicates_alias_refs_before_ref_cap(tmp_path: Path, monkey
     monkeypatch.setattr(
         handoff_module,
         "_git_tree_handoff_index",
-        lambda _, refs, *, deadline, enforce_ref_cap: (
+        lambda _, refs, *, captured_heads, deadline, enforce_ref_cap: (
             {ref: "1" * 40 for ref in refs if ref != "main"},
             {"1" * 40: [("100644", "event.json", "b" * 40)]},
         ),
@@ -826,7 +998,14 @@ def test_main_projection_covers_over_cap_merged_refs_and_preserves_observed_refs
     monkeypatch.setattr(handoff_module, "list_agent_ref_heads", lambda _: ref_heads)
     monkeypatch.setattr(handoff_module, "_merged_agent_refs", lambda *args, **kwargs: {item["branch"] for item in ref_heads})
 
-    def tree_index(repo_root: Path, refs: list[str], *, deadline: float, enforce_ref_cap: bool):
+    def tree_index(
+        repo_root: Path,
+        refs: list[str],
+        *,
+        captured_heads,
+        deadline: float,
+        enforce_ref_cap: bool,
+    ):
         roots = {"main": main_root}
         parsed = {
             main_root: [("40000", "covered", main_child)],
@@ -876,7 +1055,7 @@ def test_merged_projection_mismatch_is_not_dropped_and_still_hits_cap(
     monkeypatch.setattr(
         handoff_module,
         "_git_tree_handoff_index",
-        lambda _, refs, *, deadline, enforce_ref_cap: (
+        lambda _, refs, *, captured_heads, deadline, enforce_ref_cap: (
             {
                 item["branch"]: f"{index + 10000:040x}"
                 for index, item in enumerate(ref_heads)

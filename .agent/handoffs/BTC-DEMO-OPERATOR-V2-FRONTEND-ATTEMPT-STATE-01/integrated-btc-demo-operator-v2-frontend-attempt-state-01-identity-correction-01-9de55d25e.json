@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-v2-frontend-attempt-state-01-identity-correction-01-9de55d25e",
+  "ticket_id": "BTC-DEMO-OPERATOR-V2-FRONTEND-ATTEMPT-STATE-01-IDENTITY-CORRECTION",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-op-v2-id-corr-int-01",
+  "base_commit": "8c759c2998f81075984e38d7f642487bde09512c",
+  "deliverable_commit": "9de55d25e6aa7dcdbbaf42bf8f2ed6af60f47c42",
+  "created_at": "2026-08-24T14:09:31Z",
+  "expires_at": "",
+  "depends_on": ["integrated-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-d2942dd6"],
+  "supersedes": [],
+  "transition_for": "integrated-btc-demo-operator-v2-frontend-attempt-state-01-correction-01-d2942dd6",
+  "deliverables": [
+    {
+      "type": "document",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "f1fb87fba6b9e4826c7f1da91780fc2f7efa6f6dbbcebcc43317bf92838b5a45",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/update-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "baseline_commit=8c759c2998f81075984e38d7f642487bde09512c; fingerprint=f84e65c0252ffac0f8a0010c3457d0e2a73131ca92cee6275a6b1c81f342b70f; four object IDs generated"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "manifest_match=true; baseline_ancestor=true; canonical=false as expected in non-registered integrator worktree; dirty_paths=[]"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs",
+      "result": "failed",
+      "evidence_path": "expected non-canonical worktree guard; FRONTEND_CANONICAL_GUARD_FAILED fingerprint_or_object_ids_mismatch; no bypass"
+    },
+    {
+      "command": "node frontend/scripts/start-current-main.mjs --check",
+      "result": "failed",
+      "evidence_path": "expected integrator guard; FRONTEND_CANONICAL_GUARD_FAILED branch=agent/integrator/btc-demo-op-v2-id-corr-int-01, expected registered main worktree"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "zero diff-check errors; only normal LF/CRLF warning"
+    },
+    {
+      "command": "safe_status.py --path frontend/public/frontend-identity.json and ticket handoff directory",
+      "result": "passed",
+      "evidence_path": "integrator worktree scoped clean after commits"
+    },
+    {
+      "command": "registered-main canonical frontend identity/test/launcher and browser/service acceptance",
+      "result": "not_run",
+      "evidence_path": "deferred until main consumes identity correction; no service/browser/POST executed"
+    }
+  ],
+  "blockers": [
+    "canonical_identity_test_and_launcher_check_deferred_until_registered_main_consumes_identity_correction",
+    "backend_restart_and_current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_and_promotion_remains_blocked",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

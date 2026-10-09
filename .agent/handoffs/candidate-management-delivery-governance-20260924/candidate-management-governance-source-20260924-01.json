@@ -1,0 +1,50 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-management-governance-source-20260924-01",
+  "ticket_id": "candidate-management-delivery-governance-20260924",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-management-delivery-governance-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "c245b7f35f37c3e8941fd885c2617e2bc7a12f03",
+  "created_at": "2026-09-24T15:50:29.593Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/candidate-management-delivery-governance-20260924.md",
+      "sha256": "c486ec387d991c524106b4c925049b9ca8816cf407446bcb3463a05d87ace169",
+      "schema_version": "candidate_management_governance_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest new candidate management delivery, delivery_policy, research_release_policy, donchian_history_readonly_delivery: 78 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/candidate-management-delivery-governance-20260924.md"
+    }
+  ],
+  "blockers": [
+    "independent_governance_review_and_integration_pending",
+    "business_integration_and_readonly_publication_pending"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

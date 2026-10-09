@@ -1,0 +1,65 @@
+{
+  "base_commit": "e39ade587c4fdf3d92597bfe46d31be7336589cc",
+  "blockers": [
+    "promotion_paper_live_private_order_transfer_withdraw_real_order remain disabled by design"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-19T11:58:58Z",
+  "deliverable_commit": "8b7633e38f24209cbfeeb2979a0dbb7296cbc6ce",
+  "deliverables": [
+    {
+      "path": "design-qa.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_design_qa_v1",
+      "sha256": "957f537454d99cd5e11305798681506b3a52d697c62bddc5064a40386634b367",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "integrated-qs-strategy-modules-market-map-01-correction-01-3b72e2b4"
+  ],
+  "domain": "shared",
+  "event_id": "design-qa-qs-strategy-modules-market-map-01-correction-01-8b7633e3",
+  "event_type": "acknowledged",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/qs-strategy-modules-design-qa",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical mocked Playwright strategy-modules suite",
+      "evidence_path": "user-supplied canonical evidence: 6/6, US/CN switching, seven modules, POST=0, console errors=0",
+      "result": "passed"
+    },
+    {
+      "command": "visual comparison at 1488x1058",
+      "evidence_path": "reference, implementation, and side-by-side composite paths recorded in design-qa.md",
+      "result": "passed"
+    },
+    {
+      "command": "responsive 760x900 stacked contract",
+      "evidence_path": "user-supplied canonical Playwright evidence",
+      "result": "passed"
+    },
+    {
+      "command": "design-qa.md final result assertion",
+      "evidence_path": "design-qa.md final line is exactly final result: passed",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-MARKET-MAP-01-CORRECTION-01",
+  "transition_for": "integrated-qs-strategy-modules-market-map-01-correction-01-3b72e2b4"
+}

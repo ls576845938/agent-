@@ -1,0 +1,103 @@
+{
+  "base_commit": "606abda9a4b194490c1fd9ce5e963800b9d8cc79",
+  "blockers": [
+    "owner:main_sync integration_branch_not_integrated_into_registered_main",
+    "owner:runtime_operator backend_restart_required_after_registered_main_integration",
+    "owner:runtime_operator legacy_events_jsonl_129mb_preserved_not_migrated_not_deleted_first_recovery_remains_fail_closed",
+    "current_head_runtime_artifact_not_rebuilt_by_source_only_integration_ticket",
+    "quality_checked_source_integration_is_not_promotion_evidence_ready",
+    "promotion_paper_live_private_order_broker_transfer_withdraw_real_order_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-01T04:10:54Z",
+  "deliverable_commit": "f937a5045b269c50686dbbfde1909975be48eaeb",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "66d7eb53e2bd31bc50daa46fc33abb95f83a5f5703977375274c1f84aa62ff1a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "15b37d2170b2954ca2bc22e6f4cb3430f69cd837c42a1779bb98a5dc5acea14b",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-status-event-projection-01-c8df52cde"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-status-event-projection-01-f937a5045",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-status-event-projection-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <committed published event>",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-STATUS-EVENT-PROJECTION-01/published-btc-demo-status-event-projection-01-c8df52cde.json",
+      "result": "passed"
+    },
+    {
+      "command": "base/deliverable/final ancestry + exact 2-path diff + raw git cat-file blob SHA-256 audit [2/2 matched]",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-STATUS-EVENT-PROJECTION-01/published-btc-demo-status-event-projection-01-c8df52cde.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff bd335d476918394cde87b67815892e67eee2c744 [merge f937a5045b269c50686dbbfde1909975be48eaeb; zero conflicts]",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-STATUS-EVENT-PROJECTION-01/published-btc-demo-status-event-projection-01-c8df52cde.json",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:/tmp/integrate-btc-demo-status-event-projection-01-contracts-rerun [sandbox attempt: 6 passed, 25 setup errors, WinError 5 creating basetemp]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp C:/tmp/integrate-btc-demo-status-event-projection-01-contracts-approved -p no:cacheprovider -q [31 passed in 8.36s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest backend/tests/test_btc_demo_runtime_api.py [sandbox attempt: collection blocked by WinError 5 creating worktree logs]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "failed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest backend/tests/test_btc_demo_runtime_api.py --basetemp C:/tmp/integrate-btc-demo-status-event-projection-01-backend-api-approved -p no:cacheprovider -q [8 passed, 1 existing deprecation warning in 11.26s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 606abda9a4b194490c1fd9ce5e963800b9d8cc79 HEAD -- <approved source, test, and handoff paths>; scoped safe_status.py clean",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-STATUS-EVENT-PROJECTION-01/integrated-btc-demo-status-event-projection-01-f937a5045.json",
+      "result": "passed"
+    },
+    {
+      "command": "artifact rebuild; backend or Demo start/restart; secret/private/order/live/broker/transfer/withdraw actions",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-STATUS-EVENT-PROJECTION-01",
+  "transition_for": "published-btc-demo-status-event-projection-01-c8df52cde"
+}

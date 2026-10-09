@@ -1,0 +1,76 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-integration-receipt-head-binding-01-361a6340d",
+  "ticket_id": "US-IBKR-INTEGRATION-RECEIPT-HEAD-BINDING-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-integration-receipt-head-binding-01",
+  "base_commit": "1a473121375a858cd3822d0a6a15e6351e7961e9",
+  "deliverable_commit": "361a6340df014785475ae2e873eaa9e6f7b2f301",
+  "created_at": "2026-08-07T05:51:42Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-us-ibkr-realtime-paper-closed-loop-01-d5597210d"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/live/paper_runtime.py",
+      "sha256": "15bfdb4b2646024720c643b222e92b5cd942fc884c05200506016f4cd8b85e88",
+      "schema_version": "us_ibkr_integration_receipt_head_binding_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_closed_loop.py",
+      "sha256": "bcf2cec7ef3942b088f63eb82275ef099f9db097c37b5a0f363484ae19932102",
+      "schema_version": "us_ibkr_integration_receipt_head_binding_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/live/test_ibkr_paper_closed_loop.py --basetemp D:/vibe coding/Obsidian/量化系统/pytest-temp/us-ibkr-head-binding-producer-20260807a [13 passed in 9.51s]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_ibkr_paper_closed_loop.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_us/live/paper_runtime.py tests/live/test_ibkr_paper_closed_loop.py",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_runtime.py"
+    },
+    {
+      "command": "git diff --check and git diff --cached --check",
+      "result": "passed",
+      "evidence_path": "quant_us/live/paper_runtime.py"
+    }
+  ],
+  "blockers": [
+    "change_risk=unclassified;independent_integrator_required",
+    "deterministic_defect_fixed=handoff_deliverable_commit_cannot_self_reference_envelope_commit",
+    "accepted_binding=current_head_is_envelope_commit_and_first_parent_is_declared_deliverable_commit",
+    "stale_or_unrelated_envelope_remains_fail_closed",
+    "initial_scoped_dirty_paths=[];final_scoped_dirty_paths=[]",
+    "catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+    "registered_main_not_modified;no_gateway_network_secret_private_order_or_live_access",
+    "promotion_artifact_and_current_head_gate_read_model_not_rebuilt",
+    "paper_live_promotion_permissions_remain_false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

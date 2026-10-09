@@ -1,0 +1,104 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-domain-read-model-01-8908c809",
+  "ticket_id": "BTC-V3-DOMAIN-READ-MODEL-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator", "researcher"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-domain-read-model-01",
+  "base_commit": "92cc60334a5ae21bae904a5c23c9e45ca39045f9",
+  "deliverable_commit": "8908c809d67561b7e9abadf40cd959de3ca6bc2c",
+  "created_at": "2026-07-24T12:28:10Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-v3-nonflat-evidence-autocapture-01-goal7-batch-01"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_domain_read_model.py",
+      "sha256": "6b7e6bb0c9c1f8aef7f8d0f5596268d33d681c16bc986ba5580903ae8f07f325",
+      "schema_version": "btc_domain_read_model_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "sha256": "7bf7cf9f044d5d5b86939618387ffbfa1c463f3ffb93d4f98e24b6826e42e5c5",
+      "schema_version": "btc_domain_read_model_repository_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/btc_domain_read_model.py",
+      "sha256": "cb8684896ae2669f8b41ed0594abc315d420378875c729c94c88967f6ae1080c",
+      "schema_version": "btc_domain_read_model_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/btc_domain_read_model.schema.json",
+      "sha256": "ac5a1fce9d47782ca9f69acd78b89b4788da3e5121ca87577011de312f4af1a2",
+      "schema_version": "btc_domain_read_model_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "sha256": "a1852a2d2f4b13d6470b6785bb27b51ea852a99dc6a3fa32238e69eeb450f10b",
+      "schema_version": "btc_domain_read_model_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/handoffs/BTC-V3-DOMAIN-READ-MODEL-01.md",
+      "sha256": "70d9aa96463475242b44ea58ab06d0b803b36341f5cf737f856cb16b9fa35c09",
+      "schema_version": "btc_domain_read_model_delivery_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_domain_read_model.py -q -p no:cacheprovider --basetemp <unique>",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py"
+    },
+    {
+      "command": "py -3 -m pytest <related BTC and Team Context contracts plus nonexistent backend/tests/test_api_factory.py selector>",
+      "result": "failed",
+      "evidence_path": "docs/handoffs/BTC-V3-DOMAIN-READ-MODEL-01.md"
+    },
+    {
+      "command": "py -3 -m pytest <corrected related BTC and Team Context contracts> -q -p no:cacheprovider --basetemp <unique>",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-DOMAIN-READ-MODEL-01.md"
+    },
+    {
+      "command": "py -3 -m py_compile <four touched Python files>",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-V3-DOMAIN-READ-MODEL-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator shared_app_factory_read_model_router_wiring_required",
+    "owner:integrator team_context_btc_domain_read_model_candidate_wiring_required",
+    "owner:integrator approved_current_head_read_model_snapshot_materializer_required",
+    "owner:btc_observation current_natural_non_flat_sample_not_observed",
+    "owner:btc_operations private_ws_real_observation_not_authorized_or_missing",
+    "owner:data_steward immutable_l2_and_data_attestation_required",
+    "owner:architect manual_promotion_approval_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  }
+}

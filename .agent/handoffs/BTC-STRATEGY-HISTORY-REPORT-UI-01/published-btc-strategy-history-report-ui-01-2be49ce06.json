@@ -1,0 +1,182 @@
+{
+  "base_commit": "9e12931cdb07860528942ffb23d8885f772f22b3",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator external_btc_strategy_history_snapshot_not_published_on_fresh_runtime_root",
+    "owner:integrator current_main_backend_not_restarted_with_published_history_snapshot",
+    "owner:integrator real_frontend_to_fastapi_to_external_artifact_e2e_not_run_on_registered_current_main",
+    "validation_failed:npm_lint_wrapper_timed_out_without_diagnostics_direct_tsc_passed",
+    "validation_failed:compileall_could_not_write_worktree_pycache_pytest_imports_passed",
+    "quality_checked_read_only_history_feature_not_promotion_evidence",
+    "source_top5_report_is_research_only_and_historical_not_current_head_promotion_evidence",
+    "okx_native_cards_show_same_formula_historical_baseline_not_okx_native_backtest",
+    "paper_live_private_order_broker_transfer_withdraw_real_order_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-30T16:12:12Z",
+  "deliverable_commit": "2be49ce06326549e2040fc38ddd6b7976f39d494",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "backend_app_factory_btc_strategy_history_router_v1",
+      "sha256": "04b863b1709ceba524205da345989822c1e157ed6b640d52aa583a486a25a860",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_strategy_history.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_fastapi_v1",
+      "sha256": "0cda032f386d7c583cd92a8cb8510764fe3bc74b1510180079910e40ca39dddd",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_strategy_history_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_contract_tests_v1",
+      "sha256": "8249e4ccc5935bee3376c743b803522eebd51877d7a4c514928f3924bdb71e21",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_ui_e2e_v1",
+      "sha256": "2322ded459310c6f267a4217a7d21018dbad5dc23b3c2d4a4e03dc5280565384",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_ui_fixture_v1",
+      "sha256": "af5c57e81c84733f0ef3f902418b95ff817ed08e244b785410bfa3b983ce7d8d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_ui_styles_v1",
+      "sha256": "4c4b1c55af758e90da15ec3047a00abce04239c8c772030ad8ff0f9e1deb7950",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_workspace_v1",
+      "sha256": "b50ba3db4849ff519e73d0a3fff959406ca77bee8ff76f37abf8e587fa2fbed6",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_catalog_cards_v1",
+      "sha256": "80a5efb5dbf875091fdd71226630bcebe138e73831eb3eb0078f1a9ded915f4e",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_report_view_v1",
+      "sha256": "7eadd31d56ce32ac93fac0fcb2928d82327924608a3807c770c4860e4ddf54b3",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_backtest_identity_v2",
+      "sha256": "4537df9162e59a9903b299ab678ed40a652ba0d3f18e2d6016d4899d7818442f",
+      "type": "schema"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/strategy-history-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_frontend_contract_v1",
+      "sha256": "3aeaa8967815c1a789e10a2030453c536424230b73ee3144ea26c5256fc55eea",
+      "type": "schema"
+    },
+    {
+      "path": "quant_crypto/application/btc_strategy_history.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_snapshot_api_v1",
+      "sha256": "95c2c5d68820bfd6db730f8bc5456faea58e5a7c82d53309cbcc38d809a78ee2",
+      "type": "code"
+    },
+    {
+      "path": "scripts/publish_btc_strategy_history_snapshot.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_snapshot_publisher_cli_v1",
+      "sha256": "0b071f527514433493e07fd6c587d961cb4d416d09f8bcb588b80edfed3e86f8",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-strategy-history-report-ui-01-2be49ce06",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/btc-strategy-history-report-ui-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; & '<main>/.venv/Scripts/python.exe' -m pytest backend/tests/test_btc_strategy_history_api.py --basetemp '<main>/.tmp/btc-strategy-history-api-01i' -p no:cacheprovider -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false --incremental false",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "& '<main>/.venv/Scripts/python.exe' scripts/publish_btc_strategy_history_snapshot.py --help",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check -- <ticket touch set>",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "python -m compileall -q <ticket Python files>",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-HISTORY-REPORT-UI-01",
+  "transition_for": ""
+}

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Compression-Expansion Event-Ledger Attribution Report</title>
+  <style>
+    :root { --bg:#f5f7fa; --panel:#ffffff; --ink:#17202a; --muted:#5b6775; --line:#d8e0ea; --nav:#16253f; --bad:#a12622; --warn:#8b5a00; --ok:#146c43; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Arial, Helvetica, sans-serif; line-height:1.48; }
+    header { background:var(--nav); color:#fff; padding:24px 28px; }
+    main { max-width:1220px; margin:0 auto; padding:20px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:17px; margin-bottom:16px; }
+    h1 { margin:0 0 8px; font-size:25px; }
+    h2 { margin:0 0 12px; font-size:19px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
+    .metric { background:#fbfcfe; border:1px solid var(--line); border-radius:6px; padding:10px; }
+    .metric strong { display:block; color:var(--muted); font-size:12px; }
+    .metric span { display:block; margin-top:3px; font-size:19px; font-weight:700; }
+    .bad { color:var(--bad); } .warn { color:var(--warn); } .ok { color:var(--ok); }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    th,td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f7; border-radius:4px; padding:1px 4px; }
+    ul { margin-top:6px; }
+    li { margin:4px 0; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Compression-Expansion Event-Ledger Attribution Report</h1>
+  <div>Run ID: 20260516T133000Z_compression_expansion_eventledger</div>
+</header>
+<main>
+  <section>
+    <h2>Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+      <div class="metric"><strong>Gate Status</strong><span class="bad">candidate_gate_failed</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p><strong>compression-expansion failed event-ledger gate; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    <ul>
+      <li>Hypothesis layer passed, but canonical event-ledger candidate validation failed.</li>
+      <li>ordinary PF is diagnostic; promotion still uses event_PF, WF, and regime gates.</li>
+      <li>No parameter tuning, no paper review pending, no live state change.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Canonical Candidate Metrics</h2>
+    <div class="grid">
+      <div class="metric"><strong>ordinary PF</strong><span>1.564877</span></div>
+      <div class="metric"><strong>event_PF</strong><span class="bad">1.024100</span></div>
+      <div class="metric"><strong>Sharpe</strong><span>0.676500</span></div>
+      <div class="metric"><strong>MDD %</strong><span>-6.440000</span></div>
+      <div class="metric"><strong>Annual Turnover</strong><span>2.520337</span></div>
+      <div class="metric"><strong>WF Pass</strong><span class="bad">0.500000</span></div>
+      <div class="metric"><strong>Regime Pass</strong><span class="bad">0.285714</span></div>
+      <div class="metric"><strong>Fail Reasons</strong><span>event_profit_factor, walk_forward_pass_rate, regime_pass_rate</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Full Ledger vs Active Exposure</h2>
+    <table><thead><tr><th>scope</th><th>event_count</th><th>event_pf</th><th>positive_sum</th><th>negative_sum</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th></tr></thead><tbody><tr><td>full_ledger</td><td>20689</td><td>1.024076</td><td>3.6742676846</td><td>-3.5878849125</td><td>0.502973</td><td>4.1753e-06</td><td>0.0</td></tr><tr><td>active_exposure</td><td>3825</td><td>1.188471</td><td>0.9431585651</td><td>-0.7935901107</td><td>0.516601</td><td>3.91029e-05</td><td>1.12007e-05</td></tr><tr><td>inactive_or_unmapped</td><td>16864</td><td>0.977388</td><td>2.7311091195</td><td>-2.7942948018</td><td>0.499881</td><td>-3.7468e-06</td><td>0.0</td></tr></tbody></table>
+    <p>Active exposure event_PF is diagnostic only. Promotion uses full ledger event_PF from canonical event-ledger evidence, including all persisted equity events.</p>
+  </section>
+
+  <section>
+    <h2>Failed Fold 3/4 Autopsy</h2>
+    <table><thead><tr><th>fold_id</th><th>full_event_pf</th><th>active_event_pf</th><th>inactive_event_pf</th><th>worst_regimes</th><th>worst_age_buckets</th></tr></thead><tbody><tr><td>3</td><td>0.965506</td><td>1.183271</td><td>0.932117</td><td>[&quot;liquidation_shock&quot;, &quot;high_vol_trend&quot;, &quot;compression&quot;]</td><td>[&quot;25_36h&quot;, &quot;13_24h&quot;, &quot;7_12h&quot;]</td></tr><tr><td>4</td><td>0.97961</td><td>1.1596</td><td>0.913448</td><td>[&quot;liquidation_shock&quot;, &quot;trending_down&quot;, &quot;expansion&quot;]</td><td>[&quot;7_12h&quot;, &quot;25_36h&quot;, &quot;13_24h&quot;]</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Regime Drag</h2>
+    <p>Gate dragging regimes: <code>compression, expansion, high_vol_trend, mean_reverting_chop, trending_down</code></p>
+    <table><thead><tr><th>regime</th><th>event_count</th><th>event_pf</th><th>positive_sum</th><th>negative_sum</th><th>median_return</th></tr></thead><tbody><tr><td>liquidation_shock</td><td>39</td><td>0.0</td><td>0.0</td><td>-0.0635652931</td><td>-0.0011832248</td></tr><tr><td>trending_down</td><td>364</td><td>0.72982</td><td>0.0624547713</td><td>-0.0855756352</td><td>2.945e-07</td></tr><tr><td>low_vol_chop</td><td>749</td><td>1.020154</td><td>0.2038402418</td><td>-0.199813164</td><td>9.418e-06</td></tr><tr><td>mean_reverting_chop</td><td>507</td><td>1.109479</td><td>0.1154816109</td><td>-0.1040863094</td><td>-5.4062e-06</td></tr><tr><td>compression</td><td>712</td><td>1.141176</td><td>0.0700152184</td><td>-0.0613535459</td><td>8.4018e-06</td></tr><tr><td>expansion</td><td>48</td><td>1.524411</td><td>0.0247414567</td><td>-0.0162301706</td><td>3.79047e-05</td></tr><tr><td>trending_up</td><td>1385</td><td>1.764889</td><td>0.4550285399</td><td>-0.2578227649</td><td>6.05496e-05</td></tr><tr><td>high_vol_trend</td><td>21</td><td>2.254757</td><td>0.0115967261</td><td>-0.0051432275</td><td>0.0001241809</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Entry / Exit Timing Diagnostics</h2>
+    <p>Entry/exit hour is diagnostic only; no time-of-day rule is accepted without cross-fold evidence.</p>
+    <h3>Worst entry hours</h3>
+    <table><thead><tr><th>entry_hour_utc</th><th>trade_count</th><th>net_pnl</th><th>profit_factor</th><th>win_rate</th></tr></thead><tbody><tr><td>2</td><td>5</td><td>-843.131004</td><td>0.0</td><td>0.0</td></tr><tr><td>20</td><td>2</td><td>-1066.857356</td><td>0.0</td><td>0.0</td></tr><tr><td>8</td><td>1</td><td>-1155.489063</td><td>0.0</td><td>0.0</td></tr><tr><td>0</td><td>7</td><td>-1550.410548</td><td>0.289957</td><td>0.428571</td></tr><tr><td>18</td><td>5</td><td>-408.962572</td><td>0.50144</td><td>0.4</td></tr><tr><td>14</td><td>8</td><td>-800.03718</td><td>0.56321</td><td>0.375</td></tr><tr><td>21</td><td>3</td><td>-274.737294</td><td>0.706902</td><td>0.333333</td></tr><tr><td>17</td><td>4</td><td>-45.358579</td><td>0.924718</td><td>0.5</td></tr></tbody></table>
+    <h3>Holding bars</h3>
+    <table><thead><tr><th>holding_bars</th><th>trade_count</th><th>net_pnl</th><th>profit_factor</th><th>win_rate</th></tr></thead><tbody><tr><td>48</td><td>79</td><td>6913.228435</td><td>1.562242</td><td>0.531646</td></tr><tr><td>33</td><td>1</td><td>32.395365</td><td>999.0</td><td>1.0</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Fold / Regime Contract Audit</h2>
+    <div class="grid">
+      <div class="metric"><strong>Fold Contract</strong><span>pass</span></div>
+      <div class="metric"><strong>Regime Contract</strong><span class="bad">fail</span></div>
+      <div class="metric"><strong>Label Trimmed Rows</strong><span>48</span></div>
+      <div class="metric"><strong>Paper Review Rule</strong><span>True</span></div>
+    </div>
+    <table><thead><tr><th>fold_id</th><th>validation_start</th><th>validation_end</th><th>validation_rows</th><th>passed</th></tr></thead><tbody><tr><td>1</td><td>2024-10-14T09:00:00+00:00</td><td>2025-03-07T00:00:00+00:00</td><td>3448</td><td>True</td></tr><tr><td>2</td><td>2025-03-07T01:00:00+00:00</td><td>2025-07-28T16:00:00+00:00</td><td>3448</td><td>True</td></tr><tr><td>3</td><td>2025-07-28T17:00:00+00:00</td><td>2025-12-19T08:00:00+00:00</td><td>3448</td><td>False</td></tr><tr><td>4</td><td>2025-12-19T09:00:00+00:00</td><td>2026-05-12T00:00:00+00:00</td><td>3448</td><td>False</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>BTC Data / Fold / Regime Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>SQLite</strong><span class="ok">pass</span></div>
+      <div class="metric"><strong>Manifest Lineage</strong><span class="ok">pass</span></div>
+      <div class="metric"><strong>Regime Status</strong><span class="bad">fail</span></div>
+    </div>
+    <table><thead><tr><th>interval</th><th>status</th><th>row_count</th><th>expected_rows</th><th>missing_rows</th><th>manifest_status</th><th>data_version</th></tr></thead><tbody><tr><td>5m</td><td>pass</td><td>248257</td><td>248257</td><td>0</td><td>pass</td><td>qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5</td></tr><tr><td>15m</td><td>pass</td><td>82753</td><td>82753</td><td>0</td><td>pass</td><td>qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4</td></tr><tr><td>1h</td><td>pass</td><td>20689</td><td>20689</td><td>0</td><td>pass</td><td>qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31</td></tr><tr><td>4h</td><td>pass</td><td>5172</td><td>5172</td><td>0</td><td>pass</td><td>qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d</td></tr><tr><td>1d</td><td>pass</td><td>862</td><td>862</td><td>0</td><td>pass</td><td>qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Repairability Decision</h2>
+    <p>Conclusion: <strong>not_yet_fixable_without_more_evidence</strong></p>
+    <table><thead><tr><th>fold_3_4_have_single_shared_failure_pattern</th><th>shared_worst_regimes_across_failed_folds</th><th>do_not_parameter_tune_to_pass</th><th>recommended_next_step</th></tr></thead><tbody><tr><td>False</td><td>[]</td><td>True</td><td>Run rule ablations only if they target shared failed-fold/regime evidence; otherwise archive the skeleton and move to liquidation-shock recovery.</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Artifacts</h2>
+    <ul>
+      <li><code>artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/compression_expansion_failure_mode_report.json</code></li>
+      <li><code>artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/fold_regime_contract_audit.json</code></li>
+      <li><code>artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/btc_data_fold_regime_status_report.json</code></li>
+      <li><code>artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/event_ledger_attribution_report.json</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <table><thead><tr><th>command</th><th>result</th></tr></thead><tbody><tr><td>PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_artifacts.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py tests/research/test_ci_evidence_gate_workflow.py tests/research/test_btc_hypothesis_lab_config_schema.py tests/research/test_compression_expansion_distribution_report.py tests/reports/test_hypothesis_lab_html_generation.py -q</td><td>15 passed in 1.14s</td></tr><tr><td>PYTHONPATH=. pytest tests/research/test_btc_hypothesis_lab_config_schema.py tests/research/test_btc_data_fold_regime_status_report.py tests/research/test_btc_fold_regime_contract_audit.py tests/research/test_compression_expansion_distribution_report.py tests/research/test_compression_expansion_event_ledger_artifacts.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py tests/research/test_compression_expansion_failure_mode_report.py tests/research/test_ci_evidence_gate_workflow.py tests/reports/test_compression_expansion_eventledger_attribution_html.py tests/reports/test_hypothesis_lab_html_generation.py -q</td><td>26 passed in 1.28s</td></tr><tr><td>PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_validation.py -q</td><td>8 passed in 1.71s</td></tr><tr><td>PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_validation.py -q</td><td>8 passed in 1.75s</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Final Decision</h2>
+    <p><strong>compression-expansion failed event-ledger gate; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+  </section>
+</main>
+</body>
+</html>

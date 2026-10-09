@@ -1,0 +1,115 @@
+{
+  "base_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_okx_selected_bundle_dir_missing",
+    "btc_okx_ws_collector_dependency_missing:websocket",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "l2_artifact_source_head_mismatch",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "current_head_gate_artifacts_not_rebuilt_at_deliverable_commit"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-26T15:44:14Z",
+  "deliverable_commit": "49811621d3095ff2da0c84847124c4076313e097",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "1fdac7d8ad027650dde5319114c1f3d832ed35643472aaf80d17ffa0c1d18fe6",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "8ea79488adf391698622caab03fe1eec4cc8151f796c68b4313ecd94d4015de1",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b/btc_okx_l2_blocked_attestation.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_l2_blocked_attestation_v1",
+      "sha256": "94a21f5cdaa4fa41a894bb0c8ec8ad63b80fb0d1b06823adfbaa055fa162af0f",
+      "type": "report"
+    },
+    {
+      "path": ".agent/data_manifests/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/publication_attestation.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_real_data_evidence_publication_attestation_v1",
+      "sha256": "0f6d2f7b05c66bae2b30e06de462a6b8d9454b78187a78b3428eb61349dc4131",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-v3-current-main-forwardport-successor-05-8adf033a2"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-real-data-evidence-publication-01-49811621d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/btc-v3-real-data-evidence-publication-01",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <kline-manifest>",
+      "evidence_path": ".agent/data_manifests/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-src11278c46327f-main97d6448b.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <l2-blocked-manifest>",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b.json",
+      "result": "passed"
+    },
+    {
+      "command": "jsonschema Draft202012 validation of the published Kline attestation",
+      "evidence_path": ".agent/data_manifests/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/publication_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <unique-system-temp> tests/agent_governance/test_shared_data.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py -q (135 passed in 7.03s)",
+      "evidence_path": ".agent/data_manifests/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/publication_attestation.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/fetch_btc_okx_public_ws_l2_raw_capture.py --repo-root . --bundle-dir <task-unique-segment-dir> --capture-report <task-unique-report> --execute-network --duration-seconds 30 --max-messages 2000 --channels books --recv-timeout-seconds 5 --forced-reconnect-after-messages 0",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b/btc_okx_l2_blocked_attestation.json",
+      "result": "failed"
+    },
+    {
+      "command": "30-natural-day real timestamp-aligned OKX L2 collection and immutable replay export",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/evidence/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b/btc_okx_l2_blocked_attestation.json",
+      "result": "not_run"
+    },
+    {
+      "command": "current-HEAD promotion/paper/live gate artifact rebuild",
+      "evidence_path": ".agent/data_manifests/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/publication_attestation.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01",
+  "transition_for": ""
+}

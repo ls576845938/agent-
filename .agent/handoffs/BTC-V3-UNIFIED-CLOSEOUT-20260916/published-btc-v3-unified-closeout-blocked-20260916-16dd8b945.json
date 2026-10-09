@@ -1,0 +1,50 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-unified-closeout-blocked-20260916-16dd8b945",
+  "ticket_id": "BTC-V3-UNIFIED-CLOSEOUT-20260916",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["architect", "integrator", "researcher"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-unified-closeout-20260916",
+  "base_commit": "95b0ab4c406f6d85e83d1bcb21b618d129015fd5",
+  "deliverable_commit": "16dd8b94512aa724afddc24a03a52c9c52076390",
+  "created_at": "2026-09-16T13:16:49Z",
+  "expires_at": "",
+  "depends_on": ["rejected-strategy-v3-qlib-offline-final-review-20260916-934966cfb"],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "code", "path": "quant_crypto/application/qlib_offline_replay.py", "sha256": "6bc64933010dfd91bd01cdbf4680df0a381c3193f689bbf4149ae2939bea4df7", "schema_version": "strategy_v3_offline_blocked_candidate_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_strategy_v3_qlib_offline.py", "sha256": "c0ef78b79640a044c4e5a3e824866d5d5911c3f17a54789a7a7edba8fe266d36", "schema_version": "strategy_v3_offline_contract_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "tests/contracts/test_strategy_v3_unified_closeout.py", "sha256": "19b05f7cff37ecd4a57afbf9d335970dd1823de91b363aea37e3ae6390d2c380", "schema_version": "strategy_v3_unified_closeout_tests_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": "tests/fixtures/strategy_v3/offline_contract.json", "sha256": "4e5cc459949ba68768fe50502fc22ce598140d9bc701c90bbcbad7143e738aa2", "schema_version": "strategy_v3_qlib_offline_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "document", "path": "docs/architecture/strategy-admission-v3.md", "sha256": "99e5460c4055f76552cbf89b158e5e8edf8c72801feacad58d77b304e029cf42", "schema_version": "strategy_v3_qlib_offline_architecture_v2", "readiness_class": "quality_checked"},
+    {"type": "report", "path": "docs/operations/strategy-v3-unified-closeout-20260916.md", "sha256": "8b7643c2eff1eb660e200e3136e051c307aeb25fc2c495e3111ed30cfc44dc10", "schema_version": "strategy_v3_unified_closeout_blocked_report_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "python -m compileall -q quant_crypto/application/qlib_offline_replay.py tests/contracts/test_strategy_v3_qlib_offline.py tests/contracts/test_strategy_v3_unified_closeout.py", "result": "passed", "evidence_path": "docs/operations/strategy-v3-unified-closeout-20260916.md"},
+    {"command": "pytest -q tests/contracts/test_strategy_v3_qlib_offline.py tests/contracts/test_strategy_v3_unified_closeout.py --junitxml system-temp/v3-unified-closeout-20260916.xml", "result": "failed", "evidence_path": "docs/operations/strategy-v3-unified-closeout-20260916.md"},
+    {"command": "pytest -q tests/contracts/test_strategy_v3_qlib_offline.py -k explicit_nonzero_fixture_uses_existing_oms_ledger_and_survives_restart --junitxml system-temp/v3-unified-targeted-recovery-2-20260916.xml", "result": "failed", "evidence_path": "docs/operations/strategy-v3-unified-closeout-20260916.md"},
+    {"command": "full matrix against deliverable commit 16dd8b94512aa724afddc24a03a52c9c52076390", "result": "not_run", "evidence_path": "docs/operations/strategy-v3-unified-closeout-20260916.md"}
+  ],
+  "blockers": [
+    "owner:btc_developer V3 continuous fixture restart remains blocked by qlib_offline_maintenance_expired after previous recorded simulated dead-man ACK; original 30s gate and Guardian remain unchanged",
+    "owner:integrator independent safety review may inspect this blocked source candidate but must not integrate or publish it as V3 passed",
+    "owner:architect next bounded repair of offline restart/maintenance time facts requires separate decision; no automatic producer continuation",
+    "owner:research frozen 1392-row candidate remains zero-approved/zero-fill with negative IC and no_simulated_fills; no candidate effectiveness or promotion inference",
+    "owner:release main merge, service restart, UI and Demo/paper/live publication were not performed; fixed CLI was not independently accepted",
+    "safety: source-only attestation - no private, exchange, broker, network, real order or secret access; runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all remain false",
+    "governance: initial scoped dirty paths empty; final scoped dirty paths clean before handoff; no overlapping writer changes overwritten; base 95b0ab4c406f6d85e83d1bcb21b618d129015fd5; catalog sha256 6ea783731473604875c962acc6338fd868f95b13e2230d62254ef79c0a67f3af"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

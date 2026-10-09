@@ -1,0 +1,66 @@
+{
+  "base_commit": "4c4026aa0f82f763537a883e42fd708285d252f6",
+  "blockers": [
+    "independent_integrator_required:change_risk=demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt:demo_runtime_guard_only",
+    "demo_restart_pending_after_current_main_rebind"
+  ],
+  "consumer_roles": ["integrator", "architect"],
+  "created_at": "2026-08-06T15:42:00Z",
+  "deliverable_commit": "02cb0b2157275e85c74ef79b4f9244025a47910b",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_clock_offset_capture_v1",
+      "sha256": "3176da5ec55dae0c718e121ec87b88d4b5a7bf4b453eafdaf78ae05643a3d8d6",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_clock_offset_capture_contract_v1",
+      "sha256": "4d60c1b5994b6a3aa6cfb32c9f327a3a2dfaa8911df8edc7155310bff97ab997",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-clock-offset-capture-01-9ad300583",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-clock-offset-capture-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": ["published-btc-demo-clock-offset-capture-01-0972f9515"],
+  "tests": [
+    {
+      "command": "preflight: base=4c4026aa0f82f763537a883e42fd708285d252f6; initial scoped dirty paths=clean; change_risk=demo_execution_semantics; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/btc_developer_pitfalls.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k clock_guard",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-CLOCK-OFFSET-CAPTURE-01",
+  "transition_for": ""
+}

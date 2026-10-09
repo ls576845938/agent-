@@ -1,0 +1,95 @@
+{
+  "base_commit": "85b38810c96038ee5b787e64c781b88490ab7c51",
+  "blockers": [
+    "owner:integrator independent_frontend_integration_required_for_unclassified_change_risk",
+    "owner:integrator canonical_registered_main_strategy_modules_visual_playwright_and_design_qa_pending",
+    "owner:policy producer_worktree_frontend_preview_prohibited",
+    "owner:policy promotion_artifact_and_read_model_not_rebuilt",
+    "owner:policy backend_restart_not_performed_in_frontend_only_producer_scope",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-19T11:05:00Z",
+  "deliverable_commit": "9bcddafd4474eaf99fdc4afa1ff163d94d3f38fe",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_visual_map_v2",
+      "sha256": "f35bd5ae284ef65e6df0189bebd3f5a13c77c8106bc348b433bfc5b949f54cac",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_visual_styles_v2",
+      "sha256": "b0f8e0edc786392cfc755a57052a6776b698105207cce2912aa1b67ecf72d266",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_visual_contract_v2",
+      "sha256": "8874ca729d446b49858b3a868fd07e08a40baeff072a6d5f6c17d966632d298b",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-qs-strategy-modules-market-map-01-edb4d0300"
+  ],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-market-map-01-correction-01-9bcddafd4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-modules-market-map-01-correction-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "producer sparse worktree; temporary registered-main dependency junction removed",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "producer sparse worktree; existing large-chunk warning only",
+      "result": "passed"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/strategy-modules.spec.ts --list --config playwright.config.ts",
+      "evidence_path": "6 tests collected; --list only, no webServer started",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json unchanged; manifest_match=true",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "evidence_path": "declared correction touch set",
+      "result": "passed"
+    },
+    {
+      "command": "canonical registered-main Playwright execution and visual QA",
+      "evidence_path": "deferred_to_integrated_current_main; producer worktree must not start frontend",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-MARKET-MAP-01-CORRECTION-01",
+  "transition_for": ""
+}

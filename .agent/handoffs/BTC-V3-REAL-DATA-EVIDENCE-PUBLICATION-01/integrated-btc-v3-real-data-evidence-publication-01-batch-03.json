@@ -1,0 +1,60 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-real-data-evidence-publication-01-batch-03",
+  "ticket_id": "BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-dataready-fix-batch-03",
+  "base_commit": "57055c7a1161c3a96b9ab69525ff7709b4b2458c",
+  "deliverable_commit": "5b2960901d93987521e241090b32dca2ece61b91",
+  "created_at": "2026-07-26T17:16:47Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-real-data-evidence-publication-01-49811621d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-real-data-evidence-publication-01-49811621d",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "producer envelope validation plus four committed deliverable SHA-256 checks",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/published-btc-v3-real-data-evidence-publication-01-49811621d.json"
+    },
+    {
+      "command": "HEAD L2 blocked manifest default full-hash read-only resolve",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b.json"
+    },
+    {
+      "command": "exact selector report retained the eight original L2 blockers and resolved_path empty",
+      "result": "passed",
+      "evidence_path": ".agent/data_manifests/BTC-V3-REAL-DATA-EVIDENCE-PUBLICATION-01/publication_attestation.json"
+    }
+  ],
+  "blockers": [
+    "historical_kline_manifest_retained_for_superseded_audit_only",
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "promotion_paper_live_private_order_broker_withdraw_secret_demo_paper_queue_real_order_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

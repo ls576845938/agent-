@@ -37,7 +37,7 @@ def test_public_connection_respects_proxy_bypass(monkeypatch):
     assert calls == [{"timeout": 5}]
 
 
-@pytest.mark.parametrize("proxy", ["socks5://127.0.0.1:12334", "http://user:password@localhost:12334", "http://"])
+@pytest.mark.parametrize("proxy", ["socks5://127.0.0.1:12334", "REDACTED_SENSITIVE_PATTERNlocalhost:12334", "http://"])
 def test_public_proxy_rejects_unsupported_configuration_without_connecting(monkeypatch, proxy):
     monkeypatch.setattr(proxy_request, "getproxies", lambda: {"https": proxy})
     monkeypatch.setattr(proxy_request, "proxy_bypass", lambda host: False)

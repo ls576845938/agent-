@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "rejected-btc-candidate-offline-entry-20260925-47a2dca48",
+  "ticket_id": "INTEGRATE-BTC-CANDIDATE-OFFLINE-ENTRY-20260925",
+  "event_type": "rejected",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/integrate-btc-candidate-offline-entry-20260925",
+  "base_commit": "c3a6fb0bd4e06ebcfa8e42b0090617796f5f729a",
+  "deliverable_commit": "47a2dca48d6ff159729cf0b1ea9c063d3eac5bed",
+  "created_at": "2026-09-25T08:23:02.910Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-candidate-offline-entry-20260925-82cb044ed",
+    "published-btc-candidate-package-runtime-20260925-3950f16ca",
+    "acknowledged-btc-candidate-offline-entry-upstream-20260925"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-candidate-offline-entry-20260925-82cb044ed",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/integration_reviews/btc-candidate-offline-entry-20260925.md",
+      "sha256": "6e61fbd211dc8fc4bbaa84b2ff89c2a9c25baaa997c93880af84f3f69c51dd59",
+      "schema_version": "btc_candidate_offline_entry_independent_review_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate for producer, upstream package, and upstream acknowledgement; ancestry and 32 Git-object SHA-256 checks; 34 explicit scoped initial dirty checks",
+      "result": "passed",
+      "evidence_path": "docs/integration_reviews/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "canonical .venv Python -B -X utf8 pytest -q --tb=short -p no:cacheprovider with external basetemp tests/contracts/test_candidate_offline_access.py tests/cli/test_candidate_offline_cli.py",
+      "result": "passed",
+      "evidence_path": "10 passed, 3 warnings in 49.80s after read-only canonical node_modules linkage; initial environment-only run was 9 passed, 1 esbuild MODULE_NOT_FOUND failure in 53.83s; docs/integration_reviews/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "node canonical frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "exit 0; docs/integration_reviews/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "independent exact-source static review plus read-only in-memory wrong-identity projection probe",
+      "result": "failed",
+      "evidence_path": "self-hash-valid result accepted=true for wrong job_id, source_head, execution_head, input_revision_id, and input_head; backend/app/services/candidate_offline_views.py:9; backend/app/services/candidate_offline_service.py:79; docs/integration_reviews/btc-candidate-offline-entry-20260925.md"
+    },
+    {
+      "command": "A full offline-entry and registered-execution contracts; C four-case lifecycle; D package/runtime/inference, legacy V0/V1/Qlib/V3 and IOC/OMS compatibility groups",
+      "result": "not_run",
+      "evidence_path": "stopped failure-first after reproducible P1; producer results not promoted to independent evidence"
+    }
+  ],
+  "blockers": [
+    "owner:super_developer P1 result projections are not bound to full job/source/input/execution/account/runtime identity; a self-consistent wrong or stale projection can pass service.result",
+    "owner:super_developer add regression coverage rejecting recomputed-self-hash wrong job_id/source_head/execution_head/input_revision_id/input_head and publish a new committed source plus append-only superseding handoff",
+    "owner:integrator resume this ticket failure-first only after the corrected committed handoff; A/C/D remain independently unverified for source 82cb044ed9eaa2e7619d3ada5639f3bc5a96c091",
+    "owner:factory_evidence real frozen candidate and observation qualification remains absent; synthetic fixture results are not real-market or promotion evidence",
+    "owner:capability protection trigger execution and registered-envelope legal partial opening remain explicitly unsupported",
+    "owner:release no main integration, deployment, backend restart, canonical browser acceptance, current-HEAD artifact rebuild, promotion, paper, private, order, or live enablement"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

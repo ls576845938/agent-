@@ -1,0 +1,107 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-p0-protection-ack-empty-failcode-04-6aa275a32",
+  "ticket_id": "BTC-OKX-P0-PROTECTION-ACK-EMPTY-FAILCODE-04",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-p0-protection-ack-empty-04",
+  "base_commit": "37aefaaef88ff3446f97c196d7062be6f9e10ade",
+  "deliverable_commit": "6aa275a328bee2279b7e12e8144937c05a365b21",
+  "created_at": "2026-08-05T17:44:28Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-p0-protection-ack-empty-failcode-04-correction-01-3a64a13aa",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "a06949cc37b7ff63aec8eba08152bbc3d69e271427572d3524fd211b052b5d59",
+      "schema_version": "btc_okx_demo_paper_runtime_protection_ack_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "94614ae8d2aaf95369dff9200b22ccc324bd826ce2d479fb945c59a4626c77e6",
+      "schema_version": "btc_okx_demo_paper_runtime_protection_ack_contract_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published-correction-envelope> [status=valid; ancestry, supersedes, and raw Git blob SHA-256 matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-PROTECTION-ACK-EMPTY-FAILCODE-04/published-btc-okx-p0-protection-ack-empty-failcode-04-correction-01-3a64a13aa.json"
+    },
+    {
+      "command": "base 37aefaae source archive + producer test overlay; empty failCode exact-live-OCO instance [1 failed as expected with parent_reports_failure]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_attached_protection_accepts_empty_parent_fail_code_only_with_empty_reason_and_exact_live_oco -q --basetemp <unique-external-temp> [1 passed in 1.79s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q -k attached_protection --basetemp <unique-external-temp> [20 passed, 126 deselected in 1.24s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-external-temp> [204 passed in 17.38s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "in-process fake attached protection parent matrix for empty failCode with missing, None, unknown, nonempty, and non-scalar failReason [6 fail-closed cases passed; no client call]",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "AST source equality for _submit_order_plan, _assert_order_submit_path, and _order_submit_authorization_fence between base and corrected deliverable [all equal]",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 37aefaaef88ff3446f97c196d7062be6f9e10ade 6aa275a328bee2279b7e12e8144937c05a365b21 -- <approved-touch-set>",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "network, secret, Demo/private/order/live/transfer/withdraw endpoint, service start, artifact/manifest/ledger build, refs/heads/main fast-forward",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_sync integrated_commit_not_fast_forwarded_to_refs_heads_main",
+    "owner:backend_operator backend_restart_required_after_main_sync",
+    "owner:btc_operations current_demo_nonflat_protected_position_requires_authorized_recovery_before_further_drills",
+    "owner:architect promotion_evidence_not_rebuilt_or_unlocked",
+    "owner:btc_operations private_order_live_endpoint_validation_not_authorized_or_run",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

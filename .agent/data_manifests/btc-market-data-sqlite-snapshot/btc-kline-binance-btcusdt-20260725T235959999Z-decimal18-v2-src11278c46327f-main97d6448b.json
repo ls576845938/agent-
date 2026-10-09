@@ -1,0 +1,64 @@
+{
+  "aggregate_sha256": "e000f25f293c688a14f1cbe43d1eb0e4ef182f25c264e8dea8d90578cc9cd8a4",
+  "blockers": [
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_kline_dataready_not_promotion_evidence"
+  ],
+  "coverage": {
+    "end": "2026-07-25T23:59:59.999000Z",
+    "start": "2024-01-01T00:00:59.999000Z"
+  },
+  "data_schema": "btc_kline_dataready_attestation_v1",
+  "dataset_id": "btc-market-data-sqlite-snapshot",
+  "dataset_version": "btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b",
+  "file_count": 5,
+  "files": [
+    {
+      "bytes": 11898,
+      "path": "btc_kline_dataready_attestation.json",
+      "sha256": "a380d7692540ff60e7168e6046dc87905121455b510a3d9c2550647e2d75a998"
+    },
+    {
+      "bytes": 32581440,
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=15m/part-00000.jsonl",
+      "sha256": "5ba7735c50cb6e4563e1bea8808db39f3a580bde79587899cbe67e87ccb9722f"
+    },
+    {
+      "bytes": 8103772,
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=1h/part-00000.jsonl",
+      "sha256": "6e2f572e282ec7f004148cb988e44fd48a83146dfffbdd93261e8b48fa7dc261"
+    },
+    {
+      "bytes": 482623049,
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=1m/part-00000.jsonl",
+      "sha256": "ecee4c3d2d8eb13d6686eea82fa3776cff5687d21f3f431b2918f44ee26aaf3f"
+    },
+    {
+      "bytes": 97280364,
+      "path": "exchange=binance_spot/symbol=BTCUSDT/interval=5m/part-00000.jsonl",
+      "sha256": "d1c6b3da7c051d39906090189f09cbbf1d22fefa55d2c9dc01c15a33c69dd261"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "excluded_non_required:binance_spot:BTCUSDT:4h",
+    "excluded_non_required:binance_spot:BTCUSDT:1d",
+    "excluded_non_required:coinbase_spot:BTCUSD:1m"
+  ],
+  "producer_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "producer_role": "data_steward",
+  "published_at": "2026-07-26T16:18:57Z",
+  "quality_status": "pass",
+  "readiness_class": "quality_checked",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/btc-market-data-sqlite-snapshot/btc-kline-binance-btcusdt-20260725T235959999Z-decimal18-v2-src11278c46327f-main97d6448b",
+  "total_bytes": 620600523
+}

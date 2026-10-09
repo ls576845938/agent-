@@ -1,0 +1,118 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-offline-safety-closeout-20260913-eae602f3e",
+  "ticket_id": "BTC-OFFLINE-SAFETY-CLOSEOUT-20260913",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-offline-safety-closeout-20260913",
+  "base_commit": "bce2bdca83506413fcced3028b78e07fce19fbd3",
+  "deliverable_commit": "eae602f3edda9f1e986451ca024d58d5d5459de9",
+  "created_at": "2026-09-12T20:30:56Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/btc_demo_production_composition.py",
+      "sha256": "0f2dfad33e3845aa874fd96e2b5c6f6ba6d5ddbf129866715b557c1169e3a803",
+      "schema_version": "btc_demo_production_composition_t2_protection_safety_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_crypto/application/runtime_risk_guardian.py",
+      "sha256": "904bdfcfee1cf8296fef6c2af3ec2f37950b248eb6d0a70e68d5d376a82e753e",
+      "schema_version": "btc_runtime_guardian_drawdown_fact_safety_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_demo_production_composition.py",
+      "sha256": "87e732be3bea288253ddc4de67d62bd4d116e4c69152b11855043a4ebda7e1ed",
+      "schema_version": "btc_demo_production_composition_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_shared_platform_v3_guardian_latch.py",
+      "sha256": "1be04ca717a70cb01e59c00dbae1b229dd22b23af5a2c12c803d590d6241ad89",
+      "schema_version": "btc_runtime_guardian_latch_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_m1_btc_behavior_freeze.py",
+      "sha256": "fbea1e54c2c0003256d9a9ccec8b1460e0925c103a374794ee90624ebfeb8885",
+      "schema_version": "m1_historical_freeze_post_m1_safety_delta_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_offline_strategy_safety_acceptance.py",
+      "sha256": "cba68efa1b324dd635bc89aa43d025fecc03ffd8cda0d7f019640434493c5be2",
+      "schema_version": "btc_offline_same_decision_engineering_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/btc-offline-safety-closeout-20260913.md",
+      "sha256": "1ae286886d2df768576fc88b17c01e3ef5bca858ed6e84404005d0fa0225188c",
+      "schema_version": "btc_offline_safety_closeout_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <2 protection/guardian failure-first tests>",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/btc-offline-safety-closeout-20260913.md"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider <2 protection/guardian targeted test groups>",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-offline-safety-closeout-20260913.md"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py tests/contracts/test_m1_btc_behavior_freeze.py tests/contracts/test_btc_offline_strategy_safety_acceptance.py",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/btc-offline-safety-closeout-20260913.md"
+    },
+    {
+      "command": "git diff --check -- <declared touch set>",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "full repository, frontend, service, network, private/order/live validation",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/btc-offline-safety-closeout-20260913.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:btc_runtime_authoritative_drawdown_fact_source_missing_new_risk_remains_fail_closed_drawdown_unknown",
+    "engineering_fixture_only_not_default_strategy_historical_open_to_exit_profitability_evidence",
+    "offline_funding_ledger_recalculation_not_runtime_store_commit_ledger_uow_persistence_crash_recovery_or_exchange_reconciliation",
+    "acceptance_assembled_audit_dag_not_production_automated_artifact_publication",
+    "guardian_latch_persistence_missing_and_execution_permission_false",
+    "m3_m4_not_started",
+    "promotion_paper_live_private_order_network_secret_actions_remain_disabled"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

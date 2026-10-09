@@ -1,0 +1,39 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "candidate-delivery-source-20260924-01",
+  "ticket_id": "candidate-delivery-backend-20260924",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-delivery-backend-20260924",
+  "base_commit": "55f039ae5fbcd48730cc55cb0ade2c0d92eb3066",
+  "deliverable_commit": "ac74ba23c46110e42d21227418e9b7f5a0c1ea28",
+  "created_at": "2026-09-24T10:39:01Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {"type": "report", "path": "docs/operations/candidate-delivery-backend-20260924.md", "sha256": "a410957b57003876e2c703dfe3cdcb22402acccda8f8c00ee0a8e338127b8a38", "schema_version": "candidate_delivery_source_report_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "quant_shared/strategy_delivery/service.py", "sha256": "a764aded3606209bb80c0004bfcc883deb0829b0c2dd6203d4126d6e3ef175d4", "schema_version": "strategy_delivery_record_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "backend/app/api/candidate_delivery.py", "sha256": "5824b0a459a010572e6cbfcb81677dd469cb721d0c6ef08a546778a5be70428f", "schema_version": "strategy_delivery_capabilities_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "pytest tests/contracts/test_strategy_delivery.py tests/contracts/test_candidate_delivery_api.py tests/api/test_btc_public_market_readonly.py tests/contracts/test_btc_strategy_registry.py: 57 passed", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-backend-20260924.md"},
+    {"command": "pytest tests/contracts/test_strategy_v1_donchian_offline.py tests/contracts/test_strategy_v3_qlib_offline.py tests/contracts/test_strategy_v3_unified_closeout.py: 37 passed", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-backend-20260924.md"},
+    {"command": "node --test frontend/scripts/test-candidate-delivery.mjs frontend/scripts/test-candidate-handoff.mjs: 19 passed", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-backend-20260924.md"},
+    {"command": "tsc --noEmit; vite build", "result": "passed", "evidence_path": "docs/operations/candidate-delivery-backend-20260924.md"},
+    {"command": "independent review; canonical deployment and browser acceptance", "result": "not_run", "evidence_path": "docs/operations/candidate-delivery-backend-20260924.md"}
+  ],
+  "blockers": [
+    "independent_review_pending_team_context_discovery_timeout_and_git_cat_file_timeout",
+    "unclassified_independent_integration_and_deployment_not_performed",
+    "user_scope_no_enablement_no_publication",
+    "fixed_qlib_original_admission_blockers_preserved",
+    "offline_adapter_bindings_only_no_demo_start_integration"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {"handoff_only": true, "promotion_unlock_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "order_endpoint_allowed": false, "real_order_submitted": false}
+}

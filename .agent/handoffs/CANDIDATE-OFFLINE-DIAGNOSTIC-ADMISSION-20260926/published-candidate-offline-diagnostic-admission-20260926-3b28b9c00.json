@@ -1,0 +1,148 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "owner:integrator independent shared-contract and compatibility review required before any integration; source-only quality_checked is not promotion evidence",
+    "owner:scope current offline worker supports factory_lgbm_ast_v1 only; btc_frozen_qlib_offline_v1 remains management/diagnostic-only at this entry and fails before job/state side effects",
+    "owner:scope registered protection-price execution remains unsupported and blocks while preserving state; this ticket does not complete the full trading lifecycle",
+    "owner:root no main merge, backend restart, actual candidate creation, account binding, replay, or browser publication was performed",
+    "owner:gate unclassified delivery still requires independent integrator and any applicable current-HEAD artifact/read-model work; promotion/paper/live remain blocked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-26T14:04:33.497Z",
+  "deliverable_commit": "3b28b9c0052f507ed13a7dbe2c7f7fa4cb500fd0",
+  "deliverables": [
+    {
+      "path": "quant_shared/strategy_delivery/admission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "1621701fbc4da0bfa29ffdf64ed31fbe95b9b21c5037f96d63469764ca052d61",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/strategy_delivery/service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "fd18d2fea6b7a1b603a4a1208c61e360b727b42a0bb533fda144ff6a9d85b215",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/services/candidate_offline_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "sha256": "0a9b47dd8fb10b360a2d73959f8ef60321a80db28c5dafe032524c1dd53a8e02",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/candidate-delivery-api.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "b536a83a406a572986b15a0206f82c420b96e42000aacb8e25f625d997fe5e3b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/CandidateDelivery.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "c76dd33a9d2ebaa145fc4e2f3cf3e42930c416624e1d887af62581dbfa2ea18d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/research/RegisteredCandidateRunControls.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "sha256": "e5e2cdf5c3f1de5bf6456d08f8afe33d363c3c18404a595055d04842883fd213",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/candidate-diagnostic-admission.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "3855f000938bd3231533f1fb6c3a82d666f9539a7d6e897e399c068b166c3dfa",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_strategy_delivery.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "ebd94db95580b984e180697022ee60c5eeaf00fbf0e53192b07c4d18584c557e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_candidate_delivery_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "13d1bbf2bbde9b484f795bab098757c482d0555ec5f9689effb15e0b8cbad377",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_candidate_offline_access.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_offline_supported_adapters_v1",
+      "sha256": "aa1b2c3687cd674db395e7b99e0dae4a001e215a44febaeca96f6280cf52eb55",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_delivery_diagnostic_admission_v1",
+      "sha256": "97d2aeaf6db2dbd69ca939543ab728ba383f9cb37e3883def06080d2fbeaae8d",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-candidate-offline-diagnostic-admission-20260926-3b28b9c00",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/candidate-offline-diagnostic-admission-20260926",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first targeted strategy/offline/frontend admission tests",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical venv pytest tests/contracts/test_strategy_delivery.py tests/contracts/test_candidate_delivery_api.py tests/contracts/test_candidate_offline_access.py",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "passed"
+    },
+    {
+      "command": "environment-completion rerun: three full-app/import tests after read-only sparse quant_cn plus existing frontend esbuild test via canonical node_modules",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical venv pytest final focused 42 tests including real sealed m1-okx-qlib diagnostic record and unsupported/supported worker preflight",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "passed"
+    },
+    {
+      "command": "frontend TypeScript --noEmit; Python py_compile; scoped git diff --check",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "passed"
+    },
+    {
+      "command": "real candidate mutation, account access, exchange access, replay start, protection execution, service restart, main merge, browser publication, promotion artifact rebuild",
+      "evidence_path": "docs/research/candidate-offline-diagnostic-admission-20260926.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "transition_for": ""
+}

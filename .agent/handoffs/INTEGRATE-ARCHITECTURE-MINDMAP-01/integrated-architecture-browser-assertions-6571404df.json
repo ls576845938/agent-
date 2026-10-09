@@ -1,0 +1,98 @@
+{
+  "base_commit": "830efcd70a9ae348d14e047f2596acc3b368d9bd",
+  "blockers": [
+    "owner:root publish test commits e46c0e0eb and 6571404df to main, then restart/check canonical identity and rerun the 12 architecture tests",
+    "ten system-workbench failures from the first canonical 24-test run are preserved as a separate pre-existing regression gap and were not modified in this ticket",
+    "existing backend process remains on f3a78afe/demo_quasi_live with public identity 409 backend_runtime_main_drift; no stop, restart, control enablement, secret read or private/action access occurred",
+    "this test correction and architecture map remain quality-checked source/UI evidence only, not runtime, promotion, paper or live evidence",
+    "M1 remains paused in this ticket; M2-M4 are not started"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-11T00:31:55Z",
+  "deliverable_commit": "6571404df663c0641c3ba8f969900669f6267c05",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/architecture-map.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_codemap_e2e_v1",
+      "sha256": "094068f0cf952510f0f2dd0f1c2d9b9de66407d0cb302c65641e4510e4b588f4",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "architecture_mindmap_v1",
+      "sha256": "f2fbfbe5a523d227587e741f3c484e27c43fd109e8fb9910d586250859d23bde",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "702853fbb02a934389f74c5d17ae024d44192730fba180f5d61974fca0bd17a4",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-architecture-mindmap-01-8a0c633d3"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-architecture-browser-assertions-6571404df",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-architecture-fullread-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical main 830efcd7: Playwright architecture-map, architecture-mindmap and system-workbench; 12 passed / 12 failed, with two architecture assertion failures isolated for this correction",
+      "evidence_path": "output/playwright/architecture-mindmap-830efcd7/playwright-report.json",
+      "result": "failed"
+    },
+    {
+      "command": "CUA actual browser check: reset 100%, keyboard zoom 110%, fit 62%, keyboard context leaf drill-down visible and return to overview",
+      "evidence_path": "current canonical /architecture browser session on main 830efcd7",
+      "result": "passed"
+    },
+    {
+      "command": "typescript --noEmit -p frontend/tsconfig.json using temporary read-only dependency Junction; exit 0 and Junction removed",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright --list for architecture-map.spec.ts and architecture-mindmap.spec.ts; 12 tests collected",
+      "evidence_path": "frontend/e2e/architecture-mindmap.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs after refresh; manifest_match=true and baseline_ancestor=true",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical current-main execution of 12 architecture tests after publishing this correction",
+      "evidence_path": "owner:root; worktree preview is prohibited",
+      "result": "not_run"
+    },
+    {
+      "command": "production build after test-only assertion correction",
+      "evidence_path": "not repeated by explicit bounded scope; no product source changed",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-ARCHITECTURE-MINDMAP-01",
+  "transition_for": "published-architecture-mindmap-01-4eafcaa05"
+}

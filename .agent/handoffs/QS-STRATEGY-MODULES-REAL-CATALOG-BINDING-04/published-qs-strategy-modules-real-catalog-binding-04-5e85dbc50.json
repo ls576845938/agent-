@@ -1,0 +1,117 @@
+{
+  "base_commit": "5183deaa7cfd4b87329148e4a2c89b0776569045",
+  "blockers": [
+    "owner:integrator independent integration required for unclassified frontend change_risk",
+    "owner:integrator rerun canonical current-main mocked strategy-modules suite and require 11/11 after consuming this committed handoff",
+    "producer did not start Vite or canonical service; existing port-3000 result is stale-main evidence, not producer acceptance",
+    "backend restart and promotion artifact/read-model rebuild remain policy requirements after integration; outside this frontend-only producer scope",
+    "team context discovery unavailable/unknown; consumer must validate commit ancestry, blobs, touch set and handoff independently",
+    "not_promotion_evidence_ready; promotion=false; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-20T00:00:00Z",
+  "deliverable_commit": "5e85dbc5017ead9006cb6ba9c94011a81b341e53",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_real_catalog_binding_v1",
+      "sha256": "5a0d69c49662f5a5b359cd30945fb4fafbcbb47b832d489d1b52cba2bff0c2d8",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_real_catalog_playwright_v1",
+      "sha256": "c759b5c368289b77c7dcddd4674b6e3104987e8ba556b307e7abb4a81a598530",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "d7fafb2bfcc19f700a38c9e506f523830911ed3e85e05ceb617c95c0d8b6640d",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qs-strategy-modules-real-catalog-binding-04-5e85dbc50",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qs-strategy-real-catalog-04",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "git grep base frontend/src/workspaces/StrategyModulesWorkspace.tsx for btc_low_turnover_trend and btc_trend_pullback",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "canonical port 3000 mocked strategy-modules Playwright against existing registered-main service",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/node_modules/@playwright/test/cli.js test frontend/e2e/strategy-modules.spec.ts --list --config frontend/playwright.config.ts",
+      "evidence_path": "frontend/e2e/strategy-modules.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "rg source for BTC_STRATEGIES, btc-low-turnover-trend and btc-trend-pullback",
+      "evidence_path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical full mocked Playwright on integrated current main",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04",
+  "transition_for": ""
+}

@@ -1,0 +1,121 @@
+{
+  "base_commit": "d6d745a9ceca7a5924f8b499087658da11353abb",
+  "blockers": [
+    "owner:integrator canonical_frontend_runtime_drift_requires_authorized_start_frontend_after_main_sync",
+    "owner:architect promotion_artifact_not_applicable_frontend_only_no_backend_quant_crypto_changes",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-18T05:00:28Z",
+  "deliverable_commit": "6ed9a7e5fbe5b3a4ba4276e49d45ab7741979fa4",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_backtest_progress_lifecycle_v1",
+      "sha256": "dc9617170f44c183f22e8842bd803eb8a6a545af77e74526169b083388daf48b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_backtest_result_focus_v1",
+      "sha256": "be0a0e3c6cc81ad0688d74b18663636560a608a354062132b8a69a2635107dc1",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/crypto-strategy-editor.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_backtest_progress_focus_styles_v1",
+      "sha256": "ff879c6275613d4867e3b21d0cc91eb5cb2da6b8355c30808f4d89f667f5a0a5",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-backtest-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_crypto_backtest_progress_focus_e2e_v1",
+      "sha256": "1ff9dcfb101587379be66e8f2c70843cc2e0d851f4dd75625f3e315472e08612",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "adef4682196610086af87f989bfe6139c19fbe85216a34daf045ae42ab3beb3d",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-crypto-backtest-progress-result-focus-02a-8de39bbe8"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-crypto-backtest-progress-result-focus-02a-6ed9a7e5",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-backtest-progress-focus-02a-int01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "10_tests_listed",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-backtest-workbench.spec.ts --config=playwright.config.ts",
+      "evidence_path": "FRONTEND_RUNTIME_MAIN_DRIFT_after_2_of_10_tests;stopped_fail_closed",
+      "result": "failed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "fingerprint=08a2bd98bcba1f4ac4b42e41203598427ef20c87a2064dc19c09182de3f448fc",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "fingerprint=08a2bd98bcba1f4ac4b42e41203598427ef20c87a2064dc19c09182de3f448fc",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-CRYPTO-BACKTEST-PROGRESS-RESULT-FOCUS-02A/published-btc-crypto-backtest-progress-result-focus-02a-8de39bbe8.json",
+      "evidence_path": "status=valid",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check d6d745a9ceca7a5924f8b499087658da11353abb..6ed9a7e5fbe5b3a4ba4276e49d45ab7741979fa4",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-CRYPTO-BACKTEST-PROGRESS-RESULT-FOCUS-02A",
+  "transition_for": "published-btc-crypto-backtest-progress-result-focus-02a-8de39bbe8"
+}

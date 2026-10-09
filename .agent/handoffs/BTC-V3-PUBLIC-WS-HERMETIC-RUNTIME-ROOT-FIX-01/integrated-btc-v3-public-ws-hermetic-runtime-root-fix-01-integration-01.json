@@ -1,0 +1,93 @@
+{
+  "base_commit": "738c34c7c0d3c1ce170fa107d97ff517b80a69b2",
+  "blockers": [
+    "btc_runtime_artifacts_not_built_or_published_by_this_test_fixture_ticket",
+    "btc_current_head_gate_not_rebuilt",
+    "upstream_data_and_l2_readiness_blockers_unchanged",
+    "upstream_data_readiness_blockers_preserved",
+    "btc_public_swap_bundle_one_day_coverage_only",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_liquidation_snapshots_missing_diagnostic_only",
+    "btc_order_book_rest_snapshot_not_sequence_l2",
+    "legacy_scheduler_writer_incident_quarantined",
+    "btc_okx_tail_merge_target_bundle_missing",
+    "btc_okx_selected_bundle_dir_missing",
+    "real_timestamp_aligned_l2_missing",
+    "l2_natural_history_zero_days",
+    "l2_lt_30_natural_days",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-07-26T21:17:10.233Z",
+  "deliverable_commit": "c8ffbc33246c94cc5c9c4f38c7d7a22bbfea2bb4",
+  "deliverables": [],
+  "depends_on": [
+    "published-btc-v3-public-ws-hermetic-runtime-root-fix-01-c8ffbc33",
+    "acknowledged-data-btc-public-immutable-scheduler-migration-01-c8ffbc33",
+    "integrated-data-btc-public-immutable-scheduler-migration-01-source-data-batch-01"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-v3-public-ws-hermetic-runtime-root-fix-01-integration-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-public-ws-hermetic-root-fix-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "fix published, data acknowledged, and existing DATA integrated full-Git validation; exact ancestry and one raw committed-object SHA-256 check",
+      "evidence_path": ".agent/handoffs/BTC-V3-PUBLIC-WS-HERMETIC-RUNTIME-ROOT-FIX-01/published-btc-v3-public-ws-hermetic-runtime-root-fix-01-c8ffbc33.json",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD data publication plus public WS fixture suite [131 passed]",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD source identity suite [97 passed]",
+      "evidence_path": "tests/contracts/test_btc_artifact_source_identity.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined-HEAD data publication core suite [94 passed]",
+      "evidence_path": "tests/agent_governance/test_shared_data.py",
+      "result": "passed"
+    },
+    {
+      "command": "combined runtime-store, source-identity, and public-collector suite [75 passed]",
+      "evidence_path": "tests/contracts/test_btc_runtime_artifact_store.py",
+      "result": "passed"
+    },
+    {
+      "command": "both committed manifests full physical resolve, per-file hashes, aggregate recomputation, and schema validation",
+      "evidence_path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-20260726T201006000Z-tail1d-src82e1c1163a7e.json",
+      "result": "passed"
+    },
+    {
+      "command": "changed test in-memory compile and scoped diff check; no production builder, schema, data, artifact, task, root, or main mutation; no network, secret, broker, private, order, paper, live, or real-order action",
+      "evidence_path": "tests/contracts/test_btc_okx_public_collector_boundaries.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-PUBLIC-WS-HERMETIC-RUNTIME-ROOT-FIX-01",
+  "transition_for": "published-btc-v3-public-ws-hermetic-runtime-root-fix-01-c8ffbc33"
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-us-ibkr-paper-reconciliation-01-20a7dda26",
+  "ticket_id": "US-IBKR-PAPER-RECONCILIATION-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/us-ibkr-paper-reconciliation-01",
+  "base_commit": "d3f1e3f7f770bfdf35336257cf1eaecc18f3d6b6",
+  "deliverable_commit": "20a7dda26f68d28e14273aeb1acf5ca4d68289ee",
+  "created_at": "2026-08-06T14:16:51Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_us/live/ibkr_paper_reconciliation.py",
+      "sha256": "e96ed99ff6b0de834c3b834d35527c552d76e731a7a296051fc051544fd0cb63",
+      "schema_version": "python_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "schema",
+      "path": "schemas/us_equity_ibkr_paper_reconciliation_report.schema.json",
+      "sha256": "bf37f16ee67e230d32befceb397b8e92191a07769a7d2ca281f307b1249a76be",
+      "schema_version": "us_equity_ibkr_paper_reconciliation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/live/test_ibkr_paper_reconciliation.py",
+      "sha256": "f839c613b57bb061dbf0306b2380e6cdcd1e70e46c204cbb77e4812865f525c3",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/live/test_ibkr_paper_reconciliation.py -q -p no:cacheprovider --basetemp <unique-temp> [observed: 12 passed]",
+      "evidence_path": "tests/live/test_ibkr_paper_reconciliation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_ibkr_paper_reconciliation.py tests/live/test_ibkr_paper_adapter_foundation.py tests/live/test_paper_runtime_reconciliation_hard_gate.py -q -p no:cacheprovider --basetemp <unique-temp> [observed: 25 passed]",
+      "evidence_path": "tests/live/test_ibkr_paper_reconciliation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_us/live/ibkr_paper_reconciliation.py [observed: passed]",
+      "evidence_path": "quant_us/live/ibkr_paper_reconciliation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -c schema Draft 2020-12 check for schemas/us_equity_ibkr_paper_reconciliation_report.schema.json [observed: schema_valid]",
+      "evidence_path": "schemas/us_equity_ibkr_paper_reconciliation_report.schema.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_us/live/ibkr_paper_reconciliation.py schemas/us_equity_ibkr_paper_reconciliation_report.schema.json tests/live/test_ibkr_paper_reconciliation.py [observed: passed]",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent_integration_required_for_unclassified_deliverable_20a7dda26f68d28e14273aeb1acf5ca4d68289ee",
+    "owner:gate promotion_artifact_rebuild_required_by_unclassified_delivery_policy",
+    "owner:runtime backend_restart_required_after_integration_by_unclassified_delivery_policy",
+    "owner:gate current_head_promotion_read_model_not_rebuilt_for_this_code_change",
+    "ibkr_reconciliation_is_quality_checked_injected_snapshot_evidence_only_no_real_paper_ledger",
+    "no_real_gateway_connection_no_secret_private_order_or_live_endpoint_access"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

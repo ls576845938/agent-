@@ -1,0 +1,169 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-registry-read-performance-20260928-correction-01-4eb3e0f32",
+  "ticket_id": "RESEARCH-REGISTRY-READ-PERFORMANCE-20260928",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/research-registry-read-performance-20260928",
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "deliverable_commit": "4eb3e0f3289998fb9f76699e35ca4f7f032fa2bb",
+  "created_at": "2026-09-28T03:31:30.149Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-research-registry-read-performance-20260928-4eb3e0f32"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "sha256": "dcb90bf849275e825656f37f32d1aa0c85708ed29a4f7a5ae92ae05610b89093",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "711f370960d16328175e5f3fa953e18589f27abd641469761872a5f2fcd7f317",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/services/research_archive_discovery.py",
+      "sha256": "2833dea36fb9df0b03a3452b9e603e6b0db84fcc69ee17e011a05d1abb207175",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_pipeline.py",
+      "sha256": "c6e9244e646d41ed6d3eb313012674b55403037a4f54ce6066518e84a14e65c7",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/lib/research-api.ts",
+      "sha256": "3aa8225f0eef01de4dd7a2c684ba42233ad8abc3281fb8ae3118af2d8c95d09c",
+      "type": "code",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-research-portfolio-contract.mjs",
+      "sha256": "35ec939fee640920f0496db4d71eb1bc47e747259d91c28bb6c0a6787e0374c1",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "sha256": "080a26abf4d037fab1a073b98c0c5afc1936ed07bf041a3ea31646256094c722",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "sha256": "53765032e35eeb24ce912eefe9505ce132e73140e0619d498af6e92d79adf5f2",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/api/test_m1_research_readonly_archive.py",
+      "sha256": "589b9c1197ccae1eec0a8d4c180350c48f137f8660d89cb27770de1cc3ffa3b3",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/api/test_research_registry_summary_api.py",
+      "sha256": "9deac33e13b8bdc7e87fc551c61ad75dbf3fae42330b29a9ef806a8c70265311",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_read_performance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first registry summary and same-request Qlib manifest-attestation regressions",
+      "result": "failed",
+      "evidence_path": "producer console; 2 ImportError summary failures and 2 TypeError attestation failures before implementation"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/research/test_evidence_registry.py",
+      "result": "passed",
+      "evidence_path": "producer console; 10 passed in 3.10s"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_qlib_pipeline.py focused integrity selection",
+      "result": "passed",
+      "evidence_path": "producer console; 4 passed, 13 deselected in 10.79s"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_m1_research_readonly_archive.py -k carries_current_request_manifest_hashes",
+      "result": "passed",
+      "evidence_path": "producer console; 1 passed, 11 deselected in 1.98s"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_research_registry_summary_api.py",
+      "result": "passed",
+      "evidence_path": "producer console; 1 passed in 1.47s"
+    },
+    {
+      "command": "NODE_PATH=<registered-main-frontend-node_modules> node frontend/scripts/test-research-portfolio-contract.mjs",
+      "result": "passed",
+      "evidence_path": "producer console; frozen rollback, endpoint, timeout and summary-query contract PASS; no network calls"
+    },
+    {
+      "command": "tsc frontend/src/lib/research-api.ts --noEmit with registered-main dependency type roots",
+      "result": "passed",
+      "evidence_path": "producer console; exit 0"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m py_compile focused touched Python sources",
+      "result": "passed",
+      "evidence_path": "producer console; exit 0"
+    },
+    {
+      "command": "controlled read-only cold/warm concurrent registry-summary plus Qlib validation against registered-main data/shared archive",
+      "result": "passed",
+      "evidence_path": "producer console; cold wall 5.418s, warm wall 8.854s; registry payload 10839 bytes; Qlib 17/17 passed in 1.273s cold and 1.937s warm; no writes"
+    },
+    {
+      "command": "full app_factory route and research-release governance suites in planner sparse producer",
+      "result": "failed",
+      "evidence_path": "producer console; protected quant_crypto is absent from super_developer sparse checkout, causing ModuleNotFoundError during app/team_context collection; unaffected subsets: research boundaries 5 passed, governance 53 passed and 5 environment failures"
+    },
+    {
+      "command": "formal current-main 8765 cold/concurrent registry-Qlib-Alpha GET and canonical browser 12s acceptance",
+      "result": "not_run",
+      "evidence_path": "requires independent integration into current main, canonical backend restart and browser acceptance"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_review_pending",
+    "current_main_merge_and_canonical_backend_restart_pending",
+    "formal_8765_registry_qlib_alpha_concurrent_12s_acceptance_pending",
+    "canonical_browser_acceptance_pending",
+    "complete_checkout_app_factory_and_team_context_regression_pending",
+    "existing_registry_conflict_preserved_fail_closed"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

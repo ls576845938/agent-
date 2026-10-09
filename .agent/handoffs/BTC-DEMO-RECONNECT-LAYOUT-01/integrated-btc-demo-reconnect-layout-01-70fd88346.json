@@ -1,0 +1,133 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-reconnect-layout-01-70fd88346",
+  "ticket_id": "BTC-DEMO-RECONNECT-LAYOUT-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-reconnect-layout-01-integration-01",
+  "base_commit": "e3888924df645e1e69981c04190c14d15bcb9430",
+  "deliverable_commit": "70fd883468589f1a6de18bd80e17988fde31ee56",
+  "created_at": "2026-09-06T15:05:31.016Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-reconnect-layout-01-fa52b8bac"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-reconnect-layout-01-fa52b8bac",
+  "deliverables": [
+    {
+      "path": "docs/reports/BTC-DEMO-RECONNECT-LAYOUT-01.md",
+      "sha256": "a2a2cd00b680705123b91cd9be9b8bd210d843bae62916008ce260d1f444a2e9",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "c21dfa4fc4fae9cb1a133fbfd0231ced24a4cd7e34ba457bd04fd37a7e1f00cb",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-demo-start-feedback.mjs",
+      "sha256": "be8023a32584b1866ee15e8b20426457cd080a7e91be46f5ada9bbdaeae1fead",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/scripts/test-btc-operator-cleanup.mjs",
+      "sha256": "2a178391f4ee8e060e30aed87a9b36cf4349b87525a1c6b38fbe34a2e29f66ce",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "sha256": "0e263921401f6639d7061bf427af2b3e4dc21f6c0add45c6f59b0d6164ba0d60",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-start-feedback.ts",
+      "sha256": "227b915d73859d6aed572ad4b4cf0d03ad148b2f2ac0c18b01fdc7eddb584ef1",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "sha256": "47f9c573492e692c97997fa10126aab35346a973947a8c49939fa6c09705b238",
+      "type": "code",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "sha256": "259df57cfb57a9f75e059ba72cf472856d0b0899af6b2bc615c81d61d4b512a1",
+      "type": "test_evidence",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate; producer tip/base ancestry; exact committed deliverable SHA-256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-RECONNECT-LAYOUT-01/published-fa52b8bac.json"
+    },
+    {
+      "command": "pytest private WS, start attempt and operator V2 suites: 96 passed in 55.40s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "pytest OKX Demo runtime -k startup or private_ws or reconnect: 43 passed, 398 deselected in 60.98s",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "four frontend operator regression scripts and npm run lint",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-operator-cleanup.mjs"
+    },
+    {
+      "command": "npm run build: Vite 5220 modules; built in 1m 11s; existing large-chunk warning only",
+      "result": "passed",
+      "evidence_path": "frontend/package.json"
+    },
+    {
+      "command": "npm run identity:check; npm run identity:test; fingerprint 0c6cb564b983e41d08298be36a5a0b9e7f60c4bce4898f0fcc8947fba2bf90c9",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "canonical main browser layout comparison, service restart, actual Demo/private/order startup",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-DEMO-RECONNECT-LAYOUT-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:root merge integration branch into registered main, then restart canonical services and run 1131x975 browser QA",
+    "owner:operator real Demo/private startup remains unverified; offline reconnect tests do not prove exchange startup",
+    "private and order capabilities remain disabled; no account, start, refresh, acknowledgement, or order action was invoked",
+    "promotion paper live private order real_order transfer withdraw remain false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-private-readonly-turn-id-injection-01-44919a4b4",
+  "ticket_id": "BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/btc-private-readonly-turn-id-injection-01",
+  "base_commit": "fe3e906fca9ba925d7e05474b148d8fece825509",
+  "deliverable_commit": "44919a4b46d594a5613264e675b701de37028034",
+  "created_at": "2026-09-01T11:33:47Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "14c04de5dae3c6ec32f6683d8be0b6bc9afe93c6dafe148275dcb6789dbef6cc",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "fc6f0a69f9134a7a7296e0ba659857aaae3beaa3f3dc1152a88e57bcb162c955",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "887a39f28b0c41f3940badb4729a2459e724fe7f8cfec4fb2bc18ea74d7b4099",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "09361f3e644549d886aeaa7d84925212b772ea33f12e5fe4bfb4067b13dbcad2",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "85477f677cd8b371d7ccb59b514c0baf930654d0e1a2a0a040fbbca9ac6360a9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_private_readonly_permission_profile.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "d1be62b9f766bf7fb340d113f4bea10962dc94fe6362c1ce7aefeaf190b4d992",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "26e059c80d4aecb965466c05d57f6a906e3f9e6790f0f653544dd0aa44482cb4",
+      "type": "document"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py -k without_turn_id-or-interrupts_unbound-or-armed_pretool-or-invalid_runner_shape-or-concurrent_exact -q: 5 failed; reproduced missing UserPromptSubmit turn rejection and absent arm",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q: 37 passed in 65.00s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "12 repeated runs of test_concurrent_exact_runner_claim_binds_only_one_turn: REPEATED_FAILURES=0",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q: 121 passed in 226.34s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "py -3 -m py_compile scoped permission, hook, and test files",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py"
+    },
+    {
+      "command": "git diff --check -- frozen touch set",
+      "result": "passed",
+      "evidence_path": ".codex/hooks/pre_tool_guard.py"
+    },
+    {
+      "command": "git cat-file commit 44919a4b46d594a5613264e675b701de37028034 raw-object SHA256",
+      "result": "passed",
+      "evidence_path": "40a609c17eff06fbe1a52fb5c24de343881190eeb7dba08b1fe13005dcb53565"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_for_governance_control",
+    "canonical_main_integration_and_hook_retrust_required",
+    "existing_tasks_do_not_hot_load_hook_changes_new_task_required",
+    "new_external_receipt_must_bind_new_task_session_and_integrated_main_head",
+    "existing_R1_through_R7_receipts_are_not_reusable",
+    "private_remains_false_until_exact_runner_pretool_atomically_binds_and_claims",
+    "hosted_tools_computer_use_and_existing_write_stdin_transport_require_task_layer_disablement",
+    "promotion_paper_live_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

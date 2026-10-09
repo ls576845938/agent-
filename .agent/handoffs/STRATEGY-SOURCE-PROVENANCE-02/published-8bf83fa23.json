@@ -1,0 +1,103 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-source-provenance-02-8bf83fa23",
+  "ticket_id": "STRATEGY-SOURCE-PROVENANCE-02",
+  "event_type": "published",
+  "transition_for": "",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-source-provenance-02",
+  "base_commit": "bbc39bec1449c5ea6947c200be1541988d34db2c",
+  "deliverable_commit": "8bf83fa23781dec945d883f4d04c677f91d688ea",
+  "created_at": "2026-09-08T14:36:38.551Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md",
+      "sha256": "c2423af7f9d1b2f357e391d9a1eb927a729112f7fa4eecd2b1b9b0288ada148f",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/e2e/strategy-source-provenance.spec.ts",
+      "sha256": "6f5d0ccd82ca44cd83b3ac587581603a7fc18eab20666806f670a54d4b168916",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-strategy-history-provenance.mjs",
+      "sha256": "3d24bbc63697a652f73d594e49ea217a75adbedeb33507cac81b5508279f895d",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "f3f62c8dce0420b2b35add154b3ee61aa34c769a244c11096c55c95e6e46a39b",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/strategy-history-provenance.ts",
+      "sha256": "53c0513c0f3982486952d3e466944f2029d7bc0c61eca2a000786a7fea2ba8d8",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "18f831bafbbafab566a18d03995b83f463502fe0c65e9964e9adc0ea9e161882",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-strategy-history-provenance.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-history-provenance.mjs"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build; 5225 modules; 56.39s; existing large bundle warning",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md"
+    },
+    {
+      "command": "9 new browser regression tests discovered; canonical execution pending window release",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:architect final committed-source review then independent integrator",
+    "owner:root canonical window occupied by ResearchDashboard task; await explicit release before main/identity/services",
+    "owner:root 9 new plus 3 existing heatmap browser tests and actual narrow/wide QA after integration",
+    "historical continuous series/fills/ledger absent; only published aggregate reviews rendered",
+    "promotion artifact unavailable; historical data not current-HEAD; no promotion rebuild authorized"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

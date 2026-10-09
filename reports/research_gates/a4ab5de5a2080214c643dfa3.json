@@ -1,0 +1,135 @@
+{
+  "created_at": "2026-04-30T06:07:55.634956+00:00",
+  "data_fingerprint": "7b0bdc6f0de02de839848a7baa676fcfb86b6e5cedf8422897f3f8e2ca502b06",
+  "data_version": "qs-fixture-BTCUSDT-1h-7b0bdc6f0de0",
+  "decision": "warn",
+  "deep_checks": {},
+  "gates": [
+    {
+      "message": "\u6570\u636e\u53ef\u7528\u6027\u3001\u8986\u76d6\u7387\u548c\u5f02\u5e38\u68c0\u67e5\u3002",
+      "metrics": {
+        "coverage_pct": 100.0,
+        "data_version": "qs-fixture-BTCUSDT-1h-7b0bdc6f0de0",
+        "missing_bars": 0,
+        "quality_score": 100.0
+      },
+      "name": "data_quality",
+      "status": "pass",
+      "threshold": "usable=true, coverage>=90%, score>=95 for pass"
+    },
+    {
+      "message": "\u57fa\u7840\u6536\u76ca\u8d28\u91cf\u3001\u4ea4\u6613\u8fb9\u9645\u548c\u6700\u5927\u56de\u64a4\u68c0\u67e5\u3002",
+      "metrics": {
+        "max_drawdown_pct": -2.5248,
+        "profit_factor": 1.4618,
+        "sharpe_ratio": 11.9193,
+        "total_return_pct": 17.4205
+      },
+      "name": "backtest_survival",
+      "status": "pass",
+      "threshold": "return>0, mdd>-20%; pass wants sharpe>=1, pf>=1.15, mdd>-12%"
+    },
+    {
+      "message": "\u4ea4\u6613\u6210\u672c\u62d6\u7d2f\u548c\u6362\u624b\u7387\u68c0\u67e5\u3002",
+      "metrics": {
+        "annual_turnover_pct": 58409.6953,
+        "cost_drag_pct": 4.4468,
+        "orders": 1010
+      },
+      "name": "execution_cost",
+      "status": "warn",
+      "threshold": "cost drag <= max(0.5%, 25% of absolute return) for pass"
+    },
+    {
+      "message": "\u56de\u64a4\u548c\u6700\u5927\u603b\u655e\u53e3\u68c0\u67e5\u3002",
+      "metrics": {
+        "max_drawdown_pct": -2.5248,
+        "max_gross_exposure_pct": 99.3186
+      },
+      "name": "portfolio_risk",
+      "status": "pass",
+      "threshold": "mdd>-20%, max gross exposure<=300%; pass wants mdd>-12%, exposure<=200%"
+    },
+    {
+      "message": "\u672c\u6b21\u53ea\u8fd0\u884c\u6838\u5fc3\u51c6\u5165\u95e8\uff1b\u664b\u7ea7\u524d\u4ecd\u5efa\u8bae\u8fd0\u884c\u6210\u672c\u538b\u529b\u3001Walk-forward \u6216\u7ec4\u5408\u4f18\u5316\u3002",
+      "metrics": {
+        "include_deep_checks": false
+      },
+      "name": "deep_validation",
+      "status": "warn",
+      "threshold": "include_deep_checks=true before paper trading"
+    }
+  ],
+  "manifest_id": "a4ab5de5a2080214c643dfa3",
+  "mode": "portfolio",
+  "request": {
+    "capital": 100000.0,
+    "cash_reserve_pct": 5.0,
+    "commission_rate": 0.0004,
+    "correlation_penalty": 0.75,
+    "data_db_path": "",
+    "end": "2024-02-15T23:00:00+00:00",
+    "include_deep_checks": false,
+    "interval": "1h",
+    "leverage": 1.0,
+    "max_candidates": 1,
+    "max_scenarios": 2,
+    "max_single_weight": 0.35,
+    "mode": "portfolio",
+    "persist_manifest": true,
+    "position_basis": "equity",
+    "slippage": 4.0,
+    "source": "fixture",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_macd",
+    "strategy_params": {},
+    "symbol": "BTCUSDT",
+    "weights": [
+      {
+        "strategy_id": "trend_macd",
+        "weight": 0.2
+      },
+      {
+        "strategy_id": "reversion_rsi",
+        "weight": 0.15
+      },
+      {
+        "strategy_id": "donchian_breakout",
+        "weight": 0.15
+      },
+      {
+        "strategy_id": "volatility_squeeze",
+        "weight": 0.15
+      },
+      {
+        "strategy_id": "funding_sentiment",
+        "weight": 0.1
+      },
+      {
+        "strategy_id": "macro_trend",
+        "weight": 0.05
+      },
+      {
+        "strategy_id": "time_window",
+        "weight": 0.1
+      },
+      {
+        "strategy_id": "dynamic_grid",
+        "weight": 0.1
+      }
+    ],
+    "windows": 2
+  },
+  "summary": {
+    "annual_return_pct": 257.6048,
+    "annual_volatility_pct": 10.7399,
+    "calmar_ratio": 102.0278,
+    "max_drawdown_pct": -2.5248,
+    "profit_factor": 1.4618,
+    "sharpe_ratio": 11.9193,
+    "sortino_ratio": 20.0598,
+    "total_return_pct": 17.4205,
+    "trade_count": 1010,
+    "win_rate_pct": 49.703
+  }
+}

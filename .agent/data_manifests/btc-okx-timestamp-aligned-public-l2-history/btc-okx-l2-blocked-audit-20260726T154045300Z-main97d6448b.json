@@ -1,0 +1,48 @@
+{
+  "aggregate_sha256": "62b85f26153f21c42452a44d39bc469be305d0322c097a3f6a42be8b3d7e51f5",
+  "blockers": [
+    "real_timestamp_aligned_l2_missing",
+    "l2_lt_30_natural_days",
+    "btc_okx_selected_bundle_dir_missing",
+    "btc_okx_ws_collector_dependency_missing:websocket",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_two_sided_coverage_unverified",
+    "l2_artifact_source_head_mismatch"
+  ],
+  "coverage": {
+    "end": "",
+    "start": ""
+  },
+  "data_schema": "btc_okx_l2_blocked_attestation_v1",
+  "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+  "dataset_version": "btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+  "file_count": 1,
+  "files": [
+    {
+      "bytes": 5726,
+      "path": "btc_okx_l2_blocked_attestation.json",
+      "sha256": "94a21f5cdaa4fa41a894bb0c8ec8ad63b80fb0d1b06823adfbaa055fa162af0f"
+    }
+  ],
+  "guardrails": {
+    "consumer_read_only": true,
+    "immutable_version": true,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false
+  },
+  "known_gaps": [
+    "no_real_timestamp_aligned_l2_rows",
+    "zero_natural_days"
+  ],
+  "producer_commit": "97d6448b89ce6029c69b20fbfe2427d99ae083e8",
+  "producer_role": "data_steward",
+  "published_at": "2026-07-26T15:41:23Z",
+  "quality_status": "blocked",
+  "readiness_class": "quality_checked",
+  "schema_version": "shared_dataset_manifest_v1",
+  "storage_relative_path": "datasets/btc-okx-timestamp-aligned-public-l2-history/btc-okx-l2-blocked-audit-20260726T154045300Z-main97d6448b",
+  "total_bytes": 5726
+}

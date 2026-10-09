@@ -1,0 +1,159 @@
+{
+  "base_commit": "0a425054ec669be645ecc024d5b11c71bb8c2c2f",
+  "blockers": [
+    "owner:integrator independent integration and canonical-main browser verification required",
+    "owner:operator authoritative Demo account snapshot refresh and backend preflight required before start",
+    "owner:environment public websocket unavailable; credential-free public REST ticker fallback is provided",
+    "owner:root current-HEAD promotion artifact not rebuilt; promotion remains blocked"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-04T01:31:08.3351916Z",
+  "deliverable_commit": "0dea1a806c36342ccccb1d84ad6b0e1613573730",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "65a02a9f54a5d044a5891e237ca5760014b826ae7637805c939b8b0f53a179cd",
+      "type": "code"
+    },
+    {
+      "path": "backend/app/api/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "af5dd15213c18045ed5552a215204f9e1b93f1e80392a21e94e88e30c159f9f4",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "310ddba4b9de351b5f39d86614f1600c87106af1b5609b662c051eddcc50567c",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "28f0411e76c4229e5b3106c0c3ff29039e2c4f4d9fce8751051f42c4fc445133",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "8c187cd6e8fe5d4ec36904a7ab43c11c82e34c7886b39b9bce1e9ded681dca63",
+      "type": "code"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "659bf446207336e295e9e5575112229a3b1c0a3e3f272d276a3e3451f4469eb7",
+      "type": "data_manifest"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "cab98c200c2f4ac88e71177d030eb8a90f486810b57866ce14456d6266a03064",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_api.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "02c95f98b50c30793ff482aa2b17b673f6cd8e69a21e48a52bebf53360898a3c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/crypto.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_source_v1",
+      "sha256": "4fb682a8d0bbddee01fdfe6bd5afbac596e3bd2fee0e049f8fe1d1e2a005bd6e",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/btc-trading-fixtures.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "playwright_fixture_v1",
+      "sha256": "ab8be812b3c51c943e33a5cd1f0267c966e1c71a315f3aefe1da13fd5c19adcb",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-cold-start-and-live-chart-01-0dea1a806",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-cold-start-and-live-chart-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "failure-first: pytest backend/tests/test_btc_demo_runtime_service.py -k 'cold_stopped_operator_contract or market_ticker_is_public' (2 expected failures before implementation)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest backend/tests/test_btc_demo_runtime_service.py -q (47 passed)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest backend/tests/test_btc_demo_runtime_api.py -q (16 passed)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed"
+    },
+    {
+      "command": "pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py -q (60 passed)",
+      "evidence_path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint (tsc --noEmit)",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (Vite, 5219 modules)",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check && npm run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright crypto.spec.ts, live listener verification, backend/frontend restart",
+      "evidence_path": "frontend/e2e/crypto.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "private Demo account refresh and authoritative start",
+      "evidence_path": "backend/app/services/btc_demo_runtime.py",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-COLD-START-AND-LIVE-CHART-01",
+  "transition_for": ""
+}

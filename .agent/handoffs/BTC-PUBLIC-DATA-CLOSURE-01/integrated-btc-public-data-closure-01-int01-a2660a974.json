@@ -1,0 +1,112 @@
+{
+  "base_commit": "b5ac9b45ff47136aaef8919bedd11ab030f4bffd",
+  "blockers": [
+    "timestamp_aligned_l2_latest_physical_version_missing",
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_okx_l2_sequence_two_sided_coverage_incomplete",
+    "btc_execution_latency_queue_order_to_fill_model_missing",
+    "btc_private_ws_fill_ledger_evidence_missing",
+    "btc_open_interest_liquidation_history_incomplete",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "btc_paper_live_manual_approval_missing",
+    "btc_kline_dataready_not_promotion_evidence",
+    "promotion_artifact_rebuild_required_after_main_integration",
+    "backend_restart_required_after_main_integration",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "researcher"
+  ],
+  "created_at": "2026-08-26T11:15:00Z",
+  "deliverable_commit": "a2660a974baf5a6d598670c54b0bda865386737d",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_data_closure_v1",
+      "sha256": "785acf4ca2fd5ce38b7f89e058577c8b9dbb9f45be13e857da6579d19f713164",
+      "type": "data_manifest"
+    },
+    {
+      "path": "docs/research/BTC_PUBLIC_DATA_CLOSURE_01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_public_data_closure_report_v1",
+      "sha256": "eda2ad286ff5a936f1a7bcf2481d1258c6e7d956d84981e560d17bc5c31cd9e5",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-PUBLIC-DATA-CLOSURE-01/published-btc-public-data-closure-01-59bc18d92.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "b1ef0ee01bd10b9d5776c65980061b0a92a5c501c0a6a25448892c5dcbb81b54",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-public-data-closure-01-59bc18d92"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-public-data-closure-01-int01-a2660a974",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-public-data-close-int01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input .agent/handoffs/BTC-PUBLIC-DATA-CLOSURE-01/published-btc-public-data-closure-01-59bc18d92.json",
+      "evidence_path": "status=valid; event_id=published-btc-public-data-closure-01-59bc18d92",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <each of the 7 committed dependency manifests> --shared-root D:/vibe coding/Obsidian/量化系统/shared-data",
+      "evidence_path": "6 dependencies resolved with full hashes; latest timestamp-aligned observer returned expected shared_data_physical_version_missing",
+      "result": "passed"
+    },
+    {
+      "command": "independent streaming audit of the immutable Binance 5m JSONL",
+      "evidence_path": "269856 rows; finalized=269856; duplicates=0; invalid_ohlcv=0; invalid_utc=0; continuity_gaps=0; post-cutoff rows=21312; slice SHA-256=518859075e988982c95a8712c1516aa97863ccb262ab250b7abff0f3ada02cbe",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/tmp/qs-public-data-int01-152 tests/agent_governance/test_shared_data.py tests/contracts/test_btc_kline_immutable_export.py tests/contracts/test_btc_dataready_consumer.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_l2_immutable_export.py",
+      "evidence_path": "152 passed in 17.83s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/shared_data.py",
+      "evidence_path": "exit=0",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check b5ac9b45ff47136aaef8919bedd11ab030f4bffd..HEAD",
+      "evidence_path": "no output",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path .agent/data_manifests/BTC-PUBLIC-DATA-CLOSURE-01/btc-public-data-closure-01.json --path docs/research/BTC_PUBLIC_DATA_CLOSURE_01.md --path .agent/handoffs/BTC-PUBLIC-DATA-CLOSURE-01",
+      "evidence_path": "scoped dirty_count=0",
+      "result": "passed"
+    },
+    {
+      "command": "registered-main merge, backend restart, frontend restart, browser acceptance, promotion artifact/read-model rebuild",
+      "evidence_path": "explicitly deferred; registered main remains unchanged and no service or artifact was touched",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PUBLIC-DATA-CLOSURE-01",
+  "transition_for": "published-btc-public-data-closure-01-59bc18d92"
+}

@@ -1,0 +1,129 @@
+{
+  "base_commit": "83e470404eed8f22f21fe2cddd685aae782b8f4c",
+  "blockers": [
+    "independent_integrator_required_change_risk_promotion_evidence",
+    "current_head_artifact_and_read_model_rebuild_required_after_integration",
+    "backend_restart_required_after_current_main_integration",
+    "current_main_domain_read_model_api_verification_required_after_rebuild",
+    "btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "btc_okx_native:effective_sample_regime_coverage_prereg_evidence_incomplete",
+    "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "btc_okx_native:25_hour_demo_observation_window_incomplete",
+    "btc_okx_native:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-29T05:21:54Z",
+  "deliverable_commit": "f9d55767a35376753b480441bfb4851cff362c00",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_read_model_dynamic_blockers_v1",
+      "sha256": "b1cdac93973696301907be17624c04d709056761de596c4513bf70ce24853f07",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/adapters/btc_domain_read_model_repository.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_dynamic_gate_binding_v1",
+      "sha256": "b2c7f6815f72ef2cbb2179a6233bd954a49b2013bb938702e5a30b07611b7178",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_current_head_gate_exact_blocker_contract_tests_v1",
+      "sha256": "070311a7a96547783c0f7efc5c4936236b6b0286804164a4206eb99cb897126b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_published_domain_read_model_tamper_contract_tests_v1",
+      "sha256": "5f6fa4086b3a8c2cf9ee3fc71912f7cabf7bd43d0707af07d51ccd390259492a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_backend_dynamic_read_model_fixture_tests_v1",
+      "sha256": "2651702638a0e2d347a3a015c89ff75b2ef15920b6648831e50cbf12a59bd1b7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01-CORRECTION-02.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_promotion_gate_active_criteria_normalization_correction_02_v1",
+      "sha256": "c4be1c3f92139b52fab6e51f5963256496287da59e6ccd2391496c94190f68d9",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-btc-promotion-gate-active-criteria-normalization-01-correction-01-96beb031d"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-promotion-gate-active-criteria-normalization-01-correction-02-f9d55767a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-gate-active-criteria-correction-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-promotion-gate-active-criteria-normalization-01-correction-01-96beb031d"
+  ],
+  "tests": [
+    {
+      "command": "preflight: sparse=true; base=83e470404eed8f22f21fe2cddd685aae782b8f4c; initial_touch_set_clean; change_risk=promotion_evidence; catalog_hash=127da8cce21efec826410506f35dd59e219ba9e15661d757a5937a47860fab3c",
+      "evidence_path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "result": "passed"
+    },
+    {
+      "command": "failure-first current valid pointer and active lineage: Gate=7 blockers, read model=18 blockers with 11 stale legacy extras -> 1 failed before correction",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "failed"
+    },
+    {
+      "command": "initial backend wiring collection before adding read-only sparse quant_cn dependency -> ModuleNotFoundError quant_cn",
+      "evidence_path": "backend/tests/test_btc_runtime_artifact_wiring.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_domain_read_model.py backend/tests/test_btc_runtime_artifact_wiring.py -q -> 48 passed in 49.41s",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q correction Python touch set; btc_domain_read_model schema JSON parse; scoped git diff --check",
+      "evidence_path": "quant_crypto/application/btc_current_head_gate_rebuild.py",
+      "result": "passed"
+    },
+    {
+      "command": "full repository regression not run; targeted promotion/read-model/backend matrix completed",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "not_run"
+    },
+    {
+      "command": "artifact publication, backend restart, browser E2E, network, private, order, paper, and live actions not run in producer correction",
+      "evidence_path": "docs/handoffs/BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01-CORRECTION-02.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-PROMOTION-GATE-ACTIVE-CRITERIA-NORMALIZATION-01",
+  "transition_for": ""
+}

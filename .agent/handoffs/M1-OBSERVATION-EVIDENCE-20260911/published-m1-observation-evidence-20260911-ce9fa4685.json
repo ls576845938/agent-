@@ -1,0 +1,86 @@
+{
+  "base_commit": "59f5eb86132fd0e386d1d4e733c9fbc53ff80d7e",
+  "blockers": [
+    "historical_reconstructed_availability",
+    "factory_candidate_rejected",
+    "canonical_publication_and_browser_acceptance_pending",
+    "not_execution_evidence",
+    "sealed projection is not a complete MLflow workspace and cannot restore or resume omitted training databases",
+    "readiness is quality_checked only; promotion, paper, live, private, order, real_order, transfer, withdraw, execution_permission, and runtime_observed remain false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-11T15:22:20Z",
+  "deliverable_commit": "ce9fa46858e257b4eac4381e2044bf5696983d87",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "2aab7e1e031acf094ce7a827d324102050344d27246443cac7acb574dd5c3f2a",
+      "type": "data_manifest"
+    },
+    {
+      "path": "docs/operations/m1-observation-evidence-20260911.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "m1_observation_evidence_publication_report_v1",
+      "sha256": "6e7776ffb3cab4e22498f3cca32576d57af87bb10aec069e7f34230f52f8eda7",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "data",
+  "event_id": "published-m1-observation-evidence-20260911-ce9fa4685",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/m1-observation-evidence-20260911",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "source inventory SHA-256 and 179-entry closure validation",
+      "evidence_path": "docs/operations/m1-observation-evidence-20260911.md",
+      "result": "passed"
+    },
+    {
+      "command": "read_sealed_evidence for six projected Qlib runs plus AlphaFactoryService reconstruction",
+      "evidence_path": "docs/operations/m1-observation-evidence-20260911.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_shared_data.py -q",
+      "evidence_path": "4 passed in 4.96s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest-git-spec HEAD:.agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+      "evidence_path": "status=resolved; consumer_read_only=true; full file hashing enabled",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- .agent/data_manifests/m1-trend-environment-acceptance docs/operations/m1-observation-evidence-20260911.md",
+      "evidence_path": "no whitespace errors",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/API/browser/service acceptance",
+      "evidence_path": "outside this offline publication ticket; canonical_publication_and_browser_acceptance_pending",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "M1-OBSERVATION-EVIDENCE-20260911",
+  "transition_for": ""
+}

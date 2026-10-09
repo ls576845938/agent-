@@ -1,0 +1,60 @@
+{
+  "base_commit": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "blockers": [
+    "btc_runtime_artifacts_not_rebuilt_or_published_by_this_source_contract_ticket",
+    "btc_current_head_gate_not_rebuilt_for_this_source_contract_ticket",
+    "btc_promotion_paper_live_remain_fail_closed"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-26T20:41:11.959Z",
+  "deliverable_commit": "30066aeb7f8e58b3ab5ccacde551f45c51851005",
+  "deliverables": [],
+  "depends_on": [
+    "published-btc-v3-runtime-artifact-source-identity-contract-01-30066aeb"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-v3-runtime-artifact-source-identity-contract-01-integration-01",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-runtime-source-identity-contract-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "full-Git handoff scan, producer ancestry, exact 12-path scope, and 12 raw committed-object SHA-256 checks",
+      "evidence_path": ".agent/handoffs/BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01/published-btc-v3-runtime-artifact-source-identity-contract-01-30066aeb.json",
+      "result": "passed"
+    },
+    {
+      "command": "97 focused source-identity, three builders, runtime store, current-HEAD, gate snapshot, backend wiring, Team Context, and shared safety tests",
+      "evidence_path": "tests/contracts/test_btc_artifact_source_identity.py",
+      "result": "passed"
+    },
+    {
+      "command": "three CLI help checks and eight-file in-memory compile without pytest cache or bytecode writes",
+      "evidence_path": "docs/handoffs/BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01.md",
+      "result": "passed"
+    },
+    {
+      "command": "read-only external baseline verification: partial runtime root 5 SHA-256, D main 21 working blobs, and 3 ScheduledTasks Disabled",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01",
+  "transition_for": "published-btc-v3-runtime-artifact-source-identity-contract-01-30066aeb"
+}

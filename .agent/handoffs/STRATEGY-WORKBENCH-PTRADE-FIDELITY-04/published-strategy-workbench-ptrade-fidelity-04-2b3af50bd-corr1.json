@@ -1,0 +1,50 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-workbench-ptrade-fidelity-04-2b3af50bd-corr1",
+  "ticket_id": "STRATEGY-WORKBENCH-PTRADE-FIDELITY-04",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/ptrade-fidelity-04",
+  "base_commit": "b7888cad787852a4098284c8ac25d8958d59b526",
+  "deliverable_commit": "2b3af50bd5b3d85af7bba40faab1e6a35b4e1811",
+  "created_at": "2026-08-14T00:01:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": ["published-strategy-workbench-ptrade-fidelity-04-2b3af50bd"],
+  "transition_for": "",
+  "deliverables": [
+    {"path": "backend/app/api/btc_strategy_history.py", "type": "code", "sha256": "308f452d09a7d611bd7ff656571736aad857e7571b4d4b8ebee2afb9fce17f86", "schema_version": "btc_canonical_strategy_source_v1", "readiness_class": "quality_checked"},
+    {"path": "backend/tests/test_btc_strategy_history_api.py", "type": "test_evidence", "sha256": "82a4232f7c4ab3005d2cc1ef012e2b7e2bffeba106a7b02f4e61370161a52874", "schema_version": "btc_strategy_history_api_contract_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/StrategyExplorer.tsx", "type": "code", "sha256": "29118c3c172faf05d81c965f48390dee762ca30aa6b2f488d7d399a682fa741d", "schema_version": "strategy_workbench_ptrade_fidelity_v4", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx", "type": "code", "sha256": "87a5f14ec5e261530eae0b99d7adf32b11ab73cbe7972c72748f614e8da251b0", "schema_version": "strategy_discovery_tree_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "type": "code", "sha256": "9dcb4fa5553fa11bdf7eb34fa17370ff88d27278278d0d2fcf96d25bcdc7319d", "schema_version": "btc_strategy_history_detail_components_v1", "readiness_class": "quality_checked"},
+    {"path": "frontend/src/workspaces/strategy-workbench.css", "type": "code", "sha256": "32bcf91a147b409e593446fd296f727239fb0c42ca5eb3c740e1c3a83ed99809", "schema_version": "strategy_workbench_ptrade_styles_v4", "readiness_class": "quality_checked"},
+    {"path": "frontend/e2e/strategy-workbench.spec.ts", "type": "test_evidence", "sha256": "d6dbc814f7aaca234733b9539f95cda3c667f29816872cf22156ef7a13499ac4", "schema_version": "strategy_workbench_ptrade_e2e_v4", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "PYTHONPATH=<registered-main> py -3 -m pytest backend/tests/test_btc_strategy_history_api.py -q", "result": "passed", "evidence_path": "backend/tests/test_btc_strategy_history_api.py (10 passed)"},
+    {"command": "py -3 -m py_compile backend/app/api/btc_strategy_history.py", "result": "passed", "evidence_path": "backend/app/api/btc_strategy_history.py"},
+    {"command": "node <registered-main-node_modules>/typescript/bin/tsc --noEmit --project frontend/tsconfig.json --baseUrl <registered-main-node_modules> --typeRoots <registered-main-node_modules>/@types", "result": "passed", "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx"},
+    {"command": "node <registered-main-node_modules>/vite/bin/vite.js build --config frontend/vite.config.ts", "result": "failed", "evidence_path": "sparse worktree has no frontend node_modules; Vite config ESM resolution cannot import vite"},
+    {"command": "node <registered-main-node_modules>/@playwright/test/cli.js test frontend/e2e/strategy-workbench.spec.ts --list", "result": "failed", "evidence_path": "sparse worktree has no frontend node_modules; test module cannot import @playwright/test"},
+    {"command": "git diff --check -- <declared touch set>", "result": "passed", "evidence_path": "declared touch set"}
+  ],
+  "blockers": [
+    "owner:integrator canonical_registered_main_frontend_build_and_strategy_workbench_playwright_pending",
+    "owner:environment sparse_worktree_frontend_package_resolution_unavailable_for_vite_and_playwright",
+    "promotion_artifact_and_read_model_not_built_by_user_scope",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

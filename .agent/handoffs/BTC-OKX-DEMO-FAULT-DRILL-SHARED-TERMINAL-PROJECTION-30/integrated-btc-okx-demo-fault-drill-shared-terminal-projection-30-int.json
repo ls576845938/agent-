@@ -1,0 +1,88 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-fault-drill-shared-terminal-projection-30-int",
+  "ticket_id": "BTC-OKX-DEMO-FAULT-DRILL-SHARED-TERMINAL-PROJECTION-30",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-terminal-projection-30-int",
+  "base_commit": "42918ccf4fe6ca745c11f96e78f13108e21a8a43",
+  "deliverable_commit": "b82877fd2e9a5f43352cb8d4d5cf84ab13dc71a9",
+  "created_at": "2026-08-12T02:36:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-fault-drill-shared-terminal-projection-30-cdf85c84f-corr1"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-fault-drill-shared-terminal-projection-30-cdf85c84f-corr1",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "bbc89625e9262eee713aa4d2c000fbe26d5059219f29fde9cbd62c1095ea9f33",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "98649d58a5d9c17ce54153b6df6bba8e95b1ddab2e34cc2decd38d23289e8d11",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_fault_drill.py",
+      "type": "test_evidence",
+      "sha256": "b1d0a1aa1892adaf667bedf6bf8b1e818e11f2479813bb6781d4065fedf88245",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published-corr1-handoff>",
+      "result": "passed",
+      "evidence_path": "Git committed blob 2c8fb85d7339edb7574f3305fbe0fde62a565f50; SHA-256 a905497dccda38730fef10302bd362b0edb78a048627841bf57db1741d998d7b"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'fault_drill_postflight_accepts_only_reconciled_terminal_as_new_terminal or shared_fault_drill_terminal_projection_requires_unique_durable_truth or incident_recovery_posts_only_one_ioc_then_exact_oco_cancel or incident_recovery_already_flat_is_read_only_and_clears_freeze' --basetemp <unique-temp> -q",
+      "result": "passed",
+      "evidence_path": "7 passed, 327 deselected in 11.84s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py -k 'incident_recovery_receipt_preserves_runtime_final_projection' --basetemp <unique-temp> -q",
+      "result": "passed",
+      "evidence_path": "2 passed, 139 deselected in 7.13s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <unique-temp> -q",
+      "result": "passed",
+      "evidence_path": "334 passed in 94.06s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py --basetemp <unique-temp> -q",
+      "result": "passed",
+      "evidence_path": "141 passed in 69.83s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_fault_drill.py; git diff --check <base> HEAD -- <touch-set>",
+      "result": "passed",
+      "evidence_path": "offline sparse integrator worktree"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "recovery_and_fault_drills_not_executed_by_this_offline_ticket",
+    "promotion_artifact_not_rebuilt",
+    "promotion_paper_private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

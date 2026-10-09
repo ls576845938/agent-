@@ -1,0 +1,86 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-demo-operator-cross-tab-ack-01-e1897af80",
+  "ticket_id": "BTC-DEMO-OPERATOR-CROSS-TAB-ACK-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator", "architect"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-demo-operator-cross-tab-ack-01",
+  "base_commit": "6a79d174d954c7569eee3cce8bf559ee6a34419c",
+  "deliverable_commit": "e1897af80f18f53a57dff46f97b34f89f99eb8e7",
+  "created_at": "2026-08-25T02:11:45Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "6f98bb2bd6cb19713babe2bf012d841a8cc2281aa827dcdb64a69a989df17d11",
+      "schema_version": "btc_demo_operator_contract_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "c2321a403b752dc0091c0b06fd994076db2287739ed5e1096ca5992430135290",
+      "schema_version": "btc_demo_operator_contract_test_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-operator-attempt-state.mjs"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-operator-v2-contract.mjs"
+    },
+    {
+      "command": "in-memory TypeScript compiler using frontend/tsconfig.json and registered-main frontend/node_modules, noEmit",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "tsc --noEmit --project frontend/tsconfig.json",
+      "result": "failed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "node frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-frontend-identity.mjs"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence_path": "frontend/src/workspaces/crypto/demo-operator-v2.ts"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required_change_risk_demo_execution_semantics",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "standard_tsc_blocked_sparse_worktree_missing_frontend_node_modules"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "base_commit": "cd327c4f77a216fca06286139f5cee31c8c3a4d3",
+  "blockers": [
+    "owner:operator backend_restart_required_after_integration",
+    "frontend_start_payload_missing_p0_fields_pending_explicit_scope_authorization",
+    "source_quality_is_not_promotion_evidence",
+    "no_demo_start_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-08-05T12:28:57Z",
+  "deliverable_commit": "5421a6736715a1dca6a324c29ec893b7b70554da",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_adapter_v1",
+      "sha256": "2329f621a90b59d058261a9f12c1d4b96e4e1516dc506d8650ee24836e5adfe2",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "cb30c8472daa7d34b5df2a50734fe3470c016f4dae20a86dcb4b43c585cef142",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/monitoring/okx_demo_execution_watchdog.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_execution_watchdog_v1",
+      "sha256": "2341cf01c489cc28b86972cb27ea0aebf48d139a348b3b5fe8f159203d3643f2",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_okx_demo_execution_watchdog.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_execution_watchdog_launcher_v1",
+      "sha256": "2a8d4455eb84b3e3a475f435b3bc165d64b43292431e50c7338d81e61bda0d86",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "9db4f91d5ff73504dc569a129711502d91d66528e090db7974cd7509a28a3e6f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "ec66839b82f3952cc31eb204023fd93324b1d4e6f7dc465509aba010bc5f9deb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_execution_watchdog.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "13c5120bb909c409245a6f78317d6098aa4ad545df2fab34b23c318aefb1fc88",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-okx-p0-disconnect-safety-01-5421a6736"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-okx-p0-disconnect-safety-01-27d2a285d",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-okx-p0-disconnect-safety-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "committed-object validation for deliverable 5421a6736715a1dca6a324c29ec893b7b70554da and published handoff 1be727bd12440271a5fe8d7da582834e87993f30: base ancestry, exact 7-path touch-set closure, 7/7 raw Git blob SHA-256 closure, schema, blockers, guardrails, and producer test evidence",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DISCONNECT-SAFETY-01/published-btc-okx-p0-disconnect-safety-01-5421a6736.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-OKX-P0-DISCONNECT-SAFETY-01/published-btc-okx-p0-disconnect-safety-01-5421a6736.json",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DISCONNECT-SAFETY-01/published-btc-okx-p0-disconnect-safety-01-5421a6736.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff --no-edit refs/heads/agent/btc_developer/btc-okx-p0-disconnect-safety-01 [merge commit 27d2a285d1d0ac372656f754ee45809074616e8b; no conflicts]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "python -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp C:/tmp/btc-p0-integrator-core-20260805 -p no:cacheprovider -q [not started: WindowsApps python alias exited 9009 with no output]",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_execution_watchdog.py --basetemp C:/tmp/btc-p0-integrator-core-20260805 -p no:cacheprovider -q [Python 3.11.15; 146 passed in 13.26s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_application_service_boundary.py tests/contracts/test_btc_okx_demo_private_ws.py --basetemp C:/tmp/btc-p0-integrator-boundary-20260805 -p no:cacheprovider -q [Python 3.11.15; 28 passed in 3.85s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m compileall -q <7 approved source/test paths> [exit 0]",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check cd327c4f77a216fca06286139f5cee31c8c3a4d3 27d2a285d1d0ac372656f754ee45809074616e8b -- && git diff --check && git diff --cached --check [all exit 0]",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-P0-DISCONNECT-SAFETY-01",
+  "transition_for": "published-btc-okx-p0-disconnect-safety-01-5421a6736"
+}

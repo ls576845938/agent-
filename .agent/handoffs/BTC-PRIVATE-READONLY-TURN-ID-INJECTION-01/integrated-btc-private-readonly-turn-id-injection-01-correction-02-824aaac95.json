@@ -1,0 +1,141 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-private-readonly-turn-id-injection-01-correction-02-824aaac95",
+  "ticket_id": "BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/integrator/btc-private-ro-turn-id-corr-int-01",
+  "base_commit": "fe3e906fca9ba925d7e05474b148d8fece825509",
+  "deliverable_commit": "824aaac953800a3743e5dd6b2d70511b70a4c3c6",
+  "created_at": "2026-09-01T12:58:39.255Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-private-readonly-turn-id-injection-01-correction-01-8e8c9b36e",
+    "integrated-btc-private-readonly-turn-id-injection-01-correction-01-5aa93e54c"
+  ],
+  "supersedes": [
+    "integrated-btc-private-readonly-turn-id-injection-01-correction-01-5aa93e54c"
+  ],
+  "transition_for": "published-btc-private-readonly-turn-id-injection-01-correction-01-8e8c9b36e",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "eb378837dc63c5a68b688ae3860f03e09fcfa60cb23ba90533550c53b1bba3cb",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "fc6f0a69f9134a7a7296e0ba659857aaae3beaa3f3dc1152a88e57bcb162c955",
+      "type": "code"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "887a39f28b0c41f3940badb4729a2459e724fe7f8cfec4fb2bc18ea74d7b4099",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_permission.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "4967c125d3f9d6433628e5f8fba31252eac93c3a503d265584304b2546cdab84",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_v1",
+      "sha256": "85477f677cd8b371d7ccb59b514c0baf930654d0e1a2a0a040fbbca9ac6360a9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/agent_playbooks/btc_private_readonly_permission_profile.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "cda231e2d142169cbb1c71b98ba4dcad6a6edb72dd5db69e0d86526929d9e6b7",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_session_winner_claim_v1",
+      "sha256": "994ed151245970f29b36c4c252af4a93af255cae667755a0b8c7b0f5f59a0c74",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01-INTEGRATION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_control_turn_binding_integration_v1",
+      "sha256": "85cde410c87b121399cc15d180df9e1d45a58f1cdaf89df2e98811344e3834b6",
+      "type": "document"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate original and correction published events; full commit ancestry and committed deliverable SHA256 verification",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py::test_session_claim_concurrency_is_stable_for_100_trials -q: 1 passed in 32.94s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    },
+    {
+      "command": "20 independent pytest-process repetitions of test_concurrent_exact_runner_claim_binds_only_one_turn: PROCESS_RUNS=20 FAILURES=0",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance/test_private_readonly_permission.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_private_readonly_permission.py tests/agent_governance/test_hooks.py -q: 39 passed in 84.53s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q: 123 passed in 276.83s",
+      "result": "passed",
+      "evidence_path": "tests/agent_governance"
+    },
+    {
+      "command": "py -3 -m py_compile scoped permission, hook and test files",
+      "result": "passed",
+      "evidence_path": "tools/agent_governance/private_readonly_permission.py"
+    },
+    {
+      "command": "git diff --check fe3e906fca9ba925d7e05474b148d8fece825509..824aaac953800a3743e5dd6b2d70511b70a4c3c6",
+      "result": "passed",
+      "evidence_path": "docs/handoffs/BTC-PRIVATE-READONLY-TURN-ID-INJECTION-01-INTEGRATION-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:main_sync registered_main_not_advanced_to_integrated_head",
+    "owner:operator canonical_hook_retrust_required_after_main_adoption",
+    "existing_tasks_do_not_hot_load_hook_changes_new_task_required",
+    "new_external_receipt_must_bind_new_task_session_and_adopted_current_main_head",
+    "existing_R1_through_R7_receipts_are_not_reusable",
+    "private_remains_false_until_exact_runner_pretool_atomically_claims_and_launches",
+    "hosted_tools_computer_use_and_existing_write_stdin_transport_require_task_layer_disablement",
+    "promotion_paper_live_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

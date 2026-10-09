@@ -1,0 +1,58 @@
+{
+  "base_commit": "f59f51035654453e4b71fe9da961fb80790f5aad",
+  "blockers": [
+    "owner:integrator delta review, frontend build, identity update, and integration remain pending",
+    "owner:architect canonical 38-test browser acceptance remains pending",
+    "M1-M4 remain unstarted; research completion grants no promotion, paper, private, order, broker, or live authority"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-11T08:30:00Z",
+  "deliverable_commit": "c1118120a4f1d87b0baa85e06d326971359c6060",
+  "deliverables": [
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "workbench_recovery_v1",
+      "sha256": "9cd08f87b244a17f80cc93422f330dd187934e9c97d21dead9c9f3a01bd0dc17",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-final-interactive-font-floor-c1118120a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/architecture-knowledge-workbench-recovery-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-final-workbench-test-contracts-f59f51035"
+  ],
+  "tests": [
+    {
+      "command": "git diff --check -- frontend/src/terminal-workbench.css",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "TypeScript, frontend build, and canonical 38-test browser acceptance",
+      "evidence_path": "frontend/src/terminal-workbench.css",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "ARCHITECTURE-KNOWLEDGE-WORKBENCH-RECOVERY-01",
+  "transition_for": ""
+}

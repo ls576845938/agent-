@@ -1,0 +1,81 @@
+{
+  "base_commit": "1c31f77805f77f55944e1599d96405ce96dc3474",
+  "blockers": [
+    "owner:root merge_identity_correction_then_rerun_identity_check_and_identity_test_on_registered_main",
+    "owner:root restart_canonical_frontend_and_backend_after_final_main_identity",
+    "owner:root canonical_main_playwright_1066x1140_and_fullscreen_verification_required",
+    "owner:root promotion_artifact_rebuild_required_by_unclassified_policy",
+    "private_readonly_25h_observation_not_started_or_modified_by_identity_correction",
+    "promotion_evidence_not_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-02T08:13:18Z",
+  "deliverable_commit": "075e0aef536fc3861ffdff80e73cace9fe02b8b5",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "950fdd9e029d7ab50247a35e599c346ebbeb59b2fab6faa1de3b74e1cd61cd1e",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-chart-narrow-viewport-occlusion-02-b89e4ea532"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-chart-narrow-viewport-occlusion-02-identity-correction-075e0aef53",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-chart-occlusion-02-idcorr-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm run identity:check before refresh reproduced manifest_match=false with dirty_paths=[] and fingerprint=fde3192cafbb76c43bbccbca2c7e97863ae64d6070be0408e13cb8e16173dc4a",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check after refresh: manifest_match=true baseline_ancestor=true dirty_paths=[]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:test in integrator worktree",
+      "evidence_path": "FRONTEND_CANONICAL_GUARD_FAILED fingerprint_or_object_ids_mismatch: canonical launcher sub-check reads registered main before this identity correction is consumed; root must rerun after merge",
+      "result": "failed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-CHART-NARROW-VIEWPORT-OCCLUSION-02",
+  "transition_for": "integrated-btc-chart-narrow-viewport-occlusion-02-b89e4ea532"
+}

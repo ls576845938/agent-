@@ -1,0 +1,73 @@
+{
+  "base_commit": "3b4ad82d14ef441e6c5ad780edf2fb4acd80e5b1",
+  "blockers": [
+    "independent_integration_pending"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-10-02T14:24:32Z",
+  "deliverable_commit": "d382d26bc252e0ad25be50a163b08653cce3a67a",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "ce69f9abaceb4440b632ac5c68435a4793f9f79be2b7a9ca2a5b0548be97a4f3",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "26bfdb931ebc1b1fab58a880469e42a075ce060bd690dcec6098fa402aa4722c",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/GOV-HANDOFF-ROOT-READ-20261002.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_acceptance_report_v1",
+      "sha256": "898d51049dfbf6a5f41897cf7ad2cd26e6a362a8a49873d9911b74d2ee863024",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-gov-handoff-root-read-20261002-d382d26bc",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/gov-handoff-root-read-20261002",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests\\agent_governance\\test_handoff.py -k \"captured_root or captured_ref\" --basetemp .pytest-tmp-gov-handoff-4",
+      "evidence_path": "docs/acceptance/GOV-HANDOFF-ROOT-READ-20261002.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests\\agent_governance\\test_handoff.py tests\\agent_governance\\test_team_context.py --basetemp .pytest-tmp-gov-suite-final",
+      "evidence_path": "docs/acceptance/GOV-HANDOFF-ROOT-READ-20261002.md",
+      "result": "passed"
+    },
+    {
+      "command": "scan_handoffs(Path(\".\").resolve(), verify_git=False) x3 with canonical invalid SHA-256",
+      "evidence_path": "docs/acceptance/GOV-HANDOFF-ROOT-READ-20261002.md",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "GOV-HANDOFF-ROOT-READ-20261002",
+  "transition_for": ""
+}

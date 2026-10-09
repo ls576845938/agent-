@@ -1,0 +1,125 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-terminal-ack-handler-01-fb6a7f3f",
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-term-ack-int-corr1",
+  "base_commit": "922c663a75366cfaa0bf7122e4a872965ecc5105",
+  "deliverable_commit": "fb6a7f3f044a0953b43142b4b2b301af14c191c3",
+  "created_at": "2026-08-25T03:17:06Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-demo-operator-terminal-ack-handler-01-47bda0b4c",
+    "published-btc-demo-operator-terminal-ack-handler-01-correction-01-ed020f0ee"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-operator-terminal-ack-handler-01-correction-01-ed020f0ee",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/demo-operator-v2.ts",
+      "sha256": "372f6d535090f822082bada3672ec268f185a6b43c5fbf073da1c701d24ead5d",
+      "schema_version": "btc_demo_operator_terminal_ack_handler_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "sha256": "86a828d0895b17c2b74e6d3e8a8fbdb1eb811448537f0bde7e8d19e872dc31a8",
+      "schema_version": "btc_demo_operator_terminal_ack_handler_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "77d8a049c6b3646bb8c2c9832368a2e5ae808c3db3719606952d3bf246431960",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01/published-btc-demo-operator-terminal-ack-handler-01-47bda0b4c.json",
+      "sha256": "f6e9c27523a917a05d3ced2105f03b5b9600727339eff3a02762eff6fff139fd",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-OPERATOR-TERMINAL-ACK-HANDLER-01/published-btc-demo-operator-terminal-ack-handler-01-correction-01-ed020f0ee.json",
+      "sha256": "d02901e92d4d9b731aa0e9c2c4f332c534357c78eddfc3a222d44fb9c85880f7",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate --input original and correction published envelopes; verify base ancestry, touch set, blob SHA and diff-check",
+      "result": "passed",
+      "evidence_path": "both published events status=valid; 922c663a..47bda0b4c..6d6308b..ed020f0..dcf54cac linear; correction test-only delta; no diff-check output"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-v2-contract.mjs",
+      "result": "passed",
+      "evidence_path": "Windows CRLF checkout; handler_harness.executed=true, fenced_ack_posts=1, payload_asserted=true, actions=8"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-operator-attempt-state.mjs",
+      "result": "passed",
+      "evidence_path": "{\"ok\":true,\"contract\":\"btc_demo_operator_attempt_state_v1\"}"
+    },
+    {
+      "command": "node frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed",
+      "evidence_path": "cryptoRoute/chartImported/chartRendered/chartEngine/chartDependency/failClosedCopy all true"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "result": "passed",
+      "evidence_path": "frontend package lint invokes tsc --noEmit; temporary read-only registered-main node_modules junction was removed"
+    },
+    {
+      "command": "npm.cmd exec -- tsc --noEmit --project tsconfig.json",
+      "result": "passed",
+      "evidence_path": "exit=0 with no diagnostics"
+    },
+    {
+      "command": "node frontend/scripts/update-frontend-identity.mjs; node frontend/scripts/check-frontend-identity.mjs; node frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "official generator; manifest_match=true, baseline_ancestor=true, fingerprint=a6b0feabd985af74d4460f18602bc1b320581705c4e47873f564d4771d6f1de7; identity test object_targets=4"
+    },
+    {
+      "command": "node frontend/scripts/start-current-main.mjs --check; cmd /d /c start-frontend.cmd -Check",
+      "result": "not_run",
+      "evidence_path": "start-current-main check was executed and fail-closed as expected for non-canonical integrator branch/worktree; registered main launcher/browser validation deferred"
+    },
+    {
+      "command": "git diff --check 922c663a75366cfaa0bf7122e4a872965ecc5105..fb6a7f3f044a0953b43142b4b2b301af14c191c3",
+      "result": "passed",
+      "evidence_path": "zero output"
+    },
+    {
+      "command": "backend/frontend service restart, browser acceptance, Demo/private/order/live endpoint checks",
+      "result": "not_run",
+      "evidence_path": "deferred to registered-main owner; integrator did not start services, send POST, read credentials, or access private/order/live endpoints"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "canonical_current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

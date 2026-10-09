@@ -1,0 +1,86 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-completed-1h-start-recovery-03-31698e52e",
+  "ticket_id": "BTC-OKX-DEMO-COMPLETED-1H-START-RECOVERY-03",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "btc_developer"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-gov-routing-and-btc-completed-1h-03",
+  "base_commit": "ad8bcd4221450852fbdf0186612b329413c212f3",
+  "deliverable_commit": "c46f99ab1f2767d7713895cc811fe65fae667ee5",
+  "created_at": "2026-08-17T20:05:00+08:00",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-completed-1h-start-recovery-03-e3a72c0eb",
+    "integrated-gov-project-named-agent-routing-01-03decd518"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-completed-1h-start-recovery-03-e3a72c0eb",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "c7995b4ce8529594eb0770fd3d610205f3c8f36e99ac6aff24c23f7d738463fd",
+      "schema_version": "btc_demo_completed_1h_public_tail_start_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "ce178efe359dc726d0d0efea9c7913404c7641608a58fa500d26c13944b250f1",
+      "schema_version": "btc_demo_completed_1h_public_tail_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-OKX-DEMO-COMPLETED-1H-START-RECOVERY-03/published-btc-okx-demo-completed-1h-start-recovery-03-e3a72c0eb.json",
+      "sha256": "7c8cdf5274acbb0c70338ac9da9429da3fa7f550c02d1d4b0c4b2ea4cb4fc99f",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/qs_it_bounded_03 tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "411 passed in 95.27s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/qs_it_bounded_03_fault tests/contracts/test_btc_okx_demo_fault_drill.py backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "189 passed in 99.16s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/qs_it_bounded_03_focus tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'stable_start_uses_okx_public_tail_before_private_snapshot or stable_strategy_signal_binds_empty_native_tail_evidence or okx_native_start_uses_stale_bundle_only_as_seed_then_signals_from_fresh_tail or okx_native_tail_merge_failure_blocks_before_private_ws_or_order_capability or public_candle_tail_keeps_25h_runtime_fresh_beyond_baseline_2h'",
+      "result": "passed",
+      "evidence_path": "5 passed, 406 deselected in 12.47s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp C:/Temp/qs_it_bounded_03 tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py",
+      "result": "passed",
+      "evidence_path": "16 passed in 0.97s"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check -- <authorized-touch-set>; handoff.py validate",
+      "result": "passed",
+      "evidence_path": "integrator sparse worktree; both published envelopes valid"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration; no restart performed in the integrator worktree",
+    "promotion artifact/read-model rebuild not requested and not performed",
+    "Demo execution, private/order/live/transfer/withdraw endpoints, credentials, and real orders were not used",
+    "promotion/paper/live/private/order permissions remain false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

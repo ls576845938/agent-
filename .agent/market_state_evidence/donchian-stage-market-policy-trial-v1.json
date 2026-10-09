@@ -1,0 +1,106 @@
+{
+  "schema_version": "market_policy_trial_blocked_read_model_v1",
+  "trial_id": "donchian-stage-market-policy-trial-20260927-v1",
+  "status": "blocked_fail_closed",
+  "truth_kind": "sealed_blocked_stage_read_model",
+  "usage": "blocked_stage_diagnostic_only_not_effect_estimation_not_promotion",
+  "source_evidence": {
+    "manifest_ref": "c26a6046f4a0412281b630b2f31a8ea77504d240:docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+    "manifest_sha256": "e9cac97788ccff223657174246bfcdd96e8e450683b700fd7a80b34335a1f9af",
+    "summary_file_sha256": "5251cb9e11d3ff3160001a07a1e9d93ef1648334e09006bdbed66cc137a60084",
+    "summary_report_hash": "9361be7e2bac7b58b940f4f02594a2a14d5f0d8d63722bf1508620acee1d9b79"
+  },
+  "consumer_binding": {
+    "source_commit": "f2455bfbcafd15404bb4ff98dd6bb925728d0339",
+    "python_version": "3.11.15",
+    "pandas_version": "3.0.4",
+    "state_projection": "consumer_phase_partial_no_cross_environment_exact_join",
+    "state_source_binding_hash": "1141ae6bf0aa9d47a5250a37450ebde0b4859e93b890f1360ac21572a2591f20"
+  },
+  "window": {
+    "analysis_start_utc": "2025-09-01T08:00:00+08:00",
+    "analysis_end_exclusive_utc": "2026-01-02T16:00:00+08:00",
+    "expected_events": 2960,
+    "warmup_hours": 4800,
+    "bar_size": "1h"
+  },
+  "arms": {
+    "original_donchian": {
+      "arm_id": "original_donchian",
+      "run_id": "donchian-market-entry-baseline-20260927",
+      "status": "completed",
+      "source_commit": "f2455bfbcafd15404bb4ff98dd6bb925728d0339",
+      "run_identity_hash": "af38148dfea12df777a71161a8c8ff5700e800171d848f12fe5fe718e6129139",
+      "source_artifact_sha256": "7db66cb6837006e64ce78c6049344607a21ab7dd2e8ca655cb291dbd0c9558af",
+      "processed_events": 2960,
+      "expected_events": 2960,
+      "counts": {"fills": 56, "orders": 56, "new_entries_rejected": 0, "nonzero_funding_cashflow_bills": 24},
+      "ledger_receipt": {
+        "file_sha256": "3913b1706617d96e030b1e468699205bc8642a3518bbaecfdad071013b0d2d9c",
+        "receipt_sha256": "bc1f3041f517689f818d1b0f3a47f6c296567cd78e929f8303465b51892321d4",
+        "last_sequence": 14874,
+        "last_event_hash": "ce5d234628d03ca22edc9e0db36f32b06bd18a9631363b4bb438f78f6bfa2bab",
+        "reconciled": true
+      },
+      "terminal_position": {"position_contracts": "0", "average_price": "0", "status": "flat"},
+      "blockers": [],
+      "blocked_event_time_utc": null
+    },
+    "original_donchian_plus_frozen_entry_policy": {
+      "arm_id": "original_donchian_plus_frozen_entry_policy",
+      "run_id": "donchian-market-entry-conditioned-20260927",
+      "status": "blocked_fail_closed",
+      "source_commit": "f2455bfbcafd15404bb4ff98dd6bb925728d0339",
+      "run_identity_hash": "af74268f3c5c05564b8a971a128e40c81283b6f382bf948b03337d235b90b753",
+      "source_artifact_sha256": "625ea316a78e753fe8595f03873b995d823a64d577057a97b05974de89ebb729",
+      "processed_events": 1956,
+      "expected_events": 2960,
+      "counts": {"fills": 17, "orders": 17, "new_entries_rejected": 48, "nonzero_funding_cashflow_bills": 14},
+      "ledger_receipt": {
+        "file_sha256": "f1d98c214648595891f4d44bd9a90051c971eee73e62ea234f373df54e2f8fc3",
+        "receipt_sha256": "79423c9c6a3c9fe56b299ef92ff2c5316b715344effb2d70278a115385e94fcd",
+        "last_sequence": 9807,
+        "last_event_hash": "e799b5f8163473649e1df22a740e1486b60d2048259a3627b25ca954c2396b2c",
+        "reconciled": true
+      },
+      "terminal_position": {"position_contracts": "-0.01", "average_price": "82667.566415", "status": "nonflat_blocked_preserved"},
+      "blockers": ["ProtectionTriggerAmbiguous:historical_protection_double_touch_ambiguous"],
+      "blocked_event_time_utc": "2025-11-21T20:00:00+08:00"
+    }
+  },
+  "comparison": {
+    "status": "unavailable_incomplete_conditioned_arm",
+    "effect_verified": false,
+    "improvement_claim_supported": false,
+    "promotion_supported": false
+  },
+  "runtime_budget": {
+    "baseline_elapsed_seconds": "7259.479",
+    "baseline_limit_seconds": "7200",
+    "baseline_limit_exceeded_seconds": "59.479",
+    "total_limit_seconds": "14400"
+  },
+  "rejected_entry_phase_count": 48,
+  "limitations": [
+    "conditioned_arm_incomplete_1956_of_2960",
+    "intrabar_protection_double_touch_order_unknown_fail_closed",
+    "conditioned_arm_ended_with_open_short_minus_0_01_contracts",
+    "no_complete_ab_effect_estimate",
+    "no_authoritative_ledger_drawdown_comparison_published",
+    "consumer_state_projection_partial",
+    "python_3_11_pandas_3_0_4_hashes_not_interchangeable_with_historical_python_3_14_pandas_3_0_3_diagnostic",
+    "baseline_arm_exceeded_120_minute_budget_by_59_479_seconds",
+    "exploratory_only_not_promotion_evidence"
+  ],
+  "safety": {
+    "demo_enabled": false,
+    "paper_enabled": false,
+    "live_enabled": false,
+    "promotion_enabled": false,
+    "private_endpoint_accessed": false,
+    "real_order_submitted": false,
+    "network_accessed": false,
+    "runtime_observed": false
+  },
+  "projection_hash": "9ac585fde969c26c03bd46b9fefb2922add03005acd89faa31e03d2bb998eac9"
+}

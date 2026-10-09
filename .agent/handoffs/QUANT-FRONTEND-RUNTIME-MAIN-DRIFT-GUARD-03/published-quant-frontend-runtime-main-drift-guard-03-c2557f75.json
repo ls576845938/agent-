@@ -1,0 +1,125 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-quant-frontend-runtime-main-drift-guard-03-c2557f75",
+  "ticket_id": "QUANT-FRONTEND-RUNTIME-MAIN-DRIFT-GUARD-03",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/frontend-main-runtime-drift-guard-01",
+  "base_commit": "b047046f9331f49649ed22f5d1c3779f9de4812d",
+  "deliverable_commit": "c2557f75293ace705496d8abb9544d1da551d29e",
+  "created_at": "2026-07-26T23:20:03Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-quant-frontend-current-main-hard-lock-02"
+  ],
+  "supersedes": [
+    "integrated-quant-frontend-current-main-hard-lock-02"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/vite.config.ts",
+      "sha256": "a73acd054f78af1ed13f1a172f28c566b838986996f87b989d82795612ccd99b",
+      "schema_version": "quant_frontend_runtime_main_drift_guard_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/frontend-identity-lib.mjs",
+      "sha256": "ef7e8040ad89a4c2b55844a58164d62ae27883118b1c126fc62cb0b9f61c7f17",
+      "schema_version": "quant_frontend_runtime_main_drift_guard_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/start-current-main.mjs",
+      "sha256": "88940b239d70bd38726f26ecfdd3f0609e347354fb4ad2aa8b4788094bc61caf",
+      "schema_version": "quant_frontend_runtime_main_drift_guard_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-frontend-identity.mjs",
+      "sha256": "fcc0b7d00ef0ff6dbf4436aaf0f54ac45c990cac8fb47052b2a0789a989a3a16",
+      "schema_version": "quant_frontend_runtime_main_drift_guard_contract_v3",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "b89239bed62035d4de0e96f57ce922ba97337ce957d9fcf73204983b915e72f1",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd ci --offline --ignore-scripts (cwd=frontend) [observed: 117 packages installed; 0 vulnerabilities]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run identity:test (cwd=frontend) [observed: runtime main-drift, dirty and identity-check failure cases passed; fingerprint 30cf843a1d514995b238cb13451c2b6f0f81cdc330fd21149f26b70514e15916]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "npm.cmd run identity:check (cwd=frontend) [observed: manifest_match=true; baseline_ancestor=true; fingerprint matched]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, producer worktree) [observed: expected fail-closed exit 2 with branch/head/worktree mismatch]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "npx.cmd vite --host 127.0.0.1 --port 3100 --strictPort (cwd=frontend, producer worktree) [observed: expected fail-closed exit 1 before bind]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: 5204 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend) [observed: 6 of 6 markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    }
+  ],
+  "blockers": [
+    "clean_integrator_and_final_exact_main_runtime_check_required_before_local_main_fast_forward",
+    "historical_pre_guard_worktrees_remain_unsupported_and_must_not_be_used_as_launch_surfaces",
+    "btc_runtime_artifacts_are_current_only_for_b047046f_and_must_be_rebuilt_after_any_new_main_head",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

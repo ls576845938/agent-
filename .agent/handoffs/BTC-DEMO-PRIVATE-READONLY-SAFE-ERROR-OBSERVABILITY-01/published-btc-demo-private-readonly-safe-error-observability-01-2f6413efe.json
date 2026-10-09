@@ -1,0 +1,101 @@
+{
+  "base_commit": "ac682f03b70e32adb384f789128470b8a4499f3f",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_current_main_integration",
+    "owner:operator exactly_one_new_authorized_private_readonly_attempt_only_after_integration_and_current_main_identity_verification",
+    "private_ws_and_25_hour_observation_not_started_by_source_only_offline_ticket",
+    "t8_promotion_and_paper_live_gates_remain_blocked_fail_closed"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-09-01T04:51:35Z",
+  "deliverable_commit": "2f6413efe915b6df09c34a034e007b85374aad28",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_state_v1",
+      "sha256": "f65c6570a122614d000bdac02338fb468cbf900254d262f6b7677aa99660b772",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_private_readonly_observation_cli_v1",
+      "sha256": "8ad019ec97cbd6d42d3fba93aa5d20da54be89e9b6a950cf71fcb18564e524c2",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "fecbb50fe2936ef216e264ae3ac0da0c627a27bf07d1ee6d438cfd821a3e11a8",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-private-readonly-safe-error-observability-01-2f6413efe",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-private-ro-safe-error-obs-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -c <failure-first fake OkxDemoResponse/runner probe> [observed: private_readonly_get_response_invalid; exception_fields={}; private_readonly_snapshot_failed; state_exists=false; private_ws_started=false]",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py -q --basetemp .tmp/pytest-private-ro-safe-error-obs-01 [intermediate: 4 failed, 2 passed, 19 errors; missing basetemp parent plus incorrect new test assertion]",
+      "evidence_path": "pytest stdout recorded in producer task",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/application/btc_demo_private_readonly_observation.py scripts/run_btc_demo_private_readonly_observation.py tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_private_readonly_observation.py -q --basetemp <unique-system-temp> [25 passed in 1.72s]",
+      "evidence_path": "tests/contracts/test_btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py -q --basetemp <unique-system-temp> [64 passed in 1.02s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -c <post-fix fake 50101 snapshot probe> [observed: blocked state; seven safe fields only; secret_absent=true; private_ws_started=false]",
+      "evidence_path": "quant_crypto/application/btc_demo_private_readonly_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <ticket paths> [module unavailable: No module named ruff]",
+      "evidence_path": "local Python environment",
+      "result": "not_run"
+    },
+    {
+      "command": "private REST/WS, account, order, live, receipt/key operations and 25h observation",
+      "evidence_path": "prohibited by producer ticket scope",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-PRIVATE-READONLY-SAFE-ERROR-OBSERVABILITY-01",
+  "transition_for": ""
+}

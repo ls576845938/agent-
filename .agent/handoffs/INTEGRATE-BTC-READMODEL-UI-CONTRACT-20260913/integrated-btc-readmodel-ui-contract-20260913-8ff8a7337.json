@@ -1,0 +1,79 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-readmodel-ui-contract-20260913-8ff8a7337",
+  "ticket_id": "INTEGRATE-BTC-READMODEL-UI-CONTRACT-20260913",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-readmodel-ui-contract-20260913",
+  "base_commit": "827a4d1d8bc547cb048c7e2f6d44d0ff8011860f",
+  "deliverable_commit": "8ff8a7337b4f9f04b3211a1a92959d15eda2c909",
+  "created_at": "2026-09-13T09:38:02Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-readmodel-ui-contract-20260913-e0a651ad7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-readmodel-ui-contract-20260913-e0a651ad7",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/acceptance/integrate-btc-readmodel-ui-contract-20260913.md",
+      "sha256": "8c32801912d9cfd2cec3e9b4d5bf729761b2b072bb7762bfd9946f770d7646bd",
+      "schema_version": "btc_readmodel_ui_contract_integration_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "producer handoff validate, base/parent ancestry, exact touch set, 5/5 committed-object SHA-256, full diff, and git diff --check",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/integrate-btc-readmodel-ui-contract-20260913.md"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-current-head-readmodel-contract.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-btc-current-head-readmodel-contract.mjs"
+    },
+    {
+      "command": "npm.cmd run lint -- --pretty false [first attempt without sparse worktree node_modules]",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/integrate-btc-readmodel-ui-contract-20260913.md"
+    },
+    {
+      "command": "npm.cmd run lint -- --pretty false [temporary verified junction to registered-main installed dependencies]",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs [manifest_match=true, baseline_ancestor=true, sparse canonical=false expected]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "registered-main canonical identity, 70 artifact/readmodel regressions, current-head blocked artifact publication, research_readonly restart, 22 E2E cases, and real page acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/integrate-btc-readmodel-ui-contract-20260913.md"
+    }
+  ],
+  "blockers": [
+    "owner:main_session integrated_commit_not_yet_applied_to_refs_heads_main",
+    "owner:main_session registered_main_canonical_identity_and_70_artifact_readmodel_tests_pending",
+    "owner:artifact_writer current_head_blocked_artifact_publication_pending",
+    "owner:main_session research_readonly_restart_and_22_e2e_real_page_acceptance_pending",
+    "owner:architect handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

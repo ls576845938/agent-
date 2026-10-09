@@ -1,0 +1,83 @@
+{
+  "base_commit": "d7cb976b6158a5e9608de32d715bc3a47d91813d",
+  "blockers": [
+    "current_main_delta_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_fixed_eleven_attempt_browser_matrix_pending",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-09-28T18:00:14.552Z",
+  "deliverable_commit": "10f3f92c4923aa83dac038d91595bd6393a119a0",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "03e8e46169169f2273c37fb0738b22509e04e83731bababc4c9fbdfb33edc792",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "f0dae189ca8723da02b7209dbd9723c1027cba3cd16315df1be6cb30bebf7198",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/research-registry-request-chain-integration-20260929.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_integration_v1",
+      "sha256": "85c4060ebfe2778e18d90aa031332edcf14e7137f5b902a191d2a7a5d689f89f",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-research-registry-request-chain-superseding-03-20260928-9aa5a44fb"
+  ],
+  "domain": "research",
+  "event_id": "integrated-research-registry-request-chain-qlib-cold-20260929-10f3f92c4",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/registry-qlib-cold-20260929",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical Python Qlib pipeline and M1 readonly archive tests",
+      "evidence_path": "docs/acceptance/research-registry-request-chain-integration-20260929.md; 40 passed",
+      "result": "passed"
+    },
+    {
+      "command": "new-process canonical-data cold Qlib 13-way TestClient measurement",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/offline-runs/research-registry-request-chain-20260928/integration-qlib-cold-delta/independent-cold-13way-42fdbef17.json; wall 5.418s, 13/13 HTTP 200, all under 12s, Qlib list 4.875s, 18 seal validations",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python paths and git diff --check",
+      "evidence_path": "docs/acceptance/research-registry-request-chain-integration-20260929.md",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main fixed eleven-attempt browser matrix after delta",
+      "evidence_path": "pending ordinary main merge, canonical restart, and new create-only matrix directory",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": "published-research-registry-request-chain-superseding-03-20260928-9aa5a44fb"
+}

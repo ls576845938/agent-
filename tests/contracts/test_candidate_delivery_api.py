@@ -18,7 +18,7 @@ def client(service, **kwargs):
     return TestClient(app)
 
 
-AUTH = {"X-API-Key": "fixture-management-only", "Origin": "http://127.0.0.1:3000", "Idempotency-Key": "api-create-1"}
+AUTH = {"X-API-Key": "REDACTED_CREDENTIAL_LITERAL", "Origin": "http://127.0.0.1:3000", "Idempotency-Key": "api-create-1"}
 
 
 def test_api_defaults_closed_and_no_storage(setup):
@@ -203,7 +203,7 @@ def test_account_catalog_never_trusts_client_hash_or_verified_boolean(tmp_path):
              "revision":1,"market":"crypto","instruments":["BTC-USDT-SWAP"],"currency":"USDT","expires_at":"2027-01-01T00:00:00Z"}
     path.write_text(json.dumps({"schema_version":"delivery_account_catalog_v1","accounts":[valid]}), encoding="utf-8")
     assert port.get("offline-test")["verified"] is True
-    for addition in ({"identity_hash":"a"*64},{"verified":True},{"api_key":"not-a-real-key"}):
+    for addition in ({"identity_hash":"a"*64},{"verified":True},{"api_key":"REDACTED_CREDENTIAL_LITERAL"}):
         path.write_text(json.dumps({"schema_version":"delivery_account_catalog_v1","accounts":[{**valid,**addition}]}), encoding="utf-8")
         with pytest.raises(DeliveryError): port.list()
 

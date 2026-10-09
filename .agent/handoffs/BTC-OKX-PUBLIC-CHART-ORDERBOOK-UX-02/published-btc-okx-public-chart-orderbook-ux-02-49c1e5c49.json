@@ -1,0 +1,49 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-public-chart-orderbook-ux-02-49c1e5c49",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-PUBLIC-CHART-ORDERBOOK-UX-02",
+  "domain": "btc",
+  "base_commit": "2b522f2910b8b2dbf82133cba6ac9657b6b584b8",
+  "deliverable_commit": "49c1e5c4917a781aa298f1a2418a6bc6a53adb30",
+  "producer_role": "btc_developer",
+  "producer_branch": "agent/btc_developer/btc-okx-public-chart-orderbook-ux-02",
+  "consumer_roles": ["architect", "integrator"],
+  "created_at": "2026-08-17T00:00:00Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/workspaces/CryptoWorkspace.tsx", "sha256": "719a014a22e9cc5d38b59034fcd8a756b7142d05882b6db2f2ef3852f9f66cc6", "schema_version": "btc_okx_public_market_view_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/PublicDepthPanel.tsx", "sha256": "aebd73df846c11ff5b2409f358723bfc0010eb5041114e1621d3deb2d6609137", "schema_version": "btc_okx_public_books5_display_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/index.css", "sha256": "3ab94cc34f719b764b8b176817a9a86091260235f1751bb94091d78d8c9468b6", "schema_version": "btc_okx_public_chart_orderbook_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-demo-console.spec.ts", "sha256": "cc00c09c629f8fc7102669468e8be1820abf5f738062f3c86412fb646cd9b43e", "schema_version": "btc_demo_console_mocked_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/public/frontend-identity.json", "sha256": "a0d1ea9b773ba4b70ea5471e9066e6dacce82d4c40b3d969ff3a55318fcb3960", "schema_version": "quant_frontend_identity_v1", "readiness_class": "quality_checked"},
+    {"type": "report", "path": "design-qa.md", "sha256": "bc3076605edb472a1cc7a33357842057e340d2d7e750b0ef702957aea7dbd151", "schema_version": "btc_public_chart_orderbook_design_qa_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "failure-first canonical-main mocked Playwright: same-minute public trades expected 量 0.09 but observed only 开/高/低/收 before this deliverable", "result": "passed", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"},
+    {"command": "npm.cmd --prefix frontend run lint", "result": "passed", "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command": "npm.cmd --prefix frontend run build", "result": "passed", "evidence_path": "frontend/src/index.css"},
+    {"command": "npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test", "result": "passed", "evidence_path": "frontend/public/frontend-identity.json"},
+    {"command": "npm.cmd --prefix frontend exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list", "result": "passed", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"},
+    {"command": "full mocked Playwright 20 tests and 1440x900 visual screenshot against integrated current main", "result": "not_run", "evidence_path": "design-qa.md"},
+    {"command": "git diff --check scoped frontend and design QA paths", "result": "passed", "evidence_path": "design-qa.md"}
+  ],
+  "blockers": [
+    "owner:architect fast-forward deliverable to registered main, restart canonical frontend, then run complete 20-test mocked Playwright",
+    "owner:architect capture 1440x900 complete-page and orderbook evidence, update design-qa.md final result to passed in a minimal correction",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ]
+}

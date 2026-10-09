@@ -1,0 +1,101 @@
+{
+  "base_commit": "5195e5e492e2c781528c1789bdb4b1ab107410ae",
+  "blockers": [
+    "owner:main_sync integrator_deliverable_not_integrated_to_refs_heads_main",
+    "owner:main_sync canonical_current_main_strictmode_e2e_not_run_after_integration",
+    "quality_checked_frontend_request_deduplication_not_promotion_evidence",
+    "promotion_paper_live_private_order_broker_transfer_withdraw_real_order_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-07-31T00:02:11.583907Z",
+  "deliverable_commit": "bede4e0b0ea798c8afc040c6a788e2ee28d64345",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_catalog_strictmode_request_v1",
+      "sha256": "d20cc03daa474bde13ac865b3bb5b05396239f78814802c3cc56c9ce2f52190d",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_strategy_history_catalog_strictmode_e2e_v1",
+      "sha256": "2eb460afde4a6f1bdff589cd7cb3021f4c1ddad0c90600b6658de81f39a901d7",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-strategy-history-catalog-strictmode-01-339742c85"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-strategy-history-catalog-strictmode-01-bede4e0b0",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-history-strictmode-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published event> [status=valid]",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01/published-btc-strategy-history-catalog-strictmode-01-339742c85.json",
+      "result": "passed"
+    },
+    {
+      "command": "base/deliverable/handoff ancestry + sorted exact 2-path set + raw git cat-file blob SHA-256 audit [2/2 matched]",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01/published-btc-strategy-history-catalog-strictmode-01-339742c85.json",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff 616bdaf7521ff16bd7885389019512b2c7732984 [merge bede4e0b0ea798c8afc040c6a788e2ee28d64345; zero conflicts]",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01/published-btc-strategy-history-catalog-strictmode-01-339742c85.json",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\tsc.cmd --noEmit --pretty false --incremental false",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build [5204 modules transformed; built in 23.95s; existing >500 kB chunk warning preserved]",
+      "evidence_path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "result": "passed"
+    },
+    {
+      "command": ".\\node_modules\\.bin\\playwright.cmd test e2e/btc-strategy-history-report.spec.ts --list [5 tests in 1 file; no runtime started]",
+      "evidence_path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright browser execution not run because config invokes main-only start-current-main.mjs; registered main does not yet contain this integration and runtime start is forbidden",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check <approved base> HEAD -- <two frontend files and append-only handoffs>; scoped safe_status.py clean",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01/integrated-btc-strategy-history-catalog-strictmode-01-bede4e0b0.json",
+      "result": "passed"
+    },
+    {
+      "command": "runtime start/stop; artifact publication; backend restart; private/order/live/broker/transfer/withdraw/secret actions",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-STRATEGY-HISTORY-CATALOG-STRICTMODE-01",
+  "transition_for": "published-btc-strategy-history-catalog-strictmode-01-339742c85"
+}

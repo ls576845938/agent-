@@ -1,0 +1,83 @@
+{
+  "base_commit": "9ce39a517f6d4cb825a3b4aeb9993db5c2c0162d",
+  "blockers": [
+    "registered_main_publication_pending",
+    "backend_restart_required_after_main_integration",
+    "current_main_btc_artifact_offline_rebuild_and_publication_pending",
+    "canonical_http_and_browser_acceptance_pending",
+    "real_account_readonly_acceptance_not_run",
+    "four_pre_existing_guardian_fixture_failures_remain",
+    "windows_real_symlink_regressions_skipped_without_link_privilege_mock_resolve_coverage_passed"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-09-13T16:41:19Z",
+  "deliverable_commit": "608b07ca4588ab31ee2091ea39c885ff367d3696",
+  "deliverables": [
+    {
+      "path": "docs/acceptance/integrate-research-readonly-pages-map-20260913.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_pages_map_integration_acceptance_v1",
+      "sha256": "62c03a1f8318d15a92b4e460e5f618bd5c6d471476446cf379210048eb7263bb",
+      "type": "report"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "7071b1628b61720a55919f2e880d863377f7dc990afab8f769c76ea8511969e6",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "superseded-research-readonly-pages-map-20260913-e594d3bb2"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-research-readonly-pages-map-20260914-608b07ca4",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-research-readonly-pages-map-20260913",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "PYTHONUTF8=1 py -3 -B -m pytest -q -p no:cacheprovider --basetemp <unique> backend/tests/test_backend_research_readonly.py backend/tests/test_research_readonly_views.py",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-pages-map-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint using registered-main canonical node_modules",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-pages-map-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run build using registered-main canonical node_modules",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-pages-map-20260913.md",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check and identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "registered-main restart, current-HEAD BTC artifact publication, HTTP and canonical Playwright acceptance",
+      "evidence_path": "docs/acceptance/integrate-research-readonly-pages-map-20260913.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-RESEARCH-READONLY-PAGES-MAP-20260913",
+  "transition_for": "superseded-research-readonly-pages-map-20260913-e594d3bb2"
+}

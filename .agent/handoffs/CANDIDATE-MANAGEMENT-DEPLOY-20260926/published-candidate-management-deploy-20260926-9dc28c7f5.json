@@ -1,0 +1,146 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-candidate-management-deploy-20260926-9dc28c7f5",
+  "ticket_id": "CANDIDATE-MANAGEMENT-DEPLOY-20260926",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/candidate-management-deploy-20260926",
+  "base_commit": "8821b04e599812429d5034c126493379209c59b5",
+  "deliverable_commit": "9dc28c7f5643369fe24bf3c6d566f30942c0463b",
+  "created_at": "2026-09-25T16:30:41.393Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-candidate-offline-entry-20260925-0e0a442ce"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "scripts/start_backend_current_main.ps1",
+      "sha256": "ec0965d77357ac34c885b10bf4727f0a5a6932f5bc9f6e443be03cd9318a998b",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/start_backend_current_main.py",
+      "sha256": "95e6c880d283d75da77dc8de71535210883a315f7a421bb439a9237d4013e159",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/candidate_management_deployment.py",
+      "sha256": "c79856e01ce76bd8a44956bd0a8503754e79fbae128d8a2959ecdd17b6ac3f5d",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "sha256": "72ab62a860fc92801bee023685e2f8a5ad10ab62f210fef99e538d2bd3ef2a2c",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "b4313ae0aad36e0eacebf1cb5a4a8311d77e939948fdb249404685a11ff683b8",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/operations/candidate-management-deployment-20260926.md",
+      "sha256": "d8ad50f276484bb1b2cc9f634acda2a2d9bc3faf0332f02b22b1e8bc98948c2e",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/candidate-management-deployment-20260926.md",
+      "sha256": "6868b636805583204ae2fe3eb3feb0b890dbdb9527bd763b37ca7743f17cc323",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/workspace-access.ts",
+      "sha256": "0b30e303673747dc98a043b5dd4ae04bbb5e6962f6faa51a2469fba427b81ac2",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-btc-readonly-workspace.mjs",
+      "sha256": "fdeb5462d2a00304a18ad30d650fbd3aec0bd20fb43f425636e5a9228f3513fa",
+      "schema_version": "candidate_management_deployment_source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "Exact base 8821b04e PS1/Python in-memory reproduction -> both backend_evidence_profile_invalid for candidate_management; original source not overwritten",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "Canonical .venv Python -B -X utf8 -m pytest -q --tb=short -p no:cacheprovider backend/tests/test_backend_current_main_launcher.py -> 49 passed/29.23s; one dependency warning",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "Same pytest file -k candidate_management after final preparation status label -> 20 passed, 29 deselected/10.87s",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-readonly-workspace.mjs -> new management assertion initially failed, corrected original hook/console/tester/readonly contract script exit0; node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json -> exit0",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "npm.cmd run identity:refresh after frontend source commit 3179541b8f362ebd0baf3b6c0cf5b7fb82a1b3ca; node frontend/scripts/check-frontend-identity.mjs -> passed manifest_match/baseline_ancestor, canonical=false; fingerprint70eb61d16d156eb36f2c33c4f42858c3c3483b7c96f2979df59347ae4ca7df1c",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs -> in-worktree checks pass after refresh, Windows canonical PS1 -Check at line257 fails because unchanged main8821b04 has stale frontend manifest; exit1 fingerprint_or_object_ids_mismatch. This is pending main deployment, NOT full-suite success.",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "py -3 -B -m compileall -q scripts/start_backend_current_main.py scripts/candidate_management_deployment.py backend/tests/test_backend_current_main_launcher.py; scoped staged diff --check -> exit0; base-to-HEAD protected business source diff backend/app quant_crypto quant_shared integrations frontend/src/workspaces/research -> unchanged",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    },
+    {
+      "command": "Actual secret reading, production external directory preparation, service launch/restart, User/Machine environment changes, canonical browser acceptance, candidate registration/start/resume, full214-case business matrix and paper/live execution",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/candidate-management-deployment-20260926.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent source/config-helper/frontend compatibility and derived identity review required; source3179541b8 plus derived9dc28c7f5 not merged by producer",
+    "owner:root canonical main8821b04 currently retains old frontend fingerprint; full frontend identity Windows check must be rerun after approved integration, with real listener/current-main/page acceptance",
+    "owner:operator local Web authentication missing per root-session presence-only report; use existing process credential or operator-only hidden prompt; no test key/default/credential persistence",
+    "owner:operator actual external empty configuration preparation and formal guarded startup are pending; no User environment change or capability enablement performed",
+    "owner:evidence empty sources/inputs/accounts is awaiting import, not candidate runnable; real candidate quality not verified; protection fills and legal registered partial unsupported; PID reuse conservatism retained"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

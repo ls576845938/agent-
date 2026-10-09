@@ -1,0 +1,102 @@
+{
+  "base_commit": "fed0c3c6c3fd2c990d02fecfc1d34632a0f412b3",
+  "blockers": [
+    "baseline_existing_githooks_post_checkout_missing",
+    "current_repository_full_git_scan_deferred_after_deadline",
+    "13_existing_invalid_handoffs_exposed_fail_closed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-20T02:08:00Z",
+  "deliverable_commit": "70752342532b99e590c27b09b176177d9176eda5",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_source_v1",
+      "sha256": "ba8cbd86702a93c3098e58476c6e16b622cad88b1e50d38be25b119b6575abc1",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_contract_tests_v1",
+      "sha256": "1534c72417c744316f4ad0ca1cf506a28e0723526e7768fb2d8a2e4f4d2eea6d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_contract_tests_v1",
+      "sha256": "c8cabbda11ab2705df155f617541b3fb4d3d723d79fb8c32bec25a98cf96bc77",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_context_scalability.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_contract_tests_v1",
+      "sha256": "b0180da850946d053777f655b9807a67190a2f6e147263c2621561a9e348dc48",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-btc-handoff-main-coverage-discovery-01-707523425",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-handoff-main-coverage-discovery-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_handoff.py tests/agent_governance/test_context_scalability.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance/test_hooks.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/agent_governance",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile tools/agent_governance/handoff.py tests/agent_governance/test_handoff.py tests/agent_governance/test_hooks.py tests/agent_governance/test_context_scalability.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "team_context.py current main discovery",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "scan_handoffs verify_git=True current repository",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-HANDOFF-MAIN-COVERAGE-DISCOVERY-01",
+  "transition_for": ""
+}

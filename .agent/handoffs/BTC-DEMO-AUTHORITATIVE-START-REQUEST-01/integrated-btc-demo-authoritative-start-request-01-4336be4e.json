@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-authoritative-start-request-01-4336be4e",
+  "ticket_id": "BTC-DEMO-AUTHORITATIVE-START-REQUEST-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-authoritative-start-request-int-01",
+  "base_commit": "e45c018061ffb63d5724a664a72d162d166cf2de",
+  "deliverable_commit": "4336be4e4488068c9fbd91a83dde1cb8bd17a904",
+  "created_at": "2026-08-25T00:00:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-demo-authoritative-start-request-01-509706c11"],
+  "supersedes": [],
+  "transition_for": "published-btc-demo-authoritative-start-request-01-509706c11",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "0d172a64bc5bc70bd4633b82c8e6533c3c879ea2ec77afe60067e43e5d519e18",
+      "schema_version": "btc_demo_authoritative_start_request_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "sha256": "39213f146f661dd1a36f6e593eed2e610eb7b1054898ca3556c0aad719a7106d",
+      "schema_version": "btc_demo_authoritative_start_request_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-AUTHORITATIVE-START-REQUEST-01/published-btc-demo-authoritative-start-request-01-509706c11.json",
+      "sha256": "fabfea37ab18c5f7073b45f2b59225c67f9deadbcd0771603d9194d13c57cdb1",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate published-btc-demo-authoritative-start-request-01-509706c11",
+      "result": "passed",
+      "evidence_path": "status=valid; producer worktree scoped clean; base->deliverable->handoff ancestry verified"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_authoritative_start_int01 tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed",
+      "evidence_path": "43 passed in 5.32s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_authoritative_start_int02 backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed",
+      "evidence_path": "43 passed in 4.51s"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\qs_authoritative_start_int03 tests/contracts/test_btc_okx_demo_paper_runtime.py::test_partial_start_request_accepts_only_0p03_and_25_cap tests/contracts/test_btc_okx_demo_paper_runtime.py::test_durable_start_operation_is_fast_idempotent_and_single_owner tests/contracts/test_btc_okx_demo_paper_runtime.py::test_start_operation_blocks_missing_local_keyring_capability_before_credentials tests/contracts/test_btc_okx_demo_paper_runtime.py::test_unfinished_start_operation_restarts_interrupted_fail_closed tests/contracts/test_btc_okx_demo_paper_runtime.py::test_status_is_local_only_and_never_loads_credentials",
+      "result": "passed",
+      "evidence_path": "5 passed in 4.57s"
+    },
+    {
+      "command": "py -3 -m py_compile backend/app/services/btc_demo_runtime.py tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py",
+      "result": "passed",
+      "evidence_path": "compiled with PYTHONPYCACHEPREFIX=C:\\tmp\\qs_authoritative_pyc"
+    },
+    {
+      "command": "git diff --check e45c018061ffb63d5724a664a72d162d166cf2de..4336be4e4488068c9fbd91a83dde1cb8bd17a904",
+      "result": "passed",
+      "evidence_path": "zero output"
+    },
+    {
+      "command": "canonical backend/frontend restart, browser, private/order/live endpoint validation",
+      "result": "not_run",
+      "evidence_path": "deferred to main session; integrator did not start services or issue POST"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "canonical_current_main_browser_acceptance_deferred",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

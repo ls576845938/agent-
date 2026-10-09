@@ -1,0 +1,170 @@
+{
+  "base_commit": "9f5fb84f77d5e85bef6e94203e186560c19bc78f",
+  "blockers": [
+    "cn_market_rule_current_main_handoff_missing",
+    "cn_market_rule_current_main_manifest_missing",
+    "cn_market_rule_formal_bundle_unvalidated",
+    "board_lot_rule_missing",
+    "price_limit_rule_missing",
+    "sellability_rule_missing",
+    "fee_schedule_rule_missing",
+    "session_rule_missing",
+    "settlement_rule_missing",
+    "domain_read_model_missing",
+    "promotion_and_paper_live_gates_not_unlocked",
+    "classification:g06_code_integration_blocker=false",
+    "classification:offline_fixture_chain=quality_checked",
+    "classification:reconciliation_difference=blocks_gate"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-24T08:38:43Z",
+  "deliverable_commit": "061415f680eb54bcaae591a8f76988c03c9f0a1d",
+  "deliverables": [
+    {
+      "path": "quant_cn/portfolio/risk.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_target_risk_intent_v1",
+      "sha256": "a8c5b91e4bc9f7255d32019213ceff3093c50fa8ce30e52dc980701223d5ee30",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/execution/models.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_offline_execution_models_v1",
+      "sha256": "12c95a3fbe54c7f9949df9049551cfa5b3c693ba17084fa9053f96a6447e98d9",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/execution/oms.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_offline_oms_v1",
+      "sha256": "7e2788d3171f04f9e9487b4f93d84b72b2abcb556b911fdbb1d5eeee63c43edc",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/execution/simulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_offline_fill_simulator_v1",
+      "sha256": "4a7d18f8dd6923edd93191acfe5aac2d870f5289215fff6c8400c73265d399cd",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/ledger/accounting.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_fill_driven_accounting_v1",
+      "sha256": "7d38f73d160906cda145b71d45c3f9dccf82a1becbce186162466fd699f56627",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/ledger/models.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_ledger_models_v1",
+      "sha256": "c16fc2f7e84011392553b6a0db69f13cbadbce580c367cf9173f9c5a81cdda18",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/ledger/reconciliation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_ledger_reconciliation_v1",
+      "sha256": "9fc4f835e802bf3f4fbf9d0af25921e688e0c7ba9e29d4242bba3c67d5205bad",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/ledger/store.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_atomic_ledger_store_v1",
+      "sha256": "1b7c30c3532eede37eedde846d839ba1f809db9c99ffbd7c062ead0fb03b9cba",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/ledger/shared_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_ledger_adapter_v1",
+      "sha256": "a91f2ae88291eae1923f368cdd15428760a12dcac19e6ecf05a2fe3249645f99",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/replay/engine.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_injected_replay_v1",
+      "sha256": "d828fc4e4f945c628ebb7c14700685cba236300e3a209f0d2de5ee9d6239e8f8",
+      "type": "code"
+    },
+    {
+      "path": "quant_cn/replay/shared_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_shared_replay_adapter_v1",
+      "sha256": "f6b3a343ca556407eaea793e845c3efc44b137432a7f2136d06e3fdf5e0fea02",
+      "type": "code"
+    },
+    {
+      "path": "tests/cn_equity/test_oms_ledger_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "cn_oms_ledger_replay_tests_v1",
+      "sha256": "5a35648d783b2e10287c5d35ad4b28c6a3ded9d2c6cc0d9ca7afa3dbe39fc978",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-cn-v3-current-main-foundation-01-batch-02-takeover",
+    "integrated-cn-v3-market-semantics-01-goal2-batch-01",
+    "integrated-cn-v3-shared-platform-v2-adoption-01-goal3-batch-01",
+    "integrated-cn-v3-market-rule-consumer-01-goal5-batch-01"
+  ],
+  "domain": "cn_equity",
+  "event_id": "acknowledged-cn-v3-oms-ledger-replay-01-061415f6",
+  "event_type": "acknowledged",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/a_share_developer/cn-v3-oms-ledger-replay-01",
+  "producer_role": "a_share_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <G01,G02,G03,G05 integrated handoffs>",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/cn_equity/test_oms_ledger_replay.py [observed: 16 passed]",
+      "evidence_path": "tests/cn_equity/test_oms_ledger_replay.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/cn_equity [observed: 86 passed]",
+      "evidence_path": "tests/cn_equity",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q <G06 Python touch set>",
+      "evidence_path": "quant_cn",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m ruff check <G06 touch set> [ruff unavailable in interpreter]",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "safe_status.py and git diff --cached --check with exact G06 pathspec",
+      "evidence_path": "tests/cn_equity/test_oms_ledger_replay.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "CN-V3-OMS-LEDGER-REPLAY-01",
+  "transition_for": "integrated-cn-v3-market-rule-consumer-01-goal5-batch-01"
+}

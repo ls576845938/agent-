@@ -1,0 +1,64 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-crypto-strategy-ux-source-localization-layout-06-f4696790a",
+  "ticket_id": "BTC-CRYPTO-STRATEGY-UX-SOURCE-LOCALIZATION-LAYOUT-06",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-ux-localize-layout-06-int",
+  "base_commit": "cf52a1bbd7984e33b2c4c5274b8bb0bc5a829b57",
+  "deliverable_commit": "f4696790af195f774cea9c85206689e525666493",
+  "created_at": "2026-08-18T14:00:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-crypto-strategy-ux-source-localization-layout-06-b7b97e4c7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-crypto-strategy-ux-source-localization-layout-06-b7b97e4c7",
+  "deliverables": [
+    {"type": "test_evidence", "path": "frontend/e2e/btc-backtest-workbench.spec.ts", "sha256": "65fc390464862d155c98d4eab90c7e684c981af8cb825fbca2031535b0ab79b6", "schema_version": "playwright_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-demo-console.spec.ts", "sha256": "f857bbefd4abe4d50297684302777fca2741de0b4bb56a314ae1d254f14c89c2", "schema_version": "playwright_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-strategy-history-report.spec.ts", "sha256": "70638e79bcd29208da9ebfbdd7f898da8b20de2741c99062e6044af9c72a656c", "schema_version": "playwright_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-strategy-registry.spec.ts", "sha256": "76bfd53fe77836a0e553013d68bda96afee644b26a878b8e5ae64ea79c386d5f", "schema_version": "playwright_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/strategy-workbench.spec.ts", "sha256": "0a79d5ffe7d4315d61a600675c70841611709b64be9278e7ac59c4be31d9394a", "schema_version": "playwright_contract_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/public/frontend-identity.json", "sha256": "da41e122f445477f7b6f0e0d4578b1809cddc90e412f9b613ee134478be49529", "schema_version": "frontend_identity_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/index.css", "sha256": "331acd679e2b24866f084487e008bc8a417247b41d81e1dbaccf0682ad3ce020", "schema_version": "frontend_layout_css_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/lib/strategy-presentation.ts", "sha256": "126e721cfa9e0f881379f5b4f158433600686685685be3c521899173198a9528", "schema_version": "strategy_presentation_helper_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/CryptoWorkspace.tsx", "sha256": "841fdb43a95f57dfcb461c37eb820aab07e9b41643e19aca917676f1d784c40d", "schema_version": "crypto_workspace_layout_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/StrategyExplorer.tsx", "sha256": "854d2ee4031729ec37489dd280b30c297b9b157e71e40e21b91d472e12fbe1da", "schema_version": "strategy_source_identity_gate_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/BacktestForm.tsx", "sha256": "b2da6dc7296eea28c60b6d34c3e4df2e42059d846048530b6ea3f8e4584b728e", "schema_version": "backtest_presentation_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/CryptoStrategyEditor.tsx", "sha256": "57c3de6624151361f9e617d0425c2b45d809b6485099fda14d926252cd301abe", "schema_version": "crypto_strategy_editor_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx", "sha256": "8452ec0af52bbe3cdd5f2bf862fbfc5fa884a0a308f15e9dc47bc8cdb7c4a389", "schema_version": "demo_runtime_presentation_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/StrategyDiscoveryCatalog.tsx", "sha256": "8890a969298541a4b5684f0c9376e2e8a4d732b1c1373f3fa108402f1be69187", "schema_version": "strategy_catalog_projection_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/StrategyTesterReport.tsx", "sha256": "d3339ef20ea7d9a5d84f40a7b5ed5c7bb292d1ffa78fa735d1b71cff0a1d2611", "schema_version": "strategy_tester_presentation_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/src/workspaces/crypto/crypto-strategy-editor.css", "sha256": "cb289a6b51c6b19bc7cb7ee6ed7f1e7eb339baa0428ad3898336bd83ceb5a0e6", "schema_version": "crypto_strategy_editor_css_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "npm --prefix frontend run lint", "result": "passed", "evidence_path": "tsc --noEmit passed using a temporary read-only registered-main node_modules junction"},
+    {"command": "npm --prefix frontend run build", "result": "passed", "evidence_path": "Vite 5215 modules transformed; build completed with existing chunk-size warning; generated dist removed after verification"},
+    {"command": "npm --prefix frontend exec -- playwright test --config=frontend/playwright.config.ts frontend/e2e/btc-demo-console.spec.ts frontend/e2e/btc-backtest-workbench.spec.ts frontend/e2e/strategy-workbench.spec.ts frontend/e2e/btc-strategy-history-report.spec.ts frontend/e2e/btc-strategy-registry.spec.ts --list", "result": "passed", "evidence_path": "60 tests listed; execution deferred to registered current-main port 3000 per canonical frontend policy"},
+    {"command": "npm --prefix frontend run identity:refresh && npm --prefix frontend run identity:check && npm --prefix frontend run identity:test", "result": "passed", "evidence_path": "fingerprint=b7e77ea41a99b7dec0c09c7b0238ae1bfb9f4ec9a302dc153c5576d721519133; manifest_match=true; baseline_ancestor=true; canonical=false on integrator branch"},
+    {"command": "git diff --check", "result": "passed", "evidence_path": "scoped integration diff has no whitespace errors"},
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input published handoff", "result": "passed", "evidence_path": "published event valid before and after cherry-pick"}
+  ],
+  "blockers": [
+    "owner:integrator canonical_mocked_playwright_deferred_to_registered_current_main_port_3000",
+    "owner:root backend_restart_required_after_integration",
+    "promotion_artifact_rebuild_not_applicable_to_presentation_only_frontend_scope_but_promotion_remains_blocked",
+    "promotion_evidence_not_ready_no_demo_start_no_private_no_order_no_live"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

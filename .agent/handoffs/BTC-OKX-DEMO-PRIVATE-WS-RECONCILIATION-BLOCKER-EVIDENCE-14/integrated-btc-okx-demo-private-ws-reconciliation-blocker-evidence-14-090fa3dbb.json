@@ -1,0 +1,103 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-private-ws-reconciliation-blocker-evidence-14-090fa3dbb",
+  "ticket_id": "BTC-OKX-DEMO-PRIVATE-WS-RECONCILIATION-BLOCKER-EVIDENCE-14",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-private-ws-blocker-evidence-14-int",
+  "base_commit": "59064dd8d14ed355f3073d363a700efa48120b69",
+  "deliverable_commit": "090fa3dbb1f6ee41b83a5fb3354d64b11215d04e",
+  "created_at": "2026-08-11T14:40:00Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-okx-demo-private-ws-reconciliation-blocker-evidence-14-01df910a7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-private-ws-reconciliation-blocker-evidence-14-01df910a7",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_private_ws.py",
+      "type": "code",
+      "sha256": "16f2ea6e3df65c9b9ee8ecdd2bddd6ea9134f5df72bbabda86a5fbff1c41e60e",
+      "schema_version": "okx_demo_private_ws_reconciliation_blocker_evidence_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "6a34119e855138163163f80ff402a5dc9f68a8a95341a9c4d7c467239da0fe36",
+      "schema_version": "okx_demo_runtime_probe_diagnostic_projection_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_private_ws.py",
+      "type": "test_evidence",
+      "sha256": "ef2463ae1abfadeba223de1dc076f30cd0d698e2711539b09189b3ab51d400e6",
+      "schema_version": "okx_demo_private_ws_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "b864c8f0c242edbfc49f91662d16937790fc4eb42a4015ce80887eb2cc6f9543",
+      "schema_version": "okx_demo_runtime_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> -q tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'probe_projects_reconciliation_blockers_without_identity_leakage or projects_only_allowlisted_reconciliation_blocker_evidence or probe_preserves_startup_snapshot_exception_diagnostic or private_ws_probe_diagnostics_are_persisted_redacted_and_fail_closed' [4 passed, 338 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> -q tests/contracts/test_btc_okx_demo_private_ws.py [24 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_private_ws.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> -q tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'private_ws_probe_diagnostics or startup_reconnect_probe or private_ws_factory_failure' [2 passed, 316 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest -p no:cacheprovider --basetemp <external> -q tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_runtime_hardening.py -k '<offline fault-drill/private-ws/order/cancel/dead-man adjacent selection>' [27 passed, 449 deselected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_fault_drill.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_private_ws.py quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "git diff --check scoped integration diff",
+      "result": "passed",
+      "evidence_path": ""
+    },
+    {
+      "command": "handoff.py validate published and integrated envelopes; producer-tree ancestry/touch/blob equality",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-DEMO-PRIVATE-WS-RECONCILIATION-BLOCKER-EVIDENCE-14"
+    }
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration_deferred_to_final_release",
+    "promotion_artifact_read_model_not_rebuilt_per_ticket",
+    "offline_fake_client_contracts_only_no_private_endpoint_validation",
+    "registered_main_fast_forward_is_separate_governed_sync_step",
+    "all_promotion_paper_live_private_order_real_order_transfer_withdraw_flags_remain_false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

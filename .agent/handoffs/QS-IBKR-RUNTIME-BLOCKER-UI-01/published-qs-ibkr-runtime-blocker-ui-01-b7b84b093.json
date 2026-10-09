@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-qs-ibkr-runtime-blocker-ui-01-b7b84b093",
+  "ticket_id": "QS-IBKR-RUNTIME-BLOCKER-UI-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/super_developer/qs-ibkr-runtime-blocker-ui-01",
+  "base_commit": "e1f39ba97911278eca7034b8eba55246f3ddfc73",
+  "deliverable_commit": "b7b84b093baa575cfd6b1aa92888a344091bb320",
+  "created_at": "2026-08-08T00:39:41Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/lib/ibkr-runtime-api.ts",
+      "sha256": "f9bf5b22c69804d3751e0fe70ef2a4dd4431a7a3dc2d2dc882aa806a40e66c5e",
+      "schema_version": "typescript_source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-ibkr-runtime-blockers.mjs",
+      "sha256": "45b9fd3eb4608a2a5d6ff4c7ba02e85583f350f130563b8715b84e0bfd0ac7b5",
+      "schema_version": "node_regression_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node --experimental-strip-types frontend/scripts/test-ibkr-runtime-blockers.mjs [failure-first before source fix: expected exit 1, structured blockers actual=[]]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-ibkr-runtime-blockers.mjs"
+    },
+    {
+      "command": "node --experimental-strip-types frontend/scripts/test-ibkr-runtime-blockers.mjs [final: passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-ibkr-runtime-blockers.mjs"
+    },
+    {
+      "command": "npm.cmd ci [117 packages installed]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run lint [initial attempt timed out after 184.1s with no diagnostics]",
+      "result": "failed",
+      "evidence_path": "frontend/src/lib/ibkr-runtime-api.ts"
+    },
+    {
+      "command": "npm.cmd run lint -- --pretty false [retry: exit 0 in 268.7s]",
+      "result": "passed",
+      "evidence_path": "frontend/src/lib/ibkr-runtime-api.ts"
+    },
+    {
+      "command": "npm.cmd run build [exit 0 in 161.0s; 5210 modules; chunk-size warning only]",
+      "result": "passed",
+      "evidence_path": "frontend/src/lib/ibkr-runtime-api.ts"
+    },
+    {
+      "command": "git diff --check -- frontend/src/lib/ibkr-runtime-api.ts frontend/scripts/test-ibkr-runtime-blockers.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/src/lib/ibkr-runtime-api.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator change_risk=unclassified requires independent current-main integration",
+    "owner:gate current-head promotion artifact and read model rebuild not performed",
+    "owner:runtime backend restart and registered-main browser acceptance not performed by producer",
+    "initial_scoped_dirty_paths=[];deliverable_touch_set_is_exactly_two_frontend_paths",
+    "no_backend_api_schema_page_component_strategy_risk_oms_ledger_or_public_identity_change",
+    "no_gateway_network_secret_private_order_live_access;no_service_started",
+    "promotion_eligible=false;paper_order_allowed=false;live_order_allowed=false",
+    "private_endpoint_allowed=false;order_endpoint_allowed=false;real_order_submitted=false"
+  ],
+  "gate_impact": "requires_gate_rebuild",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

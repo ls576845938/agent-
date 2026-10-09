@@ -1,0 +1,123 @@
+{
+  "base_commit": "bcc31f0b9bfb1ffa97a7f91dc14debb1c05683c7",
+  "blockers": [
+    "btc_5m_trend_family_no_candidate_passed_selection_gates",
+    "btc_5m_trend_family_champion_had_zero_entries_in_all_four_folds",
+    "btc_5m_trend_family_pooled_effective_bets_below_30",
+    "btc_5m_trend_family_multiple_testing_deflated_mean_bet_return_non_positive",
+    "btc_5m_trend_family_parameter_neighborhood_stability_failed",
+    "btc_5m_frozen_holdout_excluded_and_unread",
+    "btc_5m_l2_spread_depth_market_impact_not_proven",
+    "btc_5m_latency_queue_and_unfilled_order_model_not_proven",
+    "btc_perpetual_mark_index_funding_and_liquidation_parity_not_proven",
+    "btc_venue_hosted_protective_stop_not_proven",
+    "btc_5m_trend_family_runtime_adapter_not_implemented",
+    "independent_integrator_required_change_risk_unclassified",
+    "current_head_research_artifact_rebuild_required_after_integration",
+    "backend_restart_required_by_policy_not_run_for_offline_research_ticket"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-08-27T07:18:00Z",
+  "deliverable_commit": "aa08b2fcdf694f80102718d1b78eee60f2baf0da",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/trend_family_5m_ga_search.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_5m_trend_family_ga_search_v1",
+      "sha256": "b77a669867f48bed3136a6801904a96441044bb64193e78fac54022b116053d5",
+      "type": "code"
+    },
+    {
+      "path": "scripts/research/run_btc_trend_family_5m_ga_search.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_5m_trend_family_ga_search_cli_v1",
+      "sha256": "07453beccf9c82ba29c665feea45b09e198718d26fa52fb2c361fa8eccecbb70",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_trend_family_5m_ga_search.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_5m_trend_family_ga_search_contract_tests_v1",
+      "sha256": "06ff1721528ec94b6c59d793e6a3f785e96a4552c7d33c218494d14fedc4e85a",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/BTC_5M_TREND_FAMILY_GA_SEARCH_02_PREREG.json",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_5m_trend_family_ga_search_prereg_v1",
+      "sha256": "38b6ef0b8ad0d5654abc226d0faecfa69dd182358bbe621fdfef3e38c8e8a195",
+      "type": "report"
+    },
+    {
+      "path": "docs/research/BTC_5M_TREND_FAMILY_GA_SEARCH_02.md",
+      "readiness_class": "research_ready",
+      "schema_version": "btc_5m_trend_family_ga_search_research_report_v1",
+      "sha256": "6376626ffc1df20cd724a3d240170598c50e9e53db3eaa93fd3c1e12084757a7",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "published-btc-5m-qcv2r1-selection-prefix-01-8748a1775"
+  ],
+  "domain": "research",
+  "event_id": "published-btc-5m-trend-family-ga-search-02-aa08b2fcd",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-5m-trend-family-ga-search-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_trend_family_5m_ga_search.py tests/contracts/test_btc_5m_qcv2r1_selection_prefix.py tests/contracts/test_btc_regime_conditional_5m_alpha_search.py -q",
+      "evidence_path": "tests/contracts/test_btc_trend_family_5m_ga_search.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q quant_crypto/research/trend_family_5m_ga_search.py scripts/research/run_btc_trend_family_5m_ga_search.py; git diff --check -- scoped touch set",
+      "evidence_path": "quant_crypto/research/trend_family_5m_ga_search.py",
+      "result": "passed"
+    },
+    {
+      "command": "official frozen selection-only run: seed=20260827 families=2 population_per_family=24 generations=6 folds=4 prior_unique=1587 maximum_new_unique=300",
+      "evidence_path": "D:/vibe coding/Obsidian/量化系统/research_artifacts/btc-5m-trend-family-ga-search-02/official-c93a887c4bde",
+      "result": "passed"
+    },
+    {
+      "command": "verify selection-prefix manifest/payload/aggregate hashes, report and lock semantic hashes, holdout bytes/rows/metrics read zero, and all safety flags false",
+      "evidence_path": "docs/research/BTC_5M_TREND_FAMILY_GA_SEARCH_02.md",
+      "result": "passed"
+    },
+    {
+      "command": "tests/api/test_research_only_boundaries.py -q",
+      "evidence_path": "sparse producer worktree excludes quant_cn dependency; 5 passed before 3 import failures",
+      "result": "not_run"
+    },
+    {
+      "command": "full repository regression",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "current-main artifact rebuild, backend/frontend restart and browser validation",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-5M-TREND-FAMILY-GA-SEARCH-02",
+  "transition_for": ""
+}

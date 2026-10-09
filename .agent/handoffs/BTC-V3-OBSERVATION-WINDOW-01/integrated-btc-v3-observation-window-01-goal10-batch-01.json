@@ -1,0 +1,62 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-observation-window-01-goal10-batch-01",
+  "ticket_id": "BTC-V3-OBSERVATION-WINDOW-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal10-batch-01",
+  "base_commit": "04e5647dbddd62a0e2b1676096b20ee8396a647e",
+  "deliverable_commit": "ba85c474208b6cd0a0cb20d6529e36ef5a6e895d",
+  "created_at": "2026-07-24T15:15:44Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-observation-window-01-5b8d193a"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-observation-window-01-5b8d193a",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py -q --basetemp <unique-system-temp> -p no:cacheprovider [observed from system-temp CWD: 19 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_demo_observation_accumulator.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_gate_snapshot.py tests/contracts/test_btc_domain_read_model.py tests/contracts/test_btc_nonflat_evidence_autocapture.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_btc_manual_paper_review_approval.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py -q --basetemp <unique-system-temp> -p no:cacheprovider [initial system-temp CWD: 70 passed, 2 schema-relative-path FileNotFoundError; required repo-root rerun: 72 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_current_head_gate_rebuild.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/research/btc_demo_observation_accumulator.py quant_crypto/research/btc_demo_manual_approval_observer.py scripts/research/build_btc_demo_observation_accumulator.py scripts/research/run_btc_demo_manual_approval_observer.py",
+      "result": "passed",
+      "evidence_path": "scripts/research/build_btc_demo_observation_accumulator.py"
+    }
+  ],
+  "blockers": [
+    "owner:btc_operations awaiting_authorized_observation_runtime",
+    "owner:data_steward btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "owner:btc_observation btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_operations btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_operations btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_observation btc_okx_native:30_60_day_observation_window_incomplete",
+    "owner:architect/manual_reviewer btc_okx_native:manual_promotion_approval_missing",
+    "classification:goal10_code_integration_blocker=false",
+    "classification:btc_observation_state=awaiting_authorized_observation_runtime_observation_incomplete"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

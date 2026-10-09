@@ -1,0 +1,148 @@
+{
+  "base_commit": "e96ebdf56251846524bcc3136cd2192e96ddeaa5",
+  "blockers": [
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "data_steward",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T09:01:38Z",
+  "deliverable_commit": "1961a6ed036457e0c65897f6a1353a566135d143",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_next_stage_engineering_evidence.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_engineering_evidence_v2",
+      "sha256": "4a966dd67ac7734d693cce438c069608828f9bf458f464c58ea7e11e1cbcb8d8",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/backtest/funding_cashflow_evidence.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_funding_cashflow_evidence_v1",
+      "sha256": "cf2c1124588e35c89dd5ad6eaadca56fb16a560fe8df0a11fd16d28edf57689c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/private_ws_reconciliation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_private_ws_offline_reconciliation_v1",
+      "sha256": "5d6c4a067e7f27bd1e806e492c68a9fc7b4a70623317d01ae375e02fad79018c",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/security/api_key_audit.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_api_key_permission_audit_v1",
+      "sha256": "cb40c0437f38bf3f8281f5a98b1feb339101822c76d4a9362c1508bc77800a0f",
+      "type": "code"
+    },
+    {
+      "path": "configs/btc/security/api_key_permission_records.redacted.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_api_key_permission_records_fail_closed_template_v1",
+      "sha256": "405817dbf14ef51b4ddc158e2d759819eeca0865500d24c1d53360afb06608c4",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_engineering_closure.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_engineering_closure_contract_v2",
+      "sha256": "6679777012033add013b23fae2e4c2221e7f97b0e82a050d442fc3e24da40c48",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_domain_read_model.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_domain_read_model_contract_v1",
+      "sha256": "c59c913a40abbb7e3e30c3245e1c3c6434be1122bb20947f1905f3225275f370",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_api_key_permission_audit.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_api_key_permission_audit_contract_v1",
+      "sha256": "9f25cdf6301a6f76fd907486fd886bde9625f394ef17c7b49b0676ff080e46af",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-data-btc-v3-immutable-public-market-evidence-01"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-next-stage-engineering-closure-02-1961a6ed0",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-next-stage-engineering-closure-02",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest <original-126-scope> tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_dataready_consumer.py -q --basetemp <unique-system-temp> -p no:cacheprovider [observed: 233 passed in 46.65s]",
+      "evidence_path": "tests/contracts/test_btc_next_stage_engineering_closure.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -m py_compile <7 approved Python source/test files>",
+      "evidence_path": "quant_crypto/application/btc_next_stage_engineering_evidence.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/integrated-data-btc-v3-immutable-public-market-evidence-01.json",
+      "evidence_path": ".agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/integrated-data-btc-v3-immutable-public-market-evidence-01.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/published-data-btc-v3-immutable-public-market-evidence-01-14080d3d.json",
+      "evidence_path": ".agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/published-data-btc-v3-immutable-public-market-evidence-01-14080d3d.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cat-file blob 5867aeb2154bb69841d6c096111fa93040cbb89f:<deliverable-path> plus SHA-256 [observed: 3/3 raw committed-byte hashes matched]",
+      "evidence_path": ".agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/integrated-data-btc-v3-immutable-public-market-evidence-01.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest .agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7.json [observed: resolved; consumer_read_only=true]",
+      "evidence_path": ".agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7.json",
+      "result": "passed"
+    },
+    {
+      "command": "real current-HEAD funding/private-WS/non-flat-fill and 30-60 natural-day observation",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-NEXT-STAGE-ENGINEERING-CLOSURE-02",
+  "transition_for": ""
+}

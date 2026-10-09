@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-alpha-parameter-map-01-f7e81e95d",
+  "ticket_id": "STRATEGY-ALPHA-PARAMETER-MAP-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-alpha-parameter-map-01",
+  "base_commit": "4096453b344e777e99f4272b43582d60cf1251f9",
+  "deliverable_commit": "f7e81e95db959ef98d63045b46c79911dc80b095",
+  "created_at": "2026-09-08T12:32:02.692Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-alpha-parameter-map-01-4a5795f60"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md",
+      "sha256": "ed82784b02b479dee8562fbfd207d742e4d8cddb0905331595d1ad842a9a9214",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/strategy_parameter_evidence.py",
+      "sha256": "aabbe9c5c382a3edbad4c65fff92956602fe90ad679fd91c07591d734d1e35fb",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/lib/strategy-alpha.ts",
+      "sha256": "86b0c87469c9968d9559df2f4085fd3a639a05f3c411fedd211a722be618518c",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/publish_strategy_parameter_evidence.py",
+      "sha256": "3a02bdfb7b35dff207f51e890c9ed2f49cdf9faab732a0cd81269ef99caa18da",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest backend/tests/test_strategy_parameter_evidence.py -q: 13 passed; pytest backend/tests/test_btc_strategy_history_api.py -q: 19 passed",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md"
+    },
+    {
+      "command": "node frontend/scripts/test-strategy-parameter-map.mjs; tsc --noEmit; vite build",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-ALPHA-PARAMETER-MAP-01.md"
+    },
+    {
+      "command": "canonical browser and published snapshot runtime acceptance",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-alpha-heatmap.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator source integration, frontend identity refresh, current-main browser tests pending",
+    "owner:root explicit bootstrap/publication, history configuration and canonical service restart pending",
+    "change_risk=unclassified; gate_impact=none; source_data_hashes_unavailable; all trading permissions false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

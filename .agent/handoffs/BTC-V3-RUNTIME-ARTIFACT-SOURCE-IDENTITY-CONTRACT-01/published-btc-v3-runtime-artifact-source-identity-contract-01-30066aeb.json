@@ -1,0 +1,138 @@
+{
+  "base_commit": "82e1c1163a7e2de45c87dc753c225338210e73a9",
+  "blockers": [
+    "btc_runtime_artifacts_not_rebuilt_or_published_by_this_source_contract_ticket",
+    "btc_current_head_gate_not_rebuilt_for_this_source_contract_ticket",
+    "btc_promotion_paper_live_remain_fail_closed"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-26T20:13:10.778Z",
+  "deliverable_commit": "30066aeb7f8e58b3ab5ccacde551f45c51851005",
+  "deliverables": [
+    {
+      "path": "quant_crypto/monitoring/btc_artifact_source_identity.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_artifact_source_identity_contract_v1",
+      "sha256": "6f474923bc2440ab70b838d9c152871182b695d309c3ad1070d054aa201b6e09",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_l2_aligned_capture_quality_report_v2",
+      "sha256": "4293785e0eac8f0ec88f15004b1016bbc4ec500caebb45177a8a2a9f77e373d1",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_ws_order_book_replay_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_ws_order_book_replay_report_v2",
+      "sha256": "fa4ff711bd5f076b796376b94f6094d13e057cd82aa9d3161cb2bc3bd66c4a4d",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_ws_reconnect_resync_policy_report_v2",
+      "sha256": "e284ff0f1ada1e8979e2bbc8bd4cadb1a3fd10251e9aedddf12bd0f4b159e904",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_true_scalping_l2_aligned_capture_quality_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_l2_aligned_capture_quality_report_v2",
+      "sha256": "425c959f16a96f161f182a5d279ece6a3e81f82b50dba5326ed029bd64229f30",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_true_scalping_ws_order_book_replay_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_ws_order_book_replay_report_v2",
+      "sha256": "28c21107ae773c9c6f5034baa4c88e9e047fd186ce96476ffc5a02b1732bdfd9",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_true_scalping_ws_reconnect_resync_policy_report.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_true_scalping_ws_reconnect_resync_policy_report_v2",
+      "sha256": "f1b39616e5e76b19242e810d94cd1ce7bdbe01f772ea098f2d6078f4ebc8b207",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_artifact_source_identity.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "40aaf1765f63c3f0f4df3b717030b53dcb5b215677300fd73afe13c538720d82",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_true_scalping_l2_aligned_capture_quality_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "8324bc50bdd3c88a518635de3b48d575066b9c763b03f7dcaa5337d605981ac4",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "3b3ff63bfb88e2f871e42dfb6fd82b178e30aaf21631408582b428ff4f02d157",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "75b28a6386f6e134f92f8dd8ff788c79edf23dd970256e4b0fb3fb1a29797749",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/handoffs/BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_runtime_artifact_source_identity_ticket_v1",
+      "sha256": "ef1b67a165169583a2a08329a2351d72bfbe308d0f9df85cd115255bf05ecab1",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-v3-runtime-artifact-source-identity-contract-01-30066aeb",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-runtime-source-identity-contract-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_artifact_source_identity.py tests/contracts/test_btc_true_scalping_l2_aligned_capture_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_btc_current_head_gate_rebuild.py tests/contracts/test_btc_gate_snapshot.py backend/tests/test_btc_runtime_artifact_wiring.py tests/agent_governance/test_team_context.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m compileall -q quant_crypto/monitoring/btc_artifact_source_identity.py scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py scripts/build_btc_true_scalping_ws_order_book_replay_report.py scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_btc_artifact_source_identity.py tests/contracts/test_btc_true_scalping_l2_aligned_capture_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py --help && py -3 scripts/build_btc_true_scalping_ws_order_book_replay_report.py --help && py -3 scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py --help",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-V3-RUNTIME-ARTIFACT-SOURCE-IDENTITY-CONTRACT-01",
+  "transition_for": ""
+}

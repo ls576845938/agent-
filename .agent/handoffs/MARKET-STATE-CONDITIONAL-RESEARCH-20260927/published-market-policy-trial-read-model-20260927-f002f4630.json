@@ -1,0 +1,111 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_integrator_required",
+    "policy_trial_not_started",
+    "sealed_policy_trial_report_absent",
+    "policy_effect_not_evaluated",
+    "28_roundtrips_exploratory_only",
+    "not_runtime_or_promotion_evidence",
+    "demo_paper_live_not_authorized"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-09-27T04:41:09Z",
+  "deliverable_commit": "f002f46304dac8f1767d67267acd89ac6cb497ef",
+  "deliverables": [
+    {
+      "path": "backend/app/services/donchian_stage_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "donchian_stage_market_policy_trial_read_model_v1",
+      "sha256": "c7c074b4eef6ce3d2fe27feb042f8d945626207d0b0a9516b393a21aad4757ff",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_donchian_stage_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "donchian_stage_market_policy_trial_contract_tests_v1",
+      "sha256": "28265e97d5179b1c1f8a6acff81f069957c57891b7b2bcf5cf3d0463c4a4a81b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/research/MarketStateEvidence.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_evidence_view_with_policy_trial_v1",
+      "sha256": "c7e4a3cc9ec2d0c26a7e18c46483bcf15f9d789e43bce360ba50b45323f233e5",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-market-state-evidence.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_evidence_policy_trial_component_tests_v1",
+      "sha256": "039927ff2e9874e57d1d1dff4e9c27438458e7b804d6aa46560152ac0d928ca8",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/market-policy-trial-read-model-v1.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_policy_trial_read_model_contract_v1",
+      "sha256": "21e942ef095b5a3dc0e06c36e2a6a015b8104ac914fad805f0cb39dee98f52dc",
+      "type": "document"
+    },
+    {
+      "path": "docs/architecture/shared-market-state-v2.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_market_state_architecture_v1",
+      "sha256": "a2e3c73cff7fbc9b32f72cb31ec4b591774efb3a57644dc5f83b8465e7df895b",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc"
+  ],
+  "domain": "shared",
+  "event_id": "published-market-policy-trial-read-model-20260927-f002f4630",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/market-state-conditional-research-20260927",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-market-state-conditional-research-20260927-9c94c31df"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/research/test_market_state_v2.py tests/research/test_market_state_entry_policy.py tests/research/test_market_state_diagnostics.py tests/contracts/test_market_policy_attachment.py tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py backend/tests/test_donchian_stage_views.py -q",
+      "evidence_path": "87 passed in 39.33s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_donchian_stage_views.py -q",
+      "evidence_path": "34 passed in 11.67s after pinning verified f2455bfbcafd15404bb4ff98dd6bb925728d0339 execution source and partial projection contract",
+      "result": "passed"
+    },
+    {
+      "command": "node --test frontend/scripts/test-market-state-evidence.mjs frontend/scripts/test-donchian-stage-evidence.mjs frontend/scripts/test-trend-environment.mjs",
+      "evidence_path": "12 passed in 1136.164ms",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run lint",
+      "evidence_path": "tsc --noEmit completed with exit code 0",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "transition_for": ""
+}

@@ -1,0 +1,101 @@
+{
+  "base_commit": "d1650f2237efb453a6fd09a1014f4d3f16f9b8f2",
+  "blockers": [
+    "full_governance_suite_single_main_baseline_post_checkout_bootstrap_failure",
+    "registered_main_not_modified"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-17T14:52:34Z",
+  "deliverable_commit": "4b81af61e13a3ad1a4e28679e3cbb9beaec3ce39",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "bounded_handoff_discovery_v2",
+      "sha256": "1b9ad220b8886f76b02fdf7601d24b7527813dc24382ef0d86ef3b0ebed07be2",
+      "type": "code"
+    },
+    {
+      "path": "tests/agent_governance/test_handoff.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "bounded_handoff_discovery_contract_tests_v1",
+      "sha256": "e25cb1deaf7a242d769f5676627e27ce04e512fa4cf7f527f0aa6bdf446920c8",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/agent_governance/test_hooks.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "governance_hooks_contract_tests_v1",
+      "sha256": "baa37d2e063b52a0d4a099d7ce9741ecc87f9cbfbecb7cce365858be9bb9a360",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "governance",
+  "event_id": "published-handoff-discovery-ref-cap-recovery-01-correction-01-4b81af61e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/handoff-ref-cap-corr01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-handoff-discovery-ref-cap-recovery-01-599d875fd"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py -q (17 passed)",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_packet.py -q (16 passed)",
+      "evidence_path": "tests/agent_governance",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_hooks.py -q (7 passed)",
+      "evidence_path": "tests/agent_governance/test_hooks.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_context_scalability.py -q (6 passed)",
+      "evidence_path": "tests/agent_governance/test_context_scalability.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_handoff.py::test_committed_handoff_is_cross_branch_visible_but_uncommitted_event_is_not tests/agent_governance/test_handoff.py::test_discovery_materializes_shared_blob_once_across_refs -q (2 passed)",
+      "evidence_path": "tests/agent_governance/test_handoff.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance -q (85 passed, 1 known main-baseline failure)",
+      "evidence_path": "tests/agent_governance/test_disk_guard.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile tests/agent_governance/test_hooks.py",
+      "evidence_path": "tests/agent_governance/test_hooks.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "tests/agent_governance/test_hooks.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "HANDOFF-DISCOVERY-REF-CAP-RECOVERY-01-CORRECTION-01",
+  "transition_for": ""
+}

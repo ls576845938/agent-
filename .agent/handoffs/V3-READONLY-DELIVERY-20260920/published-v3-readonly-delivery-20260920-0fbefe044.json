@@ -1,0 +1,93 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-v3-readonly-delivery-20260920-0fbefe044",
+  "ticket_id": "V3-READONLY-DELIVERY-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/v3-readonly-delivery-20260920",
+  "base_commit": "aca55c90d82b327800e473774e22dbbeac69bd90",
+  "deliverable_commit": "0fbefe044369878deb82cd42c553abc9dc25bfba",
+  "created_at": "2026-09-20T07:58:42Z",
+  "expires_at": "",
+  "depends_on": [
+    "acknowledged-btc-v3-event-ordering-independent-review-20260920-645e1ce04"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "sha256": "b09b2a019129c9fc47df263912b073921de4fff86d0e8b62ca6af79f9e11de59",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/agent_playbooks/strategy_v3_readonly_delivery.md",
+      "sha256": "97273b12d2b87efc9d92320d41146b576bd9991aa710e92934e2ae4247c1bceb",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/architecture/strategy-v3-readonly-source-20260920.json",
+      "sha256": "94052bc92c9dbaa2895b4baa82f1ead3059f280a1bfaf7320e475298ccfb45ac",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/strategy-v3-readonly-release-20260920.md",
+      "sha256": "ac7eb6bfefde02935af28450071c52abc608ae2e31e8286ab1ff2eb66a319d11",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "tests/agent_governance/test_strategy_v3_readonly_delivery.py",
+      "sha256": "ba07e21012c5837d8691fd05fb9f525e1af7b582f4eadbaab5fa1ddab5ed60ba",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "tools/agent_governance/strategy_v3_readonly_delivery.py",
+      "sha256": "80c69c78ebc75e13a606414b40cb239e4a4021e62d5813d2283c8ba2fd66e490",
+      "schema_version": "strategy_v3_readonly_delivery_candidate_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "failure-first V3 governance test",
+      "result": "failed",
+      "evidence_path": "docs/operations/strategy-v3-readonly-release-20260920.md"
+    },
+    {
+      "command": "canonical python -B -m pytest -q -p no:cacheprovider --tb=short six governance files; 142 passed; additional two guards 2 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/strategy-v3-readonly-release-20260920.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independently review governance and frozen 88-path source inventory before any main merge",
+    "owner:release main merge, fixed-HEAD offline CLI/resume, research_readonly canonical services and browser acceptance not performed",
+    "safety: no Demo paper live private order or real account access; no promotion/runtime evidence rebuild"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

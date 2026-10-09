@@ -1,0 +1,92 @@
+{
+  "base_commit": "4a0cb88804e6fd15a66b861842034f67ab32a5bf",
+  "blockers": [
+    "owner:root canonical_main_merge_and_current_main_playwright_verification_required",
+    "owner:root backend_restart_required_after_integration",
+    "owner:root promotion_artifact_rebuild_required_by_unclassified_policy",
+    "private_readonly_25h_observation_not_authorized_or_started_by_this_ticket",
+    "promotion_evidence_not_ready_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-02T08:04:57Z",
+  "deliverable_commit": "b89e4ea53209c59af77409cc11031e3133ed056b",
+  "deliverables": [
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_v1",
+      "sha256": "b1eef02ff6a57e64fbb445907cc8580912c63276f30074e8de82af8f01029a12",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "static_regression_v1",
+      "sha256": "6c4d196f92702e7b5a5556a82d664ab876394156bc237d1d9959f503ca347c35",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-chart-narrow-viewport-occlusion-02-80a52fbb2b"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-chart-narrow-viewport-occlusion-02-b89e4ea532",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-chart-narrow-viewport-occlusion-02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py --repo-root . validate --input published handoff",
+      "evidence_path": ".agent/handoffs/BTC-CHART-NARROW-VIEWPORT-OCCLUSION-02/published-btc-chart-narrow-viewport-occlusion-02-80a52fbb2b.json",
+      "result": "passed"
+    },
+    {
+      "command": "raw git cat-file SHA-256 verification for both declared deliverables",
+      "evidence_path": "frontend/src/index.css; frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build (Vite 5219 modules transformed; built in 45.14s with existing chunk-size warning)",
+      "evidence_path": "frontend/src/index.css",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "frontend/src/index.css; frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main Playwright 1066x1140 narrow/fullscreen verification after root merge and restart",
+      "evidence_path": "frontend/src/index.css",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-CHART-NARROW-VIEWPORT-OCCLUSION-02",
+  "transition_for": "published-btc-chart-narrow-viewport-occlusion-02-80a52fbb2b"
+}

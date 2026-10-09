@@ -1,0 +1,138 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "research comparison remains incomplete: baseline 2960/2960, conditioned 1956/2960 fail-closed on ambiguous intrabar protection ordering",
+    "conditioned terminal short -0.01 contracts is preserved and reconciled; it was not synthetically flattened",
+    "exact-state helper c44550ff2/b385e1924 is rejected and not consumed; current phase projection remains consumer_phase partial",
+    "blocked page exposes the sealed 48-phase count but not a new per-phase drilldown; old 28 trades are not substituted",
+    "registered factory worker remains factory_lgbm_ast_v1 only; legacy M1 v2 diagnostic management is not runtime worker support",
+    "actual candidate catalog remains empty and this source candidate is not merged to main or published",
+    "Demo paper live promotion private order real_order transfer and withdraw remain disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "researcher",
+    "super_developer",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-09-27T15:17:24Z",
+  "deliverable_commit": "deace3f2bc274ca13237f7d6bd3f6b474e6dc31e",
+  "deliverables": [
+    {
+      "path": ".agent/market_state_evidence/donchian-stage-market-policy-trial-v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_policy_trial_blocked_read_model_v1",
+      "sha256": "d793a32e04ee0fcd69a04476be357890279045ffb8df03dec524c11c52b7a618",
+      "type": "artifact"
+    },
+    {
+      "path": "backend/app/services/donchian_stage_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "donchian_stage_read_model_service_v1",
+      "sha256": "91dbac692e812df9712fcb7170ac9d721d34a4338be80185182ee0f4b25a6ea0",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_donchian_stage_views.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "donchian_stage_read_model_contract_tests_v1",
+      "sha256": "33a2cdb98f96cd748ed5d67e9c9f9d289574b842e3340d0551d52d80319bed72",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/research/MarketStateEvidence.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_evidence_readonly_ui_v1",
+      "sha256": "e1954b8f3af69825f586f819dc64d83e290bf7fe4e7d1b4240c936f20602600b",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-market-state-evidence.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_evidence_ui_contract_tests_v1",
+      "sha256": "82336f95f1fd4fcec734becff1b1306a1d777254bdd4b78a25648a59a43a26de",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/research/market-policy-trial-read-model-v1.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_policy_trial_read_model_contract_v1",
+      "sha256": "b304d2c02804e45edb1a9f2e243ae9d113e35cf39a9948178dc5519b7ce0bc1a",
+      "type": "document"
+    },
+    {
+      "path": "docs/acceptance/integrate-candidate-market-policy-closeout-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "candidate_market_policy_closeout_acceptance_v1",
+      "sha256": "36091ae73a0f4652f9e973d14298256324b4dbacb75f78ea4d5f5031b77f85af",
+      "type": "report"
+    },
+    {
+      "path": "docs/research/donchian-market-policy-ab-blocked-stage-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_policy_trial_blocked_evidence_manifest_v1",
+      "sha256": "e9cac97788ccff223657174246bfcdd96e8e450683b700fd7a80b34335a1f9af",
+      "type": "report"
+    }
+  ],
+  "depends_on": [
+    "integrated-candidate-offline-diagnostic-admission-20260926-0e3d8ae539",
+    "integrated-btc-registered-offline-protection-20260927-ed963919d",
+    "integrated-btc-market-state-entry-consumer-20260927-f2455bfbc",
+    "published-btc-market-policy-ab-blocked-stage-20260927-c26a6046f",
+    "rejected-market-state-exact-join-helper-independent-review-20260927-92d531ada"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-candidate-offline-diagnostic-market-policy-closeout-20260927-deace3f2b",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-candidate-offline-diagnostic-admission",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "canonical Python 3.11 external sealed summary, two ledger receipts, 48 phase and Decimal accounting verification",
+      "evidence_path": "3 file hashes; summary/report hash; 2 receipt hashes; 2 accounting identities; 48 verified partial no-order phases; all safety false",
+      "result": "passed"
+    },
+    {
+      "command": "canonical .venv pytest backend/tests/test_donchian_stage_views.py -q",
+      "evidence_path": "42 passed, 1 dependency warning in 23.59s",
+      "result": "passed"
+    },
+    {
+      "command": "NODE_PATH=canonical frontend/node_modules node frontend/scripts/test-market-state-evidence.mjs",
+      "evidence_path": "9 passed in 52.96ms",
+      "result": "passed"
+    },
+    {
+      "command": "canonical .venv py_compile backend service and tests plus git diff --check",
+      "evidence_path": "exit code 0",
+      "result": "passed"
+    },
+    {
+      "command": "full sparse-worktree TypeScript compile without local node_modules",
+      "evidence_path": "TS2688 cannot find local node type definitions; no dependency install or worktree linkage performed; component contract passed with canonical NODE_PATH",
+      "result": "not_run"
+    },
+    {
+      "command": "complete conditioned 2960-event arm and full A/B effect estimation",
+      "evidence_path": "conditioned fail-closed at 1956; no retry, third arm, favorable intrabar ordering or effect claim",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-CANDIDATE-OFFLINE-DIAGNOSTIC-ADMISSION-20260926",
+  "transition_for": "published-btc-market-policy-ab-blocked-stage-20260927-c26a6046f"
+}

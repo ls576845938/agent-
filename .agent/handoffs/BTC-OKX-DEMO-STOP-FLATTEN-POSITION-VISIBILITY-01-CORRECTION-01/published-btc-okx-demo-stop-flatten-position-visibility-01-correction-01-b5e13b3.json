@@ -1,0 +1,77 @@
+{
+  "base_commit": "bd3e259a97a86685d86e5c7243dff5e6da039841",
+  "blockers": [
+    "canonical identity check deferred to integrated main because producer branch is not canonical",
+    "independent_integrator_required",
+    "all paper/live/private/order/real-order/transfer/withdraw permissions remain false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-19T01:20:00Z",
+  "deliverable_commit": "b5e13b3066cfe1b20a1e05e690cc3614a9b4459b",
+  "deliverables": [
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "5835d1e8856e0b52fc449e8e9dfd9ab7ac06d89174a289823784b5273d175b33",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-stop-flatten-position-visibility-01-correction-01-b5e13b3",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-stop-flatten-visibility-01-corr1",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-demo-stop-flatten-position-visibility-01-corr1-154c53672"
+  ],
+  "tests": [
+    {
+      "command": "npm --prefix frontend run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "independent registered-main baseline/object/fingerprint assertion",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs --canonical",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check bd3e259a97a86685d86e5c7243dff5e6da039841 b5e13b3066cfe1b20a1e05e690cc3614a9b4459b -- frontend/public/frontend-identity.json",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-STOP-FLATTEN-POSITION-VISIBILITY-01-CORRECTION-01",
+  "transition_for": ""
+}

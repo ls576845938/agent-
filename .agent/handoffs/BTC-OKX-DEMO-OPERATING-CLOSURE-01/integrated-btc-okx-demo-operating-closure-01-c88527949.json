@@ -1,0 +1,55 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-demo-operating-closure-01-c88527949",
+  "ticket_id": "BTC-OKX-DEMO-OPERATING-CLOSURE-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-demo-operating-closure-01-integrate",
+  "base_commit": "71942957f9938926fd0d377e59f2a7d1335ca3c1",
+  "deliverable_commit": "c88527949da2e344c9ea91548f9cd22ff65861c0",
+  "created_at": "2026-08-10T13:52:00Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-demo-operating-closure-01-006dbe96a"],
+  "supersedes": [],
+  "transition_for": "published-btc-okx-demo-operating-closure-01-006dbe96a",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "2e0ab2e35c2a03a07f1c3dcdd69f795d93b79e6684a6c23c3e24b29d51a6dd1e",
+      "schema_version": "btc_okx_demo_operating_closure_windows_pid_liveness_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "643b512b06b78ae343793779ebf8fb5eaed69cc34e21a7ee3f88b0f728a43d7a",
+      "schema_version": "btc_okx_demo_operating_closure_windows_pid_liveness_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {"command": "pytest owner_marker_winerror87 or owner_marker_process_lookup_error [4 passed]", "result": "passed", "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"},
+    {"command": "pytest fresh_state or owner_marker or restart or recover [110 passed]", "result": "passed", "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"},
+    {"command": "pytest full contract suite [278 passed]", "result": "passed", "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"},
+    {"command": "native liveness helper current PID/dead 32532 [True/False]", "result": "passed", "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"},
+    {"command": "py_compile; git diff --check; production import/restart-shape; handoff validate", "result": "passed", "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"}
+  ],
+  "blockers": [
+    "backend_restart_required_after_integration",
+    "promotion_artifact_rebuild_not_required_by_ticket",
+    "stage_b_fresh_demo_recovery_and_stage_c_start_pending"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -554,11 +554,13 @@ class _OfflineVenue:
                 "fills": [],
                 "algos": [],
                 "algo_history": [],
+                "bills": [],
                 "submit_count": 0,
                 "cancel_algo_count": 0,
             }
             self._persist()
         self.state.setdefault("algo_history", [])
+        self.state.setdefault("bills", [])
         self.state.setdefault("cancel_algo_count", 0)
 
     def _persist(self) -> None:
@@ -653,7 +655,7 @@ class _OfflineVenue:
             order_id = str(query.get("ordId") or "")
             rows = [row for row in self.state["fills"] if not order_id or row["ordId"] == order_id]
         elif path == "/api/v5/account/bills":
-            rows = []
+            rows = list(self.state["bills"])
         elif path == "/api/v5/account/trade-fee":
             rows = [{"makerU": "-0.0002", "takerU": "-0.0005"}]
         elif path == "/api/v5/account/leverage-info":
@@ -671,6 +673,38 @@ class _OfflineVenue:
         else:
             raise AssertionError(f"offline private path not implemented: {path}")
         return OkxDemoResponse("GET", path, 200, "0", "", tuple(rows))
+
+    def observe_funding_bill(
+        self, *, bill_id: str, balance_change_usdt: Decimal
+    ) -> dict[str, Any]:
+        """Persist one deterministic venue funding observation for fixtures."""
+
+        if not bill_id or not balance_change_usdt.is_finite():
+            raise ValueError("offline_funding_bill_invalid")
+        existing = [
+            row for row in self.state["bills"] if str(row.get("billId") or "") == bill_id
+        ]
+        expected_amount = format(balance_change_usdt, "f")
+        if existing:
+            if len(existing) != 1 or str(existing[0].get("balChg") or "") != expected_amount:
+                raise ValueError("offline_funding_bill_identity_conflict")
+            return dict(existing[0])
+        self.now += timedelta(milliseconds=1)
+        row = {
+            "billId": bill_id,
+            "instId": "BTC-USDT-SWAP",
+            "ccy": "USDT",
+            "type": "8",
+            "subType": "173",
+            "balChg": expected_amount,
+            "ts": str(int(self.now.timestamp() * 1000)),
+        }
+        self.state["bills"].append(row)
+        self.state["equity"] = format(
+            Decimal(str(self.state["equity"])) + balance_change_usdt, "f"
+        )
+        self._persist()
+        return dict(row)
 
     def cancel_algo_orders(
         self, orders: Sequence[Mapping[str, Any]]
@@ -706,6 +740,80 @@ class _OfflineVenue:
                 for row in matched
             ),
         )
+
+    def revise_residual_protection(
+        self,
+        *,
+        exit_client_order_id: str,
+        exit_order_id: str,
+        exit_fill_id: str,
+        residual_contracts: Decimal,
+        position_side: str,
+    ) -> dict[str, Any]:
+        """Fixture-only exact OCO revision; never available to a real client.
+
+        The economic exit has already been produced by the original OMS and
+        raw fill path.  This method changes only the deterministic venue's
+        protection row and returns every identity needed for the independent
+        residual-revision proof.
+        """
+
+        if (
+            len(self.state["algos"]) != 1
+            or not exit_client_order_id
+            or not exit_order_id
+            or not exit_fill_id
+            or residual_contracts <= 0
+            or Decimal(str(self.state["position"])) != residual_contracts
+            or position_side != "long"
+        ):
+            raise ValueError("offline_residual_protection_revision_facts_invalid")
+        prior = dict(self.state["algos"][0])
+        if prior.get("posSide") != position_side:
+            raise ValueError("offline_residual_protection_prior_side_mismatch")
+        revision = int(self.state.get("protection_revision_count") or 0) + 1
+        self.state["protection_revision_count"] = revision
+        self.now += timedelta(milliseconds=1)
+        self.state["algo_history"].append(
+            {
+                **prior,
+                "state": "replaced_for_residual_allocation",
+                "uTime": str(int(self.now.timestamp() * 1000)),
+            }
+        )
+        replacement = {
+            **prior,
+            "algoId": f"offline-residual-algo-{revision}",
+            "algoClOrdId": f"{exit_client_order_id}R{revision}",
+            "parentClOrdId": exit_client_order_id,
+            "sz": format(residual_contracts, "f"),
+            "state": "live",
+            "uTime": str(int(self.now.timestamp() * 1000)),
+        }
+        self.state["algos"] = [replacement]
+        self._persist()
+        return {
+            "schema_version": "btc_offline_residual_protection_venue_receipt_v1",
+            "prior_algo_id": str(prior["algoId"]),
+            "prior_algo_client_order_id": str(prior["algoClOrdId"]),
+            "prior_parent_client_order_id": str(prior["parentClOrdId"]),
+            "prior_contracts": str(prior["sz"]),
+            "exit_client_order_id": exit_client_order_id,
+            "exit_order_id": exit_order_id,
+            "exit_fill_id": exit_fill_id,
+            "algo_id": str(replacement["algoId"]),
+            "algo_client_order_id": str(replacement["algoClOrdId"]),
+            "parent_client_order_id": exit_client_order_id,
+            "instrument_id": "BTC-USDT-SWAP",
+            "position_side": position_side,
+            "contracts": format(residual_contracts, "f"),
+            "status": "exchange_accepted",
+            "market_exit": True,
+            "tp_trigger_px": str(replacement["tpTriggerPx"]),
+            "tp_order_px": str(replacement["tpOrdPx"]),
+            "sl_trigger_px": str(replacement["slTriggerPx"]),
+            "sl_order_px": str(replacement["slOrdPx"]),
+        }
 
     def submit_order(self, payload: Mapping[str, Any]) -> OkxDemoResponse:
         order = dict(payload)

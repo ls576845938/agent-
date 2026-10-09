@@ -1,0 +1,104 @@
+{
+  "base_commit": "3ed7b1f6c892396816ed4573a7b125fbfe8fe8c3",
+  "blockers": [
+    "owner:root registered_main_fast_forward_and_current_main_visual_acceptance_pending"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-08-04T10:48:34Z",
+  "deliverable_commit": "2756dc0120e98f081477db39dc588b314a8aa36e",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_observation_progress_ui_v1",
+      "sha256": "29b410fd29938b7ed17188d1a7ed30c053bbbc490bb590b6346825199a2e9519",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_observation_progress_ui_v1",
+      "sha256": "4156745eefa38da402cb91ba5a627f06d7956fbd54b0f96c894571e72bb313f8",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_observation_progress_ui_v1",
+      "sha256": "e9f67bc68f2de05c5ab8003a453a618495a435049a10892501fe31da3ee1b300",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_observation_progress_ui_e2e_v1",
+      "sha256": "ff0cae282ee2a78270231506715d85d4c7efb8dd7fff5c17b1f25d64da1c30f3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "6859ea55ac345ec785225a13675343e864264e23ab2c00bf1d3441d45d13723c",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "integrated-integrate-btc-demo-observation-progress-ui-01-2756dc012",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-observation-progress-ui-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "integrated-integrate-btc-demo-observation-progress-ui-01-cbbb1cbcf"
+  ],
+  "tests": [
+    {
+      "command": "static JSX placement review: btc-demo-observation-progress immediately follows tv-console-head and precedes strategy section",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build -- --outDir C:/tmp/btc-demo-observation-progress-ui-placement-2756dc012",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 3ed7b1f6c892396816ed4573a7b125fbfe8fe8c3..2756dc0120e98f081477db39dc588b314a8aa36e -- correction touch set",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "current-main first-viewport visual acceptance after correction",
+      "evidence_path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-OBSERVATION-PROGRESS-UI-01",
+  "transition_for": "published-btc-demo-observation-progress-ui-01-ac014ac61"
+}

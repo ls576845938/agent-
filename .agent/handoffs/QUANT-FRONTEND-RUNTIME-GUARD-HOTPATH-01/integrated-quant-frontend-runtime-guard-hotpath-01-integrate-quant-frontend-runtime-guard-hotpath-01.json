@@ -1,0 +1,117 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-runtime-guard-hotpath-01-integrate-quant-frontend-runtime-guard-hotpath-01",
+  "ticket_id": "QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-quant-frontend-runtime-guard-hotpath-01",
+  "base_commit": "7b18550dbe9d41bd5fd610eba8a275b825e0d2be",
+  "deliverable_commit": "619d09de8308c764a27b78956472750a7b8d55e5",
+  "created_at": "2026-07-27T04:09:02Z",
+  "expires_at": "",
+  "depends_on": [
+    "superseded-quant-frontend-runtime-guard-hotpath-01-ba431fb2"
+  ],
+  "supersedes": [],
+  "transition_for": "superseded-quant-frontend-runtime-guard-hotpath-01-ba431fb2",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/scripts/frontend-identity-lib.mjs",
+      "sha256": "d8777c033e6c33f47e9a6b4b551894a51422a6205aa6c81ec91ba735e53cff2e",
+      "schema_version": "quant_frontend_runtime_guard_async_singleflight_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/vite.config.ts",
+      "sha256": "88d0f9a1fa84472180520bf30fa681d2e93060a844517b01787083548303d366",
+      "schema_version": "quant_frontend_runtime_guard_vite_async_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "sha256": "7dbb179f58fe9acf6c035a7b21314bb6bb75fa61ab1ca97d154d93d32d1bf2bb",
+      "schema_version": "quant_frontend_runtime_guard_async_contract_tests_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "frontend/scripts/test-frontend-identity.mjs",
+      "sha256": "c548f3383ad714a679b0c6aa5d753d08da91fd40c28a387e3043df2a694ff2ca",
+      "schema_version": "quant_frontend_sync_async_identity_equivalence_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "6a20fe66b45d263027b56d761dccc13bac8db6bc24f7bd13b44810e5876c9972",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01/superseded-quant-frontend-runtime-guard-hotpath-01-ba431fb2.json [observed: old a472 delivery retained only as superseded history]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01/superseded-quant-frontend-runtime-guard-hotpath-01-ba431fb2.json"
+    },
+    {
+      "command": "git merge --ff-only 619d09de8308c764a27b78956472750a7b8d55e5 [INTEGRATE-QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01; business=b7d46d4b11990e88d478b76705fea179fa96bc2f; manifest=ba431fb2622104d43f3ba0e1360558f7516b5abd; final=619d09de8308c764a27b78956472750a7b8d55e5; original ancestry preserved]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "npm.cmd run identity:test && npm.cmd run identity:check (cwd=frontend) [observed: fingerprint=fe59f7949019db39f5450c7ed89290a7d91ad641291c4cc2c71f5d1f6ab18607; manifest_match=true; baseline_ancestor=true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "npm.cmd run identity:runtime-test (cwd=frontend) [observed: 11 real HTTP, Chromium, async single-flight, hotpath and bounded-detection scenarios passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, producer integration branch) [observed: expected fail-closed exit 2 before listener bind]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: 5204 modules transformed; existing over-500-kB chunk warning preserved]",
+      "result": "passed",
+      "evidence_path": "frontend/package.json"
+    },
+    {
+      "command": "npm.cmd run smoke && npm.cmd run check:btc-tradingview (cwd=frontend) [observed: smoke passed; 6 of 6 TradingView markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_fast_forwarded_by_this_integration_ticket",
+    "canonical_main_startup_smoke_requires_clean_main_after_integration",
+    "production_build_chunk_over_500_kb_warning_preserved",
+    "frontend_quality_handoff_does_not_unlock_promotion_paper_or_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

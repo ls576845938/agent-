@@ -1,0 +1,138 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-m1-readonly-publication-20260912-7211bef9f",
+  "ticket_id": "M1-READONLY-PUBLICATION-20260912",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/m1-readonly-publication-20260912",
+  "base_commit": "7700450bbc41465ec44c223fbec42f315dcdf30d",
+  "deliverable_commit": "7211bef9fed42d42d4e07df94f1b5a1db4233d26",
+  "created_at": "2026-09-12T02:23:40Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-research-readonly-release-governance-20260912-bfa5966c9",
+    "integrated-research-readonly-release-governance-review-20260912-37e2baadf",
+    "published-m1-trend-environment-20260911-009540a02",
+    "published-m1-observation-evidence-20260911-ce9fa4685",
+    "integrated-m1-trend-environment-review-20260912-4ca4abeb1"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "backend/app/services/research_archive_discovery.py",
+      "sha256": "db8441b9babe27b54fb7b1be68a41a11458128a3b6bcd70c5370381133742ecf",
+      "schema_version": "research_archive_discovery_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/alpha_factory.py",
+      "sha256": "529843e237da95df7e656b0f631051e274df6cc85e0daf2e3a7073ead78726ee",
+      "schema_version": "alpha_factory_service_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "1c7956649b0d0b324a103ec415ea9baf38261136bc30859bf3b5266379939e17",
+      "schema_version": "qlib_readonly_archive_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/alpha_factory.py",
+      "sha256": "e234396df27c65d23862403272c2eac94cbded1e77ac18e238345ad235a7cba6",
+      "schema_version": "alpha_factory_readonly_archive_api_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/api/test_m1_research_readonly_archive.py",
+      "sha256": "14669fe8fb491ce6de9c79e3c9cd72af83b59866d88233c9b0eda8404d89a7c8",
+      "schema_version": "m1_research_readonly_archive_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "92e887569b6b8b711e70fb9b9be4640860f258a955ed016553a4d3da5103f776",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/m1-research-readonly-publication-20260912.md",
+      "sha256": "e624c4f7adec0b977315787c94c7100703c8971dad824994b909d85c6d88dfd3",
+      "schema_version": "m1_research_readonly_publication_report_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/api/test_m1_research_readonly_archive.py tests/api/test_qlib_pipeline.py tests/api/test_alpha_factory.py tests/research/test_alpha_factory.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; 72 passed in 27.08s"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/research/test_trend_environment.py tests/integrations/test_trend_environment_sidecar.py tests/contracts/test_m1_btc_behavior_freeze.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; 25 passed in 18.06s"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/contracts/test_strategy_decision_context_v1.py tests/contracts/test_btc_demo_production_composition.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_shared_platform_v3_portfolio_exit.py tests/contracts/test_btc_shared_platform_v3_guardian_latch.py tests/contracts/test_btc_shared_platform_v3_oms_delegation.py tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; 169 passed in 6.10s"
+    },
+    {
+      "command": "node frontend/scripts/test-trend-environment.mjs",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; SSR contract PASS"
+    },
+    {
+      "command": "npm.cmd run lint from frontend directory",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; tsc --noEmit"
+    },
+    {
+      "command": "npm.cmd run build from frontend directory",
+      "result": "passed",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md; 5258 modules in 47.41s"
+    },
+    {
+      "command": "canonical current-main integration, backend restart and formal browser acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/m1-research-readonly-publication-20260912.md"
+    }
+  ],
+  "blockers": [
+    "independent_release_integrator_pending",
+    "registered_main_integration_pending",
+    "backend_restart_pending",
+    "current_main_identity_pending",
+    "canonical_browser_acceptance_pending",
+    "rollback_point_verification_pending",
+    "historical_reconstructed_availability",
+    "computation_source_head_59f5eb861_is_stale",
+    "factory_candidate_rejected_no_alpha_effectiveness_claim",
+    "btc_runtime_artifact_root_unavailable_preserved",
+    "not_runtime_or_promotion_evidence",
+    "M2_M3_M4_not_authorized"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

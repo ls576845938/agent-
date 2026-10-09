@@ -7,7 +7,8 @@ export type DeliveryRecord = {
   status: 'validated'|'validation_blocked'|'bound'|'reviewed'|'rejected'|'registered'|'revoked';
   content_digest: string; consumer_head: string; permissions: Record<string,boolean>;
   validation: {status:string;blockers:string[]};
-  binding: {account_ref:string}|null;
+  binding: {account_ref:string;offline_runtime?:{schema_version:string;adapter_id?:string;currency:string;
+    initial_equity_usdt:number;contract_digest:string}}|null;
   review: {decision:string;actor:string;expires_at:string;reason:string}|null;
   registration: {registration_id:string;environment:string;start_allowed:false;diagnostic_admission_digest?:string|null}|null;
   diagnostic_admission?: {schema_version:'strategy_delivery_diagnostic_admission_v1';mode:'isolated_offline_diagnostic';target:HandoffTarget;

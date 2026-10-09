@@ -1,0 +1,104 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-architecture-map-status-20260929-ffc49aa32",
+  "ticket_id": "ARCHITECTURE-MAP-STATUS-20260929",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/architecture-map-status-20260929",
+  "base_commit": "3fc39879d14ecab2288368afe588385cc44c08e1",
+  "deliverable_commit": "ffc49aa329660aa8f6418fcf2f9c134689595404",
+  "created_at": "2026-09-29T06:57:04Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/ArchitectureMapWorkspace.tsx",
+      "sha256": "6820b93a84ccdc0252ebb85946b565b6e6159689ba5e567f220906dc180e0065",
+      "schema_version": "architecture_map_workspace_current_status_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "sha256": "89cf52818a2ef539ade3da01198dd6de0869edea820de829088aa0915fa75df2",
+      "schema_version": "architecture_map_current_status_data_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/architecture/system-code-map/DEVELOPMENT-STATUS-20260929.md",
+      "sha256": "c63a294f0359751d0ff66bf6722ffd0124ac7eee8e5e926632838a340cc4c4c5",
+      "schema_version": "architecture_development_status_20260929_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/acceptance/architecture-map-status-20260929.md",
+      "sha256": "b4e086dad2cff6d20e9871d350d744a28cfe974f1ee26e97d9f4267dfd37f672",
+      "schema_version": "architecture_map_status_acceptance_20260929_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "720fd885c250b75226408faa823c1ece15a277922e3d5c267b8593a070bde1dc",
+      "schema_version": "frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-architecture-map.mjs [observed: 9 passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-architecture-map.mjs"
+    },
+    {
+      "command": "node frontend/scripts/test-architecture-mindmap.mjs [observed: 6 passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-architecture-mindmap.mjs"
+    },
+    {
+      "command": "node frontend/scripts/test-architecture-knowledge.mjs [observed: 5 passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-architecture-knowledge.mjs"
+    },
+    {
+      "command": "main-worktree tsc.cmd --noEmit -p frontend/tsconfig.json --typeRoots <main>/frontend/node_modules/@types --baseUrl <main>/frontend/node_modules [observed: exit 0]",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "npm.cmd --prefix frontend run identity:check [observed: passed, manifest_match=true, baseline_ancestor=true]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "Playwright canonical main acceptance at 390/1131/1440 widths",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/architecture-map.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:architect canonical_3000_research_readonly_page_acceptance_not_run",
+    "not_promotion_evidence_no_demo_no_account_no_private_no_order_no_paper_no_live"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-v3-final-paper-readiness-01-goal11-batch-01",
+  "ticket_id": "BTC-V3-FINAL-PAPER-READINESS-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-goal11-batch-01",
+  "base_commit": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+  "deliverable_commit": "9101c2742c86b49fdf3efe99b00103af9d51d45a",
+  "created_at": "2026-07-25T09:49:03Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-final-paper-readiness-01-8caec609"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-v3-final-paper-readiness-01-8caec609",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed from system-temp CWD: 19 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_demo_observation_accumulator.py"
+    },
+    {
+      "command": "committed-object JSON parse/schema/hash/safety validation of docs/tickets/BTC-V3-FINAL-PAPER-READINESS-01.json [sha256=10157e78c4623d46e47d26c8b86eea6f43430bba5d614d10949c42dd670a4850; status=blocked; decision=blocked_fail_closed_no_paper_no_live; final_review_quality_checked=false; all safety flags false]",
+      "result": "passed",
+      "evidence_path": "docs/tickets/BTC-V3-FINAL-PAPER-READINESS-01.json"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-V3-FINAL-PAPER-READINESS-01/published-btc-v3-final-paper-readiness-01-8caec609.json [committed-object validation: valid]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-V3-FINAL-PAPER-READINESS-01/published-btc-v3-final-paper-readiness-01-8caec609.json"
+    },
+    {
+      "command": "Goal11 integration did not rerun or repair btc_gate_aggregation_sparse_import_boundary_broken, btc_paper_readiness_schema_drift, or btc_gate_snapshot_windows_atomic_replace_flaky; producer packet retains their exact failed evidence",
+      "result": "not_run",
+      "evidence_path": "docs/tickets/BTC-V3-FINAL-PAPER-READINESS-01.json"
+    }
+  ],
+  "blockers": [
+    "owner:btc_research btc_okx_native:promotion_evidence_current_head_rebuild_required",
+    "owner:data_steward btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+    "owner:btc_observation btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+    "owner:btc_operations btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+    "owner:btc_operations btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+    "owner:btc_observation btc_okx_native:30_60_day_observation_window_incomplete",
+    "owner:architect/manual_reviewer btc_okx_native:manual_promotion_approval_missing",
+    "owner:btc_developer btc_gate_aggregation_sparse_import_boundary_broken",
+    "owner:btc_developer btc_paper_readiness_schema_drift",
+    "owner:btc_developer btc_gate_snapshot_windows_atomic_replace_flaky",
+    "classification:goal11_evidence_review_integration_blocker=false",
+    "classification:btc_final_readiness=blocked_fail_closed_no_paper_no_live",
+    "classification:final_review_quality_checked=false"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

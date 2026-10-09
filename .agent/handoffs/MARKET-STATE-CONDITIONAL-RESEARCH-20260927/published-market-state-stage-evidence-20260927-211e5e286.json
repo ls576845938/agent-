@@ -1,0 +1,80 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_integrator_required",
+    "btc_consumer_pending",
+    "policy_trial_not_started",
+    "policy_effect_not_evaluated",
+    "historical_sample_exploratory_only",
+    "not_runtime_or_promotion_evidence",
+    "demo_paper_live_not_authorized"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-09-27T04:15:00Z",
+  "deliverable_commit": "211e5e286923f520b9ab0d039304b6b6af82114c",
+  "deliverables": [
+    {
+      "path": ".agent/market_state_evidence/donchian-stage-market-state-v2-20260927.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_stage_evidence_v1",
+      "sha256": "2a4345a7d9a867cd1888addad00659583ea744911aa0b5b8486ad8c282c9c00b",
+      "type": "artifact"
+    },
+    {
+      "path": "docs/research/market-state-conditional-policy-protocol-20260927.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_conditional_policy_protocol_v1",
+      "sha256": "7eca70e55aa40d1f2db6e4c72b79a326bf73bd54d583a50347d7f34364e8d85e",
+      "type": "document"
+    },
+    {
+      "path": "quant_shared/trend_environment/diagnostics.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_stage_diagnostics_v1",
+      "sha256": "12e1597f3877c397d868f8b74211198ff266be283b5f91ea701e4d2bb713c871",
+      "type": "code"
+    },
+    {
+      "path": "scripts/research/build_market_state_diagnostic.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_stage_diagnostic_builder_v1",
+      "sha256": "a9884bd83255352629acb6ce62f72d22f80eab3063aeb2b1157c24df40b944a3",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-market-state-shared-contracts-20260927-b22baf73f"
+  ],
+  "domain": "research",
+  "event_id": "published-market-state-stage-evidence-20260927-211e5e286",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/market-state-conditional-research-20260927",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/research/test_market_state_v2.py tests/research/test_market_state_entry_policy.py tests/research/test_market_state_diagnostics.py tests/contracts/test_market_policy_attachment.py -q",
+      "evidence_path": "31 passed in 4.84s",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "transition_for": ""
+}

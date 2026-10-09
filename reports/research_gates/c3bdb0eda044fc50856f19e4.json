@@ -1,0 +1,1014 @@
+{
+  "config_version": "44136fa355b3678a",
+  "created_at": "2026-05-08T05:00:27.444193+00:00",
+  "data_fingerprint": "38dbffe225077e20734dedd5f69528ed7ae2c4c154c316d5bb267e3d620abd79",
+  "data_version": "qs-yfinance-SPY-1d-38dbffe22507",
+  "decision": "warn",
+  "deep_checks": {
+    "cost_stress": {
+      "baseline": {
+        "commission_multiplier": 1.0,
+        "commission_rate": 0.0004,
+        "execution": {
+          "annual_turnover_pct": 9.6603,
+          "avg_order_value": 3838.4734,
+          "cost_drag_pct": 0.0064,
+          "orders": 3,
+          "orders_per_day": 0.0082,
+          "total_cost": 6.3957,
+          "total_fees": 4.6062,
+          "total_slippage": 1.7895,
+          "total_volume": 11515.4203,
+          "turnover_pct": 9.7132,
+          "volume_capped_notional": 0.0,
+          "volume_capped_orders": 0,
+          "volume_capped_pct": 0.0
+        },
+        "label": "\u5f53\u524d\u6210\u672c",
+        "name": "base",
+        "return_decay_pct": 0.0,
+        "sharpe_decay": 0.0,
+        "slippage": 4.0,
+        "slippage_multiplier": 1.0,
+        "summary": {
+          "annual_return_pct": 39.4607,
+          "annual_volatility_pct": 7.8187,
+          "calmar_ratio": 16.1254,
+          "max_drawdown_pct": -2.4471,
+          "profit_factor": 2.9454,
+          "sharpe_ratio": 4.2949,
+          "sortino_ratio": 6.1151,
+          "total_return_pct": 39.7151,
+          "trade_count": 3,
+          "win_rate_pct": 62.5
+        },
+        "survives": true
+      },
+      "framework": [
+        {
+          "priority": 1,
+          "reason": "\u5f53\u524d\u7cfb\u7edf\u5df2\u6709\u56de\u6d4b\u62a5\u544a\uff0c\u4f46\u8fd8\u7f3a\u5c11\u9632\u8fc7\u62df\u5408\u7684\u53c2\u6570\u7b5b\u9009\uff1b\u8fd9\u662f\u8fdb\u5165 paper trading \u524d\u6700\u91cd\u8981\u7684\u5de5\u7a0b\u5173\u53e3\u3002",
+          "status": "completed",
+          "title": "\u53c2\u6570\u7a33\u5065\u6027 + \u6837\u672c\u5916\u9a8c\u8bc1"
+        },
+        {
+          "priority": 2,
+          "reason": "\u5bf9\u624b\u7eed\u8d39\u3001\u6ed1\u70b9\u3001\u5ef6\u8fdf\u548c\u6210\u4ea4\u6bd4\u4f8b\u505a\u538b\u529b\u6d4b\u8bd5\uff0c\u907f\u514d\u4f4e\u9891\u7b56\u7565\u88ab\u771f\u5b9e\u6267\u884c\u541e\u566c\u3002",
+          "status": "selected",
+          "title": "\u4ea4\u6613\u6210\u672c\u538b\u529b\u6d4b\u8bd5"
+        },
+        {
+          "priority": 3,
+          "reason": "\u6309\u725b\u718a\u3001\u9707\u8361\u3001\u9ad8\u6ce2\u52a8\u3001\u4f4e\u6ce2\u52a8\u5207\u7247\u9a8c\u8bc1\u7b56\u7565\u7a33\u5b9a\u6027\u3002",
+          "status": "next",
+          "title": "Walk-forward \u4e0e\u5e02\u573a\u72b6\u6001\u5207\u7247"
+        },
+        {
+          "priority": 4,
+          "reason": "\u5728\u5355\u7b56\u7565\u6837\u672c\u5916\u7a33\u5b9a\u540e\uff0c\u518d\u4f18\u5316\u591a\u7b56\u7565\u6743\u91cd\u3001\u76f8\u5173\u6027\u60e9\u7f5a\u548c\u98ce\u9669\u9884\u7b97\u3002",
+          "status": "later",
+          "title": "\u7ec4\u5408\u5c42\u76f8\u5173\u6027\u4e0e\u8d44\u91d1\u5206\u914d"
+        },
+        {
+          "priority": 5,
+          "reason": "\u4e3a\u540e\u7eed\u673a\u5668\u5b66\u4e60\u548c\u591a\u6570\u636e\u6e90\u63a5\u5165\u4fdd\u7559\u53ef\u590d\u73b0\u7684\u6570\u636e\u8c31\u7cfb\u3002",
+          "status": "later",
+          "title": "\u6570\u636e\u8d28\u91cf\u4e0e\u7279\u5f81\u7248\u672c\u6cbb\u7406"
+        }
+      ],
+      "recommendations": [
+        "\u6240\u6709\u6210\u672c\u573a\u666f\u5747\u901a\u8fc7\uff0c\u53ef\u4ee5\u8fdb\u5165 walk-forward \u4e0e\u5e02\u573a\u72b6\u6001\u5207\u7247\u9a8c\u8bc1\u3002"
+      ],
+      "scenarios": [
+        {
+          "commission_multiplier": 1.0,
+          "commission_rate": 0.0004,
+          "execution": {
+            "annual_turnover_pct": 9.6603,
+            "avg_order_value": 3838.4734,
+            "cost_drag_pct": 0.0064,
+            "orders": 3,
+            "orders_per_day": 0.0082,
+            "total_cost": 6.3957,
+            "total_fees": 4.6062,
+            "total_slippage": 1.7895,
+            "total_volume": 11515.4203,
+            "turnover_pct": 9.7132,
+            "volume_capped_notional": 0.0,
+            "volume_capped_orders": 0,
+            "volume_capped_pct": 0.0
+          },
+          "label": "\u5f53\u524d\u6210\u672c",
+          "name": "base",
+          "return_decay_pct": 0.0,
+          "sharpe_decay": 0.0,
+          "slippage": 4.0,
+          "slippage_multiplier": 1.0,
+          "summary": {
+            "annual_return_pct": 39.4607,
+            "annual_volatility_pct": 7.8187,
+            "calmar_ratio": 16.1254,
+            "max_drawdown_pct": -2.4471,
+            "profit_factor": 2.9454,
+            "sharpe_ratio": 4.2949,
+            "sortino_ratio": 6.1151,
+            "total_return_pct": 39.7151,
+            "trade_count": 3,
+            "win_rate_pct": 62.5
+          },
+          "survives": true
+        },
+        {
+          "commission_multiplier": 2.0,
+          "commission_rate": 0.0008,
+          "execution": {
+            "annual_turnover_pct": 9.6604,
+            "avg_order_value": 3838.4212,
+            "cost_drag_pct": 0.011,
+            "orders": 3,
+            "orders_per_day": 0.0082,
+            "total_cost": 11.0017,
+            "total_fees": 9.2122,
+            "total_slippage": 1.7895,
+            "total_volume": 11515.2637,
+            "turnover_pct": 9.7133,
+            "volume_capped_notional": 0.0,
+            "volume_capped_orders": 0,
+            "volume_capped_pct": 0.0
+          },
+          "label": "\u624b\u7eed\u8d39 2x",
+          "name": "fees_2x",
+          "return_decay_pct": -0.0055,
+          "sharpe_decay": -0.0005,
+          "slippage": 4.0,
+          "slippage_multiplier": 1.0,
+          "summary": {
+            "annual_return_pct": 39.4552,
+            "annual_volatility_pct": 7.8187,
+            "calmar_ratio": 16.1232,
+            "max_drawdown_pct": -2.4471,
+            "profit_factor": 2.945,
+            "sharpe_ratio": 4.2944,
+            "sortino_ratio": 6.115,
+            "total_return_pct": 39.7096,
+            "trade_count": 3,
+            "win_rate_pct": 62.5
+          },
+          "survives": true
+        }
+      ],
+      "selected_priority": "\u4ea4\u6613\u6210\u672c\u538b\u529b\u6d4b\u8bd5",
+      "status": "completed",
+      "strategy_id": "trend_momentum",
+      "strategy_params": {},
+      "survival_rate_pct": 100.0,
+      "worst_case": {
+        "commission_multiplier": 2.0,
+        "commission_rate": 0.0008,
+        "execution": {
+          "annual_turnover_pct": 9.6604,
+          "avg_order_value": 3838.4212,
+          "cost_drag_pct": 0.011,
+          "orders": 3,
+          "orders_per_day": 0.0082,
+          "total_cost": 11.0017,
+          "total_fees": 9.2122,
+          "total_slippage": 1.7895,
+          "total_volume": 11515.2637,
+          "turnover_pct": 9.7133,
+          "volume_capped_notional": 0.0,
+          "volume_capped_orders": 0,
+          "volume_capped_pct": 0.0
+        },
+        "label": "\u624b\u7eed\u8d39 2x",
+        "name": "fees_2x",
+        "return_decay_pct": -0.0055,
+        "sharpe_decay": -0.0005,
+        "slippage": 4.0,
+        "slippage_multiplier": 1.0,
+        "summary": {
+          "annual_return_pct": 39.4552,
+          "annual_volatility_pct": 7.8187,
+          "calmar_ratio": 16.1232,
+          "max_drawdown_pct": -2.4471,
+          "profit_factor": 2.945,
+          "sharpe_ratio": 4.2944,
+          "sortino_ratio": 6.115,
+          "total_return_pct": 39.7096,
+          "trade_count": 3,
+          "win_rate_pct": 62.5
+        },
+        "survives": true
+      }
+    },
+    "walk_forward": {
+      "framework": [
+        {
+          "priority": 1,
+          "reason": "\u5f53\u524d\u7cfb\u7edf\u5df2\u6709\u56de\u6d4b\u62a5\u544a\uff0c\u4f46\u8fd8\u7f3a\u5c11\u9632\u8fc7\u62df\u5408\u7684\u53c2\u6570\u7b5b\u9009\uff1b\u8fd9\u662f\u8fdb\u5165 paper trading \u524d\u6700\u91cd\u8981\u7684\u5de5\u7a0b\u5173\u53e3\u3002",
+          "status": "completed",
+          "title": "\u53c2\u6570\u7a33\u5065\u6027 + \u6837\u672c\u5916\u9a8c\u8bc1"
+        },
+        {
+          "priority": 2,
+          "reason": "\u5bf9\u624b\u7eed\u8d39\u3001\u6ed1\u70b9\u3001\u5ef6\u8fdf\u548c\u6210\u4ea4\u6bd4\u4f8b\u505a\u538b\u529b\u6d4b\u8bd5\uff0c\u907f\u514d\u4f4e\u9891\u7b56\u7565\u88ab\u771f\u5b9e\u6267\u884c\u541e\u566c\u3002",
+          "status": "completed",
+          "title": "\u4ea4\u6613\u6210\u672c\u538b\u529b\u6d4b\u8bd5"
+        },
+        {
+          "priority": 3,
+          "reason": "\u6309\u725b\u718a\u3001\u9707\u8361\u3001\u9ad8\u6ce2\u52a8\u3001\u4f4e\u6ce2\u52a8\u5207\u7247\u9a8c\u8bc1\u7b56\u7565\u7a33\u5b9a\u6027\u3002",
+          "status": "selected",
+          "title": "Walk-forward \u4e0e\u5e02\u573a\u72b6\u6001\u5207\u7247"
+        },
+        {
+          "priority": 4,
+          "reason": "\u5728\u5355\u7b56\u7565\u6837\u672c\u5916\u7a33\u5b9a\u540e\uff0c\u518d\u4f18\u5316\u591a\u7b56\u7565\u6743\u91cd\u3001\u76f8\u5173\u6027\u60e9\u7f5a\u548c\u98ce\u9669\u9884\u7b97\u3002",
+          "status": "next",
+          "title": "\u7ec4\u5408\u5c42\u76f8\u5173\u6027\u4e0e\u8d44\u91d1\u5206\u914d"
+        },
+        {
+          "priority": 5,
+          "reason": "\u4e3a\u540e\u7eed\u673a\u5668\u5b66\u4e60\u548c\u591a\u6570\u636e\u6e90\u63a5\u5165\u4fdd\u7559\u53ef\u590d\u73b0\u7684\u6570\u636e\u8c31\u7cfb\u3002",
+          "status": "later",
+          "title": "\u6570\u636e\u8d28\u91cf\u4e0e\u7279\u5f81\u7248\u672c\u6cbb\u7406"
+        }
+      ],
+      "recommendations": [
+        "\u90e8\u5206\u6837\u672c\u5916\u7a97\u53e3\u5931\u6548\uff0c\u4e0b\u4e00\u8f6e\u4f18\u5148\u68c0\u67e5\u5931\u6548\u7a97\u53e3\u5bf9\u5e94\u7684\u5e02\u573a\u72b6\u6001\u548c\u6362\u624b\u6210\u672c\u3002",
+        "\u5e02\u573a\u72b6\u6001\u5207\u7247\u4e2d \u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a, \u4e0b\u8dcc / \u8d8b\u52bf\u5411\u4e0b, \u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a \u672a\u901a\u8fc7\uff0c\u5b9e\u76d8\u524d\u5e94\u52a0\u5165\u5bf9\u5e94 regime filter \u6216\u964d\u4f4e\u4ed3\u4f4d\u3002"
+      ],
+      "regimes": [
+        {
+          "bar_count": 165,
+          "coverage_pct": 44.9591,
+          "label": "\u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a",
+          "name": "uptrend",
+          "summary": {
+            "annual_return_pct": 14.1612,
+            "annual_volatility_pct": 5.8083,
+            "calmar_ratio": 6.6502,
+            "max_drawdown_pct": -2.1294,
+            "profit_factor": 2.3145,
+            "sharpe_ratio": 2.3095,
+            "sortino_ratio": 2.3195,
+            "total_return_pct": 6.1699,
+            "trade_count": 1,
+            "win_rate_pct": 62.069
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 202,
+          "coverage_pct": 55.0409,
+          "label": "\u4e0b\u8dcc / \u8d8b\u52bf\u5411\u4e0b",
+          "name": "downtrend",
+          "summary": {
+            "annual_return_pct": 19.8067,
+            "annual_volatility_pct": 13.5226,
+            "calmar_ratio": 3.1565,
+            "max_drawdown_pct": -6.275,
+            "profit_factor": 1.6856,
+            "sharpe_ratio": 1.402,
+            "sortino_ratio": 2.7088,
+            "total_return_pct": 10.5181,
+            "trade_count": 2,
+            "win_rate_pct": 44.4444
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 184,
+          "coverage_pct": 50.1362,
+          "label": "\u9ad8\u6ce2\u52a8",
+          "name": "high_volatility",
+          "summary": {
+            "annual_return_pct": 23.4744,
+            "annual_volatility_pct": 8.5804,
+            "calmar_ratio": 5.2984,
+            "max_drawdown_pct": -4.4305,
+            "profit_factor": 1.926,
+            "sharpe_ratio": 2.501,
+            "sortino_ratio": 2.2478,
+            "total_return_pct": 11.2153,
+            "trade_count": 3,
+            "win_rate_pct": 62.7451
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 183,
+          "coverage_pct": 49.8638,
+          "label": "\u4f4e\u6ce2\u52a8",
+          "name": "low_volatility",
+          "summary": {
+            "annual_return_pct": 41.6885,
+            "annual_volatility_pct": 19.9633,
+            "calmar_ratio": 8.4079,
+            "max_drawdown_pct": -4.9582,
+            "profit_factor": 2.9665,
+            "sharpe_ratio": 1.8387,
+            "sortino_ratio": 6.1521,
+            "total_return_pct": 19.0898,
+            "trade_count": 1,
+            "win_rate_pct": 51.9231
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 160,
+          "coverage_pct": 43.5967,
+          "label": "\u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a",
+          "name": "uptrend",
+          "summary": {
+            "annual_return_pct": 3.7975,
+            "annual_volatility_pct": 4.1837,
+            "calmar_ratio": 1.8426,
+            "max_drawdown_pct": -2.061,
+            "profit_factor": 1.3961,
+            "sharpe_ratio": 0.9118,
+            "sortino_ratio": 0.6207,
+            "total_return_pct": 1.6473,
+            "trade_count": 0,
+            "win_rate_pct": 54.5455
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 207,
+          "coverage_pct": 56.4033,
+          "label": "\u4e0b\u8dcc / \u8d8b\u52bf\u5411\u4e0b",
+          "name": "downtrend",
+          "summary": {
+            "annual_return_pct": 2.9297,
+            "annual_volatility_pct": 8.8714,
+            "calmar_ratio": 0.6176,
+            "max_drawdown_pct": -4.7437,
+            "profit_factor": 1.1422,
+            "sharpe_ratio": 0.3692,
+            "sortino_ratio": 0.3849,
+            "total_return_pct": 1.6511,
+            "trade_count": 4,
+            "win_rate_pct": 45.6522
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 184,
+          "coverage_pct": 50.1362,
+          "label": "\u9ad8\u6ce2\u52a8",
+          "name": "high_volatility",
+          "summary": {
+            "annual_return_pct": 9.1939,
+            "annual_volatility_pct": 6.5771,
+            "calmar_ratio": 4.1167,
+            "max_drawdown_pct": -2.2333,
+            "profit_factor": 1.4495,
+            "sharpe_ratio": 1.3702,
+            "sortino_ratio": 1.3034,
+            "total_return_pct": 4.5337,
+            "trade_count": 2,
+            "win_rate_pct": 42.2222
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 183,
+          "coverage_pct": 49.8638,
+          "label": "\u4f4e\u6ce2\u52a8",
+          "name": "low_volatility",
+          "summary": {
+            "annual_return_pct": 43.9058,
+            "annual_volatility_pct": 8.8004,
+            "calmar_ratio": 12.444,
+            "max_drawdown_pct": -3.5283,
+            "profit_factor": 2.2475,
+            "sharpe_ratio": 4.1821,
+            "sortino_ratio": 4.2009,
+            "total_return_pct": 20.0206,
+            "trade_count": 3,
+            "win_rate_pct": 67.7419
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 165,
+          "coverage_pct": 44.9591,
+          "label": "\u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a",
+          "name": "uptrend",
+          "summary": {
+            "annual_return_pct": -1.4078,
+            "annual_volatility_pct": 1.7224,
+            "calmar_ratio": -1.0454,
+            "max_drawdown_pct": -1.3466,
+            "profit_factor": 0.6728,
+            "sharpe_ratio": -0.8145,
+            "sortino_ratio": -0.3449,
+            "total_return_pct": -0.6389,
+            "trade_count": 0,
+            "win_rate_pct": 54.5455
+          },
+          "survives": false
+        },
+        {
+          "bar_count": 202,
+          "coverage_pct": 55.0409,
+          "label": "\u4e0b\u8dcc / \u8d8b\u52bf\u5411\u4e0b",
+          "name": "downtrend",
+          "summary": {
+            "annual_return_pct": -11.9022,
+            "annual_volatility_pct": 3.9908,
+            "calmar_ratio": -1.5662,
+            "max_drawdown_pct": -7.5994,
+            "profit_factor": 0.2873,
+            "sharpe_ratio": -3.1548,
+            "sortino_ratio": -1.6927,
+            "total_return_pct": -6.7729,
+            "trade_count": 0,
+            "win_rate_pct": 31.25
+          },
+          "survives": false
+        },
+        {
+          "bar_count": 184,
+          "coverage_pct": 50.1362,
+          "label": "\u9ad8\u6ce2\u52a8",
+          "name": "high_volatility",
+          "summary": {
+            "annual_return_pct": 15.5502,
+            "annual_volatility_pct": 5.8745,
+            "calmar_ratio": 5.4926,
+            "max_drawdown_pct": -2.8311,
+            "profit_factor": 2.1708,
+            "sharpe_ratio": 2.4901,
+            "sortino_ratio": 2.0027,
+            "total_return_pct": 7.5582,
+            "trade_count": 0,
+            "win_rate_pct": 65.7143
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 183,
+          "coverage_pct": 49.8638,
+          "label": "\u4f4e\u6ce2\u52a8",
+          "name": "low_volatility",
+          "summary": {
+            "annual_return_pct": 21.7571,
+            "annual_volatility_pct": 7.4871,
+            "calmar_ratio": 7.3212,
+            "max_drawdown_pct": -2.9718,
+            "profit_factor": 1.8086,
+            "sharpe_ratio": 2.6672,
+            "sortino_ratio": 3.5435,
+            "total_return_pct": 10.3733,
+            "trade_count": 2,
+            "win_rate_pct": 60.8108
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 171,
+          "coverage_pct": 46.594,
+          "label": "\u4e0a\u6da8 / \u8d8b\u52bf\u5411\u4e0a",
+          "name": "uptrend",
+          "summary": {
+            "annual_return_pct": -0.1375,
+            "annual_volatility_pct": 4.1078,
+            "calmar_ratio": -0.0522,
+            "max_drawdown_pct": -2.6355,
+            "profit_factor": 0.9955,
+            "sharpe_ratio": -0.013,
+            "sortino_ratio": -0.0101,
+            "total_return_pct": -0.0645,
+            "trade_count": 0,
+            "win_rate_pct": 42.3077
+          },
+          "survives": false
+        },
+        {
+          "bar_count": 196,
+          "coverage_pct": 53.406,
+          "label": "\u4e0b\u8dcc / \u8d8b\u52bf\u5411\u4e0b",
+          "name": "downtrend",
+          "summary": {
+            "annual_return_pct": -1.4339,
+            "annual_volatility_pct": 5.9608,
+            "calmar_ratio": -0.2397,
+            "max_drawdown_pct": -5.982,
+            "profit_factor": 0.9438,
+            "sharpe_ratio": -0.2125,
+            "sortino_ratio": -0.1707,
+            "total_return_pct": -0.7725,
+            "trade_count": 2,
+            "win_rate_pct": 54.902
+          },
+          "survives": false
+        },
+        {
+          "bar_count": 184,
+          "coverage_pct": 50.1362,
+          "label": "\u9ad8\u6ce2\u52a8",
+          "name": "high_volatility",
+          "summary": {
+            "annual_return_pct": 47.3814,
+            "annual_volatility_pct": 20.7048,
+            "calmar_ratio": 8.2824,
+            "max_drawdown_pct": -5.7207,
+            "profit_factor": 2.1707,
+            "sharpe_ratio": 1.9727,
+            "sortino_ratio": 5.3128,
+            "total_return_pct": 21.5944,
+            "trade_count": 5,
+            "win_rate_pct": 55.4054
+          },
+          "survives": true
+        },
+        {
+          "bar_count": 183,
+          "coverage_pct": 49.8638,
+          "label": "\u4f4e\u6ce2\u52a8",
+          "name": "low_volatility",
+          "summary": {
+            "annual_return_pct": -5.9572,
+            "annual_volatility_pct": 7.8163,
+            "calmar_ratio": -1.1091,
+            "max_drawdown_pct": -5.3713,
+            "profit_factor": 0.7999,
+            "sharpe_ratio": -0.7463,
+            "sortino_ratio": -0.4242,
+            "total_return_pct": -3.0325,
+            "trade_count": 2,
+            "win_rate_pct": 48.9796
+          },
+          "survives": false
+        }
+      ],
+      "selected_priority": "Walk-forward \u4e0e\u5e02\u573a\u72b6\u6001\u5207\u7247",
+      "stability": {
+        "avg_oos_return_pct": -0.0593,
+        "fold_pass_rate_pct": 75.0,
+        "ledger_consistency_pct": 100.0,
+        "ledger_equity_consistent_windows": 8,
+        "manifest_path": "data/reports/walk_forward/walk_forward_trend_momentum_20260508T050027.json",
+        "median_oos_sharpe": 0.0,
+        "parameter_stability_pct": 100.0,
+        "pass_rate_pct": 75.0,
+        "passing_folds": 6,
+        "regime_pass_rate_pct": 68.75,
+        "symbol_count": 4,
+        "symbol_details": {
+          "DIA": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 2
+          },
+          "IWM": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 2
+          },
+          "QQQ": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 1
+          },
+          "SPY": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 1
+          }
+        },
+        "symbols_covered": 4,
+        "symbols_insufficient": 0,
+        "total_folds": 8,
+        "valid_folds": 8,
+        "window_count": 8,
+        "worst_oos_drawdown_pct": -0.4334
+      },
+      "status": "completed",
+      "strategy_id": "trend_momentum",
+      "strategy_params": {
+        "entry_threshold": 0.03,
+        "lookback_bars": 20
+      },
+      "symbols": [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "DIA"
+      ],
+      "windows": [
+        {
+          "equity_consistent": true,
+          "fold": 1,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "SPY",
+          "train": {},
+          "train_end": 1724544000,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1704067200,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1730073600,
+          "validation_rows": 0,
+          "validation_start": 1724630400
+        },
+        {
+          "equity_consistent": true,
+          "fold": 2,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": false,
+          "symbol": "SPY",
+          "train": {},
+          "train_end": 1730073600,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1709596800,
+          "validation": {
+            "annual_return_pct": -0.6589,
+            "annual_volatility_pct": 0.3211,
+            "cagr_pct": -0.6589,
+            "calmar_ratio": -1.5202,
+            "max_drawdown_pct": -0.4334,
+            "profit_factor": 0.6797,
+            "sharpe_ratio": -2.0569,
+            "sortino_ratio": -2.5832,
+            "total_return_pct": -0.1678,
+            "trade_count": 1,
+            "turnover_pct": 10.0243,
+            "win_rate_pct": 45.4545
+          },
+          "validation_end": 1735603200,
+          "validation_rows": 0,
+          "validation_start": 1730160000
+        },
+        {
+          "equity_consistent": true,
+          "fold": 1,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "QQQ",
+          "train": {},
+          "train_end": 1724544000,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1704067200,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1730073600,
+          "validation_rows": 0,
+          "validation_start": 1724630400
+        },
+        {
+          "equity_consistent": true,
+          "fold": 2,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": false,
+          "symbol": "QQQ",
+          "train": {},
+          "train_end": 1730073600,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1709596800,
+          "validation": {
+            "annual_return_pct": -1.2034,
+            "annual_volatility_pct": 0.3309,
+            "cagr_pct": -1.2034,
+            "calmar_ratio": -3.2455,
+            "max_drawdown_pct": -0.3708,
+            "profit_factor": 0.4198,
+            "sharpe_ratio": -3.6572,
+            "sortino_ratio": -4.5476,
+            "total_return_pct": -0.307,
+            "trade_count": 2,
+            "turnover_pct": 19.7377,
+            "win_rate_pct": 36.6667
+          },
+          "validation_end": 1735603200,
+          "validation_rows": 0,
+          "validation_start": 1730160000
+        },
+        {
+          "equity_consistent": true,
+          "fold": 1,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "IWM",
+          "train": {},
+          "train_end": 1724544000,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1704067200,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1730073600,
+          "validation_rows": 0,
+          "validation_start": 1724630400
+        },
+        {
+          "equity_consistent": true,
+          "fold": 2,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "IWM",
+          "train": {},
+          "train_end": 1730073600,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1709596800,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1735603200,
+          "validation_rows": 0,
+          "validation_start": 1730160000
+        },
+        {
+          "equity_consistent": true,
+          "fold": 1,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "DIA",
+          "train": {},
+          "train_end": 1724544000,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1704067200,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1730073600,
+          "validation_rows": 0,
+          "validation_start": 1724630400
+        },
+        {
+          "equity_consistent": true,
+          "fold": 2,
+          "selected_params": {
+            "entry_threshold": 0.03,
+            "lookback_bars": 20
+          },
+          "survives": true,
+          "symbol": "DIA",
+          "train": {},
+          "train_end": 1730073600,
+          "train_rows": 0,
+          "train_score": 0.0,
+          "train_start": 1709596800,
+          "validation": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "cagr_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "turnover_pct": 0.0,
+            "win_rate_pct": 0.0
+          },
+          "validation_end": 1735603200,
+          "validation_rows": 0,
+          "validation_start": 1730160000
+        }
+      ]
+    }
+  },
+  "gate_version": "2.0.0",
+  "gates": [
+    {
+      "message": "\u6570\u636e\u53ef\u7528\u6027\u3001\u8986\u76d6\u7387\u548c\u5f02\u5e38\u68c0\u67e5\u3002",
+      "metrics": {
+        "coverage_pct": 95.4373,
+        "data_version": "qs-yfinance-SPY-1d-38dbffe22507",
+        "missing_bars": 12,
+        "quality_score": 95.4373
+      },
+      "name": "data_quality",
+      "status": "warn",
+      "threshold": "usable=true, coverage>=95%, score>=95 for pass; coverage<85% = fail"
+    },
+    {
+      "message": "\u57fa\u7840\u6536\u76ca\u8d28\u91cf\u3001\u4ea4\u6613\u8fb9\u9645\u3001\u6700\u5927\u56de\u64a4\u548c\u6700\u5c0f\u4ea4\u6613\u6b21\u6570\u68c0\u67e5\u3002",
+      "metrics": {
+        "frequency_profile": "low_frequency",
+        "max_drawdown_pct": -2.4471,
+        "profit_factor": 2.9454,
+        "sharpe_ratio": 4.2949,
+        "signal_count": 3,
+        "total_return_pct": 39.7151,
+        "trade_count": 3
+      },
+      "name": "backtest_survival",
+      "status": "warn",
+      "threshold": "low_frequency_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=3 (interval=1d)"
+    },
+    {
+      "message": "\u4ea4\u6613\u6210\u672c\u62d6\u7d2f\u548c\u6362\u624b\u7387\u68c0\u67e5\u3002",
+      "metrics": {
+        "annual_turnover_pct": 9.6603,
+        "cost_drag_pct": 0.0064,
+        "orders": 3
+      },
+      "name": "execution_cost",
+      "status": "pass",
+      "threshold": "cost drag <= max(2%, 50% of |return|), turnover <= 5000% for pass; cost drag must not exceed total return"
+    },
+    {
+      "message": "\u56de\u64a4\u548c\u6700\u5927\u603b\u655e\u53e3\u68c0\u67e5\u3002",
+      "metrics": {
+        "max_drawdown_pct": -2.4471,
+        "max_gross_exposure_pct": 249.6898
+      },
+      "name": "portfolio_risk",
+      "status": "warn",
+      "threshold": "mdd>-20%, max gross exposure<=300%; pass wants mdd>-12%, exposure<=200%"
+    },
+    {
+      "message": "\u6210\u672c\u538b\u529b\u573a\u666f\u5b58\u6d3b\u7387\u68c0\u67e5\u3002",
+      "metrics": {
+        "survival_rate_pct": 100.0
+      },
+      "name": "cost_stress",
+      "status": "pass",
+      "threshold": "pass=100%, warn>=60%, fail<60%"
+    },
+    {
+      "message": "Walk-forward \u591a\u6807\u7684\u6837\u672c\u5916\u7a97\u53e3\u901a\u8fc7\u7387\u68c0\u67e5\u3002",
+      "metrics": {
+        "avg_oos_return_pct": -0.0593,
+        "fold_pass_rate_pct": 75.0,
+        "ledger_consistency_pct": 100.0,
+        "ledger_equity_consistent_windows": 8,
+        "manifest_path": "data/reports/walk_forward/walk_forward_trend_momentum_20260508T050027.json",
+        "median_oos_sharpe": 0.0,
+        "parameter_stability_pct": 100.0,
+        "pass_rate_pct": 75.0,
+        "passing_folds": 6,
+        "regime_pass_rate_pct": 68.75,
+        "symbol_count": 4,
+        "symbol_details": {
+          "DIA": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 2
+          },
+          "IWM": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 2
+          },
+          "QQQ": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 1
+          },
+          "SPY": {
+            "bar_count": 367,
+            "folds": 2,
+            "passes": 1
+          }
+        },
+        "symbols_covered": 4,
+        "symbols_insufficient": 0,
+        "total_folds": 8,
+        "valid_folds": 8,
+        "window_count": 8,
+        "worst_oos_drawdown_pct": -0.4334
+      },
+      "name": "walk_forward",
+      "status": "warn",
+      "threshold": "pass=100%, warn>=60% or insufficient data, fail<60%"
+    }
+  ],
+  "generated_at": "2026-05-08T05:00:27.444193+00:00",
+  "manifest_id": "c3bdb0eda044fc50856f19e4",
+  "mode": "single",
+  "next_stage": "research_iteration",
+  "request": {
+    "capital": 100000.0,
+    "cash_reserve_pct": 5.0,
+    "commission_rate": 0.0004,
+    "correlation_penalty": 0.75,
+    "data_db_path": "",
+    "end": "2025-01-01T00:00:00+00:00",
+    "experiment_name": "",
+    "interval": "1d",
+    "leverage": 1.0,
+    "max_candidates": 1,
+    "max_scenarios": 2,
+    "max_single_weight": 0.35,
+    "mode": "single",
+    "notes": "",
+    "persist_manifest": true,
+    "position_basis": "equity",
+    "register_experiment": false,
+    "skip_deep_checks": false,
+    "slippage": 4.0,
+    "source": "yfinance",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_momentum",
+    "strategy_params": {},
+    "symbol": "SPY",
+    "symbols": [],
+    "weights": [],
+    "windows": 2
+  },
+  "strategy_version": "strategy_af14a9b17bf09ff7",
+  "summary": {
+    "annual_return_pct": 39.4607,
+    "annual_volatility_pct": 7.8187,
+    "calmar_ratio": 16.1254,
+    "max_drawdown_pct": -2.4471,
+    "profit_factor": 2.9454,
+    "sharpe_ratio": 4.2949,
+    "sortino_ratio": 6.1151,
+    "total_return_pct": 39.7151,
+    "trade_count": 3,
+    "win_rate_pct": 62.5
+  }
+}

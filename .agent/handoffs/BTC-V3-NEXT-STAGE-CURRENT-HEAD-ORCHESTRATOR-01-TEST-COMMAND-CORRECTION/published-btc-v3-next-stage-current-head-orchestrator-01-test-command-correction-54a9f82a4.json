@@ -1,0 +1,136 @@
+{
+  "base_commit": "42739934efdb54183797c225a9ddc79395519edf",
+  "blockers": [
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T13:39:55Z",
+  "deliverable_commit": "54a9f82a48afd09f983d78e0a5bd174581779e08",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "35bb424cfd89d1b23755eb80b6b0ddf5150a36cebe6668a4ff8bc6db7dd5ab29",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_cli_v1",
+      "sha256": "997338f017b59a62f1c12c3b9c4e05e1f2a89744d92f7e6eb37df414d349ef9f",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_next_stage_current_head_orchestrator.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "4ee856c4ee6608e4128c36df73bb1f31b206d2e31e98abe3edf483970e97833a",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_next_stage_engineering_evidence.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_engineering_evidence_v2",
+      "sha256": "fbff8bbfeb6ec6259d9b57c9c3115d41f7944a81f2ca412d61e2cb826f579da5",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_contract_v1",
+      "sha256": "92b111907293c10d76ffd63a4bde9d61b0a6e0c98dae71eddd6f2386a2676184",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-data-btc-v3-immutable-public-market-evidence-01",
+    "integrated-btc-v3-next-stage-engineering-closure-02"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-next-stage-current-head-orchestrator-01-test-command-correction-54a9f82a4",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-next-stage-current-head-orchestrator-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-v3-next-stage-current-head-orchestrator-01-p1-correction-54a9f82a4"
+  ],
+  "tests": [
+    {
+      "command": "$bt=Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N')); New-Item -ItemType Directory -Path $bt | Out-Null; py -3 -B -m pytest tests/contracts/test_btc_next_stage_current_head_orchestrator.py -q --basetemp $bt -p no:cacheprovider [observed on detached deliverable commit: 26 passed in 97.15s; retained basetemp C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\9437c80d27dd4714bb84f0402f47af25]",
+      "evidence_path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "$bt=Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N')); New-Item -ItemType Directory -Path $bt | Out-Null; py -3 -B -m pytest tests/contracts/test_btc_domain_read_model.py -q --basetemp $bt -p no:cacheprovider [observed on detached deliverable commit: 12 passed in 3.94s; retained basetemp C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\72d15f55c81641fdaaf13dfc4af36c8d]",
+      "evidence_path": "tests/contracts/test_btc_domain_read_model.py",
+      "result": "passed"
+    },
+    {
+      "command": "$bt=Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N')); New-Item -ItemType Directory -Path $bt | Out-Null; py -3 -B -m pytest tests/contracts/test_btc_next_stage_engineering_closure.py tests/contracts/test_btc_domain_read_model.py tests/contracts/test_btc_runtime_artifact_store.py tests/contracts/test_btc_gate_snapshot.py tests/contracts/test_btc_promotion_gate_control.py tests/contracts/test_btc_promotion_gate_root_cause_ci.py tests/contracts/test_btc_strategy_promotion_readiness_review.py tests/contracts/test_btc_perpetual_paper_runtime_replay_report.py tests/contracts/test_btc_exchange_paper_runtime_replay_report.py tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py -q --basetemp $bt -p no:cacheprovider [observed on detached deliverable commit: 85 passed in 79.61s; retained basetemp C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\3e0e48cb73a048748c489c21af212ef7]",
+      "evidence_path": "tests/contracts/test_btc_next_stage_engineering_closure.py",
+      "result": "passed"
+    },
+    {
+      "command": "$root=[IO.Path]::Combine([IO.Path]::GetTempPath(),[Guid]::NewGuid().ToString('N')); New-Item -ItemType Directory -Path $root | Out-Null; $env:QS_BTC_RUNTIME_ARTIFACT_ROOT=[IO.Path]::Combine($root,'blank-artifact-root'); py -3 scripts/build_btc_next_stage_current_head_orchestrator.py --repo-root . --expected-head 54a9f82a48afd09f983d78e0a5bd174581779e08 --run-id p1-committed-real-legacy-smoke --data-manifest .agent/data_manifests/btc-okx-v3-immutable-public-market-evidence/btc-okx-v3-public-btcusdt-20260727T075929750Z-src311c5ec7.json --data-integrated-handoff .agent/handoffs/DATA-BTC-V3-IMMUTABLE-PUBLIC-MARKET-EVIDENCE-01/integrated-data-btc-v3-immutable-public-market-evidence-01.json --engineering-integrated-handoff .agent/handoffs/BTC-V3-NEXT-STAGE-ENGINEERING-CLOSURE-02/integrated-btc-v3-next-stage-engineering-closure-02.json [referenced unchanged self-contained evidence from superseded event: exit 0; exact16; exact17; immutable snapshot; pointer reload valid; complete_blocked; paper/live false]",
+      "evidence_path": "scripts/build_btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "$pc=Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N')); New-Item -ItemType Directory -Path $pc | Out-Null; $env:PYTHONPYCACHEPREFIX=$pc; py -3 -B -m py_compile quant_crypto/application/btc_next_stage_current_head_orchestrator.py scripts/build_btc_next_stage_current_head_orchestrator.py tests/contracts/test_btc_next_stage_current_head_orchestrator.py; git diff --check 7ca4e9087a88e7386ee4a949d95ac1256463438e..54a9f82a48afd09f983d78e0a5bd174581779e08 -- quant_crypto/application/btc_next_stage_current_head_orchestrator.py scripts/build_btc_next_stage_current_head_orchestrator.py schemas/btc_next_stage_current_head_orchestrator.schema.json schemas/btc_next_stage_engineering_evidence.schema.json tests/contracts/test_btc_next_stage_current_head_orchestrator.py [observed: passed; retained PYTHONPYCACHEPREFIX C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\391151310d9348978e4f4d26af5986c6; test EOF is one LF]",
+      "evidence_path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/research/test_promotion_gate_canonical_only.py [not run: collection in BTC sparse worktree raises ModuleNotFoundError: No module named 'quant_us'; business tests not started; run separately in an authorized wider sparse clean worktree]",
+      "evidence_path": "tests/research/test_promotion_gate_canonical_only.py",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m ruff check quant_crypto/application/btc_next_stage_current_head_orchestrator.py scripts/build_btc_next_stage_current_head_orchestrator.py tests/contracts/test_btc_next_stage_current_head_orchestrator.py [not run: No module named ruff; dependency not installed]",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "formal artifact root rebuild, network/public collection, private/order/live endpoint, paper queue, real order, or secret action",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-NEXT-STAGE-CURRENT-HEAD-ORCHESTRATOR-01-TEST-COMMAND-CORRECTION",
+  "transition_for": ""
+}

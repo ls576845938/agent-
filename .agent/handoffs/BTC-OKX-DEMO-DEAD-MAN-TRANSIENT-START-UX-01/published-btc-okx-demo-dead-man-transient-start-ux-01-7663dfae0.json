@@ -1,0 +1,127 @@
+{
+  "base_commit": "259331ed7c624c5216100cb742665f13e64c42fb",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator canonical_mocked_playwright_requires_integrated_current_main:31_total_29_passed_2_failed_on_unintegrated_stage_and_400_busy_semantics",
+    "owner:integrator backend_restart_required_after_integration",
+    "paper_live_private_order_real_order_transfer_withdraw_and_promotion_remain_disabled"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-20T16:00:00Z",
+  "deliverable_commit": "7663dfae0974ef30e60560e669146de1bf82ada3",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_adapter_v1",
+      "sha256": "46650cf4808b54120aae0b280758d7636d42c8639e679d0fbde379d0fcaa78a1",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_demo_adapter_contract_tests_v1",
+      "sha256": "0ee59222bb2443a30d3c1f3402f2419bc5665a366ed2184c48fa258a7e706ce3",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_start_authority_ui_v1",
+      "sha256": "3aaceb7728404bca9be0fdb16a188ae0352c35ed20e6e2851bcef8a917277a66",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_preflight_stage_projection_v1",
+      "sha256": "9aff2a81fb84741628e3c1197580fe4c9695e4bb85a805aac1c892aa9a292804",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-demo-console.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_start_transient_ux_contract_tests_v1",
+      "sha256": "1e4c2332006a9b2810b299860cd669978bef91345bf6af2be7508824d0faafeb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "306bb3db6b0fd1de4e2ced71462307d3ab8aa1fcd4e321319e517674572c1559",
+      "type": "document"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-dead-man-transient-start-ux-01-7663dfae0",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-dead-man-transient-start-ux-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_adapter.py -k cancel_all_after_retries_only_transient_50001_then_accepts_ack",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo.py tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh && npm --prefix frontend run identity:check && npm --prefix frontend run identity:test",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --reporter=line [31 total; 29 passed, 2 failed against canonical registered main without this deliverable; defer to integrated current main]",
+      "evidence_path": "",
+      "result": "failed"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-DEAD-MAN-TRANSIENT-START-UX-01",
+  "transition_for": ""
+}

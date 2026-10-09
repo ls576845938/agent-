@@ -1,0 +1,115 @@
+{
+  "base_commit": "1925362a76a5c48476642373c1f26ee7196aafce",
+  "blockers": [
+    "owner:integrator independent re-review and integration of the superseding deliverable required",
+    "owner:integrator registered-main publication and backend restart pending",
+    "owner:integrator canonical-main HTTP and browser acceptance pending",
+    "owner:operator existing evidence registry requires an explicit rebuild before it can carry validation_index_v1; GET remains read-only and fail-closed",
+    "four pre-existing platform or optional-dependency test failures remain unchanged"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-14T03:50:45Z",
+  "deliverable_commit": "0b39a752098f63f05b70aa343a8623472ef70838",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_v1",
+      "sha256": "718869b23a45c89fcee15fc43ca8e4ffcf5d9cbf9da206bb9f8aec4c9fa1b821",
+      "type": "code"
+    },
+    {
+      "path": "integrations/qlib_adapter/research_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_v1",
+      "sha256": "73d4522c3a6f5b29f377909a9092468083068494c676f174719ea6384f8c5469",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "evidence_registry_validation_index_v1",
+      "sha256": "b48c47a19f2a726ddb534289dc580f6d452664f664a1e599e47eb222beb303cd",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_tests_v1",
+      "sha256": "b780b703ceead483f8c92f82ec82bf90982e4579aebbe5c8aea5fe75974f6870",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/research/test_evidence_registry.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_tests_v1",
+      "sha256": "428dd8ffb94fcb42f930b7441f2a72d55534a803075e05d586061d9f9d601692",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_readonly_performance_acceptance_v1",
+      "sha256": "c085d8ce635c1f8957f867a342649549ea73c16d4aa2872cd468f9d299aa1991",
+      "type": "report"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "superseded-research-readonly-registry-qlib-perf-20260914-0b39a7520",
+  "event_type": "superseded",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-readonly-registry-qlib-perf-20260914",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-research-readonly-registry-qlib-perf-20260914-93ca2536e"
+  ],
+  "tests": [
+    {
+      "command": "integrator malformed seal map reproduction -> AttributeError before amendment",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "failed"
+    },
+    {
+      "command": "producer failure-first non-object seal files regression -> 1 failed before amendment",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/api/test_qlib_pipeline.py -> 15 passed",
+      "evidence_path": "tests/api/test_qlib_pipeline.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/research/test_evidence_registry.py tests/api/test_qlib_pipeline.py -> 23 passed",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "passed"
+    },
+    {
+      "command": "focused Evidence Registry and Qlib compatibility/safety suites excluding four confirmed baseline failures -> 87 passed, 4 deselected",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "passed"
+    },
+    {
+      "command": "canonical main service restart, HTTP cold/hot and Playwright page acceptance",
+      "evidence_path": "docs/acceptance/research-readonly-registry-qlib-performance-20260914.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-READONLY-REGISTRY-QLIB-PERF-20260914",
+  "transition_for": ""
+}

@@ -1,0 +1,149 @@
+{
+  "base_commit": "95328d3f318c871a3f3e7242e51262ce8e83031b",
+  "blockers": [
+    "independent_integrator_required:governance_control",
+    "canonical Playwright deferred_to_integrated_current_main: port 3000 serves stale d1650f2237efb453a6fd09a1014f4d3f16f9b8f2, restart forbidden",
+    "registered_main_not_advanced"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-17T11:00:00Z",
+  "deliverable_commit": "9113b8a9b60b28355b58bd528a90b8410486e7f5",
+  "deliverables": [
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "2b03e64f3d4e27a983ccde2dfa94fbaf2f3eace865317bdd3f37fcb40718d18d",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "7418835badbd7bc004a8ab8e2f54bd4f27d725559e4dfe9c9e09d7769eb33bcd",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_identity_v1",
+      "sha256": "f62376b5efb5b682b622e88ce9aab2cc64ff26e24df84112da113b2ece5ab8b4",
+      "type": "document"
+    },
+    {
+      "path": "frontend/src/components/ibkr-runtime/RuntimeBanner.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "865c2ae814abd519d3b7a8f31a59a634e9c7cdcba76786154115afee8c7fa8ef",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "7d7b4cdb6916ea0d7334204c7f2136219ebc6572535921c5431d1364497c5e8a",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "9c6c6e0c985d10078a419bc6ed33a0a577c94a5480fc771deed58794c817c6f7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/lib/ibkr-runtime-api.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "8b35692160f58814df8feebbdf1b1146007bbcd1ce47fe610a466a147d40ae02",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/LiveTradingDashboard.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "71dbba7426fa23baa1a3caef1eb1ed7311d1797a729922652f8058ad9f075b97",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "e4c6f61d997d2de90853de64b33a2a79cbdc5b6783b1b1613f4b72383201b8bd",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "frontend_governance_v1",
+      "sha256": "6530dcfc145278f0df1e1b41d733e591a2c88f95ec7d59b27ca6b9b480b2f586",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-shared-workbench-chinese-compact-evidence-01-9113b8a9b",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/shared-workbench-chinese-compact-evidence-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "npm.cmd run lint",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec -- playwright test e2e/system-workbench.spec.ts e2e/btc-strategy-history-report.spec.ts --config=playwright.config.ts --list",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:refresh",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "完整 mocked Playwright 两份 spec（canonical current-main 页面）",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts;frontend/e2e/btc-strategy-history-report.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "git diff --check",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "SHARED-WORKBENCH-CHINESE-COMPACT-EVIDENCE-01",
+  "transition_for": ""
+}

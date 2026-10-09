@@ -1,0 +1,48 @@
+{
+  "base_commit": "0606c34e2d87069df551f80c985371809061aa58",
+  "blockers": [],
+  "consumer_roles": [
+    "super_developer",
+    "researcher",
+    "architect"
+  ],
+  "created_at": "2026-07-12T03:42:55Z",
+  "deliverable_commit": "249bb1194c749e9db64553d72ca06b335b6332ea",
+  "deliverables": [
+    {
+      "path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+      "readiness_class": "research_ready",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "f78e8db20b94b2d23a800adcb143d67afacdde74aa81b6232b508b40b8c7b10e",
+      "type": "data_manifest"
+    }
+  ],
+  "depends_on": [],
+  "domain": "data",
+  "event_id": "data-ready-hf-etf26-1min-6d6b07e77962",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/data_steward/data-maintenance-v2",
+  "producer_role": "data_steward",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py --repo-root . resolve --manifest <manifest> --shared-root <shared-data-root>",
+      "evidence_path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "us-hf-etf26-shared-data-v1",
+  "transition_for": ""
+}

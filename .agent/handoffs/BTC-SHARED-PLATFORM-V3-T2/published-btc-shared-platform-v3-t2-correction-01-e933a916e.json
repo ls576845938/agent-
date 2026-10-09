@@ -1,0 +1,81 @@
+{
+  "base_commit": "12775c6ef19240b01d7b774eb2c437d7c9121ab9",
+  "blockers": [
+    "promotion_artifact_rebuild_required_by_unclassified_policy",
+    "not_promotion_evidence_pure_risk_kernel_no_runtime_or_broker_validation_no_services_no_private_no_order_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-22T00:00:00Z",
+  "deliverable_commit": "e933a916e555e280f54b04896cef7081d22d95a2",
+  "deliverables": [
+    {
+      "path": "quant_crypto/risk/kernel.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t2_risk_kernel_v1",
+      "sha256": "1b00c885052c4cfb94d7fb273210b9817569149d9ef791fabe926cd805330dbc",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_shared_platform_v3_risk_kernel.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_platform_v3_t2_correction_contract_tests_v1",
+      "sha256": "8f1177334518bc2aac3021327de5e56d45eb1869068531e7c7c9a55808cb7c7c",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-shared-platform-v3-t2-c8d3a799f"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-shared-platform-v3-t2-correction-01-e933a916e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-shared-platform-v3-t2",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-shared-platform-v3-t2-c8d3a799f"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest --basetemp=<external> -p no:cacheprovider -q tests/contracts/test_btc_shared_platform_v3_risk_kernel.py",
+      "evidence_path": "tests/contracts/test_btc_shared_platform_v3_risk_kernel.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest --basetemp=<external> -p no:cacheprovider -q tests/contracts/test_btc_shared_platform_v3_risk_kernel.py tests/contracts/test_btc_liquidation_risk.py tests/shared_platform/test_runtime_permission_semantics_v3.py tests/shared_platform/test_core_and_boundary.py tests/shared_platform/test_runtime_v3_contract.py tests/contracts/test_btc_external_framework_adoption_tickets.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_us_equity_external_framework_adoption_audit.py tests/contracts/test_us_shared_platform_adoption.py tests/cn_equity/test_shared_platform_adoption.py",
+      "evidence_path": "tests/shared_platform/test_runtime_v3_contract.py",
+      "result": "passed"
+    },
+    {
+      "command": "initial sparse collection before read-only quant_us/quant_cn extension (mechanical historical failure: missing quant_us/quant_cn); rerun after extension",
+      "evidence_path": "tests/shared_platform/test_runtime_v3_contract.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/risk/kernel.py tests/contracts/test_btc_shared_platform_v3_risk_kernel.py",
+      "evidence_path": "quant_crypto/risk/kernel.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 12775c6ef19240b01d7b774eb2c437d7c9121ab9 e933a916e555e280f54b04896cef7081d22d95a2",
+      "evidence_path": "quant_crypto/risk/kernel.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-SHARED-PLATFORM-V3-T2",
+  "transition_for": ""
+}

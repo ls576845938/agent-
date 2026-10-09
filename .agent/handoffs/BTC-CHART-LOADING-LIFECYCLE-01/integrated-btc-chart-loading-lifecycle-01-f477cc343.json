@@ -1,0 +1,103 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-chart-loading-lifecycle-01-f477cc343",
+  "event_type": "integrated",
+  "ticket_id": "BTC-CHART-LOADING-LIFECYCLE-01",
+  "domain": "btc",
+  "producer_role": "integrator",
+  "producer_branch": "agent/integrator/btc-chart-loading-lifecycle-int-01",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "base_commit": "02babc8f4251b17435b0dfd2aed2bdba86ecb5f9",
+  "deliverable_commit": "f477cc3438513ad7bbcd38cc2dc95f1ea9cc8463",
+  "depends_on": [
+    "superseded-btc-chart-loading-lifecycle-01-market-mode-74662d0a"
+  ],
+  "supersedes": [],
+  "transition_for": "superseded-btc-chart-loading-lifecycle-01-market-mode-74662d0a",
+  "created_at": "2026-08-24T00:00:58Z",
+  "expires_at": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "type": "code",
+      "schema_version": "btc_tradingview_chart_loading_lifecycle_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "c993a0b298b76f9adc3046265a7194067e25bb9971474cf3d70cfc321b48fd57"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "type": "test_evidence",
+      "schema_version": "btc_chart_loading_lifecycle_playwright_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "7dcf47dd34d1fb252e70079be177e3fcff7d8d6ddef0b32e1a8d5059bba126cd"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "type": "code",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked",
+      "sha256": "edecda9f38f6f566b2668eea6213e0eb8c98ceee03190fd9c472e1b2b0a078d9"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-CHART-LOADING-LIFECYCLE-01/superseded-btc-chart-loading-lifecycle-01-market-mode-74662d0a.json",
+      "evidence_path": ".agent/handoffs/BTC-CHART-LOADING-LIFECYCLE-01/superseded-btc-chart-loading-lifecycle-01-market-mode-74662d0a.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "frontend/dist",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run check:btc-tradingview",
+      "evidence_path": "frontend/src/workspaces/crypto/TradingViewChart.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 02babc8f4251b17435b0dfd2aed2bdba86ecb5f9",
+      "evidence_path": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "frontend/e2e/btc-strategy-report.spec.ts canonical browser suite",
+      "evidence_path": "frontend/e2e/btc-strategy-report.spec.ts",
+      "result": "not_run"
+    }
+  ],
+  "blockers": [
+    "canonical_browser_green_deferred_to_registered_main_after_fast_forward_and_frontend_restart",
+    "backend_restart_required_after_integration",
+    "promotion_artifact_not_rebuilt",
+    "handoff_does_not_unlock_promotion_paper_live_private_or_order"
+  ],
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

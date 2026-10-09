@@ -2,10 +2,15 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
+import hashlib
+import json
 from typing import Any, Mapping, Sequence
 
 
 HOSTED_PROTECTION_FACTS_SCHEMA_VERSION = "btc_hosted_protection_facts_v1"
+OFFLINE_RESIDUAL_PROTECTION_REVISION_VERSION = (
+    "btc_offline_residual_protection_revision_v1"
+)
 _INSTRUMENT_ID = "BTC-USDT-SWAP"
 _BINDING_FIELDS = (
     "runtime_identity",
@@ -52,6 +57,108 @@ def _parse_utc(value: Any) -> datetime | None:
 
 def _dedupe(values: Sequence[str]) -> list[str]:
     return list(dict.fromkeys(value for value in values if value))
+
+
+def _digest(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value, sort_keys=True, separators=(",", ":"), default=str
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def build_offline_residual_protection_revision(
+    *,
+    fact_binding: Mapping[str, Any],
+    member_list_sha256: str,
+    allocation_plan_sha256: str,
+    exited_member_id: str,
+    residual_member_ids: Sequence[str],
+    allocation_state: Mapping[str, Any],
+    exit_fill: Mapping[str, Any],
+    venue_receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind a fixture-only OCO revision to exact exit and allocation facts."""
+
+    if not _binding_complete(_binding(fact_binding)):
+        raise ValueError("offline_residual_protection_binding_incomplete")
+    holdings = _mapping(allocation_state.get("member_contracts"))
+    if exited_member_id not in holdings or _decimal(holdings[exited_member_id]) != 0:
+        raise ValueError("offline_residual_protection_exited_member_not_flat")
+    residual = tuple(sorted(str(value) for value in residual_member_ids))
+    if not residual or any(
+        member not in holdings or (_decimal(holdings[member]) or Decimal("0")) <= 0
+        for member in residual
+    ):
+        raise ValueError("offline_residual_protection_remaining_owner_invalid")
+    residual_contracts = sum(
+        (_decimal(holdings[member]) or Decimal("0")) for member in residual
+    )
+    fill_id = str(exit_fill.get("fill_id") or exit_fill.get("tradeId") or "")
+    order_id = str(exit_fill.get("order_id") or exit_fill.get("ordId") or "")
+    fill_size = _decimal(exit_fill.get("size", exit_fill.get("fillSz")))
+    fill_allocations = _mapping(allocation_state.get("fill_allocations"))
+    allocated_fill = _mapping(fill_allocations.get(fill_id))
+    member_fill = _mapping(_mapping(allocated_fill.get("members")).get(exited_member_id))
+    if not (
+        fill_id
+        and order_id
+        and fill_size is not None
+        and fill_size > 0
+        and str(venue_receipt.get("exit_fill_id") or "") == fill_id
+        and str(venue_receipt.get("exit_order_id") or "") == order_id
+        and _decimal(member_fill.get("signed_contracts")) == -fill_size
+        and _decimal(venue_receipt.get("contracts")) == residual_contracts
+        and str(venue_receipt.get("status") or "") == "exchange_accepted"
+        and venue_receipt.get("market_exit") is True
+        and str(venue_receipt.get("prior_algo_id") or "")
+        and str(venue_receipt.get("algo_id") or "")
+        and str(venue_receipt.get("prior_algo_id"))
+        != str(venue_receipt.get("algo_id"))
+    ):
+        raise ValueError("offline_residual_protection_revision_facts_mismatch")
+    body = {
+        "schema_version": OFFLINE_RESIDUAL_PROTECTION_REVISION_VERSION,
+        "fact_binding": dict(_binding(fact_binding)),
+        "member_list_sha256": str(member_list_sha256),
+        "allocation_plan_sha256": str(allocation_plan_sha256),
+        "exited_member_id": exited_member_id,
+        "residual_member_ids": list(residual),
+        "residual_contracts": str(residual_contracts),
+        "exit_fill": {
+            "fill_id": fill_id,
+            "order_id": order_id,
+            "raw_fill_sha256": str(allocated_fill.get("raw_fill_sha256") or ""),
+            "contracts": str(fill_size),
+        },
+        "prior_protection": {
+            key: venue_receipt.get(key)
+            for key in (
+                "prior_algo_id",
+                "prior_algo_client_order_id",
+                "prior_parent_client_order_id",
+                "prior_contracts",
+            )
+        },
+        "replacement_protection": {
+            key: venue_receipt.get(key)
+            for key in (
+                "algo_id",
+                "algo_client_order_id",
+                "parent_client_order_id",
+                "instrument_id",
+                "position_side",
+                "contracts",
+                "status",
+                "market_exit",
+                "tp_trigger_px",
+                "tp_order_px",
+                "sl_trigger_px",
+                "sl_order_px",
+            )
+        },
+    }
+    return {**body, "revision_sha256": _digest(body)}
 
 
 def _binding(value: Any) -> dict[str, Any]:
@@ -237,6 +344,77 @@ def normalize_hosted_protection_facts(
                 if updated > captured:
                     row_blockers.append("hosted_protection_exchange_time_future")
 
+        residual_revision = _mapping(
+            proof.get("offline_residual_protection_revision")
+        )
+        replacement = _mapping(
+            residual_revision.get("replacement_protection")
+        )
+        residual_body = {
+            key: value
+            for key, value in residual_revision.items()
+            if key != "revision_sha256"
+        }
+        residual_exact = bool(
+            residual_revision.get("schema_version")
+            == OFFLINE_RESIDUAL_PROTECTION_REVISION_VERSION
+            and residual_revision.get("revision_sha256")
+            == _digest(residual_body)
+            and _same_binding(
+                residual_revision.get("fact_binding"), expected_binding
+            )
+            and str(replacement.get("algo_id") or "") == algo_id
+            and str(replacement.get("algo_client_order_id") or "")
+            == algo_client
+            and str(replacement.get("instrument_id") or "") == instrument
+            and str(replacement.get("position_side") or "").lower()
+            == position_side
+            and _decimal(replacement.get("contracts")) == quantity
+            and replacement.get("market_exit") is True
+            and str(replacement.get("status") or "") == "exchange_accepted"
+            and str(active.get("offline_residual_revision_sha256") or "")
+            == str(residual_revision.get("revision_sha256") or "")
+            and str(active.get("algo_id") or "") == algo_id
+            and str(active.get("algo_client_order_id") or "") == algo_client
+            and _decimal(active.get("contracts")) == quantity
+        )
+        if residual_revision and residual_exact and envelope_valid and not ambiguous:
+            exact_positions = [
+                position
+                for position in position_rows
+                if str(position.get("instrument_id") or position.get("instId") or "")
+                == instrument
+                and str(position.get("position_side") or position.get("posSide") or "").lower()
+                == position_side
+                and _decimal(
+                    position.get("contracts", position.get("pos", position.get("quantity")))
+                )
+                == quantity
+            ]
+            if len(exact_positions) == 1 and not row_blockers:
+                row.update(
+                    {
+                        "parent_client_order_id": str(
+                            replacement.get("parent_client_order_id") or ""
+                        ),
+                        "owned_by_runtime": True,
+                        "owner_identity": str(expected_binding["runtime_identity"]),
+                        "close_position": True,
+                        "reduce_only_applicability": "not_applicable_long_short_mode",
+                        "ownership_evidence": {
+                            "schema_version": OFFLINE_RESIDUAL_PROTECTION_REVISION_VERSION,
+                            "snapshot_sha256": str(snapshot_sha256),
+                            "fact_binding": dict(expected_binding),
+                            "revision_sha256": residual_revision["revision_sha256"],
+                            "source": "exact_exit_fill_allocation_and_replacement_algo",
+                        },
+                    }
+                )
+                output_rows.append(row)
+                continue
+        elif residual_revision:
+            row_blockers.append("hosted_protection_residual_revision_invalid")
+
         owner_matches = _owner_candidates(
             owners, algo_id=algo_id, algo_client_order_id=algo_client
         )
@@ -346,5 +524,7 @@ def normalize_hosted_protection_facts(
 
 __all__ = [
     "HOSTED_PROTECTION_FACTS_SCHEMA_VERSION",
+    "OFFLINE_RESIDUAL_PROTECTION_REVISION_VERSION",
+    "build_offline_residual_protection_revision",
     "normalize_hosted_protection_facts",
 ]

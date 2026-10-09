@@ -1,0 +1,93 @@
+{
+  "base_commit": "b62087fcf9f5ec4c63c85850f81deeab14349e3b",
+  "blockers": [
+    "owner:main_sync integration_branch_not_integrated_into_refs_heads_main",
+    "owner:operator canonical_current_main_frontend_restart_and_exact_focused_playwright_acceptance_required_after_main_integration",
+    "quality_checked_frontend_source_and_identity_are_not_promotion_evidence",
+    "promotion_paper_live_private_order_broker_transfer_withdraw_real_order_and_secret_actions_remain_disabled"
+  ],
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "created_at": "2026-08-01T15:24:45Z",
+  "deliverable_commit": "fa7f191c42a3bd95c0a4cd47df64214f1ebe8217",
+  "deliverables": [
+    {
+      "path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_deeplink_guard_v1",
+      "sha256": "34525f12e0238c3393f726bec19f7416d4dd1bd2026108703b0f760207a6025f",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/btc-strategy-history-report.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_local_backtest_deeplink_e2e_v1",
+      "sha256": "e98fd28ac73e92581588196a60e71cd97888245a334b713227ebd65f93b1ea98",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "ed5c15edbc78d05179e0c0e26c6b30e827615c7846fda4ede9831f40aceda714",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "published-frontend-user-backtest-deeplink-01-2197d94d5"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-frontend-user-backtest-deeplink-01-fa7f191c4",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-frontend-user-backtest-deeplink-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff validate; base/commit ancestry; exact producer touch set and committed hashes",
+      "evidence_path": ".agent/handoffs/FRONTEND-USER-BACKTEST-DEEPLINK-01/published-frontend-user-backtest-deeplink-01-2197d94d5.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick 2197d94d56c2a4a2026e24b8d77396259a53f7f3 [zero conflicts]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "frontend identity update/check [manifest_match=true; baseline_ancestor=true]",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build [5207 modules; 20.68s]",
+      "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": ".agent/handoffs/INTEGRATE-FRONTEND-USER-BACKTEST-DEEPLINK-01/integrated-frontend-user-backtest-deeplink-01-fa7f191c4.json",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-main focused Playwright; main sync/restart; backend artifact; Demo/private/order/live/transfer/withdraw",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-FRONTEND-USER-BACKTEST-DEEPLINK-01",
+  "transition_for": "published-frontend-user-backtest-deeplink-01-2197d94d5"
+}

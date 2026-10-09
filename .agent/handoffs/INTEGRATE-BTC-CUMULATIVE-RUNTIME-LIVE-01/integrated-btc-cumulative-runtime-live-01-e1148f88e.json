@@ -1,0 +1,162 @@
+{
+  "base_commit": "160a4820377260cfa1118c0f2e8ae90c7a3533da",
+  "blockers": [
+    "owner:btc_operations Ticket1 segment-1 execution semantics conditional remains; five current-HEAD real P0 receipts are required to close it",
+    "owner:architect_and_gate promotion artifact/read-model rebuild is intentionally deferred until all top-level tickets complete; this handoff is quality_checked only",
+    "owner:main_sync backend restart is required after current-main integration but was intentionally not performed in this phase",
+    "owner:main_sync registered main has pre-existing protected data/artifact dirty paths; they were not touched or cleaned; protected Git tree blobs still equal fixed base",
+    "paper_live_promotion_and_all_private_order_live_transfer_withdraw_real_order_secret_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "created_at": "2026-08-08T14:03:44Z",
+  "deliverable_commit": "e1148f88e331d14e6c2786d5760f5d31397f17a1",
+  "deliverables": [
+    {
+      "path": "docs/btc_cumulative_25h_compatibility_01_report.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_cumulative_25h_compatibility_report_v1",
+      "sha256": "68dea10d81aadd7a9a86450437934a803fa6579d87da8718a0397552741655fb",
+      "type": "report"
+    },
+    {
+      "path": "quant_crypto/oms/okx_mode_transport.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_live_transport_contract_v3",
+      "sha256": "fbabf01fcdd1342ccb19939b73735ac3e9ecc3101cd5ec8d4c8a47bc3e0698cc",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/runtime/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_runtime_control_plane_v1",
+      "sha256": "246fc311ecb7fc9126c0b56f8535019f3ac74ce221e6828498740254f06434bc",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/runtime/control_plane.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_shared_runtime_control_plane_v1",
+      "sha256": "78aec5d69da4e71be9dc32d49d2f9c2eaedc45f59860dda5562a4b8459a827cb",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/runtime/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_shared_runtime_permission_boundary_v5",
+      "sha256": "875736bf51bcf8f9ef4b91131abc69209f731a65edcebdd72a71399fe3195293",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/runtime/permissions.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_shared_runtime_permission_boundary_v5",
+      "sha256": "27f4513f8c7b0668d9b4d77392499744dbc215c6c47765637d7b56cd2fd7af16",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_live_transport.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v4",
+      "sha256": "bc3b3f4bd54d5298b4d4134efb34d49f95fee043fdd45479adec35676c06c23b",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/live/test_btc_okx_shared_runtime_live_canary.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v5",
+      "sha256": "d43ec3e9321f6a7b56b78044fd4b1f64494fa0feb3f723f0a21189b5ecd8b49f",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-cumulative-25h-compatibility-01-20260808T112624Z",
+    "published-btc-okx-shared-runtime-live-canary-01-runtime-7b4710808",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-01-93c956603",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-02-a45735f4",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-03-2c60572a",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-04-08fe5ab5",
+    "published-btc-okx-live-transport-b-2e307170f",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-01-b-b4f6f1d69",
+    "published-btc-okx-shared-runtime-live-canary-01-correction-02-b-2a4d43d99"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-cumulative-runtime-live-01-e1148f88e",
+  "event_type": "integrated",
+  "expires_at": "2026-09-07T14:03:44Z",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cumulative-runtime-live-integration-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate Ticket1 + A runtime/correction-01/02/03/04 + B initial/correction-01/final handoffs [all valid; producer worktrees clean; ancestry/blob/touch checks passed]",
+      "evidence_path": ".agent/handoffs",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick Ticket1 94fbba44, A code chain 7b471080→93c956603→a45735f4→2c60572a→08fe5ab5, B code chain 2e307170→b4f6f1d69→2a4d43d99 [clean, no conflicts, handoff files excluded]",
+      "evidence_path": "quant_shared/runtime/permissions.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp=C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\btc_integrator_stage1_ticket1 [212 passed in 54.96s]",
+      "evidence_path": "docs/btc_cumulative_25h_compatibility_01_report.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_btc_okx_shared_runtime_live_canary.py -q --basetemp=C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\btc_integrator_stage1_a_focused [22 passed in 1.14s]",
+      "evidence_path": "tests/live/test_btc_okx_shared_runtime_live_canary.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_live_transport.py -q --basetemp=C:\\Users\\LOCAL_USER\\AppData\\Local\\Temp\\btc_integrator_stage1_b_focused [26 passed in 0.96s]",
+      "evidence_path": "tests/contracts/test_btc_okx_live_transport.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_btc_okx_shared_runtime_live_canary.py tests/contracts/test_btc_okx_live_transport.py tests/contracts/test_btc_lean_microlive_canary.py tests/contracts/test_btc_exchange_runtime_contract.py tests/contracts/test_btc_shared_boundary_adoption.py tests/contracts/test_btc_paper_oms_lifecycle.py tests/contracts/test_btc_okx_demo_runtime_hardening.py -q --basetemp=<external-temp> [94 passed in 10.38s]",
+      "evidence_path": "tests/contracts/test_btc_okx_live_transport.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/live/test_ibkr_runtime_control_plane.py tests/live/test_live_runtime_safety.py -q --basetemp=<external-temp> [25 passed in 1.67s]",
+      "evidence_path": "tests/live/test_live_runtime_safety.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<external-temp> py -3 -m py_compile quant_crypto/runtime/__init__.py quant_crypto/runtime/control_plane.py quant_shared/runtime/__init__.py quant_shared/runtime/permissions.py quant_crypto/oms/okx_mode_transport.py and focused tests; git diff --check [passed]",
+      "evidence_path": "quant_shared/runtime/permissions.py",
+      "result": "passed"
+    },
+    {
+      "command": "read-only immutable evidence root manifest verification [exists; base/current_head=160a482; event_count=198; hash_chain_valid=true; agent4 verdict 24 compatible + 1 conditional]",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\immutable-evidence\\btc-demo-observation-compatibility\\btc-cumulative-25h-compatibility-01-160a482-20260808T112140Z-verified",
+      "result": "passed"
+    },
+    {
+      "command": "registered main pre-touch scoped status; git merge --ff-only e1148f88e331d14e6c2786d5760f5d31397f17a1; main ancestry/blob/scoped code clean verification [passed; protected data dirty preserved out-of-scope]",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\agent-",
+      "result": "passed"
+    },
+    {
+      "command": "artifact/read-model rebuild, backend/frontend restart, Demo start, private/order/live/transfer/withdraw endpoint, secret access, paper/live/real order, promotion unlock",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-CUMULATIVE-RUNTIME-LIVE-01",
+  "transition_for": "INTEGRATE-BTC-CUMULATIVE-RUNTIME-LIVE-01"
+}

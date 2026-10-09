@@ -1,0 +1,145 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-v3-readonly-gaps-20260920-f3d668f5e",
+  "ticket_id": "V3-READONLY-GAPS-20260920",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/v3-readonly-gaps-20260920",
+  "base_commit": "7d686dbd6b8d63fd6c0b317e95ef23565ec4b924",
+  "deliverable_commit": "f3d668f5e4a718332d3ed0dfb934aed6c7fb1cbd",
+  "created_at": "2026-09-20T08:56:30.594Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": ".agent/offline_evidence/v3-readonly-20260920.json",
+      "sha256": "7142e0c8889fa523c3bbcc098308a880696f60ddf742f19ce57b21207a1a0fad",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/api/app_factory.py",
+      "sha256": "becc8034cf5aefc50b0dee5ba63ba05e90496a341967b536141960f46361a8af",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/offline_execution_views.py",
+      "sha256": "9f304b31f84fa9ccbfcf58b92f055b963e11ff62163b721cea939587c0895f43",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/tests/test_offline_execution_views.py",
+      "sha256": "b81bc7aeabb16246898740a5fe33eb196e28a609ec3e596fc323988093f04224",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/v3-readonly-gaps-20260920.md",
+      "sha256": "d053c1125527b39b99015e4c5dee2381b1bbe1070e13744c7dc638c20a660def",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "4246197663322fed73ccf91972e165c31bfa4c301998d2b464d1957bc41fc931",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-btc-account-facts-view.mjs",
+      "sha256": "791dc7f76a9c126f87a3a65b5400f6b1b30d2e948e66f1c1a89d50f255fcbd3d",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-offline-execution-summary.mjs",
+      "sha256": "21d83fe88ff163fbd69934a3d8452f21be4403f1372d710ee7bcd712348d2ebc",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "sha256": "f87746766466ce115566217b40c8777220a7f2d96098e94af7fa1929d6445471",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/account-facts-view.ts",
+      "sha256": "b9e72f8ec9bc9a21ded134f10dd6904a4d50d74a68d8582d45d3894afafa7719",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/OfflineExecutionSummary.tsx",
+      "sha256": "9251e2f752a0392b62479e97abce4f9484bf34a4f02b910e32ae9183e4bde7ff",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/ResearchRunDetails.tsx",
+      "sha256": "8090a07f8d0fb6c442c43ccc2c039e6bf23639680b35a2f6591a7ef64e242dc0",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "scripts/seal_v3_offline_summary.py",
+      "sha256": "66122fa45fb1e360aff68ae81c58490d14638afcd546e126757f849612ef2bd7",
+      "schema_version": "v3_readonly_gap_fix_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider backend/tests/test_offline_execution_views.py backend/tests/test_research_readonly_views.py backend/tests/test_backend_research_readonly.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-20260920.md"
+    },
+    {
+      "command": "node frontend/scripts/test-btc-account-facts-view.mjs; node frontend/scripts/test-offline-execution-summary.mjs; TypeScript noEmit; vite build",
+      "result": "passed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-20260920.md"
+    },
+    {
+      "command": "node frontend/scripts/test-research-portfolio-contract.mjs (preexisting unchanged frozen dependency mismatch)",
+      "result": "failed",
+      "evidence_path": "docs/operations/v3-readonly-gaps-20260920.md"
+    }
+  ],
+  "blockers": [
+    "Independent integration and canonical browser acceptance pending",
+    "Production BTC artifact root missing and registry conflicts retained; no real account/trading evidence",
+    "Historical portfolio frozen dependency assertion preexists base; do not rewrite to pass"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

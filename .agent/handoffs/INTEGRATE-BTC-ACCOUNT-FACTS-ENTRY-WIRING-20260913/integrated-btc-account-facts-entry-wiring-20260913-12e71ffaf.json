@@ -1,0 +1,159 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-account-facts-entry-wiring-20260913-12e71ffaf",
+  "ticket_id": "INTEGRATE-BTC-ACCOUNT-FACTS-ENTRY-WIRING-20260913",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/integrate-btc-account-facts-entry-wiring-20260913",
+  "base_commit": "13fa72af3e3f7ee7912421118d9ca66b4160a51e",
+  "deliverable_commit": "12e71ffaf8caf4c3a044f07b443505dac0dd3578",
+  "created_at": "2026-09-13T14:03:54Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-account-facts-entry-wiring-20260913-528f792b9",
+    "published-btc-account-facts-entry-wiring-20260913-provenance-amendment-79da72da7"
+  ],
+  "supersedes": [],
+  "transition_for": "published-btc-account-facts-entry-wiring-20260913-provenance-amendment-79da72da7",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/account_risk_facts.py",
+      "sha256": "2e781908e6e3732d7f3253d2d578f8293cb16174178b1a7539faf4d526ab9a94",
+      "type": "code",
+      "schema_version": "btc_account_facts_entry_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "5d71a6d3192b450515677ec17aad387bd55faad78d7dc2a0eef444fff2f5b4e2",
+      "type": "code",
+      "schema_version": "btc_account_facts_entry_wiring_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "sha256": "0e397916c60aea3a17f98bbcedc3761a042e10173379535da094126f0b30904e",
+      "type": "code",
+      "schema_version": "btc_account_facts_entry_config_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "sha256": "a10e3a11db1b39d8d439fd7d0cf870fbb5d284a1e234d24b8d8fafaba2705c3c",
+      "type": "code",
+      "schema_version": "btc_account_facts_entry_service_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "scripts/register_btc_account_facts_baseline.py",
+      "sha256": "a88327a381678300014a71d48d565f1e8bfbc4abeff204a79dd5e5e81f07ff08",
+      "type": "code",
+      "schema_version": "btc_account_facts_baseline_cli_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_account_facts_entry_wiring.py",
+      "sha256": "54fb726612769b7ee0e8db215f4223d441c4bcf8f36a81a9b3e60d8907276d9c",
+      "type": "test_evidence",
+      "schema_version": "btc_account_facts_entry_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_account_facts_closeout.py",
+      "sha256": "b2340424b77384588e005b143199b1ef4904589155cab67fb77b5759b7141913",
+      "type": "test_evidence",
+      "schema_version": "btc_account_facts_closeout_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "sha256": "f0675eff1ae4e075bf6e8621f7eb1296d685f5211e8f1b69e74439e897ac7e7f",
+      "type": "test_evidence",
+      "schema_version": "btc_account_facts_service_contract_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/btc-account-facts-entry-wiring.md",
+      "sha256": "406e8afe1e6b522bf67a0cff3b41255b52b8eff27bcd9a3248cf946732151ded",
+      "type": "document",
+      "schema_version": "btc_account_facts_entry_operations_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/acceptance/btc-account-facts-entry-wiring-20260913.md",
+      "sha256": "8855f6bb5b0c61f7ad84a680fbfe81b95b785e723d7355586d8a63939e500f97",
+      "type": "report",
+      "schema_version": "btc_account_facts_entry_acceptance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_m1_btc_behavior_freeze.py",
+      "sha256": "21cc0eea689b34fe9061e01706f98924776e0f8bc58cfa549938328471ce6924",
+      "type": "test_evidence",
+      "schema_version": "m1_btc_behavior_freeze_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md",
+      "sha256": "3bf0559d7283703b33aed469dedc8605a1c4ebce8c9bb02d17c1625493ec1d3a",
+      "type": "report",
+      "schema_version": "btc_account_facts_entry_integration_acceptance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "handoff.py validate producer and superseding amendment envelopes against Git ancestry and deliverable hashes",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    },
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/contracts/test_btc_account_facts_entry_wiring.py tests/contracts/test_btc_account_facts_closeout.py tests/contracts/test_btc_demo_private_readonly_observation.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_runtime_artifact_wiring.py backend/tests/test_btc_demo_runtime_api.py",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    },
+    {
+      "command": "M1/Guardian matrix after exact-blob update: 61 passed, 4 pre-existing Guardian recovery fixture failures",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    },
+    {
+      "command": "readonly/private permission matrix: 118 passed, 1 sparse-worktree .git Path.open environment-assumption failure",
+      "result": "failed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    },
+    {
+      "command": "py_compile, baseline CLI --help and git diff --check",
+      "result": "passed",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    },
+    {
+      "command": "real account registration, private/network/order/live endpoints, service restart, runtime/promotion artifact builders and current-main UI acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/acceptance/integrate-btc-account-facts-entry-wiring-20260913.md"
+    }
+  ],
+  "blockers": [
+    "owner:main_session reviewed_integration_commit_not_merged_to_refs_heads_main",
+    "owner:runtime_operator no_real_account_snapshot_or_external_human_approval_was_read_or_registered",
+    "owner:runtime_operator account_wide_flatness_and_complete_cashflow_evidence_remain_required",
+    "owner:architect four_preexisting_guardian_recovery_fixtures_lack_reviewed_unit_and_account_fact",
+    "owner:main_session sparse_worktree_readonly_test_environment_assumption_requires_registered_main_recheck_if_publishing",
+    "owner:architect demo_paper_private_order_live_and_promotion_remain_blocked"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

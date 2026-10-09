@@ -1,0 +1,72 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_integrator_required",
+    "btc_consumer_pending",
+    "entry_policy_default_disabled",
+    "policy_trial_not_started",
+    "not_runtime_or_promotion_evidence",
+    "demo_paper_live_not_authorized"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "integrator",
+    "architect",
+    "researcher"
+  ],
+  "created_at": "2026-09-27T02:58:45Z",
+  "deliverable_commit": "b22baf73fd3c9706087fdf7a375cf7171d1d1509",
+  "deliverables": [
+    {
+      "path": "quant_shared/trend_environment/state_v2.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_descriptive_v2",
+      "sha256": "29b920725ed2600bd8ec751ecf38638847f4bc8e0206f84267e3b9a224318131",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/trend_environment/entry_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "entry_path_efficiency_72h_v1",
+      "sha256": "34cc48e6c785b23e57a0aef2b30a6f248dee55a5352e2216f7d443bf1cf38a15",
+      "type": "code"
+    },
+    {
+      "path": "quant_shared/strategy_delivery/market_policy_attachment.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "market_state_entry_policy_attachment_v1",
+      "sha256": "9bbb3e8880a2c7ffb9505ebf48b756d9c2458a3c94ce984ed5f3ce01f376b2de",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-market-state-shared-contracts-20260927-b22baf73f",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "evidence_only",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/market-state-conditional-research-20260927",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-market-state-shared-contracts-20260927-f4d37f7dd"
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/research/test_market_state_v2.py tests/research/test_market_state_entry_policy.py tests/research/test_market_state_diagnostics.py tests/contracts/test_market_policy_attachment.py -q",
+      "evidence_path": "31 passed in 4.84s",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "MARKET-STATE-CONDITIONAL-RESEARCH-20260927",
+  "transition_for": ""
+}

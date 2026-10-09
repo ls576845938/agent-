@@ -1,0 +1,115 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-research-readonly-release-governance-20260912-bfa5966c9",
+  "ticket_id": "RESEARCH-READONLY-RELEASE-GOVERNANCE-20260912",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "governance",
+  "producer_branch": "agent/super_developer/research-readonly-release-governance-20260912",
+  "base_commit": "c1d11987d28f06bb0fe89b2c289e88d07522790d",
+  "deliverable_commit": "bfa5966c9f6709e75f5fc197c1c42173a81221f4",
+  "created_at": "2026-09-12T01:40:49.559Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/agent_playbooks/delivery_risk_policy.json",
+      "sha256": "51f70f2ec2542dc2448f39785d25cb565e5c163eae3035be834910f6d4708153",
+      "type": "schema",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/agent_playbooks/pitfall_catalog.json",
+      "sha256": "c8c9d83ca310d3ae9b2cef5e5b8044ce288735832186ad58158718a6dc7f5e1a",
+      "type": "schema",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/agent_playbooks/research_readonly_release.md",
+      "sha256": "123e41e2817f83a021ad2009e1f00428b7c61d5b5a08e7a99aca1497dbedbae1",
+      "type": "document",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/research-readonly-release-governance-20260912.md",
+      "sha256": "c5ec744934ae3d5c4f820cfbc7e7eaf73e676c116427c76a3bf428e57d882785",
+      "type": "document",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/agent_governance/test_research_release_policy.py",
+      "sha256": "741c706cb1c8c6c0832a15f8f62b4025fa4d49e63f307e7680c575dba9c27e29",
+      "type": "test_evidence",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tools/agent_governance/context_packet.py",
+      "sha256": "3ca1619c728e6ecd1dd7c1e713b98fb8eeb99a480d12975ea87010fd3d00f52e",
+      "type": "code",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tools/agent_governance/delivery_policy.py",
+      "sha256": "435807b3ac2a3d3260210b7234e62aac908cc4a669b93ac9e724fe24617c3356",
+      "type": "code",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tools/agent_governance/team_context.py",
+      "sha256": "0aca89e013abac4c8019d359e711263696b8d62c606c3605665238bb1e37ad68",
+      "type": "code",
+      "schema_version": "research_readonly_release_governance_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider tests/agent_governance/test_research_release_policy.py tests/agent_governance/test_delivery_policy.py tests/agent_governance/test_context_packet.py tests/agent_governance/test_team_context.py tests/agent_governance/test_hooks.py tests/agent_governance/test_governance_contract.py tests/agent_governance/test_context_scalability.py",
+      "result": "passed",
+      "evidence_path": "docs/operations/research-readonly-release-governance-20260912.md; 80 passed / 80.00s"
+    },
+    {
+      "command": "failure-first new risk/receipt/CLI tests before implementation",
+      "result": "failed",
+      "evidence_path": "docs/operations/research-readonly-release-governance-20260912.md; expected 26 failed, 2 passed; final fixed"
+    },
+    {
+      "command": "git diff --check scoped governance; protected business/source diff from base",
+      "result": "passed",
+      "evidence_path": "docs/operations/research-readonly-release-governance-20260912.md; no business/services/launcher/hook changes"
+    },
+    {
+      "command": "M1 publication, service restart, canonical browser acceptance, runtime/promotion builders",
+      "result": "not_run",
+      "evidence_path": "docs/operations/research-readonly-release-governance-20260912.md; excluded from governance ticket"
+    }
+  ],
+  "blockers": [
+    "independent_governance_review_pending",
+    "fresh_successor_context_required_before_research_release",
+    "M1_canonical_publication_and_browser_acceptance_pending"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

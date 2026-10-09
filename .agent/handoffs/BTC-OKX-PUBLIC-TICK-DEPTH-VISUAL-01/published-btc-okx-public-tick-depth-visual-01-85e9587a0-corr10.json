@@ -1,0 +1,79 @@
+{
+  "base_commit": "68a2f8bc4e7f83c475b56eb0e336fddeea323e56",
+  "blockers": [
+    "owner:architect verify commit touch set and handoff, fast-forward registered main, run full 97-test integration suite",
+    "owner:architect backend restart required for demo_transport_hotfix and canonical browser verification",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-17T05:34:00Z",
+  "deliverable_commit": "85e9587a02bf2f318208f6ab15b5c4adb6fc7c16",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_public_market_stream.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_market_stream_v1",
+      "sha256": "a16e5cf03593f478d6dd9ee63cb109ed25a9760e8b11607e9406bb87016924f7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_public_display_stream.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_okx_public_display_stream_contract_v1",
+      "sha256": "bea4f02abb05afca936e49fb2ad4c68fdf2a33b189d88b715cdfbee3790e0348",
+      "type": "code"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-public-tick-depth-visual-01-85e9587a0-corr10",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-public-ws-control-frame-corr10",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-btc-okx-public-tick-depth-visual-01-8376a1eb2-corr9"
+  ],
+  "tests": [
+    {
+      "command": "failure-first: py -3 -m pytest tests/contracts/test_btc_okx_public_display_stream.py -k subscription_ack -q before implementation produced the expected assertion failure",
+      "evidence_path": "tests/contracts/test_btc_okx_public_display_stream.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_display_stream.py -k subscription_ack -q",
+      "evidence_path": "tests/contracts/test_btc_okx_public_display_stream.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_display_stream.py backend/tests/test_btc_demo_runtime_service.py -q (32 passed)",
+      "evidence_path": "tests/contracts/test_btc_okx_public_display_stream.py",
+      "result": "passed"
+    },
+    {
+      "command": "public-only real OKX WS smoke: subscription ack then trades+books5; status=live; private_endpoint_accessed=false; order_endpoint_accessed=false",
+      "evidence_path": "backend/app/services/btc_public_market_stream.py",
+      "result": "passed"
+    },
+    {
+      "command": "full 97-test integration suite from registered main after fast-forward",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_api.py",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-OKX-PUBLIC-TICK-DEPTH-VISUAL-01",
+  "transition_for": ""
+}

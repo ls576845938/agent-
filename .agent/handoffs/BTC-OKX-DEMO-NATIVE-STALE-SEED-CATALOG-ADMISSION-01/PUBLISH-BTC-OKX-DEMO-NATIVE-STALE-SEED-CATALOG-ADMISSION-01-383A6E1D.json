@@ -1,0 +1,67 @@
+{
+  "base_commit": "547cbd4996a16344784af46f9cb758e3df55f7ae",
+  "blockers": [
+    "owner:integrator change_risk_demo_execution_semantics_requires_independent_integration",
+    "owner:backend_operator demo_quasi_live_backend_restart_required_after_integration_without_demo_start_or_private_order_access"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-08-16T10:21:24Z",
+  "deliverable_commit": "383a6e1dbe5675988bea28959e226f9bfdea438f",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "41ad24c7fef0c25661a3c862bf0418b929eefbd4c7933e6c9f201275052c909d",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "fa097a462f974f96dca616f9a3a1af9a5f60ca3c085f3371dfe998dd767acf44",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "PUBLISH-BTC-OKX-DEMO-NATIVE-STALE-SEED-CATALOG-ADMISSION-01-383A6E1D",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-native-stale-seed-catalog-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q (failure-first: 4 failed, 6 passed against pre-fix implementation)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py -q (11 passed)",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q (408 passed)",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-NATIVE-STALE-SEED-CATALOG-ADMISSION-01",
+  "transition_for": ""
+}

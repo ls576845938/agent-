@@ -1,0 +1,122 @@
+{
+  "base_commit": "0df67017c525eb79ee8670c4279af161af7de277",
+  "blockers": [
+    "owner:main_sync registered_main_not_advanced_candidate_only",
+    "owner:main_sync canonical_current_main_playwright_deferred_until_ff_and_restart",
+    "owner:btc_operations one_time_current_head_gate_read_model_rebuild_pending",
+    "owner:main_sync backend_restart_pending_after_ff",
+    "owner:btc_operations strategy_history_external_root_is_research_only_and_does_not_unlock_promotion"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-17T23:38:49Z",
+  "deliverable_commit": "dbce4c30d5b1ef1d04d8131bdbd17342f8b70d15",
+  "deliverables": [
+    {
+      "path": "frontend/src/terminal-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_workbench_dock_collapse_css_v1",
+      "sha256": "622d465cd7bde760f9c9516fbf762f37c2acf3da3106f302453ff742c4f2e274",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_strategy_workbench_dock_collapse_css_v1",
+      "sha256": "5d676a755ba84b2a453887e3aaeb69aeccdd623c552f337bd191e60f7ac95e47",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_workbench_dock_geometry_contract_v1",
+      "sha256": "5c9edc267e8ad00128b614886264638cafcd49d30be03c5a89695af3d089f1e0",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "4a386aaa2749f221b20f942720e9ec0ed48b54961da9c1ac8f4b57e8a4baaa7c",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-shared-workbench-dock-actual-collapse-02-8ae3720bfd",
+    "published-btc-strategy-history-immutable-latest-pointer-02-0df67017c"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-shared-workbench-and-btc-strategy-history-integration-02-dbce4c30d",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/shared-workbench-btc-history-int02",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate for both committed upstream envelopes; ancestry/touch/blob validation",
+      "evidence_path": ".agent/handoffs/SHARED-WORKBENCH-DOCK-ACTUAL-COLLAPSE-02/published-shared-workbench-dock-actual-collapse-02-8ae3720bfd.json",
+      "result": "passed"
+    },
+    {
+      "command": "git cherry-pick agent1 deliverable+handoff and agent9 handoff; zero conflicts",
+      "evidence_path": ".agent/handoffs/BTC-STRATEGY-HISTORY-IMMUTABLE-LATEST-POINTER-02/published-btc-strategy-history-immutable-latest-pointer-02-0df67017c.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run lint (tsc --noEmit; exit 0; registered-main node_modules junction removed)",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd run build (5212 modules transformed; built; existing chunk-size warning only)",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "backend strategy-history catalog/detail contract tests (19 passed)",
+      "evidence_path": "backend/tests/test_strategy_history_catalog.py",
+      "result": "passed"
+    },
+    {
+      "command": "npm.cmd exec -- playwright test e2e/system-workbench.spec.ts --config=playwright.config.ts --list (12 tests listed)",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "passed"
+    },
+    {
+      "command": "canonical six/seven-route geometry and expand-collapse browser E2E",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts",
+      "result": "not_run"
+    },
+    {
+      "command": "npm.cmd run identity:refresh; npm.cmd run identity:check; npm.cmd run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "BTCRuntimeArtifactReader owner-marker/index/latest-pointer validation against D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z (index/pointer SHA and source HEAD match)",
+      "evidence_path": "D:\\vibe coding\\Obsidian\\量化系统\\runtime-artifacts\\btc-current-head-0df67017-20260817T163845Z\\btc_strategy_history\\latest_pointer.json",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check; scoped clean after removing temporary dependency junction and dist",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "SHARED-WORKBENCH-AND-BTC-STRATEGY-HISTORY-INTEGRATION-02",
+  "transition_for": "published-shared-workbench-dock-actual-collapse-02-8ae3720bfd"
+}

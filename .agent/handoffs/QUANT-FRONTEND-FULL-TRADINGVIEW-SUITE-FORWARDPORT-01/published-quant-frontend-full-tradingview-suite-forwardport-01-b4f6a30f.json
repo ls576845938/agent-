@@ -1,0 +1,181 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-quant-frontend-full-tradingview-suite-forwardport-01-b4f6a30f",
+  "ticket_id": "QUANT-FRONTEND-FULL-TRADINGVIEW-SUITE-FORWARDPORT-01",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer",
+    "btc_developer",
+    "a_share_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/quant-frontend-full-tradingview-suite-forwardport-01",
+  "base_commit": "34ba474d91984b75620dc552539b779c61fa565f",
+  "deliverable_commit": "b4f6a30f072a9996b2bd97c702eba6695dfd68ad",
+  "created_at": "2026-07-26T02:31:20Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-redesign-v1-71b1e19f2cec",
+    "published-quant-frontend-terminal-correction-v2-3f42f3ca937",
+    "published-quant-frontend-btc-tradingview-merge-v1-591f56ef",
+    "published-quant-frontend-cn-equity-integration-v1-3bcfa1a86",
+    "published-quant-frontend-btc-tradingview-forwardport-01-2c9edbc9"
+  ],
+  "supersedes": [
+    "published-quant-frontend-redesign-v1-71b1e19f2cec",
+    "published-quant-frontend-terminal-correction-v2-3f42f3ca937",
+    "published-quant-frontend-btc-tradingview-merge-v1-591f56ef",
+    "published-quant-frontend-cn-equity-integration-v1-3bcfa1a86"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "test_evidence",
+      "path": "frontend/e2e/system-workbench.spec.ts",
+      "sha256": "6ea44d1070049d0a255aa96475983c41cb1302980e0610079ccd386d1fe77359",
+      "schema_version": "quant_frontend_full_terminal_suite_e2e_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/App.tsx",
+      "sha256": "02030a09399d01d9e6b5480df2c6ab163bc76dcb8597cd1b3b443ec82afbfcdd",
+      "schema_version": "quant_frontend_current_main_route_shell_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/components/workbench/Workbench.tsx",
+      "sha256": "710164ae55ba9f2abd68ca12491260936351ed0385d1d2418081aa7a4abca044",
+      "schema_version": "quant_frontend_shared_terminal_workbench_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/main.tsx",
+      "sha256": "96e8a22ead16630c68cab0d6a097ada5db875c08605cd230ec77c62c53b8aff1",
+      "schema_version": "quant_frontend_style_entry_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/terminal-workbench.css",
+      "sha256": "3c9b6eff01b292b5381ed5fa73f25c33587abf813ed3a6e25364c40e0633887e",
+      "schema_version": "quant_frontend_terminal_layout_styles_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workbench.css",
+      "sha256": "3a3a2edb7ad29ea41f5bec91600e45469366cb14fca5733c88345a147f705ba1",
+      "schema_version": "quant_frontend_workbench_component_styles_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/CNEquityWorkspace.tsx",
+      "sha256": "87fb2051186a3b6eb272021f49b9837ec76394d69ebbb6c8af4f5d89bf7a7f46",
+      "schema_version": "quant_frontend_cn_terminal_read_model_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/LiveTradingDashboard.tsx",
+      "sha256": "cfc142f2192d5650da641d0034be5f5a9721a1130c3ab86a79ae657dd1f00726",
+      "schema_version": "quant_frontend_execution_terminal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/PortfolioMonitor.tsx",
+      "sha256": "1dcb5315999255d2643ce669ce34f36dc0445149d5b22659632b696c59ec8497",
+      "schema_version": "quant_frontend_portfolio_terminal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/ResearchDashboard.tsx",
+      "sha256": "6f6968568ea57cc328b33af3b772aa3e46951c59f205acdf85701a0bffd3eb8c",
+      "schema_version": "quant_frontend_research_terminal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "a3ea8df3be833a66f47ae179578ad5a632800f83129796c7ec30cd04e883266a",
+      "schema_version": "quant_frontend_strategy_terminal_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/USEquityWorkspace.tsx",
+      "sha256": "cbbdf94a239d1c7cc32ec9db717348d118e4cdb1b748fb6dc73f8d80719b7f77",
+      "schema_version": "quant_frontend_us_terminal_read_model_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm.cmd install (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/components/workbench/Workbench.tsx"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/src/main.tsx"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "node .\\scripts\\cn-operations-smoke.mjs (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/cn-operations-smoke.mjs"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/system-workbench.spec.ts (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    },
+    {
+      "command": "npx.cmd playwright test (cwd=frontend)",
+      "result": "passed",
+      "evidence_path": "frontend/e2e"
+    },
+    {
+      "command": "playwright-cli --session full-tv-suite headed screenshot review for seven routes at 1600x1000",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    }
+  ],
+  "blockers": [
+    "current_head_domain_runtime_and_canonical_evidence_not_bundled_by_frontend_ticket",
+    "paper_live_order_private_network_secret_permissions_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

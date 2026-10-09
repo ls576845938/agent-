@@ -1,0 +1,116 @@
+{
+  "base_commit": "770392bacab55596da3238b1815af4476866f0de",
+  "blockers": [
+    "independent_review_and_integration_pending",
+    "frozen_two_arm_policy_trial_not_run",
+    "post_writer_readonly_trial_projection_pending",
+    "continuous_intrabar_path_not_observed",
+    "demo_paper_live_private_order_permissions_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-09-27T04:02:27Z",
+  "deliverable_commit": "36abc49d660127ea8e17158a5cb373c9b98af962",
+  "deliverables": [
+    {
+      "path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_market_state_entry_policy_consumer_delivery_v1",
+      "sha256": "741ac180935fbfa0793becdb1ccdb5917ecdd4fe9a033e6eb1c0da68fa3c6d29",
+      "type": "report"
+    },
+    {
+      "path": "quant_crypto/application/donchian_offline_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "044752cc857b34a6a206fc09237ef3226543e06d746caabf5db16cfe8bcd244a",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/donchian_historical_replay.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "9090810fe5cbbff4659650d33153e368da65be3d8ce23eaf1bbae83b16aa52e8",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_btc_donchian_history.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "2fdd227cb98854989a941119a3885b6ce13b0231a5ff26615fe9329eb8848b4d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_donchian_market_entry_policy.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_source_v1",
+      "sha256": "5755f6283a25c55acb735ce98c1d1bc7b1357e709626d3b15af208df6e8131ac",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-registered-offline-protection-20260927-8127eb5ab",
+    "published-market-state-shared-contracts-20260927-b22baf73f",
+    "published-market-state-stage-evidence-20260927-211e5e286"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-market-entry-policy-consumer-20260927-36abc49d6",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-registered-offline-protection-20260927",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_donchian_market_entry_policy.py",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_donchian_history_spec.py tests/contracts/test_btc_donchian_history.py tests/contracts/test_donchian_effective_time.py",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_strategy_v1_donchian_offline.py",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/research/test_market_state_v2.py tests/research/test_market_state_entry_policy.py tests/research/test_market_state_diagnostics.py tests/contracts/test_market_policy_attachment.py",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "real immutable protocol/evidence plan reconstruction for baseline and conditioned",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python sources; git diff --check",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "passed"
+    },
+    {
+      "command": "frozen 2960-event baseline and conditioned A/B runs",
+      "evidence_path": "docs/architecture/btc-market-state-entry-policy-consumer-20260927.md",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-MARKET-STATE-ENTRY-CONSUMER-20260927",
+  "transition_for": ""
+}

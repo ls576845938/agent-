@@ -1,0 +1,41 @@
+{
+  "base_commit": "5183deaa7cfd4b87329148e4a2c89b0776569045",
+  "blockers": [
+    "owner:root canonical current-main mocked strategy-modules browser suite (11/11) deferred because port 3000 was not proven to serve this integrated HEAD",
+    "frontend-only GET binding: no backend restart, artifact/read-model rebuild, service or Demo execution performed",
+    "team_context_unavailable:handoff_discovery_ref_cap_exceeded; explicit producer envelope was validated directly from committed object",
+    "not_promotion_evidence_ready; promotion=false; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": ["architect"],
+  "created_at": "2026-08-19T16:28:59.3715046Z",
+  "deliverable_commit": "86173efb96ee668c4ce12b120994eb2e2ea953ad",
+  "deliverables": [
+    {"path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx", "readiness_class": "quality_checked", "schema_version": "strategy_modules_real_catalog_binding_v1", "sha256": "5a0d69c49662f5a5b359cd30945fb4fafbcbb47b832d489d1b52cba2bff0c2d8", "type": "code"},
+    {"path": "frontend/e2e/strategy-modules.spec.ts", "readiness_class": "quality_checked", "schema_version": "strategy_modules_real_catalog_playwright_v1", "sha256": "c759b5c368289b77c7dcddd4674b6e3104987e8ba556b307e7abb4a81a598530", "type": "test_evidence"},
+    {"path": "frontend/public/frontend-identity.json", "readiness_class": "quality_checked", "schema_version": "frontend_identity_v1", "sha256": "1bb72d7f1c0f3c1c0d9703bdedbc61f01d8b97ce2354c08be2587c3c19e05d00", "type": "data_manifest"}
+  ],
+  "depends_on": ["published-qs-strategy-modules-real-catalog-binding-04-5e85dbc50"],
+  "domain": "shared",
+  "event_id": "integrated-qs-strategy-modules-real-catalog-binding-04-86173efb9",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {"handoff_only": true, "order_endpoint_allowed": false, "paper_or_live_unlock_allowed": false, "private_endpoint_allowed": false, "promotion_unlock_allowed": false, "real_order_submitted": false},
+  "producer_branch": "agent/integrator/qs-real-catalog-04",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {"command": "py -3 tools/agent_governance/handoff.py validate --input producer envelope", "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04/published-qs-strategy-modules-real-catalog-binding-04-5e85dbc50.json", "result": "passed"},
+    {"command": "npm --prefix frontend run lint", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run build (Vite; existing chunk-size warning only)", "evidence_path": "", "result": "passed"},
+    {"command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list (11 tests collected)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:check (manifest_match=true; baseline_ancestor=true)", "evidence_path": "", "result": "passed"},
+    {"command": "npm --prefix frontend run identity:test (object_targets=4)", "evidence_path": "", "result": "passed"},
+    {"command": "git diff --check", "evidence_path": "", "result": "passed"},
+    {"command": "canonical full mocked strategy-modules Playwright (11/11)", "evidence_path": "", "result": "not_run"}
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-REAL-CATALOG-BINDING-04",
+  "transition_for": "published-qs-strategy-modules-real-catalog-binding-04-5e85dbc50"
+}

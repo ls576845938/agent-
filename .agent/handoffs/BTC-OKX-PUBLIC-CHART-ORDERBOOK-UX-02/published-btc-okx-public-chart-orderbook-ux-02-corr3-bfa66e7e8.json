@@ -1,0 +1,45 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-public-chart-orderbook-ux-02-corr3-bfa66e7e8",
+  "event_type": "published",
+  "ticket_id": "BTC-OKX-PUBLIC-CHART-ORDERBOOK-UX-02",
+  "domain": "btc",
+  "base_commit": "d2d19bc204919669bd77398c43a293d77f92d294",
+  "deliverable_commit": "bfa66e7e8883f3cd3a7a82069843251f65de30dd",
+  "producer_role": "btc_developer",
+  "producer_branch": "agent/btc_developer/btc-okx-public-chart-ux02-corr3",
+  "consumer_roles": ["architect"],
+  "created_at": "2026-08-17T07:00:51Z",
+  "expires_at": "",
+  "depends_on": ["published-btc-okx-public-chart-orderbook-ux-02-corr2-6c98cdf62"],
+  "supersedes": ["published-btc-okx-public-chart-orderbook-ux-02-corr2-6c98cdf62"],
+  "transition_for": "",
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "deliverables": [
+    {"type": "code", "path": "frontend/src/workspaces/CryptoWorkspace.tsx", "sha256": "31ed493db133177db4716084d40ebf261ca6196ada6bd97a7e94639d76665d2c", "schema_version": "btc_okx_public_market_view_v1", "readiness_class": "quality_checked"},
+    {"type": "test_evidence", "path": "frontend/e2e/btc-demo-console.spec.ts", "sha256": "84f62c1e9e4265928a1a37f88dba1cc5a0855c153c3642e80b11bd755d2adb7e", "schema_version": "btc_demo_console_mocked_e2e_v1", "readiness_class": "quality_checked"},
+    {"type": "code", "path": "frontend/public/frontend-identity.json", "sha256": "e1bc771487ceafae6e68e7ae200ce8a4814d1bc1b36dba8037039db7c8588a5b", "schema_version": "quant_frontend_identity_v1", "readiness_class": "quality_checked"}
+  ],
+  "tests": [
+    {"command": "npm.cmd exec -- playwright test e2e/btc-demo-console.spec.ts --config=playwright.config.ts --list", "result": "passed", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"},
+    {"command": "npm.cmd --prefix frontend run lint", "result": "passed", "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command": "npm.cmd --prefix frontend run build", "result": "passed", "evidence_path": "frontend/dist/index.html"},
+    {"command": "npm.cmd --prefix frontend run identity:refresh; identity:check; identity:test; HEAD frontend/src tree equals identity object id", "result": "passed", "evidence_path": "frontend/public/frontend-identity.json"},
+    {"command": "git diff --check d2d19bc204919669bd77398c43a293d77f92d294..HEAD", "result": "passed", "evidence_path": "frontend/src/workspaces/CryptoWorkspace.tsx"},
+    {"command": "full mocked btc-demo-console.spec.ts 20-test run against integrated current main", "result": "not_run", "evidence_path": "frontend/e2e/btc-demo-console.spec.ts"}
+  ],
+  "blockers": [
+    "owner:architect fast-forward this correction to registered main, then run the mocked 20-test btc-demo-console.spec.ts suite against canonical current-main frontend",
+    "no_service_started_in_producer_worktree; the complete browser execution remains deferred_to_integrated_current_main",
+    "not_promotion_evidence_public_display_only_no_demo_no_private_no_orders_no_paper_no_live"
+  ]
+}

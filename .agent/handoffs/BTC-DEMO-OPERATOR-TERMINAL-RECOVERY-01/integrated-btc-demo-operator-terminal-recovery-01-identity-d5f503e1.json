@@ -1,0 +1,84 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-demo-operator-terminal-recovery-01-identity-d5f503e1",
+  "ticket_id": "BTC-DEMO-OPERATOR-TERMINAL-RECOVERY-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect", "integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-demo-operator-terminal-recovery-int-01",
+  "base_commit": "9abea43d86009d8ad3b2a0bb8c1d61c17cea04f3",
+  "deliverable_commit": "d5f503e13ce533774202c131965f7a16183cfeb9",
+  "created_at": "2026-08-25T01:30:00Z",
+  "expires_at": "",
+  "depends_on": ["integrated-btc-demo-operator-terminal-recovery-01-357940d1"],
+  "supersedes": [],
+  "transition_for": "integrated-btc-demo-operator-terminal-recovery-01-357940d1",
+  "deliverables": [
+    {
+      "type": "artifact",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "1bf6632d3df1de558be1901f87bcb971c740852052bb4845ce5aba6a38737b86",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": ".agent/handoffs/BTC-DEMO-OPERATOR-TERMINAL-RECOVERY-01/integrated-btc-demo-operator-terminal-recovery-01-357940d1.json",
+      "sha256": "e801f8fe3ba38d54ae0f76a0be2dc08a3c85a7aae69e8bce21827a838ac98333",
+      "schema_version": "agent_handoff_envelope_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/update-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "node frontend/scripts/check-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "manifest_match=true; baseline_ancestor=true; canonical=false; dirty_paths=[]; source_head=d5f503e13ce533774202c131965f7a16183cfeb9"
+    },
+    {
+      "command": "node frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed",
+      "evidence_path": "canonical=false; fingerprint=4843305022edd951a27ea54a5d7725f4f1dbc25d0de67e176790c1aa42bc8c47; object_targets=4"
+    },
+    {
+      "command": "node frontend/scripts/start-current-main.mjs --check",
+      "result": "not_run",
+      "evidence_path": "expected FRONTEND_CANONICAL_GUARD_FAILED in non-main integrator worktree; registered main remains unchanged"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "result": "passed",
+      "evidence_path": "identity and ticket handoff scopes clean after commit"
+    },
+    {
+      "command": "backend/frontend restart, browser acceptance, Demo/private/order/live endpoint access",
+      "result": "not_run",
+      "evidence_path": "deferred by ticket boundary; no service or endpoint was touched"
+    }
+  ],
+  "blockers": [
+    "registered_main_not_updated_by_scope",
+    "canonical_launcher_check_deferred_until_main_consumes_identity",
+    "backend_restart_required_after_integration",
+    "canonical_current_main_browser_acceptance_deferred",
+    "python311_pytest_module_unavailable_without_install_authorization",
+    "promotion_artifact_not_rebuilt_promotion_not_eligible",
+    "paper_live_private_order_real_order_transfer_withdraw_remain_disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

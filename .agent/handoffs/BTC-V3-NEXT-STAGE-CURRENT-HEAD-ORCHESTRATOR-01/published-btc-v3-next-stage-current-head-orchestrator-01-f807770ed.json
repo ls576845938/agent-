@@ -1,0 +1,129 @@
+{
+  "base_commit": "7ca4e9087a88e7386ee4a949d95ac1256463438e",
+  "blockers": [
+    "btc_okx_websocket_client_dependency_missing",
+    "real_timestamp_aligned_l2_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "l2_lt_30_natural_days",
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "manifest_data_schema_mismatch",
+    "manifest_quality_status_not_pass",
+    "l2_manifest_attestation_readiness_mismatch",
+    "runtime_pointer_immutable_snapshot_not_published",
+    "runtime_pointer_data_steward_attestation_required",
+    "not_promotion_evidence",
+    "owner:btc_operations btc_next_stage:real_funding_cashflow_evidence_missing",
+    "owner:btc_operations btc_next_stage:real_private_ws_reconciliation_evidence_missing",
+    "owner:btc_observation btc_next_stage:real_non_flat_fill_evidence_missing",
+    "owner:btc_observation btc_next_stage:natural_observation_window_30_60d_incomplete",
+    "owner:architect/manual_reviewer btc_next_stage:manual_promotion_approval_missing"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "data_steward",
+    "integrator",
+    "researcher"
+  ],
+  "created_at": "2026-07-27T10:06:55Z",
+  "deliverable_commit": "f807770edf392bab1efd8d844718501947dce7e3",
+  "deliverables": [
+    {
+      "path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "b6aaed98fbd7f2121679d9c400bf6e677a8b817f3452f91305d3c95a5d11820d",
+      "type": "code"
+    },
+    {
+      "path": "scripts/build_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_cli_v1",
+      "sha256": "997338f017b59a62f1c12c3b9c4e05e1f2a89744d92f7e6eb37df414d349ef9f",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_next_stage_current_head_orchestrator.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_v1",
+      "sha256": "529f90af4adce3201947f78c9b5d67f774db2e99e2165f904bb10f4bb8fbd09e",
+      "type": "schema"
+    },
+    {
+      "path": "schemas/btc_next_stage_engineering_evidence.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_engineering_evidence_v2",
+      "sha256": "534443fc53786ba1210933c863e91aaf730e71d6e5abc25972e558cef97a1098",
+      "type": "schema"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_next_stage_current_head_orchestrator_contract_v1",
+      "sha256": "16d74d46854eac6fcb2d1df5053e9c61b40b816dac7888013d440ce26c7d97de",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "integrated-data-btc-v3-immutable-public-market-evidence-01",
+    "integrated-btc-v3-next-stage-engineering-closure-02"
+  ],
+  "domain": "btc",
+  "event_id": "published-btc-v3-next-stage-current-head-orchestrator-01-f807770ed",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-v3-next-stage-current-head-orchestrator-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_next_stage_current_head_orchestrator.py -q --basetemp <unique-system-temp> [observed on deliverable commit: 23 passed in 113.01s]",
+      "evidence_path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "QS_BTC_RUNTIME_ARTIFACT_ROOT=<new-blank-unique-system-temp-root> py -3 scripts/build_btc_next_stage_current_head_orchestrator.py <six required CLI args> [observed on deliverable commit: exit 0; exact16; exact17; immutable snapshot; pointer reload valid; complete_blocked; paper/live false]",
+      "evidence_path": "scripts/build_btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <11 existing next-stage/domain/runtime/gate/strategy/replay/promotion/shared_data/handoff files> -q --basetemp <unique-system-temp> [observed: 85 passed in 83.70s]",
+      "evidence_path": "tests/contracts/test_btc_next_stage_engineering_closure.py",
+      "result": "passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=<unique-system-temp> py -3 -m py_compile <3 approved Python source/test files>; git diff --check -- <5 approved paths> [observed: passed]",
+      "evidence_path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/research/test_promotion_gate_canonical_only.py [collection blocked in BTC sparse worktree: ModuleNotFoundError: No module named 'quant_us'; business tests not started; must run separately in authorized wider sparse clean worktree]",
+      "evidence_path": "tests/research/test_promotion_gate_canonical_only.py",
+      "result": "not_run"
+    },
+    {
+      "command": "py -3 -m ruff check <3 approved Python source/test files> [not run: No module named ruff; dependency not installed]",
+      "evidence_path": "",
+      "result": "not_run"
+    },
+    {
+      "command": "formal artifact root rebuild, network/public collection, private/order/live endpoint, paper queue, real order, or secret action",
+      "evidence_path": "",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-V3-NEXT-STAGE-CURRENT-HEAD-ORCHESTRATOR-01",
+  "transition_for": ""
+}

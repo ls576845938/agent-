@@ -1,0 +1,78 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-donchian-stage-identity-40d2ade98",
+  "ticket_id": "DONCHIAN-STAGE-READONLY-INTEGRATION-20260922",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/donchian-stage-readonly-integration-20260922",
+  "base_commit": "6e64168f28658f8482a4a14ecde179bbdb522fc6",
+  "deliverable_commit": "40d2ade98b18d73a75341e97ff21745213b30a7a",
+  "created_at": "2026-09-21T23:42:35Z",
+  "expires_at": "",
+  "depends_on": ["published-donchian-stage-reviewfix-989ab5e3d"],
+  "supersedes": ["integrated-donchian-stage-readonly-c0d5b0dcd"],
+  "transition_for": "published-donchian-stage-reviewfix-989ab5e3d",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "eaa9ea36b811765407c56dacc7b692b734353db7ba2d17db1efd3b7c0a423292",
+      "schema_version": "quant_frontend_identity_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "report",
+      "path": "docs/operations/donchian-stage-readonly-integration-20260922.md",
+      "sha256": "06c52e69984d405bcd78df124402de2b82e588ef4362a5ceaa602f5a1b4101b7",
+      "schema_version": "donchian_stage_readonly_integration_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/operations/donchian-stage-readonly-integration-20260922.json",
+      "sha256": "2cc71f5174a9ee7c32b803c942ddac8f4f32bf6848e072dcfeb44016e6462ec9",
+      "schema_version": "donchian_stage_readonly_source_integration_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "npm run identity:check (integration worktree; manifest_match=true, baseline_ancestor=true)",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "npm run identity:runtime-test",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "npm run identity:test (prepublication; fails only at registered main launcher -Check with old main manifest)",
+      "result": "failed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "npm run identity:test on registered main after publication",
+      "result": "not_run",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    }
+  ],
+  "blockers": [
+    "identity_test_requires_canonical_main_after_publication",
+    "canonical_main_frontend_check_pending",
+    "canonical_browser_acceptance_pending",
+    "annual_5800_hours_not_run"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "base_commit": "060c11a04c7f5a5ef646f61c7c946009adb84240",
+  "blockers": [
+    "owner:root canonical current-main frontend restart and mocked strategy-modules browser acceptance pending",
+    "owner:root visual/design QA against supplied anchor pending; no design-qa pass claimed",
+    "owner:policy frontend-only ticket does not rebuild promotion artifact/read model or restart backend",
+    "promotion_paper_live_private_order_transfer_withdraw_real_order remain disabled"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-19T12:00:00Z",
+  "deliverable_commit": "063c2859de7510bf8d931860b192371dfa7f1097",
+  "deliverables": [
+    {
+      "path": "frontend/src/App.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_route_v1",
+      "sha256": "0a6f173cb459d359ee7195187411a54f67f72c76bd417f78224cd57aa0c94308",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/StrategyModulesWorkspace.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_market_map_v1",
+      "sha256": "8f47008177f1192ace03bdda8b434c8ba3012d5c79bcccdac3ba9b0afca130a9",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/strategy-modules.css",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_styles_v1",
+      "sha256": "c65532b4ad507cbe99be27125f08d5b92644e8068257c8bac7aff4fa7b03ea1f",
+      "type": "code"
+    },
+    {
+      "path": "frontend/e2e/strategy-modules.spec.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "strategy_modules_playwright_contract_v1",
+      "sha256": "dde8f3a3dc34aaf7176d7dc05e12ca856d7da15e84f053b2db797a978361e2f7",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_identity_v1",
+      "sha256": "e547254b29600cb3e1e0958f7ebb8639f4dea5921d1a8420b5397863c355cbf9",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-qs-strategy-modules-market-map-01-edb4d0300"
+  ],
+  "domain": "shared",
+  "event_id": "integrated-qs-strategy-modules-market-map-01-063c2859",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/qs-strategy-modules-market-map-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff.py validate producer published event",
+      "evidence_path": ".agent/handoffs/QS-STRATEGY-MODULES-MARKET-MAP-01/published-qs-strategy-modules-market-map-01-edb4d0300.json",
+      "result": "passed"
+    },
+    {
+      "command": "base->deliverable->handoff ancestry and exact touch/blob verification",
+      "evidence_path": "integrator sparse worktree committed objects",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run lint",
+      "evidence_path": "integrator sparse worktree; temporary registered-main node_modules junction removed",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run build",
+      "evidence_path": "Vite 6.4.2; existing large-chunk warning only; generated dist removed after verification",
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix frontend run identity:refresh && npm --prefix frontend run identity:check && npm --prefix frontend run identity:test",
+      "evidence_path": "frontend/public/frontend-identity.json bound to 063c2859; fingerprint 9efe1972c76c0b7dfe7267abc40f9f529f52e01699e68b797f60e2ca0c07b477",
+      "result": "passed"
+    },
+    {
+      "command": "npm exec --prefix frontend -- playwright test e2e/strategy-modules.spec.ts --config=frontend/playwright.config.ts --list",
+      "evidence_path": "6 tests discovered; full browser run deferred because canonical 3000 source_head is 060c11a04c7f5a5ef646f61c7c946009adb84240",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check and scoped safe_status",
+      "evidence_path": "declared frontend source/e2e/identity/handoff scopes clean",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QS-STRATEGY-MODULES-MARKET-MAP-01",
+  "transition_for": "published-qs-strategy-modules-market-map-01-edb4d0300"
+}

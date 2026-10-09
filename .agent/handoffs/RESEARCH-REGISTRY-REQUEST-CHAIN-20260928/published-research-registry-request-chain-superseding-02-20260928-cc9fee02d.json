@@ -1,0 +1,87 @@
+{
+  "base_commit": "870ca75f5a2fad57fba1a73571020308b302328b",
+  "blockers": [
+    "independent_integrator_delta_review_pending",
+    "current_main_delta_merge_and_canonical_backend_restart_pending",
+    "formal_8765_3000_fixed_eleven_attempt_browser_matrix_pending",
+    "existing_registry_conflict_preserved_fail_closed",
+    "not_promotion_evidence"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-09-28T17:01:07.741Z",
+  "deliverable_commit": "cc9fee02d5cb6679cab0348ad29ae1a7cf58c033",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "26ac33cd13bb59345609d62c2aadf1b3398c0e1f316d152c9b2f0f5a384f3f20",
+      "type": "code"
+    },
+    {
+      "path": "tests/api/test_qlib_pipeline.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "research_request_chain_v1",
+      "sha256": "27fc858b4ed0863e229b902a6861d3901c142546e15b4a8493512c3de847e27e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "research",
+  "event_id": "published-research-registry-request-chain-superseding-02-20260928-cc9fee02d",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/research-registry-request-chain-20260928",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-research-registry-request-chain-superseding-01-20260928-2fb17f64b"
+  ],
+  "tests": [
+    {
+      "command": "failure-first identical Qlib-list overlap, different-key and fail-closed recovery tests",
+      "evidence_path": "producer console; corrected sparse PYTHONPATH run produced 2 expected failures and 1 pass before implementation",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python focused Qlib in-flight contract tests",
+      "evidence_path": "producer console; 6 passed covering same key, different limit, settled revalidation, 503 sharing/recovery, selector/root rejection, app isolation and API-key ordering",
+      "result": "passed"
+    },
+    {
+      "command": "canonical Python pytest tests/api/test_qlib_pipeline.py tests/api/test_m1_research_readonly_archive.py",
+      "evidence_path": "producer console; 36 passed",
+      "result": "passed"
+    },
+    {
+      "command": "py_compile changed Python files and git diff --check",
+      "evidence_path": "producer console",
+      "result": "passed"
+    },
+    {
+      "command": "canonical-data concurrent two-request Qlib list TestClient measurement",
+      "evidence_path": "../offline-runs/research-request-chain-20260928/qlib-list-overlap-after-singleflight.json; wall 2.048s, both HTTP 200 within 12s, one archive verification, 17 seal validations, identical 23838-byte payload SHA256 673e58586b70d626fcb48005cabc68c24af8a178ee9e025fe1f2af0662fbe9bd",
+      "result": "passed"
+    },
+    {
+      "command": "formal current-main 8765/3000 fixed eleven-attempt browser matrix after delta",
+      "evidence_path": "pending independent integration; pre-delta b03f505 matrix was 10/11 with overlap-bare Qlib abort at 12.022s",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "RESEARCH-REGISTRY-REQUEST-CHAIN-20260928",
+  "transition_for": ""
+}

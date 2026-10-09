@@ -1,0 +1,55 @@
+{
+  "base_commit": "b21bb541127ae71ee5e80c3aa4006c7d5338bd6d",
+  "blockers": [
+    "superseded_reason:unkeyed shared LazyWorkspace component could retain Workspace or loadError state across route transitions",
+    "replacement_event:published-frontend-route-bootstrap-20261003-correction-01-aeb187ddf",
+    "owner:integrator independent current-main integration and canonical-browser acceptance remain required",
+    "not_promotion_evidence_ready; promotion=false; paper=false; live=false; private=false; order=false; real_order=false"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-10-02T23:49:50Z",
+  "deliverable_commit": "aeb187ddfa3e04010d81581f1d7ef94ca1e49ac2",
+  "deliverables": [],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "superseded-frontend-route-bootstrap-20261003-feddeecfe-aeb187ddf",
+  "event_type": "superseded",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/frontend-route-bootstrap-20261003",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-frontend-route-bootstrap-20261003-feddeecfe"
+  ],
+  "tests": [
+    {
+      "command": "node scripts\\test-route-bootstrap.mjs before route identity correction",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "failed"
+    },
+    {
+      "command": "npm run lint after correction",
+      "evidence_path": "docs/acceptance/FRONTEND-ROUTE-BOOTSTRAP-20261003.md",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts\\test-route-bootstrap.mjs after correction",
+      "evidence_path": "frontend/scripts/test-route-bootstrap.mjs",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "FRONTEND-ROUTE-BOOTSTRAP-20261003",
+  "transition_for": ""
+}

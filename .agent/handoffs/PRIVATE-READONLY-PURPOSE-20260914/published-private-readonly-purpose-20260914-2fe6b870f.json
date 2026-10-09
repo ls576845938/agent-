@@ -1,0 +1,96 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-private-readonly-purpose-20260914-2fe6b870f",
+  "ticket_id": "PRIVATE-READONLY-PURPOSE-20260914",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "integrator",
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/super_developer/private-readonly-purpose-20260914",
+  "base_commit": "a89d3dadc59b63e69d541508b941e6103ace7890",
+  "deliverable_commit": "2fe6b870fdd67d644a1f2dd770be31f8bde8d9a0",
+  "created_at": "2026-09-14T12:08:54.786Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "tools/agent_governance/private_readonly_permission.py",
+      "sha256": "55c94cd4b340e10c8904fa20803f062b524a540cfc2c7f58059cba1d7f162afa",
+      "type": "code",
+      "schema_version": "private_readonly_purpose_governance_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": ".codex/hooks/pre_tool_guard.py",
+      "sha256": "8dd2dddadc3ab55b3230f56f5ffafceeed1325726e06f818f4f1c143eb641f4d",
+      "type": "code",
+      "schema_version": "private_readonly_purpose_governance_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": ".codex/hooks/private_readonly_capability.py",
+      "sha256": "36d6ea2b76fe1379ed81214bcfdd8c0b7a5c09adb197298a276f684c87d8c7ba",
+      "type": "code",
+      "schema_version": "private_readonly_purpose_governance_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/agent_governance/test_private_readonly_purposes.py",
+      "sha256": "82a731982ce34accba6620c32846b0d9ea567ca052a62ba439d0c00af45b60b5",
+      "type": "test_evidence",
+      "schema_version": "private_readonly_purpose_governance_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "docs/operations/private-readonly-account-purpose.md",
+      "sha256": "00935d1ab202f898f1d8ef721c0c74edb6e3d3b76a027a2f5c774801c8c0b218",
+      "type": "report",
+      "schema_version": "private_readonly_purpose_governance_v2",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest test_private_readonly_permission.py test_private_readonly_purposes.py: 66 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/private-readonly-account-purpose.md"
+    },
+    {
+      "command": "pytest tests/agent_governance/test_hooks.py: 8 passed",
+      "result": "passed",
+      "evidence_path": "docs/operations/private-readonly-account-purpose.md"
+    },
+    {
+      "command": "git diff --check scoped paths",
+      "result": "passed",
+      "evidence_path": "docs/operations/private-readonly-account-purpose.md"
+    },
+    {
+      "command": "Real receipts, private capture, business runner, backend/frontend or promotion acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/operations/private-readonly-account-purpose.md"
+    }
+  ],
+  "blockers": [
+    "owner:integrator independent governance review and integration required",
+    "owner:operator trust changed hooks if prompted and use fresh context before capability consumption",
+    "owner:btc_developer separately implement reviewed one-shot account facts entry; absent entry remains fail-closed",
+    "owner:operator external signed current-session receipt required; private remains disabled"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

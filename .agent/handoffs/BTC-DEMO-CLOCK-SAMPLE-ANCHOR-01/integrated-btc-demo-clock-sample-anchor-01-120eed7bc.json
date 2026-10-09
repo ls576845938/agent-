@@ -1,0 +1,87 @@
+{
+  "base_commit": "135e0f154677b433628f5022e91a2d5c2463a0a1",
+  "blockers": [
+    "registered_main_not_advanced_candidate_only",
+    "backend_restart_required_after_main_integration",
+    "current_main_browser_acceptance_required_after_restart",
+    "real_demo_start_not_rerun_private_order_permissions_false",
+    "promotion_paper_live_private_order_real_order_transfer_withdraw_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-08-25T11:22:44Z",
+  "deliverable_commit": "120eed7bcddf5200c8912e55607d9992a222a7a1",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "source_file_v1",
+      "sha256": "cec59a6597b5dea29f47943c6b6e72828b5da6b9f2f761927614d579eb0072f7",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "test_contract_v1",
+      "sha256": "54807ac4c0dc9d3effa5fa8c238979dbff675b1220c24deaf75682ef45383d66",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-clock-sample-anchor-01-b65de9964"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-clock-sample-anchor-01-120eed7bc",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-clock-sample-anchor-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "handoff validation, producer ancestry, immutable SHA-256, exact touch set, dependency event and blocker review",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-CLOCK-SAMPLE-ANCHOR-01/published-btc-demo-clock-sample-anchor-01-b65de9964.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_demo_clock_guard_keeps_margin_inside_exchange_auth_window tests/contracts/test_btc_okx_demo_paper_runtime.py::test_demo_clock_guard_anchors_to_snapshot_capture_after_slow_cycle tests/contracts/test_btc_okx_demo_paper_runtime.py::test_demo_clock_guard_uses_adjacent_server_time_sample_after_slow_collection tests/contracts/test_btc_okx_demo_paper_runtime.py::test_demo_clock_guard_still_rejects_true_offset_with_adjacent_sample -q",
+      "evidence_path": "pytest stdout: 4 passed in 5.81s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "pytest stdout: 441 passed in 104.30s",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_shared_platform_v3_operator_contract_v2.py backend/tests/test_btc_demo_runtime_service.py backend/tests/test_btc_demo_runtime_api.py -q",
+      "evidence_path": "pytest stdout: 120 passed in 21.86s",
+      "result": "passed"
+    },
+    {
+      "command": "git merge --no-ff 55f6ac163fb1868464bd296843b89427b997bbe1; git diff --check; safe_status.py on declared integration touch set",
+      "evidence_path": "merge commit 120eed7bcddf5200c8912e55607d9992a222a7a1; scoped status clean before handoff publication",
+      "result": "passed"
+    },
+    {
+      "command": "real Demo authoritative preflight/start, backend restart, current-main browser acceptance, private/order/live endpoint",
+      "evidence_path": "not_run_by_integrator_scope_and_private_order_live_prohibition",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-CLOCK-SAMPLE-ANCHOR-01",
+  "transition_for": "published-btc-demo-clock-sample-anchor-01-b65de9964"
+}

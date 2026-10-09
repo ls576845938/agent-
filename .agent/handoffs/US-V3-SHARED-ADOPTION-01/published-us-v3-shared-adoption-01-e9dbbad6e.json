@@ -1,0 +1,133 @@
+{
+  "base_commit": "2c7360619dd93594f78865c48825bb389a052e81",
+  "blockers": [
+    "historical_us_artifact_contract_suite_requires_non_sparse_current_head_artifact_rebuild",
+    "preexisting_us_broker_credentials_default_template_import_drift_owner_super_developer_followup",
+    "breaking_core_type_and_enum_cleanup_deferred_until_btc_dependency_handoff_and_integrator_ticket",
+    "promotion_paper_private_order_and_live_gates_remain_locked"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "btc_developer"
+  ],
+  "created_at": "2026-07-24T06:44:54Z",
+  "deliverable_commit": "e9dbbad6ebcf6ae3e1b5eae89139fc76fbfde093",
+  "deliverables": [
+    {
+      "path": "quant_us/compat/__init__.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adapter_v1",
+      "sha256": "9e49ca7df795929f047b77f0b1590ad6593e2d7591f6b1502bd5ea7957dcfc11",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/compat/shared_platform.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adapter_v1",
+      "sha256": "a95f202261b48c0e68a648c76b6262883596f7e6766bd637d4d6d55abfb05125",
+      "type": "code"
+    },
+    {
+      "path": "quant_us/core/clock.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_core_clock_shared_facade_v1",
+      "sha256": "60cb3ec55fc45e7cb912560a3cba838195f8be597b85b31171d1b4486b054ed7",
+      "type": "code"
+    },
+    {
+      "path": "configs/governance/us_shared_platform_adoption_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adoption_v1",
+      "sha256": "d7de3b7aefcc409874cd88afa43c3455e457d3818fd5595f5eded856d6efaf42",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_shared_platform_adoption.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adoption_v1",
+      "sha256": "907ce5924c1826de449a2bc37964b409543dc53d0e6a0afd6cb261d1ca509bee",
+      "type": "schema"
+    },
+    {
+      "path": "scripts/validate_us_shared_platform_adoption.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adoption_validator_v1",
+      "sha256": "241ed02c5fe1fccb77126efeebbc7ab87617487cc2a7225489a5464412a21f19",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_shared_platform_adoption.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_adoption_tests_v1",
+      "sha256": "54f1735836c08b4d86d48043ea46ec53c65ec0d2c01394251f477b58844465e8",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/architecture/us_shared_platform_migration_matrix.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_shared_platform_migration_matrix_v1",
+      "sha256": "9a631140562f75647954e40d09820370319e5e6d7f57b466ae5d14122ea81020",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-windows-artifact-path-contract-01-goal3-batch-01",
+    "integrated-btc-v3-application-service-boundary-01-goal3-batch-01",
+    "integrated-cn-v3-shared-platform-v2-adoption-01-goal3-batch-01",
+    "integrated-shared-platform-v2-current-main-01-batch-02-takeover"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-shared-adoption-01-e9dbbad6e",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-shared-adoption-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_shared_platform_adoption.py tests/contracts/test_btc_shared_boundary_adoption.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_us_shared_platform_adoption.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest quant_us/tests tests/core -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": "quant_us/tests",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <US-paper-safety-runtime-and-shared-contract-files> -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <committed-US-BTC-core-runtime-suite> -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_us_shared_platform_adoption.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/validate_us_shared_platform_adoption.py",
+      "evidence_path": "configs/governance/us_shared_platform_adoption_v1.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us*.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "evidence_path": "tests/contracts/test_us_shared_platform_adoption.py",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "US-V3-SHARED-ADOPTION-01",
+  "transition_for": ""
+}

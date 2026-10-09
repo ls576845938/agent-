@@ -1,0 +1,154 @@
+{
+  "base_commit": "6cea196b44511024912bc064cdd4c024d7ba60de",
+  "blockers": [
+    "owner:main integration_branch_not_fast_forwarded_to_refs_heads_main",
+    "btc_demo_25h:natural_25_consecutive_complete_utc_hours_not_yet_observed",
+    "btc_demo_25h:actual_demo_order_fill_funding_disconnect_reconnect_and_ledger_reconciliation_evidence_not_yet_collected",
+    "full_contract_suite_collection_failed:ImportError_DEFAULT_TEMPLATE_from_scripts_build_us_equity_broker_credentials_review_report",
+    "btc_demo_25h:current_head_external_artifact_publication_backend_restart_and_runtime_start_pending",
+    "btc_demo_25h:promotion_package_rebuild_and_manual_approval_pending",
+    "not_promotion_evidence_no_runtime_start_no_private_no_order_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "integrator"
+  ],
+  "created_at": "2026-07-30T12:25:23Z",
+  "deliverable_commit": "eaeab4f98598e8b55b0ea3f9970143634d3068f4",
+  "deliverables": [
+    {
+      "path": "backend/app/services/btc_demo_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "515f13209c10551ca0319627c7e41f2f5d5151228f40d82f18b40e3d3a73339d",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_btc_demo_runtime_service.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "a21eee6636a46420e2dc54b3a2dc53a90098179e54f28ca4eb1f2d27b96d7c85",
+      "type": "test_evidence"
+    },
+    {
+      "path": "quant_crypto/application/btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "86221afafd4d37fb3de3ddb7031b53f489544d04526f11fe80ad6815c8e2cb70",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/application/btc_next_stage_engineering_evidence.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "2f2da4cb79cd07482cb6a4fbfe4d2d80d00e7f372c74bd9dc25be68b367acdf8",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_next_stage_current_head_orchestrator.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "json_schema_v1",
+      "sha256": "7e0ff3f00a3cee843da3342722d973245e5fe7a697f0f1f4a56d74231ad6d70f",
+      "type": "code"
+    },
+    {
+      "path": "schemas/btc_next_stage_engineering_evidence.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "json_schema_v1",
+      "sha256": "7e2d5f20e367d7e08be0cbd8d3c81d7c847d5f7766c0cc210e6a0f6bc377118d",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_current_head_orchestrator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "51d43caf5761cddf2ebe599c3bed2e0b5e5965b0199020f4db36a3c12cd36e2f",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_next_stage_engineering_closure.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "2020d16857b5fff7ef2180eceadfd8a843dd86277ba5d7364ed9aec1e423fcb3",
+      "type": "test_evidence"
+    },
+    {
+      "path": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "shared_dataset_manifest_v1",
+      "sha256": "6c5dd8036da320062002b839792852c1aa53971fecdd20b1ba7ae3ec6c2260c9",
+      "type": "data_manifest"
+    },
+    {
+      "path": ".agent/handoffs/DATA-BTC-DEMO-25H-PUBLIC-TAIL-01/published-data-btc-demo-25h-public-tail-01-ec7499b4f.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "7cd12c23267c5617b07c5508e04042439179763e0a44f549dea522cfb21073f7",
+      "type": "document"
+    },
+    {
+      "path": ".agent/handoffs/BTC-DEMO-25H-PROMOTION-WINDOW-01/published-btc-demo-25h-promotion-window-01-318b5ebfa.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "agent_handoff_envelope_v1",
+      "sha256": "52c81c98d7fa05726abd837982df064b731d9a7cd2edd3c2f4fe9d41c63e03a2",
+      "type": "document"
+    }
+  ],
+  "depends_on": [
+    "published-data-btc-demo-25h-public-tail-01-ec7499b4f",
+    "published-btc-demo-25h-promotion-window-01-318b5ebfa"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-25h-runtime-01-eaeab4f98",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/integrate-btc-demo-25h-runtime-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest backend/tests/test_btc_demo_runtime_service.py tests/contracts/test_btc_next_stage_engineering_closure.py tests/contracts/test_btc_next_stage_current_head_orchestrator.py -q --basetemp <unique-system-temp> [observed: 49 passed in 62.99s]",
+      "evidence_path": "backend/tests/test_btc_demo_runtime_service.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_native_promotion_gate.py tests/contracts/test_btc_current_head_gate_rebuild.py -q --basetemp <unique-system-temp> [observed: 55 passed in 8.95s]",
+      "evidence_path": "tests/contracts/test_btc_okx_native_promotion_gate.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_runtime_hardening.py -q --basetemp <unique-system-temp> [observed: 15 passed in 0.44s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_runtime_hardening.py",
+      "result": "passed"
+    },
+    {
+      "command": "pure-local official BtcDemoRuntimeService catalog inspection with injected no-op controller [observed: OKX-native demo_selectable=true, integrity/freshness pass, all execution safety flags false]",
+      "evidence_path": "backend/app/services/btc_demo_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts -q --basetemp <unique-system-temp> [observed: collection failed after 24.48s on unrelated US DEFAULT_TEMPLATE ImportError; not rerun]",
+      "evidence_path": "tests/contracts/test_us_equity_broker_credentials_local_review_init.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m py_compile <3 integration Python files> and git diff --check -- <8 integration paths>",
+      "evidence_path": "backend/app/services/btc_demo_runtime.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "INTEGRATE-BTC-DEMO-25H-RUNTIME-01",
+  "transition_for": "published-btc-demo-25h-promotion-window-01-318b5ebfa"
+}

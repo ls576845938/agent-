@@ -1,0 +1,74 @@
+{
+  "base_commit": "606abda9a4b194490c1fd9ce5e963800b9d8cc79",
+  "blockers": [
+    "owner:integrator independent_integration_required_for_demo_execution_semantics",
+    "owner:integrator backend_restart_required_after_integration",
+    "owner:runtime_operator legacy_events_jsonl_129mb_preserved_not_migrated_not_deleted_first_recovery_remains_fail_closed",
+    "current_head_runtime_artifact_not_rebuilt_by_source_only_ticket",
+    "not_promotion_evidence_ready_no_paper_no_private_no_order_no_live"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-01T03:56:47Z",
+  "deliverable_commit": "c8df52cde718a8e7c8b9f9a144ab505297f69513",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_v1",
+      "sha256": "66d7eb53e2bd31bc50daa46fc33abb95f83a5f5703977375274c1f84aa62ff1a",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "15b37d2170b2954ca2bc22e6f4cb3430f69cd837c42a1779bb98a5dc5acea14b",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-demo-status-event-projection-01-c8df52cde",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-status-event-projection-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests\\contracts\\test_btc_okx_demo_paper_runtime.py -k \"status_projects_legacy_events or append_checkpoint_and_legacy_recovery\" --basetemp C:\\tmp\\btc-demo-status-event-projection-01-failure-first-b -p no:cacheprovider -q [observed: 2 failed, 28 deselected before implementation]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "failed"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests\\contracts\\test_btc_okx_demo_paper_runtime.py -k \"status_projects_legacy_events or append_and_checkpoint_use_event_free or legacy_recursive_event_log_recovers or runtime_commits_atomic_funding\" --basetemp C:\\tmp\\btc-demo-status-event-projection-01-targeted-d -p no:cacheprovider -q [observed: 4 passed, 27 deselected]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest tests\\contracts\\test_btc_okx_demo_paper_runtime.py --basetemp C:\\tmp\\btc-demo-status-event-projection-01-full-e -p no:cacheprovider -q [observed: 31 passed in 7.54s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-STATUS-EVENT-PROJECTION-01",
+  "transition_for": ""
+}

@@ -1,0 +1,135 @@
+{
+  "base_commit": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+  "blockers": [
+    "owner:data_steward expected_finalized_session_missing:2026-07-23",
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:natural_time paper_review_natural_days_in_progress:0_of_30",
+    "owner:natural_time independent_confirmation_sessions_in_progress:0_of_252",
+    "owner:legacy_artifact legacy_us_etf_validation_latest_missing_in_sparse_worktree",
+    "classification:goal11_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_blocked_external_data_and_natural_time"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "researcher",
+    "data_steward"
+  ],
+  "created_at": "2026-07-24T15:55:16Z",
+  "deliverable_commit": "5c6b100790d6abd98b6dcf647a14c3b95f75ee7f",
+  "deliverables": [
+    {
+      "path": "quant_us/application/us_equity_forward_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_forward_observation_service_v1",
+      "sha256": "9a551ec4f7563f9d7ad53ee2babe5065a86c3a7254c29537912f2d9c874ed3b5",
+      "type": "code"
+    },
+    {
+      "path": "scripts/run_us_equity_forward_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_forward_observation_cli_v1",
+      "sha256": "985e515710de9402bb21e64271bcbf1536ceea539c3302f4721119eeae4211be",
+      "type": "code"
+    },
+    {
+      "path": "schemas/us_equity_forward_observation_receipt.schema.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_equity_forward_observation_receipt_v1",
+      "sha256": "0e4752d55daa8e2e8baf8cb5192c995aa9329c83218d5f9a0cc6b53136d158a2",
+      "type": "schema"
+    },
+    {
+      "path": "configs/monitoring/us_v3_forward_observation_v1.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_forward_observation_config_v1",
+      "sha256": "64b53ab2beff9cab1abd8b1bdbff3ea0d4d988ca12daffb9e844313d43965378",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_forward_observation.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "255c00d01118670c07f688d62fcbd04a8ed8b96def0be3fc7ca459cb5fd008a4",
+      "type": "test_evidence"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_forward_observation.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_forward_observation_contract_v1",
+      "sha256": "0ba86a59076db3c3529569ceda0e6140e7695349c34d927e3ea0f2ecfd77c3a8",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01.md",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_forward_observation_integrator_contract_v1",
+      "sha256": "1fc0eb883d44df4e8149f2c5ed450e3f7ff64af1237194167488b80568c9de36",
+      "type": "document"
+    },
+    {
+      "path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_forward_observation_evidence_v1",
+      "sha256": "66909508d0b663c250aeef816badb4650af5738c21fd75ff94a488be715fa217",
+      "type": "report"
+    },
+    {
+      "path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/manifest.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "us_v3_forward_observation_delivery_manifest_v1",
+      "sha256": "5565692b0dd0c6b7f85b96588df3bb82f17ed814558b647c58755b5bd543b3ed",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [
+    "integrated-us-v3-current-head-gate-rebuild-01-goal10-batch-01"
+  ],
+  "domain": "us_equity",
+  "event_id": "published-us-v3-forward-observation-01-5c6b1007",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/us-v3-forward-observation-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_forward_observation.py -q -p no:cacheprovider --basetemp <unique-system-temp> [11 passed]",
+      "evidence_path": "tests/contracts/test_us_equity_forward_observation.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest <G11+G06+G07+candidate+current-head+schema paths> -q -p no:cacheprovider --basetemp <unique-system-temp> [46 passed]",
+      "evidence_path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 scripts/run_us_equity_forward_observation.py --repo-root . --output-root <unique-system-temp> --json [blocked_external_data; expected session 2026-07-23; same-day second call reused; schema and hashes valid]",
+      "evidence_path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json",
+      "result": "passed"
+    },
+    {
+      "command": "legacy US forward-observation suite [20 passed, 6 retained failures: sparse worktree lacks artifacts/us_equity_etf_macro_rotation/latest/us_etf_top1_higher_vol_20pct_15x_validation_report.json]",
+      "evidence_path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m ruff check <G11 paths> [not run: No module named ruff]",
+      "evidence_path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json",
+      "result": "not_run"
+    }
+  ],
+  "ticket_id": "US-V3-FORWARD-OBSERVATION-01",
+  "transition_for": ""
+}

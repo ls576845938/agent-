@@ -271,6 +271,15 @@ def test_v1_config_keeps_historical_dependencies_default_closed(tmp_path: Path) 
     assert config.decision_time_provider is None
 
 
+def test_unregistered_history_replay_rejects_coordination_projection_hook() -> None:
+    replay = object.__new__(DonchianHistoricalReplay)
+    replay.coordination_projection_enabled = False
+    with pytest.raises(
+        ValueError, match="historical_coordination_projection_not_enabled"
+    ):
+        replay.run(after_event=lambda _cursor, _projection: None)
+
+
 def test_run_id_cannot_escape_output_root_for_status_or_existing_link(tmp_path: Path) -> None:
     output_root = tmp_path / "declared"
     escaped = tmp_path / "escaped-run"
@@ -517,4 +526,77 @@ def test_terminal_economic_mutation_requires_original_ledger_evidence() -> None:
             "fills": [{"fillId": "terminal-protection-fill"}],
             "orders": [{"ordId": "terminal-protection-order"}],
         },
+    )
+
+
+def _lock_only_replay(root: Path) -> DonchianHistoricalReplay:
+    replay = object.__new__(DonchianHistoricalReplay)
+    replay.run_root = root / "lease-run"
+    return replay
+
+
+def test_os_writer_lease_excludes_a_second_writer_and_recovers_after_release(
+    tmp_path: Path,
+) -> None:
+    first = _lock_only_replay(tmp_path)
+    second = _lock_only_replay(tmp_path)
+    descriptor = first._acquire()
+    try:
+        with pytest.raises(RuntimeError, match="historical_replay_writer_lock_held"):
+            second._acquire()
+    finally:
+        first._release(descriptor)
+
+    recovered = second._acquire()
+    second._release(recovered)
+    assert second.lock_path.read_text(encoding="ascii").startswith(
+        "schema=historical_replay_os_lease_v1\n"
+    )
+
+
+def test_legacy_live_or_unknown_owner_blocks_without_unlink(
+    tmp_path: Path, monkeypatch
+) -> None:
+    replay = _lock_only_replay(tmp_path)
+    replay.run_root.mkdir(parents=True)
+    replay.lock_path.write_text("pid=12345\n", encoding="ascii")
+    monkeypatch.setattr(
+        DonchianHistoricalReplay,
+        "_process_alive_conservative",
+        staticmethod(lambda _pid: True),
+    )
+    with pytest.raises(
+        RuntimeError, match="historical_replay_legacy_writer_lock_held_or_unknown"
+    ):
+        replay._acquire()
+    assert replay.lock_path.read_text(encoding="ascii") == "pid=12345\n"
+
+    replay.lock_path.write_text("legacy-owner-unknown\n", encoding="ascii")
+    with pytest.raises(
+        RuntimeError, match="historical_replay_legacy_writer_lock_held_or_unknown"
+    ):
+        replay._acquire()
+    assert replay.lock_path.read_text(encoding="ascii") == "legacy-owner-unknown\n"
+
+
+def test_confirmed_dead_legacy_owner_is_replaced_while_os_lease_is_held(
+    tmp_path: Path, monkeypatch
+) -> None:
+    first = _lock_only_replay(tmp_path)
+    second = _lock_only_replay(tmp_path)
+    first.run_root.mkdir(parents=True)
+    first.lock_path.write_text("pid=12345\n", encoding="ascii")
+    monkeypatch.setattr(
+        DonchianHistoricalReplay,
+        "_process_alive_conservative",
+        staticmethod(lambda _pid: False),
+    )
+    descriptor = first._acquire()
+    try:
+        with pytest.raises(RuntimeError, match="historical_replay_writer_lock_held"):
+            second._acquire()
+    finally:
+        first._release(descriptor)
+    assert first.lock_path.read_text(encoding="ascii").startswith(
+        "schema=historical_replay_os_lease_v1\npid="
     )

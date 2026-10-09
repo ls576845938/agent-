@@ -1,0 +1,105 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-strategy-source-provenance-02-5f1b6a076",
+  "ticket_id": "STRATEGY-SOURCE-PROVENANCE-02",
+  "event_type": "published",
+  "producer_role": "super_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "research",
+  "producer_branch": "agent/super_developer/strategy-source-provenance-02",
+  "base_commit": "bbc39bec1449c5ea6947c200be1541988d34db2c",
+  "deliverable_commit": "5f1b6a076cd9560cf7004e93e67efc6b5d4fe0d3",
+  "created_at": "2026-09-08T14:53:23.708Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-strategy-source-provenance-02-8bf83fa23"
+  ],
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md",
+      "sha256": "ab4981b1017e14448d571e8414e18f7fc57be63db9a80989a5633691e9f465be",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/e2e/strategy-source-provenance.spec.ts",
+      "sha256": "a339533af2ca1c0f28a9f4862bd92fea58bfa2ae3e95e559178f55b8fcd51fa6",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/scripts/test-strategy-history-provenance.mjs",
+      "sha256": "23486f940f78fad1b612cb8cf611a170269e84e2308204fcbdda7ae7b9389829",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/StrategyExplorer.tsx",
+      "sha256": "01510f91c75a9c259b7d2f7dc2f75878c47f73941199630636c677d1606399e7",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/crypto/strategy-history-provenance.ts",
+      "sha256": "fc5718fe8d145a7ba8b276e01acbbce537e7cf4a893c7b464268d6bb90fc23f4",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/strategy-workbench.css",
+      "sha256": "18f831bafbbafab566a18d03995b83f463502fe0c65e9964e9adc0ea9e161882",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "node frontend/scripts/test-strategy-history-provenance.mjs",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-strategy-history-provenance.mjs"
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json",
+      "result": "passed",
+      "evidence_path": "frontend/tsconfig.json"
+    },
+    {
+      "command": "node node_modules/vite/bin/vite.js build; corrected deliverable 5225 modules; 13.16s; existing large bundle warning",
+      "result": "passed",
+      "evidence_path": "docs/reports/STRATEGY-SOURCE-PROVENANCE-02.md"
+    },
+    {
+      "command": "9 new browser regression tests discovered; canonical execution pending window release",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/strategy-source-provenance.spec.ts"
+    }
+  ],
+  "blockers": [
+    "owner:architect final committed-source review then independent integrator",
+    "owner:root canonical window occupied by ResearchDashboard task; await explicit release before main/identity/services",
+    "owner:root 9 new plus 3 existing heatmap browser tests and actual narrow/wide QA after integration",
+    "historical continuous series/fills/ledger absent; only published aggregate reviews rendered",
+    "promotion artifact unavailable; historical data not current-HEAD; no promotion rebuild authorized"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  },
+  "transition_for": ""
+}

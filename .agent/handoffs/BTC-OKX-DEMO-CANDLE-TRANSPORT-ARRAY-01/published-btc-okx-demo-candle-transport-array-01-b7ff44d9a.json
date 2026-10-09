@@ -1,0 +1,74 @@
+{
+  "base_commit": "8bc965b0c1f2d99f576f0206f27e5448e2e3ef92",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:integrator current_head_runtime_artifact_rebuild_and_backend_restart_pending",
+    "owner:operator same_okx_demo_runtime_start_and_evidence_collection_pending",
+    "not_promotion_evidence_no_runtime_started_no_orders_no_fills_no_paper_no_live"
+  ],
+  "consumer_roles": [
+    "integrator",
+    "architect"
+  ],
+  "created_at": "2026-07-30T13:05:18Z",
+  "deliverable_commit": "b7ff44d9a9163efee2712416b5e270ceb2d479ec",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_transport_public_sequence_v1",
+      "sha256": "964c0d43cec6ac9e8ba85f424086220a5e8d17724948d873477a193dbd1db0bf",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "6b52504416cf33c2f3fa3ed1390c1ba2c1422df22b45e5e412b5b66936958bfa",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-candle-transport-array-01-b7ff44d9a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "requires_gate_rebuild",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-okx-demo-candle-transport-array-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py -q -k \"preserves_public_candle_array_rows or action_status_ignores_sequence_rows\" --basetemp <unique-system-temp> [pre-fix reproduction: 2 failed]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "failed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-system-temp> [observed: 25 passed in 4.18s]",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo.py tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "quant_crypto/oms/okx_demo.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check 8bc965b0c1f2d99f576f0206f27e5448e2e3ef92 b7ff44d9a9163efee2712416b5e270ceb2d479ec -- quant_crypto/oms/okx_demo.py tests/contracts/test_btc_okx_demo_adapter.py",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-CANDLE-TRANSPORT-ARRAY-01",
+  "transition_for": ""
+}

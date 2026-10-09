@@ -1,0 +1,75 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-okx-demo-incident-recovery-consumer-source-chain-29-e257aadbd",
+  "ticket_id": "BTC-OKX-DEMO-INCIDENT-RECOVERY-CONSUMER-SOURCE-CHAIN-29",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": ["integrator"],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-okx-demo-consumer-source-29",
+  "base_commit": "88a94605d2afe08e817d667c6e93061e6d700939",
+  "deliverable_commit": "e257aadbd29fa9dca1849a8ef7a3850e225f451b",
+  "created_at": "2026-08-12T01:10:42Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-btc-okx-demo-canonical-recovery-legacy-state-source-28-int"
+  ],
+  "supersedes": [],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "type": "code",
+      "sha256": "40b9b40f5cc50aa68c95ef7f1a157ed615dcdb0c989bdd5c5577f26d134d595e",
+      "schema_version": "okx_demo_incident_recovery_binding_consumer_v2",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "type": "test_evidence",
+      "sha256": "26dc9e23e946428e69faae5e1d72180f61382772352415a81215025c458754ab",
+      "schema_version": "pytest_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -k 'binding_consumer_accepts_verified_multihop_marker or source_chain_rejects_present_invalid_state_head or source_chain_rejects_missing_run_or_unavailable_git or incident_recovery_binding_consumer' --basetemp <external-temp> -q",
+      "result": "passed",
+      "evidence_path": "failure-first base result: 1 failed, 323 deselected; final result: 6 passed, 323 deselected in 10.64s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py --basetemp <external-temp> -q",
+      "result": "passed",
+      "evidence_path": "141 passed in 71.49s"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py --basetemp <external-temp> -q",
+      "result": "not_run",
+      "evidence_path": "executed once but terminal result is unavailable: observed progress through 43 percent, child process exited, and the protocol did not retain final exit code or summary; not rerun under test-circuit policy"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py tests/contracts/test_btc_okx_demo_paper_runtime.py; git diff --check -- <touch-set>",
+      "result": "passed",
+      "evidence_path": "offline sparse producer worktree"
+    }
+  ],
+  "blockers": [
+    "independent_integrator_required",
+    "backend_restart_required_after_integration",
+    "canonical_held_position_recovery_not_executed_by_this_offline_ticket",
+    "runtime_full_terminal_summary_unavailable_not_rerun",
+    "promotion_artifact_not_rebuilt",
+    "private_order_live_permissions_remain_false"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

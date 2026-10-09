@@ -1,0 +1,110 @@
+{
+  "base_commit": "52781090f6430d0cc8cf5a880ea36b95d5f64bd5",
+  "blockers": [
+    "owner:backend_operator backend_restart_required_after_main_integration",
+    "registered_main_not_advanced_integration_branch_only",
+    "frontend_build_not_run_in_integration_worktree:not_required_by_ticket",
+    "promotion_artifact_not_rebuilt:ticket_forbids_artifact_work",
+    "quality_checked_source_is_not_promotion_evidence",
+    "demo_not_started_no_service_no_network_no_secret_no_private_no_order_no_live_no_transfer_no_withdraw"
+  ],
+  "consumer_roles": [
+    "architect"
+  ],
+  "created_at": "2026-08-07T07:20:44Z",
+  "deliverable_commit": "9421b7132eb582efe5adf54cf5452c6e62f222e1",
+  "deliverables": [
+    {
+      "path": "quant_crypto/research/btc_demo_observation_accumulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_observation_accumulator_v3",
+      "sha256": "5026004abeb5da1e397bf00487522c616d6225e2468af596c479723e3f925990",
+      "type": "code"
+    },
+    {
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "okx_demo_paper_runtime_status_v1",
+      "sha256": "2bc8f5024173511192f26e1a335a16c140f29d97cb73f2018a3ea08161bf8d12",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_demo_observation_accumulator.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_cumulative_observation_contract_v1",
+      "sha256": "637ee785dfb1081984710a5a04469b62c7198cb9ed221be70ee27602724cadb4",
+      "type": "test_evidence"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_cumulative_projection_contract_v1",
+      "sha256": "295291b9bdb54ab656ababd531a9852550d95966d5b28cdc2a978a9224a888a9",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/DemoTradingConsole.tsx",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_cumulative_observation_ui_v1",
+      "sha256": "25d79a7fe72ac6a81ebccc05b5e694eb0135202f3fb5c4704fcca7f1daeb2154",
+      "type": "code"
+    },
+    {
+      "path": "frontend/src/workspaces/crypto/demo-types.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "btc_demo_cumulative_observation_ui_v1",
+      "sha256": "7c3fb66dc26f5c9e98b55cce17096af95c45206e0f27a27bf83c8cd1562796b2",
+      "type": "code"
+    }
+  ],
+  "depends_on": [
+    "published-btc-demo-cumulative-observation-01-70bff53b8"
+  ],
+  "domain": "btc",
+  "event_id": "integrated-btc-demo-cumulative-observation-01-9421b7132",
+  "event_type": "integrated",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-demo-cumulative-observation-01",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/BTC-DEMO-CUMULATIVE-OBSERVATION-01/published-btc-demo-cumulative-observation-01-70bff53b8.json",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-CUMULATIVE-OBSERVATION-01/published-btc-demo-cumulative-observation-01-70bff53b8.json",
+      "result": "passed"
+    },
+    {
+      "command": "raw Git-object SHA-256 validation for six deliverables at 0a91d0da1550ba679894004d3701cbe9d4ab339a (6/6 matched)",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-CUMULATIVE-OBSERVATION-01/published-btc-demo-cumulative-observation-01-70bff53b8.json",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_okx_demo_paper_runtime.py -x (212 passed in 62.91s)",
+      "evidence_path": "tests/contracts/test_btc_demo_observation_accumulator.py",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 tools/agent_governance/safe_status.py --path <six deliverables> --path .agent/handoffs/BTC-DEMO-CUMULATIVE-OBSERVATION-01",
+      "evidence_path": ".agent/handoffs/BTC-DEMO-CUMULATIVE-OBSERVATION-01",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- <ticket touch set>",
+      "evidence_path": "quant_crypto/research/btc_demo_observation_accumulator.py",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-DEMO-CUMULATIVE-OBSERVATION-01",
+  "transition_for": "published-btc-demo-cumulative-observation-01-70bff53b8"
+}

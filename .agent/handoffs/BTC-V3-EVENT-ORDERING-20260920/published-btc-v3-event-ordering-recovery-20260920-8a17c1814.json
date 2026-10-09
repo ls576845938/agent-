@@ -1,0 +1,75 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-v3-event-ordering-recovery-20260920-8a17c1814",
+  "ticket_id": "BTC-V3-EVENT-ORDERING-20260920",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-v3-event-ordering-20260920",
+  "base_commit": "9dad24a4a9467a126a8692737409f776db4bd69f",
+  "deliverable_commit": "8a17c18143916a4b8b8f35d62d024feca9f0ede2",
+  "created_at": "2026-09-20T06:46:14Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-btc-v3-event-ordering-20260920-73770b0bc"
+  ],
+  "supersedes": [
+    "published-btc-v3-event-ordering-20260920-73770b0bc"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/application/qlib_offline_replay.py",
+      "sha256": "934c709a24152a0c9753fce764df7515bb5819d3ebc603cc4071af832150a5b4",
+      "schema_version": "qlib_offline_event_order_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_strategy_v3_event_ordering.py",
+      "sha256": "a6370912c4aacbdfa0af97e4cf60fb1aa9dede9882673096cd10481b4b31a9ce",
+      "schema_version": "qlib_offline_event_order_tests_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "tests/fixtures/strategy_v3/offline_contract.json",
+      "sha256": "2f63fc55a5284c1345aa5d80f91913a7827fe63f41f5cd0fdc0d6b63aadf323c",
+      "schema_version": "strategy_v3_qlib_offline_contract_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --tb=short tests/contracts/test_strategy_v3_event_ordering.py::test_interrupted_slot_restores_bound_market_before_account_reconciliation (failure-first: 1 failed /54.85s)",
+      "result": "failed",
+      "evidence_path": "tests/contracts/test_strategy_v3_event_ordering.py"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider --tb=short tests/contracts/test_strategy_v3_event_ordering.py::test_interrupted_slot_restores_bound_market_before_account_reconciliation (revised source: 1 passed /106.78s)",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_strategy_v3_event_ordering.py"
+    }
+  ],
+  "blockers": [
+    "owner:integrator review revised committed source and independently retest scheduled-slot interruption; original strict ledger/risk/ACK/Guardian checks unchanged; exactly bound visible market and idempotent funding restored before reconciliation",
+    "owner:producer final fixed 52-test matrix is running on 8a17c1814; earlier 51-pass matrix applies only to 1b56263c8 and cannot replace final results; final report/CLI results to be appended before acceptance",
+    "owner:release source-only, no main integration, restart or page release; no Demo/paper/live; docs existing earlier report is historical pending final update",
+    "safety: runtime_observed execution_permission promotion paper live private order real_order transfer withdraw all remain false; no secrets or real account/network/exchange calls"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

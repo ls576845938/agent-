@@ -1,0 +1,75 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "published-btc-public-depth-ux-01-123d07f54",
+  "ticket_id": "BTC-PUBLIC-DEPTH-UX-01",
+  "event_type": "published",
+  "producer_role": "btc_developer",
+  "consumer_roles": [
+    "architect",
+    "btc_developer"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/btc_developer/btc-public-depth-ux-01",
+  "base_commit": "04e60ea3cd7db9f1a07a6b5d06ea2d062796840a",
+  "deliverable_commit": "123d07f54b206ba876fd182db1ad765e833429c1",
+  "created_at": "2026-09-07T14:02:30.802Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "published-btc-public-depth-ux-01-971ec63ec"
+  ],
+  "transition_for": "",
+  "deliverables": [
+    {
+      "path": "docs/reports/BTC-PUBLIC-DEPTH-UX-01.md",
+      "sha256": "4783ebddfbdeb050fe4581f16d0dbb17877ecd181ef8d0ac589e1ff53d0d1e0a",
+      "type": "report",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "sha256": "20cc2c55e40db866db6cb266982776ebb29c17ae77a89f8d9580131618749b7b",
+      "type": "artifact",
+      "schema_version": "source_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pytest tests/contracts/test_btc_okx_public_display_stream.py -q: 16 passed",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_public_display_stream.py"
+    },
+    {
+      "command": "test-btc-public-depth-ux, four existing frontend operator regression scripts, npm lint/build and identity check/test",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-PUBLIC-DEPTH-UX-01.md"
+    },
+    {
+      "command": "canonical restart and deployed browser/SSE acceptance",
+      "result": "not_run",
+      "evidence_path": "docs/reports/BTC-PUBLIC-DEPTH-UX-01.md"
+    },
+    {
+      "command": "First deployed HEAD 6529682cc SSE live; 2625x1696 and 1131x975 browser details closed, no outer overflow; millisecond clock correction unit test and identity check passed",
+      "result": "passed",
+      "evidence_path": "docs/reports/BTC-PUBLIC-DEPTH-UX-01.md"
+    }
+  ],
+  "blockers": [
+    "owner:root canonical restart and browser/SSE verification pending",
+    "change_risk=demo_transport_hotfix; no strategy risk order private-WS ledger security modifications",
+    "promotion paper live private order real_order transfer withdraw remain false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

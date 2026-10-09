@@ -1,0 +1,89 @@
+{
+  "base_commit": "4db2edeb9a75a26c466a0be6f2e14c274af45ffa",
+  "blockers": [
+    "owner:integrator deliverable_commit_not_integrated_to_refs_heads_main",
+    "owner:operator backend_and_frontend_restart_required_after_integration",
+    "current_head_promotion_artifact_not_rebuilt_and_this_handoff_is_not_promotion_evidence",
+    "promotion_paper_live_private_order_broker_withdraw_real_order_and_secret_flags_remain_false"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator",
+    "super_developer"
+  ],
+  "created_at": "2026-08-01T01:55:07Z",
+  "deliverable_commit": "5ac3be06aac1a00614ae7ffb1fb53b485928678b",
+  "deliverables": [
+    {
+      "path": "backend/app/api/app_factory.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qsys_canonical_identity_guard_hotpath_v1",
+      "sha256": "f6906e9aec12bc5bf2e99eb08512ddea37d6bcd12955fb572005e084993eb08a",
+      "type": "code"
+    },
+    {
+      "path": "backend/tests/test_backend_current_main_launcher.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "qsys_canonical_identity_guard_hotpath_contract_v1",
+      "sha256": "5b7f43648bf6c7d9d85d3fe6c682ad74e03b8356775f92c5e4ff17251a0ee7f1",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/frontend-identity-lib.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "qsys_canonical_identity_guard_hotpath_v1",
+      "sha256": "04f68ad7b4244f5be476c8b298068f5834aae9d4ec712180c9573c8513152ea7",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "qsys_canonical_identity_guard_hotpath_contract_v1",
+      "sha256": "860ade8e49a2fe22ca551abbecba24e4e8fb0198ab108234c491cdb4d5b6620e",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "shared",
+  "event_id": "published-qsys-canonical-identity-guard-hotpath-01-5ac3be06a",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/super_developer/qsys-canonical-identity-guard-hotpath-01",
+  "producer_role": "super_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest backend/tests/test_backend_current_main_launcher.py --basetemp C:/tmp/qsys-canonical-guard-backend-full2-20260801 -p no:cacheprovider -q",
+      "evidence_path": "backend/tests/test_backend_current_main_launcher.py",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/test-frontend-identity.mjs (cwd=frontend)",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/test-frontend-runtime-drift.mjs (cwd=frontend)",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- backend/app/api/app_factory.py backend/tests/test_backend_current_main_launcher.py frontend/scripts/frontend-identity-lib.mjs frontend/scripts/test-frontend-runtime-drift.mjs",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QSYS-CANONICAL-IDENTITY-GUARD-HOTPATH-01",
+  "transition_for": ""
+}

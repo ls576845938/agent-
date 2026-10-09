@@ -1,0 +1,66 @@
+{
+  "base_commit": "796a048de1689445a80ae5c4f3144eee127c0ca2",
+  "blockers": [
+    "backend_restart_required",
+    "real_demo_authoritative_preflight_requires_operator_action"
+  ],
+  "consumer_roles": [
+    "integrator"
+  ],
+  "created_at": "2026-08-21T05:48:30.4257007Z",
+  "deliverable_commit": "8d8846f86a05ab5d3698bc9b543a141020aee996",
+  "deliverables": [
+    {
+      "path": "quant_crypto/oms/okx_demo.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "python_source_v1",
+      "sha256": "7b08d87b9a2fce40bfcb351a477e71a6f430ea93712203175b4af08b57a822c3",
+      "type": "code"
+    },
+    {
+      "path": "tests/contracts/test_btc_okx_demo_adapter.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "pytest_contract_v1",
+      "sha256": "e7ad25a41e61847f822cc8901ba6232d4fc7e67a13bb12fa3f397735d62368c6",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "published-btc-okx-demo-get-transport-retry-01-8d8846f86",
+  "event_type": "published",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/btc-demo-get-transport-retry-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py -q",
+      "evidence_path": "",
+      "result": "passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_adapter.py -q -k \"private_get_retries_transport_error_in_place_then_succeeds or private_get_transport_error_stops_after_bounded_retry_budget or cancel_all_after_transport_error_is_not_retried or order_post_is_never_retried_for_recoverable_response_code\"",
+      "evidence_path": "",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "BTC-OKX-DEMO-GET-TRANSPORT-RETRY-01",
+  "transition_for": ""
+}

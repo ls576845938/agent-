@@ -1,0 +1,80 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-us-v3-final-paper-readiness-01-goal12-batch-01",
+  "ticket_id": "US-V3-FINAL-PAPER-READINESS-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer",
+    "researcher",
+    "data_steward"
+  ],
+  "domain": "us_equity",
+  "producer_branch": "agent/integrator/integrate-goal12-batch-01",
+  "base_commit": "78f3e07bfb5f13431d91ce2526aed00fad70f9e3",
+  "deliverable_commit": "590cc4ec093f61f2efebac875e9662b77f1b4492",
+  "created_at": "2026-07-25T23:21:11Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-us-v3-final-paper-readiness-01-1da32511"
+  ],
+  "supersedes": [],
+  "transition_for": "published-us-v3-final-paper-readiness-01-1da32511",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_final_paper_readiness.py tests/contracts/test_us_equity_broker_credentials_review_report.py -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 24 passed]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_us_equity_final_paper_readiness.py"
+    },
+    {
+      "command": "py -3 -m pytest backend/tests/test_paper_runtime.py::TestPaperRuntimeBootstrap::test_bootstrap_persists_session_manifest_history -q -p no:cacheprovider --basetemp <unique-system-temp> [observed: 1 classified failure, AssertionError at history_artifact_path existence]",
+      "result": "failed",
+      "evidence_path": "docs/tickets/US-V3-PAPER-DURABLE-PATH-ASSERTION-DRIFT-01.md"
+    },
+    {
+      "command": "py -3 -m pytest <four exact tests/live/test_safety_boundary_regressions.py nodes> -q -p no:cacheprovider --basetemp <unique-system-temp>, process CWD=C:/Windows [observed: 4 classified failures, PermissionError WinError 5 creating fixed data/live_pilot/audit; C:/Windows/data remained absent]",
+      "result": "failed",
+      "evidence_path": "docs/tickets/US-V3-LIVE-SUBMISSION-GATE-AUDIT-PATH-INJECTION-01.md"
+    },
+    {
+      "command": "writer exact 107-node regression selector reproduced in writable integration CWD [observed: 107 passed, but fixed ignored data/live_pilot/audit was created; this does not close the unwritable-CWD defect and the ignored path was preserved, not delivered]",
+      "result": "passed",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py"
+    },
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/US-V3-FINAL-PAPER-READINESS-01/published-us-v3-final-paper-readiness-01-1da32511.json [committed-object and integrated-tree validation: valid; 9 of 9 deliverable SHA-256 values matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/US-V3-FINAL-PAPER-READINESS-01/published-us-v3-final-paper-readiness-01-1da32511.json"
+    },
+    {
+      "command": "final integration-HEAD serialized US G10 current-head gate and G12 final readiness rebuild is required after both integrated events are committed and before main ff-only",
+      "result": "not_run",
+      "evidence_path": "scripts/build_us_equity_final_paper_readiness.py"
+    }
+  ],
+  "blockers": [
+    "owner:data_steward production_pit_evidence_unavailable",
+    "owner:natural_time forward_observation_30_natural_days_incomplete",
+    "owner:natural_time forward_observation_252_sessions_incomplete",
+    "owner:paper_operations broker_credential_review_not_valid",
+    "owner:architect manual_decision_record_not_valid",
+    "owner:paper_runtime paper_durable_path_assertion_drift",
+    "owner:live_runtime live_submission_gate_audit_path_not_injected",
+    "classification:goal12_code_integration_blocker=false",
+    "classification:overall_status=quality_checked_blocked_fail_closed_no_paper_no_live",
+    "classification:writable_cwd_107_passed_does_not_close_unwritable_cwd_live_audit_path_defect",
+    "classification:ignored_test_side_effect=data/live_pilot/audit_preserved_not_deliverable"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

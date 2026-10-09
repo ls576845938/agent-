@@ -1,0 +1,111 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-cn-v3-current-main-foundation-01-batch-02-takeover",
+  "ticket_id": "CN-V3-CURRENT-MAIN-FOUNDATION-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "a_share_developer",
+    "data_steward",
+    "super_developer"
+  ],
+  "domain": "cn_equity",
+  "producer_branch": "agent/integrator/integrate-goal1-batch-02-takeover",
+  "base_commit": "5ed06e2e7bbb271e92dbe36eff523424528d7c57",
+  "deliverable_commit": "55fdd1f379984fdf9363ff6b8d70bfbcf596b865",
+  "created_at": "2026-07-24T01:59:49Z",
+  "expires_at": "",
+  "depends_on": [
+    "integrated-shared-platform-v2-current-main-01-batch-02-takeover",
+    "published-cn-v3-current-main-foundation-01-170f3d3ad9a3"
+  ],
+  "supersedes": [],
+  "transition_for": "published-cn-v3-current-main-foundation-01-170f3d3ad9a3",
+  "deliverables": [
+    {
+      "type": "schema",
+      "path": "pyproject.toml",
+      "sha256": "40985dfe04fa25ab38e5679c78c902ea4c58e47e7e1f8fe966ceee861a2cf87d",
+      "schema_version": "quant_cn_package_registration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "document",
+      "path": "docs/cn_equity/foundation_contract.md",
+      "sha256": "89a35f2c2da1b23286e3f40dc53489d4c8163be1d298aade63e45c6650ebdd7c",
+      "schema_version": "cn_foundation_contract_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/application/foundation_preflight.py",
+      "sha256": "431133e126a7ccb8949486fa249a7cb9525426c903ef7b7d2137246855af61f6",
+      "schema_version": "cn_foundation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/data/contracts.py",
+      "sha256": "b2d40dcfa1183bec0cf272c5cb2ecd7d4d47e6acca7f9366c27b84fa7948c169",
+      "schema_version": "cn_foundation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "quant_cn/market/rules.py",
+      "sha256": "5175d07f051303364dbbfa74707e74f0f4bd67414a461acefde3298da6fc619e",
+      "schema_version": "cn_foundation_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/cn_equity/test_boundaries.py",
+      "sha256": "654de4c03efffc6ab30e2a7be56ba7914b95f87cd09ae33b37c6dc89d884d653",
+      "schema_version": "cn_foundation_package_boundary_tests_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp <unique> tests/cn_equity",
+      "result": "passed",
+      "evidence_path": "tests/cn_equity"
+    },
+    {
+      "command": "setuptools find_namespace_packages and quant_cn import smoke",
+      "result": "passed",
+      "evidence_path": "pyproject.toml"
+    },
+    {
+      "command": "setuptools.build_meta build_wheel/build_sdist from committed integration source and inspect quant_cn members",
+      "result": "passed",
+      "evidence_path": "pyproject.toml"
+    },
+    {
+      "command": "D:\\vibe coding\\Obsidian\\量化系统\\agent-\\.venv\\Scripts\\python.exe -m ruff check quant_cn tests/cn_equity",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "board_lot_rule_missing",
+    "cn_broker_capability_unproven",
+    "cn_data_coverage_incomplete",
+    "cn_data_freshness_not_pass",
+    "cn_data_source_routing_successor_approval_missing",
+    "cn_dataready_missing",
+    "cn_license_scope_unverified",
+    "domain_read_model_missing"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

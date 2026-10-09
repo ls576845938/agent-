@@ -196,7 +196,7 @@ this report and ticket handoff envelopes.
   correction: 5280 requested UTC hourly rows, 276 funding events; all original
   immutable files and metadata hashes verified. The input manifest records the
   full three-identity mapping. Temporary smoke artifact:
-  C:/Users/李烁18353780778/.codex/visualizations/2026/09/08/01a080f1-4630-7253-bcda-f37ffa68c539/qlib-okx-identity-smoke-20260909/okx-identity-smoke/qlib_input/dataset_manifest.json.
+  C:/Users/LOCAL_USER/.codex/visualizations/2026/09/08/01a080f1-4630-7253-bcda-f37ffa68c539/qlib-okx-identity-smoke-20260909/okx-identity-smoke/qlib_input/dataset_manifest.json.
   This is dataset-adapter evidence, not training/promotion evidence. Independent
   committed-source integration and a new real run02 remain required.
 - The sealed failed run01 also exposed a read-model identity bug: with no dataset

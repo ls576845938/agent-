@@ -1,0 +1,103 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-quant-frontend-canonical-launch-guard-01",
+  "ticket_id": "QUANT-FRONTEND-CANONICAL-LAUNCH-GUARD-01",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "super_developer"
+  ],
+  "domain": "shared",
+  "producer_branch": "agent/integrator/quant-frontend-canonical-launch-guard-01",
+  "base_commit": "9bc1047b7fa0bdba449de057653d3e9a0224ec2b",
+  "deliverable_commit": "81ad28f73bfbcf33e763b773b47576b3367b1661",
+  "created_at": "2026-07-26T10:24:25Z",
+  "expires_at": "",
+  "depends_on": [
+    "published-quant-frontend-canonical-launch-guard-01-38fe690d"
+  ],
+  "supersedes": [],
+  "transition_for": "published-quant-frontend-canonical-launch-guard-01-38fe690d",
+  "deliverables": [],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input .agent/handoffs/QUANT-FRONTEND-CANONICAL-LAUNCH-GUARD-01/published-quant-frontend-canonical-launch-guard-01-38fe690d.json [observed: valid; 14 of 14 committed-byte SHA-256 values matched]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/QUANT-FRONTEND-CANONICAL-LAUNCH-GUARD-01/published-quant-frontend-canonical-launch-guard-01-38fe690d.json"
+    },
+    {
+      "command": "git diff --check 9bc1047b7fa0bdba449de057653d3e9a0224ec2b HEAD -- AGENTS.md frontend scripts start-frontend.cmd",
+      "result": "passed",
+      "evidence_path": "frontend"
+    },
+    {
+      "command": "npm.cmd ci --offline (cwd=frontend) [observed: 117 packages installed; 0 vulnerabilities]",
+      "result": "passed",
+      "evidence_path": "frontend/package-lock.json"
+    },
+    {
+      "command": "npm.cmd run identity:test (cwd=frontend) [observed: fingerprint matched; 7 object targets; integrator branch noncanonical]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs"
+    },
+    {
+      "command": "npm.cmd run identity:check (cwd=frontend) [observed: manifest_match=true; baseline_ancestor=true; dirty_paths=[]]",
+      "result": "passed",
+      "evidence_path": "frontend/public/frontend-identity.json"
+    },
+    {
+      "command": "node .\\scripts\\start-current-main.mjs --check (cwd=frontend, integrator worktree) [observed: expected exit 2 and FRONTEND_CANONICAL_GUARD_FAILED]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/start-current-main.mjs"
+    },
+    {
+      "command": "npx.cmd vite --host 127.0.0.1 --port 3000 --strictPort (cwd=frontend, integrator worktree) [observed: expected exit 1 before bind and FRONTEND_CANONICAL_GUARD_FAILED]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npm.cmd run lint (cwd=frontend) [observed: first desktop wrapper timed out with no compiler diagnostic; exact orphan tsc was stopped; isolated rerun passed]",
+      "result": "passed",
+      "evidence_path": "frontend/src/frontendIdentity.ts"
+    },
+    {
+      "command": "npm.cmd run build (cwd=frontend) [observed: Vite build passed; 5204 modules transformed]",
+      "result": "passed",
+      "evidence_path": "frontend/vite.config.ts"
+    },
+    {
+      "command": "npx.cmd playwright test e2e/system-workbench.spec.ts (cwd=frontend) [observed: 9 passed]",
+      "result": "passed",
+      "evidence_path": "frontend/e2e/system-workbench.spec.ts"
+    },
+    {
+      "command": "npm.cmd run smoke (cwd=frontend) [observed: frontend smoke checks passed]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/smoke.mjs"
+    },
+    {
+      "command": "npm.cmd run check:btc-tradingview (cwd=frontend) [observed: 6 of 6 markers true]",
+      "result": "passed",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs"
+    }
+  ],
+  "blockers": [
+    "historical_pre_guard_worktrees_can_only_be_detected_or_rejected_via_the_supported_launcher_and_canonical_port_identity_contract",
+    "current_head_domain_runtime_and_canonical_trading_evidence_not_bundled_by_frontend_ticket",
+    "classification:canonical_port_3000_is_reserved_for_the_registered_refs_heads_main_worktree",
+    "classification:worktree_preview_is_explicit_and_must_use_a_noncanonical_port",
+    "classification:integration_does_not_unlock_promotion_paper_or_live",
+    "promotion_paper_live_private_order_broker_withdraw_demo_paper_queue_real_order_network_secret_flags_remain_false"
+  ],
+  "gate_impact": "none",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

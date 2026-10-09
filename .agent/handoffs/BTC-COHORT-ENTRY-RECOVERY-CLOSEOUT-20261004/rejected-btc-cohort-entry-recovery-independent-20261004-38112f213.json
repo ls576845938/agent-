@@ -1,0 +1,55 @@
+{
+  "base_commit": "a78e5e112f564c1ceaf47c57fc3035542cd12562",
+  "blockers": [
+    "same Donchian member decision rebuild creates a different default UUID signal identity",
+    "committed projection repair accepts a ledger UOW whose strategy allocation plan differs from the persisted pending decision",
+    "expired or changed review binding blocks repair before a committed economic action can be projected",
+    "Donchian member evaluation reads common account position instead of its sealed member allocation share",
+    "legacy single-member jobs created before registration reservations can conflict with later cohort approval"
+  ],
+  "consumer_roles": [
+    "btc_developer",
+    "architect"
+  ],
+  "created_at": "2026-10-04T12:04:05.994620Z",
+  "deliverable_commit": "38112f213a1611585fe1a4d34cebbc736d4d8d29",
+  "deliverables": [
+    {
+      "path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "readiness_class": "quality_checked",
+      "schema_version": "independent_cohort_entry_recovery_failure_checks_v1",
+      "sha256": "fffbdac208958d5ad6c7d8b4dec4c91140e7ce074d00a45fb2ab33c82b4e098a",
+      "type": "test_evidence"
+    }
+  ],
+  "depends_on": [
+    "published-btc-cohort-entry-recovery-closeout-20261004-a6fa6a396"
+  ],
+  "domain": "btc",
+  "event_id": "rejected-btc-cohort-entry-recovery-independent-20261004-38112f213",
+  "event_type": "rejected",
+  "expires_at": "",
+  "gate_impact": "blocks_gate",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/integrator/btc-cohort-entry-recovery-closeout-20261004",
+  "producer_role": "integrator",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [],
+  "tests": [
+    {
+      "command": "D:/vibe coding/Obsidian/量化系统/agent-/.venv/Scripts/python.exe -m pytest -q tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "evidence_path": "tests/integrations/test_btc_cohort_entry_independent_acceptance.py",
+      "result": "failed"
+    }
+  ],
+  "ticket_id": "BTC-COHORT-ENTRY-RECOVERY-CLOSEOUT-20261004",
+  "transition_for": "published-btc-cohort-entry-recovery-closeout-20261004-a6fa6a396"
+}

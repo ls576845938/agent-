@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-donchian-stage-readonly-c0d5b0dcd",
+  "ticket_id": "DONCHIAN-STAGE-READONLY-INTEGRATION-20260922",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": ["architect"],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/donchian-stage-readonly-integration-20260922",
+  "base_commit": "e2e7496acaa16b9fd5eda37dd65ea328a18ab032",
+  "deliverable_commit": "c0d5b0dcdbe4d6dd22c4d13c665a252efb731da5",
+  "created_at": "2026-09-21T23:31:37Z",
+  "expires_at": "",
+  "depends_on": ["published-donchian-stage-reviewfix-989ab5e3d"],
+  "supersedes": [],
+  "transition_for": "published-donchian-stage-reviewfix-989ab5e3d",
+  "deliverables": [
+    {
+      "type": "report",
+      "path": "docs/operations/donchian-stage-readonly-integration-20260922.md",
+      "sha256": "a16075451058be3ce2d4a2c987c7d1478ac505a8e7304ecb265dcc867e1c31e2",
+      "schema_version": "donchian_stage_readonly_integration_report_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": "docs/operations/donchian-stage-readonly-integration-20260922.json",
+      "sha256": "8316c3b57221725b0b13375a2654b04f12cf1497d512a21563e67ffbf1a6576c",
+      "schema_version": "donchian_stage_readonly_source_integration_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "artifact",
+      "path": ".agent/offline_evidence/donchian-stage-20260921.json",
+      "sha256": "48aaba75b02a2d257abf5196d9c4490c52f4f14356c17a64a41703fb3d6add14",
+      "schema_version": "donchian_paused_stage_snapshot_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "backend/app/services/donchian_stage_views.py",
+      "sha256": "2d596524cbd9e483c109461eae1b9d2957334612c57cd0f3307e21e63599e79b",
+      "schema_version": "donchian_paused_stage_read_model_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/research/DonchianStageEvidence.tsx",
+      "sha256": "3f2d0431e6d06eea03fce66b6d21e02e034d11061c4633d6030e549c17e0ccb1",
+      "schema_version": "donchian_paused_stage_ui_v1",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "code",
+      "path": "frontend/src/workspaces/architecture/mindmap.ts",
+      "sha256": "abcd466dce53f5b7b8585395934222b96d49841f07c4990af57062a706458021",
+      "schema_version": "strategy_delivery_status_v1",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -B -X utf8 -m pytest -q -p no:cacheprovider backend/tests/test_donchian_stage_views.py backend/tests/test_donchian_offline_views.py backend/tests/test_offline_execution_views.py (52 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "node scripts/test-donchian-stage-evidence.mjs; node scripts/test-donchian-offline-evidence.mjs; node scripts/test-strategy-delivery-map.mjs; node scripts/test-architecture-mindmap.mjs (14 passed)",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "npm run lint; npm run build (exit 0, existing chunk-size warning)",
+      "result": "passed",
+      "evidence_path": "docs/operations/donchian-stage-readonly-integration-20260922.md"
+    },
+    {
+      "command": "npx playwright test e2e/research-run-details.spec.ts --list (5 collected; canonical main required to execute)",
+      "result": "not_run",
+      "evidence_path": "frontend/e2e/research-run-details.spec.ts"
+    }
+  ],
+  "blockers": [
+    "canonical_main_publication_pending",
+    "canonical_browser_acceptance_pending",
+    "annual_5800_hours_not_run"
+  ],
+  "gate_impact": "evidence_only",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

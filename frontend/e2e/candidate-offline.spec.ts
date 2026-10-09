@@ -38,7 +38,7 @@ test('identity mismatch and unsafe result are rejected with no fallback',()=>{
   assert.throws(()=>verifyOfflineResult({...value,result:{job_id:id},result_bound:true},id));
 });
 test('all rehashed result and decision identities must match the authoritative job',()=>{
-  const result={...bound,schema_version:'candidate_offline_result_v2',permissions};
+  const result={...bound,schema_version:'candidate_offline_result_v2',adapter_id:'factory_lgbm_ast_v1',permissions};
   const decision={...bound,schema_version:'candidate_offline_decision_v2',cursor:1};
   const value={job,permissions,start_allowed:false,result_bound:true,result,decisions:[decision]};
   assert.equal(verifyOfflineResult(value,id),value);
@@ -65,8 +65,9 @@ test('initial result component distinguishes code from execution and reads only'
   assert(!html.includes('type="password"'));assert(html.includes('disabled=""'));
   assert(!html.includes('localStorage'));assert(!html.includes('恢复原作业'));
 });
-test('controls default disabled and disclose unsupported protection',()=>{
-  const row:any={id:'delivery_'+'c'.repeat(32),content_digest:'d'.repeat(64),revision:4,status:'registered'};
+test('controls default disabled and describe capability-specific protection',()=>{
+  const row:any={id:'delivery_'+'c'.repeat(32),content_digest:'d'.repeat(64),revision:4,status:'registered',
+    package:{adapter_id:'btc_donchian_history_offline_v1'}};
   const html=renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(Controls,{row,credential:''})));
-  assert(html.includes('默认关闭'));assert(html.includes('保护成交尚未接入'));assert(html.includes('disabled=""'));
+  assert(html.includes('默认关闭'));assert(html.includes('历史 OHLC／mark 保护'));assert(html.includes('双触碰'));assert(html.includes('disabled=""'));
 });

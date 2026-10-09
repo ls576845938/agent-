@@ -1,0 +1,122 @@
+{
+  "base_commit": "7b18550dbe9d41bd5fd610eba8a275b825e0d2be",
+  "blockers": [
+    "owner:integrator superseding_deliverable_not_integrated_to_registered_main_worktree",
+    "owner:integrator canonical_main_startup_smoke_requires_clean_main_after_integration",
+    "owner:frontend production_build_chunk_over_500_kb_warning_preserved",
+    "owner:architect frontend_quality_handoff_does_not_unlock_promotion_paper_or_live"
+  ],
+  "consumer_roles": [
+    "architect",
+    "integrator"
+  ],
+  "created_at": "2026-07-27T03:53:42Z",
+  "deliverable_commit": "ba431fb2622104d43f3ba0e1360558f7516b5abd",
+  "deliverables": [
+    {
+      "path": "frontend/scripts/frontend-identity-lib.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_guard_async_singleflight_v2",
+      "sha256": "d8777c033e6c33f47e9a6b4b551894a51422a6205aa6c81ec91ba735e53cff2e",
+      "type": "code"
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_guard_vite_async_wiring_v1",
+      "sha256": "88d0f9a1fa84472180520bf30fa681d2e93060a844517b01787083548303d366",
+      "type": "code"
+    },
+    {
+      "path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_runtime_guard_async_contract_tests_v2",
+      "sha256": "7dbb179f58fe9acf6c035a7b21314bb6bb75fa61ab1ca97d154d93d32d1bf2bb",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/scripts/test-frontend-identity.mjs",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_sync_async_identity_equivalence_tests_v1",
+      "sha256": "c548f3383ad714a679b0c6aa5d753d08da91fd40c28a387e3043df2a694ff2ca",
+      "type": "test_evidence"
+    },
+    {
+      "path": "frontend/public/frontend-identity.json",
+      "readiness_class": "quality_checked",
+      "schema_version": "quant_frontend_identity_v1",
+      "sha256": "6a20fe66b45d263027b56d761dccc13bac8db6bc24f7bd13b44810e5876c9972",
+      "type": "artifact"
+    }
+  ],
+  "depends_on": [],
+  "domain": "btc",
+  "event_id": "superseded-quant-frontend-runtime-guard-hotpath-01-ba431fb2",
+  "event_type": "superseded",
+  "expires_at": "",
+  "gate_impact": "none",
+  "guardrails": {
+    "handoff_only": true,
+    "order_endpoint_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "promotion_unlock_allowed": false,
+    "real_order_submitted": false
+  },
+  "producer_branch": "agent/btc_developer/quant-frontend-runtime-guard-hotpath-01",
+  "producer_role": "btc_developer",
+  "promotion_eligible": false,
+  "schema_version": "agent_handoff_envelope_v1",
+  "supersedes": [
+    "published-quant-frontend-runtime-guard-hotpath-01-01511b0b"
+  ],
+  "tests": [
+    {
+      "command": "npm run identity:runtime-test (initial harness synchronization run)",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "result": "failed"
+    },
+    {
+      "command": "npm run identity:test",
+      "evidence_path": "frontend/scripts/test-frontend-identity.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:check",
+      "evidence_path": "frontend/public/frontend-identity.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run identity:runtime-test (after explicit inspector-start synchronization fix)",
+      "evidence_path": "frontend/scripts/test-frontend-runtime-drift.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "evidence_path": "frontend/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "evidence_path": "frontend/package.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run smoke",
+      "evidence_path": "frontend/scripts/smoke.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run check:btc-tradingview",
+      "evidence_path": "frontend/scripts/check-btc-tradingview-entry.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node ./scripts/start-current-main.mjs --check",
+      "evidence_path": "frontend/scripts/start-current-main.mjs",
+      "result": "passed"
+    }
+  ],
+  "ticket_id": "QUANT-FRONTEND-RUNTIME-GUARD-HOTPATH-01",
+  "transition_for": ""
+}

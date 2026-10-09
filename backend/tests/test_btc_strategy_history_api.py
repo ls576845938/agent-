@@ -904,12 +904,12 @@ def test_app_factory_injects_registered_runner_and_rejects_unauthenticated_versi
     endpoint = "/api/research/btc/strategy-versions"
     assert client.post(endpoint, json=request_payload).status_code == 403
     assert client.post(endpoint, headers={"X-API-Key": "wrong"}, json=request_payload).status_code == 403
-    created = client.post(endpoint, headers={"X-API-Key": "factory-contract-key"}, json=request_payload)
+    created = client.post(endpoint, headers={"X-API-Key": "REDACTED_CREDENTIAL_LITERAL"}, json=request_payload)
     assert created.status_code == 200
     version_id = created.json()["version_id"]
     run = client.post(
         f"{endpoint}/{version_id}/backtests",
-        headers={"X-API-Key": "factory-contract-key"},
+        headers={"X-API-Key": "REDACTED_CREDENTIAL_LITERAL"},
         json={"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z", "capital": 100000, "data_version": "fixture-data-v1"},
     )
     assert run.status_code == 200

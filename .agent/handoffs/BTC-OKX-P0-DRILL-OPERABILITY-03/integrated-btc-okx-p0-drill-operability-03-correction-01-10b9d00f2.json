@@ -1,0 +1,98 @@
+{
+  "schema_version": "agent_handoff_envelope_v1",
+  "event_id": "integrated-btc-okx-p0-drill-operability-03-correction-01-10b9d00f2",
+  "ticket_id": "BTC-OKX-P0-DRILL-OPERABILITY-03",
+  "event_type": "integrated",
+  "producer_role": "integrator",
+  "consumer_roles": [
+    "architect",
+    "btc_developer",
+    "researcher"
+  ],
+  "domain": "btc",
+  "producer_branch": "agent/integrator/btc-okx-p0-drill-operability-03-correction-01",
+  "base_commit": "7915359be04acd880e581df7a2e9bc24f45a9d31",
+  "deliverable_commit": "10b9d00f22eb1b2346e8182a2765d7c9f6dfd8cf",
+  "created_at": "2026-08-05T17:18:51Z",
+  "expires_at": "",
+  "depends_on": [],
+  "supersedes": [
+    "integrated-btc-okx-p0-drill-operability-03-f16badcbd"
+  ],
+  "transition_for": "published-btc-okx-p0-drill-operability-03-correction-01-805f7eb93",
+  "deliverables": [
+    {
+      "type": "code",
+      "path": "quant_crypto/oms/okx_demo_paper_runtime.py",
+      "sha256": "38c0865b7935dd5adbbcd646ae4782c52ea9a40e85753168f8a395b4df762a2f",
+      "schema_version": "btc_okx_demo_paper_runtime_operability_v4",
+      "readiness_class": "quality_checked"
+    },
+    {
+      "type": "test_evidence",
+      "path": "tests/contracts/test_btc_okx_demo_paper_runtime.py",
+      "sha256": "55fc46c1a7c5614eee5c3e623698431391358b3192c6e54b4f7bffc57df5db11",
+      "schema_version": "btc_okx_demo_paper_runtime_contract_v4",
+      "readiness_class": "quality_checked"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 tools/agent_governance/handoff.py validate --input <published-correction-envelope> [status=valid; ancestry and raw Git blob SHA-256 matched both deliverables]",
+      "result": "passed",
+      "evidence_path": ".agent/handoffs/BTC-OKX-P0-DRILL-OPERABILITY-03/published-btc-okx-p0-drill-operability-03-correction-01-805f7eb93.json"
+    },
+    {
+      "command": "base 7915359 source archive + producer test overlay; 3 newly added correction test instances [3 failed as expected]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_paper_runtime.py::test_start_persists_complete_monitoring_status_for_durable_opening_gate tests/contracts/test_btc_okx_demo_paper_runtime.py::test_start_fails_closed_when_monitoring_status_is_incomplete_or_false -q --basetemp <unique-external-temp> [3 passed in 2.83s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_demo_fault_drill.py tests/contracts/test_btc_okx_demo_private_ws.py tests/contracts/test_btc_okx_demo_paper_runtime.py -q --basetemp <unique-external-temp> [182 passed in 24.43s]",
+      "result": "passed",
+      "evidence_path": "tests/contracts/test_btc_okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "in-process fake private WS generation change during status(); startup failed closed, cleanup completed, and no order/cancel calls occurred",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "py -3 -m py_compile quant_crypto/oms/okx_demo_paper_runtime.py",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "git diff --check 7915359be04acd880e581df7a2e9bc24f45a9d31 10b9d00f22eb1b2346e8182a2765d7c9f6dfd8cf -- <approved-touch-set>",
+      "result": "passed",
+      "evidence_path": "quant_crypto/oms/okx_demo_paper_runtime.py"
+    },
+    {
+      "command": "network, secret, Demo/private/order/live/transfer/withdraw endpoint, service start, artifact/manifest/ledger build, refs/heads/main fast-forward",
+      "result": "not_run",
+      "evidence_path": ""
+    }
+  ],
+  "blockers": [
+    "owner:main_sync integrated_commit_not_fast_forwarded_to_refs_heads_main",
+    "owner:backend_operator backend_restart_required_after_main_sync",
+    "owner:architect promotion_evidence_not_rebuilt_or_unlocked",
+    "owner:btc_operations private_order_live_endpoint_validation_not_authorized_or_run",
+    "not_promotion_evidence"
+  ],
+  "gate_impact": "blocks_gate",
+  "promotion_eligible": false,
+  "guardrails": {
+    "handoff_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}
